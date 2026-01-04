@@ -8,6 +8,7 @@ import PeoplePage from "@/pages/PeoplePage";
 import TeamsPage from "@/pages/TeamsPage";
 import ServicesPage from "@/pages/ServicesPage";
 import SchedulesPage from "@/pages/SchedulesPage";
+import MonthlySchedulePage from "@/pages/MonthlySchedulePage";
 import CommunicationPage from "@/pages/CommunicationPage";
 import ChurchesPage from "@/pages/ChurchesPage";
 import MinistriesPage from "@/pages/MinistriesPage";
@@ -255,6 +256,28 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <SettingsPage />
+                </AppLayout>
+              </ProtectedRoute>
+            )
+          }
+        />
+        <Route
+          path="/monthly-schedules"
+          element={
+            MOCK_MODE ? (
+              <AppLayout>
+                <MonthlySchedulePage />
+              </AppLayout>
+            ) : (
+              <ProtectedRoute
+                allowedRoles={[
+                  UserRole.ADMIN,
+                  UserRole.COORDINATOR,
+                  UserRole.LEADER,
+                ]}
+              >
+                <AppLayout>
+                  <MonthlySchedulePage />
                 </AppLayout>
               </ProtectedRoute>
             )
