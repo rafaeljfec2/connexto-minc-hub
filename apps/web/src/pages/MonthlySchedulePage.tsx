@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { Select } from "@/components/ui/Select";
 import { Modal } from "@/components/ui/Modal";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { MonthNavigator } from "@/components/ui/MonthNavigator";
 import { Service, Schedule, Team, Ministry, ServiceType } from "@/types";
 import { formatDate, cn } from "@/lib/utils";
 import { getDayLabel } from "@/lib/constants";
@@ -278,16 +278,6 @@ export default function MonthlySchedulePage() {
     setDrawModalOpen(true);
   }
 
-  const monthOptions = Array.from({ length: 12 }, (_, i) => ({
-    value: String(i + 1),
-    label: new Date(2024, i, 1).toLocaleDateString("pt-BR", { month: "long" }),
-  }));
-
-  const yearOptions = Array.from({ length: 5 }, (_, i) => {
-    const year = new Date().getFullYear() - 2 + i;
-    return { value: String(year), label: String(year) };
-  });
-
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="space-y-6">
@@ -298,19 +288,17 @@ export default function MonthlySchedulePage() {
 
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select
-              label="Mês"
-              value={String(selectedMonth)}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              options={monthOptions}
-            />
-            <Select
-              label="Ano"
-              value={String(selectedYear)}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              options={yearOptions}
-            />
+          <div className="w-full flex justify-center">
+            <div className="w-full max-w-md">
+              <MonthNavigator
+                month={selectedMonth.toString().padStart(2, "0")}
+                year={selectedYear.toString()}
+                onChange={(month, year) => {
+                  setSelectedMonth(Number(month));
+                  setSelectedYear(Number(year));
+                }}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
