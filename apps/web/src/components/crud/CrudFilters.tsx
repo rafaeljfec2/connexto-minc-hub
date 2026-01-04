@@ -34,20 +34,12 @@ export function CrudFilters({
   onViewModeChange,
 }: CrudFiltersProps) {
   const hasViewToggle = viewMode !== undefined && onViewModeChange !== undefined
-  const filterCount = filters.length
-  const hasFilters = filterCount > 0
 
   return (
     <Card className="mb-6">
       <div className="p-4">
-        <div
-          className={`grid grid-cols-1 gap-4 ${
-            hasFilters || hasViewToggle
-              ? `sm:grid-cols-[1fr${hasFilters ? '_auto'.repeat(filterCount) : ''}${hasViewToggle ? '_auto' : ''}]`
-              : ''
-          }`}
-        >
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+          <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-500 dark:text-dark-400" />
             <Input
               type="text"
@@ -59,7 +51,7 @@ export function CrudFilters({
           </div>
 
           {filters.map((filter, index) => (
-            <div key={index}>
+            <div key={index} className="w-full sm:w-auto">
               <Select
                 value={filter.value}
                 onChange={(e) => filter.onChange(e.target.value)}
@@ -70,7 +62,7 @@ export function CrudFilters({
           ))}
 
           {hasViewToggle && (
-            <div className="hidden md:flex">
+            <div className="hidden md:flex shrink-0">
               <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
             </div>
           )}
