@@ -138,7 +138,16 @@ export default function PeoplePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterMinistry, setFilterMinistry] = useState<string>('all')
   const [filterTeam, setFilterTeam] = useState<string>('all')
-  const [viewMode, setViewMode] = useState<ViewMode>('grid')
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth >= 768) {
+        const saved = localStorage.getItem('servos-view-mode') as ViewMode | null
+        return saved === 'list' || saved === 'grid' ? saved : 'grid'
+      }
+      return 'grid'
+    }
+    return 'grid'
+  })
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -165,8 +174,6 @@ export default function PeoplePage() {
     }
 
     window.addEventListener('resize', handleResize)
-    handleResize()
-
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
@@ -259,6 +266,13 @@ export default function PeoplePage() {
     }
   }
 
+  function handleViewModeChange(mode: ViewMode) {
+    setViewMode(mode)
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      localStorage.setItem('servos-view-mode', mode)
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -311,7 +325,7 @@ export default function PeoplePage() {
           teams={teams}
           availableTeams={availableTeams}
           viewMode={viewMode}
-          onViewModeChange={setViewMode}
+          onViewModeChange={handleViewModeChange}
         />
 
         {filteredPeople.length === 0 ? (
@@ -334,25 +348,44 @@ export default function PeoplePage() {
         ) : (
           <>
             {/* Grid View - Mobile sempre mostra, Web quando viewMode === 'grid' */}
-            <div className={viewMode === 'grid' ? 'block' : 'block md:hidden'}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredPeople.map((person) => (
-                  <ServoCard
-                    key={person.id}
-                    person={person}
-                    ministry={getMinistry(person.ministryId)}
-                    team={getTeam(person.teamId)}
-                    onEdit={handleOpenModal}
-                    onDelete={handleDeleteClick}
-                    isUpdating={false}
-                    isDeleting={false}
-                  />
-                ))}
+            {viewMode === 'grid' ? (
+              <div className="block">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredPeople.map((person) => (
+                    <ServoCard
+                      key={person.id}
+                      person={person}
+                      ministry={getMinistry(person.ministryId)}
+                      team={getTeam(person.teamId)}
+                      onEdit={handleOpenModal}
+                      onDelete={handleDeleteClick}
+                      isUpdating={false}
+                      isDeleting={false}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {/* List View - Apenas Web quando viewMode === 'list' (nunca no mobile) */}
-            <div className={viewMode === 'list' ? 'hidden md:block' : 'hidden'}>
+            ) : (
+              <>
+                {/* Cards no mobile mesmo quando viewMode === 'list' */}
+                <div className="block md:hidden">
+                  <div className="grid grid-cols-1 gap-6">
+                    {filteredPeople.map((person) => (
+                      <ServoCard
+                        key={person.id}
+                        person={person}
+                        ministry={getMinistry(person.ministryId)}
+                        team={getTeam(person.teamId)}
+                        onEdit={handleOpenModal}
+                        onDelete={handleDeleteClick}
+                        isUpdating={false}
+                        isDeleting={false}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {/* List View - Apenas Web quando viewMode === 'list' */}
+                <div className="hidden md:block">
               <Card>
                 <Table>
                   <TableHeader>
@@ -406,7 +439,9 @@ export default function PeoplePage() {
                   </TableBody>
                 </Table>
               </Card>
-            </div>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
