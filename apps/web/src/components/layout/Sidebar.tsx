@@ -196,7 +196,7 @@ export function Sidebar() {
   return (
     <>
       <aside className="hidden lg:flex flex-col w-64 bg-dark-900 border-r border-dark-800 fixed left-0 top-0 h-screen z-40">
-        <div className="flex items-center gap-2 p-6 border-b border-dark-800">
+        <div className="flex items-center justify-center p-6 border-b border-dark-800">
           <BrandText size="sm" />
         </div>
         <nav className="flex-1 overflow-y-auto p-4">
@@ -267,7 +267,7 @@ export function Sidebar() {
               aria-label="Fechar menu"
             />
             <aside className="fixed left-0 top-0 h-full w-64 bg-dark-900 border-r border-dark-800 z-50 overflow-y-auto">
-              <div className="flex items-center gap-2 p-6 border-b border-dark-800">
+              <div className="flex items-center justify-center p-6 border-b border-dark-800">
                 <BrandText size="sm" />
               </div>
               <nav className="p-4">
