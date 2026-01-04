@@ -36,6 +36,12 @@ importers:
       expo:
         specifier: ~54.0.30
         version: 54.0.30(@babel/core@7.28.5)(react-native@0.81.5)(react@19.1.0)
+      expo-barcode-scanner:
+        specifier: ^13.0.1
+        version: 13.0.1(expo@54.0.30)
+      expo-camera:
+        specifier: ^17.0.10
+        version: 17.0.10(expo@54.0.30)(react-native@0.81.5)(react@19.1.0)
       expo-status-bar:
         specifier: ~3.0.9
         version: 3.0.9(react-native@0.81.5)(react@19.1.0)
@@ -3814,6 +3820,32 @@ packages:
       - supports-color
     dev: false
 
+  /expo-barcode-scanner@13.0.1(expo@54.0.30):
+    resolution: {integrity: sha512-xBGLT1An2gpAMIQRTLU3oHydKohX8r8F9/ait1Fk9Vgd0GraFZbP4IiT7nHMlaw4H6E7Muucf7vXpGV6u7d4HQ==}
+    peerDependencies:
+      expo: '*'
+    dependencies:
+      expo: 54.0.30(@babel/core@7.28.5)(react-native@0.81.5)(react@19.1.0)
+      expo-image-loader: 4.7.0(expo@54.0.30)
+    dev: false
+
+  /expo-camera@17.0.10(expo@54.0.30)(react-native@0.81.5)(react@19.1.0):
+    resolution: {integrity: sha512-w1RBw83mAGVk4BPPwNrCZyFop0VLiVSRE3c2V9onWbdFwonpRhzmB4drygG8YOUTl1H3wQvALJHyMPTbgsK1Jg==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
+      react-native-web: '*'
+    peerDependenciesMeta:
+      react-native-web:
+        optional: true
+    dependencies:
+      expo: 54.0.30(@babel/core@7.28.5)(react-native@0.81.5)(react@19.1.0)
+      invariant: 2.2.4
+      react: 19.1.0
+      react-native: 0.81.5(@babel/core@7.28.5)(@types/react@18.2.48)(react@19.1.0)
+    dev: false
+
   /expo-constants@18.0.12(expo@54.0.30)(react-native@0.81.5):
     resolution: {integrity: sha512-WzcKYMVNRRu4NcSzfIVRD5aUQFnSpTZgXFrlWmm19xJoDa4S3/PQNi6PNTBRc49xz9h8FT7HMxRKaC8lr0gflA==}
     peerDependencies:
@@ -3849,6 +3881,14 @@ packages:
       fontfaceobserver: 2.3.0
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.28.5)(@types/react@18.2.48)(react@19.1.0)
+    dev: false
+
+  /expo-image-loader@4.7.0(expo@54.0.30):
+    resolution: {integrity: sha512-cx+MxxsAMGl9AiWnQUzrkJMJH4eNOGlu7XkLGnAXSJrRoIiciGaKqzeaD326IyCTV+Z1fXvIliSgNW+DscvD8g==}
+    peerDependencies:
+      expo: '*'
+    dependencies:
+      expo: 54.0.30(@babel/core@7.28.5)(react-native@0.81.5)(react@19.1.0)
     dev: false
 
   /expo-keep-awake@15.0.8(expo@54.0.30)(react@19.1.0):

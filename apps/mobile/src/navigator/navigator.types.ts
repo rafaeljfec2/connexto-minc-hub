@@ -1,5 +1,4 @@
 import type { NavigatorScreenParams } from '@react-navigation/native'
-import type { UserRole } from '@minc-hub/shared/types'
 
 export type RootStackParamList = {
   Login: undefined
@@ -12,6 +11,7 @@ export type MainTabParamList = {
   Teams: undefined
   Schedules: undefined
   Profile: undefined
+  QRCodeScanner: undefined
 }
 
 export type AuthStackParamList = {

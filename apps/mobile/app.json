@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.minc.hub"
+      "bundleIdentifier": "com.minc.hub",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Este app precisa de acesso à câmera para escanear QR codes."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -24,8 +27,19 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.minc.hub"
+      "package": "com.minc.hub",
+      "permissions": [
+        "CAMERA"
+      ]
     },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permite que o app acesse a câmera para escanear QR codes."
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }
