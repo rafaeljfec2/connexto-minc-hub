@@ -1,16 +1,39 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { DataTable } from '@/components/ui/DataTable'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CheckboxList } from '@/components/ui/CheckboxList'
-import { PageWithCrud } from '@/components/pages/PageWithCrud'
+import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useCrud } from '@/hooks/useCrud'
+import { useViewMode } from '@/hooks/useViewMode'
+import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
+import { CrudFilters } from '@/components/crud/CrudFilters'
+import { CrudView } from '@/components/crud/CrudView'
 import { Schedule, Service, Team } from '@/types'
 import { formatDate } from '@/lib/utils'
+import { ScheduleCard } from './schedules/components/ScheduleCard'
+import { EditIcon, TrashIcon } from '@/components/icons'
+
+function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 4v16m8-8H4"
+      />
+    </svg>
+  )
+}
 
 const MOCK_SERVICES: Service[] = [
   {
@@ -76,11 +99,38 @@ export default function SchedulesPage() {
   const deleteModal = useModal()
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const { viewMode, setViewMode } = useViewMode({
+    storageKey: 'schedules-view-mode',
+  })
   const [formData, setFormData] = useState({
     serviceId: '',
     date: '',
     teamIds: [] as string[],
   })
+
+  const filteredSchedules = useMemo(() => {
+    if (!searchTerm) return schedules
+    const searchLower = searchTerm.toLowerCase()
+    return schedules.filter((schedule) => {
+      const service = services.find((s) => s.id === schedule.serviceId)
+      return (
+        service?.name.toLowerCase().includes(searchLower) ||
+        formatDate(schedule.date).toLowerCase().includes(searchLower)
+      )
+    })
+  }, [schedules, searchTerm, services])
+
+  function getServiceName(serviceId: string) {
+    return services.find((s) => s.id === serviceId)?.name ?? 'Culto não encontrado'
+  }
+
+  function getTeamNames(teamIds: string[]) {
+    return teamIds
+      .map((id) => teams.find((t) => t.id === id)?.name)
+      .filter(Boolean)
+      .join(', ')
+  }
 
   function handleOpenModal(schedule?: Schedule) {
     if (schedule) {
@@ -168,53 +218,52 @@ export default function SchedulesPage() {
     })
   }
 
-  function getServiceName(serviceId: string) {
-    return services.find((s) => s.id === serviceId)?.name ?? 'Culto não encontrado'
-  }
+  const hasFilters = searchTerm !== ''
 
-  function getTeamNames(teamIds: string[]) {
-    return teamIds
-      .map((id) => teams.find((t) => t.id === id)?.name)
-      .filter(Boolean)
-      .join(', ')
-  }
+  const gridView = (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredSchedules.map((schedule) => (
+        <ScheduleCard
+          key={schedule.id}
+          schedule={schedule}
+          serviceName={getServiceName(schedule.serviceId)}
+          teamNames={getTeamNames(schedule.teamIds)}
+          onEdit={handleOpenModal}
+          onDelete={handleDeleteClick}
+          isUpdating={false}
+          isDeleting={false}
+        />
+      ))}
+    </div>
+  )
 
-  // Custom search function for schedules
-  const [searchTerm, setSearchTerm] = useState('')
-  
-  function filterSchedules(searchTerm: string) {
-    if (!searchTerm) return schedules
-    const searchLower = searchTerm.toLowerCase()
-    return schedules.filter((schedule) => {
-      const service = services.find((s) => s.id === schedule.serviceId)
-      return (
-        service?.name.toLowerCase().includes(searchLower) ||
-        formatDate(schedule.date).toLowerCase().includes(searchLower)
-      )
-    })
-  }
-
-  const filteredSchedules = filterSchedules(searchTerm)
-
-  const columns = [
-    {
-      key: 'serviceId',
-      label: 'Culto',
-      render: (schedule: Schedule) => (
+  const listViewRows = filteredSchedules.map((schedule) => (
+    <TableRow key={schedule.id}>
+      <TableCell>
         <span className="font-medium">{getServiceName(schedule.serviceId)}</span>
-      ),
-    },
-    {
-      key: 'date',
-      label: 'Data',
-      render: (schedule: Schedule) => formatDate(schedule.date),
-    },
-    {
-      key: 'teamIds',
-      label: 'Equipes',
-      render: (schedule: Schedule) => getTeamNames(schedule.teamIds) || '-',
-    },
-  ]
+      </TableCell>
+      <TableCell>{formatDate(schedule.date)}</TableCell>
+      <TableCell>{getTeamNames(schedule.teamIds) || '-'}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleOpenModal(schedule)}
+          >
+            <EditIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleDeleteClick(schedule.id)}
+          >
+            <TrashIcon className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  ))
 
   const checkboxItems = teams
     .filter((t) => t.isActive)
@@ -225,63 +274,41 @@ export default function SchedulesPage() {
 
   return (
     <>
-      <PageWithCrud
+      <CrudPageLayout
         title="Escalas"
         description="Gerencie as escalas dos cultos e equipes"
         createButtonLabel="Nova Escala"
-        items={filteredSchedules}
-        searchFields={[]}
-        searchPlaceholder="Buscar por culto ou data..."
-        emptyMessage="Nenhuma escala cadastrada"
-        emptySearchMessage="Nenhuma escala encontrada"
-        searchCard={
-          <div className="mb-6">
-            <div className="bg-dark-900 rounded-lg border border-dark-800 p-6">
-              <input
-                type="text"
-                placeholder="Buscar por culto ou data..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-11 px-4 rounded-lg bg-dark-800 border border-dark-700 text-dark-50 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  onClick={() => setSearchTerm('')}
-                  className="mt-2 text-sm text-primary-400 hover:text-primary-300"
-                >
-                  Limpar busca
-                </button>
-              )}
-            </div>
-          </div>
-        }
-        tableContent={(paginatedItems) => (
-          <DataTable
-            data={paginatedItems}
-            columns={columns}
-            hasSearch={false}
-            actions={(schedule) => (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleOpenModal(schedule)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDeleteClick(schedule.id)}
-                >
-                  Excluir
-                </Button>
-              </>
-            )}
-          />
-        )}
         onCreateClick={() => handleOpenModal()}
+        hasFilters={hasFilters}
+        isEmpty={filteredSchedules.length === 0}
+        emptyTitle={
+          hasFilters ? 'Nenhuma escala encontrada' : 'Nenhuma escala cadastrada'
+        }
+        emptyDescription={
+          hasFilters
+            ? 'Tente ajustar os filtros para encontrar escalas'
+            : 'Comece adicionando uma nova escala'
+        }
+        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+        filters={
+          <CrudFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar por culto ou data..."
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        }
+        content={
+          <CrudView
+            viewMode={viewMode}
+            gridView={gridView}
+            listView={{
+              headers: ['Culto', 'Data', 'Equipes', 'Ações'],
+              rows: listViewRows,
+            }}
+          />
+        }
       />
 
       <Modal
@@ -317,7 +344,7 @@ export default function SchedulesPage() {
           />
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-dark-300">
+              <label className="block text-sm font-medium text-dark-600 dark:text-dark-300">
                 Equipes *
               </label>
               <Button
