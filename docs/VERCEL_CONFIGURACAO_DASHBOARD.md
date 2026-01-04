@@ -9,21 +9,25 @@ Você tem **Root Directory = `apps/web`** configurado no Dashboard.
 ### Settings > Build & Development Settings
 
 **Build Command:**
+
 ```bash
 cd ../.. && pnpm install --frozen-lockfile && pnpm build --filter=@minc-hub/web
 ```
 
 **Output Directory:**
+
 ```
 dist
 ```
 
 **Install Command:**
+
 ```bash
 cd ../.. && pnpm install --frozen-lockfile
 ```
 
 **Development Command:**
+
 ```bash
 cd ../.. && pnpm dev --filter=@minc-hub/web
 ```
@@ -33,9 +37,11 @@ cd ../.. && pnpm dev --filter=@minc-hub/web
 **Selecione:** "Only build if there are changes in a folder"
 
 **Configure:**
+
 - **Folder:** `apps/web`
 
 **OU configure manualmente:**
+
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/
 ```
@@ -54,16 +60,19 @@ Se preferir usar a **raiz do projeto** (melhor para monorepo):
 ### 2. Settings > Build & Development Settings
 
 **Build Command:**
+
 ```bash
 pnpm build --filter=@minc-hub/web
 ```
 
 **Output Directory:**
+
 ```
 apps/web/dist
 ```
 
 **Install Command:**
+
 ```bash
 pnpm install --frozen-lockfile
 ```
@@ -71,11 +80,13 @@ pnpm install --frozen-lockfile
 ### 3. Settings > Git > Ignored Build Step
 
 **Configure:**
+
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json
 ```
 
 **OU selecione:** "Only build if there are changes in a folder"
+
 - **Folder:** `apps/web`
 
 ## 📝 Arquivos Criados
