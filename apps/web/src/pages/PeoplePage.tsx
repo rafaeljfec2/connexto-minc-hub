@@ -1,15 +1,68 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { Select } from '@/components/ui/Select'
 import { DataTable } from '@/components/ui/DataTable'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PageWithCrud } from '@/components/pages/PageWithCrud'
 import { useModal } from '@/hooks/useModal'
 import { useCrud } from '@/hooks/useCrud'
-import { Person } from '@/types'
+import { Person, Ministry, Team } from '@/types'
 import { formatDate } from '@/lib/utils'
+
+const MOCK_MINISTRIES: Ministry[] = [
+  {
+    id: '1',
+    name: 'Time Boas-Vindas',
+    churchId: '1',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    name: 'Louvor',
+    churchId: '1',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+]
+
+const MOCK_TEAMS: Team[] = [
+  {
+    id: '1',
+    name: 'Equipe Manhã',
+    description: 'Equipe responsável pelo culto da manhã',
+    ministryId: '1',
+    memberIds: ['1', '2'],
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    name: 'Equipe Noite',
+    description: 'Equipe responsável pelo culto da noite',
+    ministryId: '1',
+    memberIds: ['3'],
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '3',
+    name: 'Equipe Louvor',
+    description: 'Equipe de música e adoração',
+    ministryId: '2',
+    memberIds: [],
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+]
 
 const MOCK_PEOPLE: Person[] = [
   {
@@ -18,6 +71,8 @@ const MOCK_PEOPLE: Person[] = [
     email: 'joao@example.com',
     phone: '(11) 99999-9999',
     birthDate: '1990-01-15',
+    ministryId: '1',
+    teamId: '1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -27,6 +82,8 @@ const MOCK_PEOPLE: Person[] = [
     email: 'maria@example.com',
     phone: '(11) 88888-8888',
     birthDate: '1985-05-20',
+    ministryId: '1',
+    teamId: '1',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -36,6 +93,8 @@ export default function PeoplePage() {
   const { items: people, create, update, remove } = useCrud<Person>({
     initialItems: MOCK_PEOPLE,
   })
+  const [ministries] = useState<Ministry[]>(MOCK_MINISTRIES)
+  const [teams] = useState<Team[]>(MOCK_TEAMS)
   const modal = useModal()
   const deleteModal = useModal()
   const [editingPerson, setEditingPerson] = useState<Person | null>(null)
@@ -47,7 +106,24 @@ export default function PeoplePage() {
     birthDate: '',
     address: '',
     notes: '',
+    ministryId: '',
+    teamId: '',
   })
+
+  const availableTeams = useMemo(() => {
+    if (!formData.ministryId) return []
+    return teams.filter((team) => team.ministryId === formData.ministryId && team.isActive)
+  }, [formData.ministryId, teams])
+
+  function getMinistryName(ministryId?: string) {
+    if (!ministryId) return '-'
+    return ministries.find((m) => m.id === ministryId)?.name ?? '-'
+  }
+
+  function getTeamName(teamId?: string) {
+    if (!teamId) return '-'
+    return teams.find((t) => t.id === teamId)?.name ?? '-'
+  }
 
   function handleOpenModal(person?: Person) {
     if (person) {
@@ -59,6 +135,8 @@ export default function PeoplePage() {
         birthDate: person.birthDate ?? '',
         address: person.address ?? '',
         notes: person.notes ?? '',
+        ministryId: person.ministryId ?? '',
+        teamId: person.teamId ?? '',
       })
     } else {
       setEditingPerson(null)
@@ -69,6 +147,8 @@ export default function PeoplePage() {
         birthDate: '',
         address: '',
         notes: '',
+        ministryId: '',
+        teamId: '',
       })
     }
     modal.open()
@@ -84,6 +164,16 @@ export default function PeoplePage() {
       birthDate: '',
       address: '',
       notes: '',
+      ministryId: '',
+      teamId: '',
+    })
+  }
+
+  function handleMinistryChange(ministryId: string) {
+    setFormData({
+      ...formData,
+      ministryId,
+      teamId: '',
     })
   }
 
@@ -128,6 +218,16 @@ export default function PeoplePage() {
       key: 'phone',
       label: 'Telefone',
       render: (person: Person) => person.phone ?? '-',
+    },
+    {
+      key: 'ministry',
+      label: 'Time',
+      render: (person: Person) => getMinistryName(person.ministryId),
+    },
+    {
+      key: 'team',
+      label: 'Equipe',
+      render: (person: Person) => getTeamName(person.teamId),
     },
     {
       key: 'birthDate',
@@ -201,6 +301,29 @@ export default function PeoplePage() {
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="(11) 99999-9999"
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Select
+              label="Time"
+              value={formData.ministryId}
+              onChange={(e) => handleMinistryChange(e.target.value)}
+              options={[
+                { value: '', label: 'Selecione um time' },
+                ...ministries
+                  .filter((m) => m.isActive)
+                  .map((m) => ({ value: m.id, label: m.name })),
+              ]}
+            />
+            <Select
+              label="Equipe"
+              value={formData.teamId}
+              onChange={(e) => setFormData({ ...formData, teamId: e.target.value })}
+              disabled={!formData.ministryId}
+              options={[
+                { value: '', label: formData.ministryId ? 'Selecione uma equipe' : 'Selecione um time primeiro' },
+                ...availableTeams.map((t) => ({ value: t.id, label: t.name })),
+              ]}
             />
           </div>
           <Input
