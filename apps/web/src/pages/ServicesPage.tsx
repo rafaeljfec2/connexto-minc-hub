@@ -13,8 +13,8 @@ import { useViewMode } from "@/hooks/useViewMode";
 import { CrudPageLayout } from "@/components/crud/CrudPageLayout";
 import { CrudFilters } from "@/components/crud/CrudFilters";
 import { CrudView } from "@/components/crud/CrudView";
-import { Service, ServiceType } from "@/types";
-import { formatTime } from "@/lib/utils";
+import { Service, ServiceType } from "@minc-hub/shared/types";
+import { formatTime } from "@minc-hub/shared/utils";
 import {
   DAYS_OF_WEEK,
   SERVICE_TYPES,

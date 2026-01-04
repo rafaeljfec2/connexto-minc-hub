@@ -12,11 +12,11 @@ import { useViewMode } from "@/hooks/useViewMode";
 import { CrudPageLayout } from "@/components/crud/CrudPageLayout";
 import { CrudFilters } from "@/components/crud/CrudFilters";
 import { CrudView } from "@/components/crud/CrudView";
-import { Person, Ministry, Team, User, UserRole } from "@/types";
+import { Person, Ministry, Team, User, UserRole } from "@minc-hub/shared/types";
 import { ServoCard } from "./people/components/ServoCard";
 import { CreateUserForm } from "./people/components/CreateUserForm";
 import { UserIcon, EditIcon, TrashIcon, PlusIcon } from "@/components/icons";
-import { formatDate } from "@/lib/utils";
+import { formatDate } from "@minc-hub/shared/utils";
 import { MOCK_MINISTRIES, MOCK_TEAMS, MOCK_PEOPLE, MOCK_USERS } from "@/lib/mockData";
 
 export default function PeoplePage() {

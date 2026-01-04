@@ -1,66 +1,27 @@
-import axios, { AxiosInstance, AxiosError } from 'axios'
+import { ApiClient } from '@minc-hub/shared/services'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
-class ApiClient {
-  private client: AxiosInstance
-
-  constructor() {
-    this.client = axios.create({
-      baseURL: API_BASE_URL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    this.setupInterceptors()
-  }
-
-  private setupInterceptors(): void {
-    this.client.interceptors.request.use(
-      (config) => {
-        const token = this.getToken()
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
-        return config
-      },
-      (error) => Promise.reject(error)
-    )
-
-    this.client.interceptors.response.use(
-      (response) => response,
-      (error: AxiosError) => {
-        if (error.response?.status === 401) {
-          this.clearToken()
-          if (typeof window !== 'undefined') {
-            window.location.href = '/login'
-          }
-        }
-        return Promise.reject(error)
-      }
-    )
-  }
-
-  private getToken(): string | null {
+const apiClient = new ApiClient({
+  baseURL: API_BASE_URL,
+  getToken: () => {
     if (typeof window === 'undefined') return null
     return localStorage.getItem('auth_token')
-  }
-
-  private clearToken(): void {
-    if (typeof window === 'undefined') return
-    localStorage.removeItem('auth_token')
-  }
-
-  setToken(token: string): void {
+  },
+  setToken: (token: string) => {
     if (typeof window === 'undefined') return
     localStorage.setItem('auth_token', token)
-  }
+  },
+  clearToken: () => {
+    if (typeof window === 'undefined') return
+    localStorage.removeItem('auth_token')
+  },
+  onUnauthorized: () => {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login'
+    }
+  },
+})
 
-  get instance(): AxiosInstance {
-    return this.client
-  }
-}
-
-export const apiClient = new ApiClient()
+export { apiClient }
 export const api = apiClient.instance

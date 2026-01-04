@@ -10,7 +10,7 @@ import { useViewMode } from "@/hooks/useViewMode";
 import { CrudPageLayout } from "@/components/crud/CrudPageLayout";
 import { CrudFilters } from "@/components/crud/CrudFilters";
 import { CrudView } from "@/components/crud/CrudView";
-import { Church } from "@/types";
+import { Church } from "@minc-hub/shared/types";
 import { ChurchCard } from "./churches/components/ChurchCard";
 import { EditIcon, TrashIcon, PlusIcon } from "@/components/icons";
 import { MOCK_CHURCHES } from "@/lib/mockData";

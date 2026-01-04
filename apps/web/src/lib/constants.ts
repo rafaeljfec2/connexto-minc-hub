@@ -1,4 +1,4 @@
-import { ServiceType } from '@/types'
+import { ServiceType } from '@minc-hub/shared/types'
 
 export const DAYS_OF_WEEK = [
   { value: 0, label: 'Domingo' },

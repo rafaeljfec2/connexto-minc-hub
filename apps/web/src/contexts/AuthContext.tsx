@@ -7,7 +7,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react'
-import { User, UserRole } from '@/types'
+import { User, UserRole } from '@minc-hub/shared/types'
 import { api, apiClient } from '@/lib/api'
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true' || !import.meta.env.VITE_API_URL

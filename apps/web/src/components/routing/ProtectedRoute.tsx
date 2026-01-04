@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useMockMode } from '@/hooks/useMockMode'
-import { UserRole } from '@/types'
+import { UserRole } from '@minc-hub/shared/types'
 import type { ReactNode } from 'react'
 
 interface ProtectedRouteProps {

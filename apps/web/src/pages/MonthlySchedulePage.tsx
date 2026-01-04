@@ -4,8 +4,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MonthNavigator } from "@/components/ui/MonthNavigator";
-import { Service, Schedule, Team, Ministry, ServiceType } from "@/types";
-import { formatDate, cn } from "@/lib/utils";
+import { Service, Schedule, Team, Ministry, ServiceType } from "@minc-hub/shared/types";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@minc-hub/shared/utils";
 import { getDayLabel } from "@/lib/constants";
 
 const MOCK_SERVICES: Service[] = [
@@ -178,7 +179,7 @@ export default function MonthlySchedulePage() {
 
     return (
       <div className="space-y-2">
-        {schedule.teamIds.map((teamId) => {
+        {schedule.teamIds.map((teamId: string) => {
           const team = teams.find((t) => t.id === teamId);
           const ministryName = getMinistryName(teamId);
           return (

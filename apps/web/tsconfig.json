@@ -20,7 +20,9 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@minc-hub/shared": ["../../packages/shared/src"],
+      "@minc-hub/shared/*": ["../../packages/shared/src/*"]
     },
     "types": ["vite/client"]
   },
