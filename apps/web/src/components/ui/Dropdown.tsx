@@ -44,10 +44,10 @@ export function Dropdown({ trigger, items, align = 'right' }: DropdownProps) {
       <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div className="fixed inset-0 z-[45]" onClick={() => setIsOpen(false)} />
           <div
             className={cn(
-              'absolute z-50 mt-2 w-56 rounded-lg bg-white border border-dark-200 shadow-xl',
+              'absolute z-[50] mt-2 w-56 rounded-lg bg-white border border-dark-200 shadow-xl',
               'dark:bg-dark-900 dark:border-dark-800',
               'animate-fade-in-down',
               align === 'right' ? 'right-0' : 'left-0'

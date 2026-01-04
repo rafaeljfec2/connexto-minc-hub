@@ -8,7 +8,7 @@ const HEADER_CLASSES = {
   content: 'lg:ml-64',
   inner: 'w-full flex h-16 items-center justify-between overflow-visible',
   logo: 'hidden lg:flex items-center gap-2 -ml-56 transition-transform duration-300 hover:scale-105',
-  profile: 'flex-1 lg:flex-none flex items-center justify-end gap-3 pr-4 sm:pr-6 lg:pr-8',
+  profile: 'flex-1 lg:flex-none flex items-center justify-end gap-3 pr-4 sm:pr-6 lg:pr-8 relative',
 }
 
 export function Header() {
