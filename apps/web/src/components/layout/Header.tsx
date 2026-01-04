@@ -1,17 +1,18 @@
-import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/Button'
-import { Dropdown } from '@/components/ui/Dropdown'
-import { useNavigate } from 'react-router-dom'
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/Button";
+import { Dropdown } from "@/components/ui/Dropdown";
+import { useNavigate } from "react-router-dom";
 
-const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true' || !import.meta.env.VITE_API_URL
+const MOCK_MODE =
+  import.meta.env.VITE_MOCK_MODE === "true" || !import.meta.env.VITE_API_URL;
 
 export function Header() {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const profileItems = [
     {
-      label: 'Meu Perfil',
+      label: "Meu Perfil",
       icon: (
         <svg
           className="h-4 w-4"
@@ -27,10 +28,10 @@ export function Header() {
           />
         </svg>
       ),
-      onClick: () => navigate('/profile'),
+      onClick: () => navigate("/profile"),
     },
     {
-      label: 'Configurações',
+      label: "Configurações",
       icon: (
         <svg
           className="h-4 w-4"
@@ -52,10 +53,10 @@ export function Header() {
           />
         </svg>
       ),
-      onClick: () => navigate('/settings'),
+      onClick: () => navigate("/settings"),
     },
     {
-      label: 'Sair',
+      label: "Sair",
       icon: (
         <svg
           className="h-4 w-4"
@@ -73,70 +74,72 @@ export function Header() {
       ),
       onClick: () => {
         if (!MOCK_MODE) {
-          logout()
+          logout();
         }
       },
-      variant: 'danger' as const,
+      variant: "danger" as const,
     },
-  ]
+  ];
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-dark-800 bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-dark-950/80">
       <div className="lg:ml-64">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img
-                src="/Logo-minc.png"
-                alt="Minha Igreja na Cidade"
-                className="h-8 w-auto object-contain"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              {user ? (
-                <Dropdown
-                  trigger={
-                    <button
-                      type="button"
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-dark-800 transition-colors"
+        <div className="w-full flex h-16 items-center justify-between overflow-visible">
+          <div className="flex items-center gap-2 ml-0 sm:-ml-6 lg:-ml-56">
+            <img
+              src="/Logo-minc.png"
+              alt="Minha Igreja na Cidade"
+              className="h-8 w-auto object-contain"
+            />
+          </div>
+          <div className="flex items-center gap-3 pr-4 sm:pr-6 lg:pr-8">
+            {user ? (
+              <Dropdown
+                trigger={
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-dark-800 transition-colors"
+                  >
+                    <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-sm font-medium text-white">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm text-dark-300 hidden sm:inline">
+                      {user.name}
+                    </span>
+                    <svg
+                      className="h-4 w-4 text-dark-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-sm font-medium text-white">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-sm text-dark-300 hidden sm:inline">
-                        {user.name}
-                      </span>
-                      <svg
-                        className="h-4 w-4 text-dark-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                  }
-                  items={profileItems}
-                  align="right"
-                />
-              ) : MOCK_MODE ? (
-                <span className="text-xs text-primary-400 hidden sm:inline">
-                  Modo Dev
-                </span>
-              ) : (
-                <Button variant="primary" size="sm" onClick={() => navigate('/login')}>
-                  Entrar
-                </Button>
-              )}
-            </div>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                }
+                items={profileItems}
+                align="right"
+              />
+            ) : MOCK_MODE ? (
+              <span className="text-xs text-primary-400 hidden sm:inline">
+                Modo Dev
+              </span>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate("/login")}
+              >
+                Entrar
+              </Button>
+            )}
           </div>
         </div>
       </div>
     </header>
-  )
+  );
 }
