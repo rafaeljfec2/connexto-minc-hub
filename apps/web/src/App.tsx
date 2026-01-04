@@ -10,6 +10,8 @@ import ServicesPage from "@/pages/ServicesPage";
 import SchedulesPage from "@/pages/SchedulesPage";
 import CommunicationPage from "@/pages/CommunicationPage";
 import ChurchesPage from "@/pages/ChurchesPage";
+import ProfilePage from "@/pages/ProfilePage";
+import SettingsPage from "@/pages/SettingsPage";
 import { UserRole } from "@/types";
 import type { ReactNode } from "react";
 
@@ -202,6 +204,38 @@ function App() {
               <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
                 <AppLayout>
                   <ChurchesPage />
+                </AppLayout>
+              </ProtectedRoute>
+            )
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            MOCK_MODE ? (
+              <AppLayout>
+                <ProfilePage />
+              </AppLayout>
+            ) : (
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProfilePage />
+                </AppLayout>
+              </ProtectedRoute>
+            )
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            MOCK_MODE ? (
+              <AppLayout>
+                <SettingsPage />
+              </AppLayout>
+            ) : (
+              <ProtectedRoute>
+                <AppLayout>
+                  <SettingsPage />
                 </AppLayout>
               </ProtectedRoute>
             )
