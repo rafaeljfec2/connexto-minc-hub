@@ -286,22 +286,18 @@ export default function MonthlySchedulePage() {
           description="Visualize e gerencie as escalas mensais dos cultos"
         />
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="w-full flex justify-center">
-            <div className="w-full max-w-md">
-              <MonthNavigator
-                month={selectedMonth.toString().padStart(2, "0")}
-                year={selectedYear.toString()}
-                onChange={(month, year) => {
-                  setSelectedMonth(Number(month));
-                  setSelectedYear(Number(year));
-                }}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-md">
+          <MonthNavigator
+            month={selectedMonth.toString().padStart(2, "0")}
+            year={selectedYear.toString()}
+            onChange={(month, year) => {
+              setSelectedMonth(Number(month));
+              setSelectedYear(Number(year));
+            }}
+          />
+        </div>
+      </div>
 
       <div className="space-y-6">
         {services
