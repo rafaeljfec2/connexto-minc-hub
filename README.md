@@ -1,4 +1,4 @@
-# MINC Hub - Sistema de Gestão do Time Boas-Vindas
+# MINC Teams - Sistema de Gestão do Time Boas-Vindas
 
 Sistema de gestão de pessoas e equipes para o Time Boas-Vindas da Minha Igreja na Cidade.
 
@@ -96,6 +96,27 @@ O design é baseado no tema do site [minhaigrejanacidade.com](https://minhaigrej
 - Autenticação via JWT
 - Controle de acesso baseado em papéis (Admin, Coordenador, Líder, Membro)
 - Validação de dados no frontend e backend
+
+## Deploy
+
+O projeto está configurado para deploy na **Vercel**.
+
+### Variáveis de Ambiente
+
+Configure as seguintes variáveis no painel da Vercel:
+
+- `VITE_API_URL`: URL base da API backend (ex: `https://api.minc-teams.com`)
+- `VITE_MOCK_MODE`: `false` para produção
+
+Para mais detalhes, consulte [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md) e [apps/web/ENV_VARIABLES.md](./apps/web/ENV_VARIABLES.md).
+
+### Build Otimizado
+
+O projeto inclui otimizações para produção:
+- Code splitting automático
+- Minificação com esbuild
+- Cache de assets estáticos
+- Chunks separados para vendors
 
 ## Roadmap
 
