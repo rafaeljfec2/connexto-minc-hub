@@ -4,13 +4,15 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
-import { DataTable } from '@/components/ui/DataTable'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { PageWithCrud } from '@/components/pages/PageWithCrud'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { PageHeader } from '@/components/layout/PageHeader'
 import { useModal } from '@/hooks/useModal'
 import { useCrud } from '@/hooks/useCrud'
 import { Person, Ministry, Team } from '@/types'
-import { formatDate } from '@/lib/utils'
+import { ServoCard } from './people/components/ServoCard'
+import { ServoFilters } from './people/components/ServoFilters'
+import { UserIcon } from '@/components/icons'
 
 const MOCK_MINISTRIES: Ministry[] = [
   {
@@ -87,7 +89,36 @@ const MOCK_PEOPLE: Person[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: '3',
+    name: 'Pedro Oliveira',
+    email: 'pedro@example.com',
+    phone: '(11) 77777-7777',
+    birthDate: '1992-03-10',
+    ministryId: '1',
+    teamId: '2',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ]
+
+function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 4v16m8-8H4"
+      />
+    </svg>
+  )
+}
 
 export default function PeoplePage() {
   const { items: people, create, update, remove } = useCrud<Person>({
@@ -99,6 +130,9 @@ export default function PeoplePage() {
   const deleteModal = useModal()
   const [editingPerson, setEditingPerson] = useState<Person | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterMinistry, setFilterMinistry] = useState<string>('all')
+  const [filterTeam, setFilterTeam] = useState<string>('all')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -111,18 +145,38 @@ export default function PeoplePage() {
   })
 
   const availableTeams = useMemo(() => {
-    if (!formData.ministryId) return []
-    return teams.filter((team) => team.ministryId === formData.ministryId && team.isActive)
-  }, [formData.ministryId, teams])
+    if (filterMinistry === 'all') {
+      return teams.filter((t) => t.isActive)
+    }
+    return teams.filter((t) => t.ministryId === filterMinistry && t.isActive)
+  }, [filterMinistry, teams])
 
-  function getMinistryName(ministryId?: string) {
-    if (!ministryId) return '-'
-    return ministries.find((m) => m.id === ministryId)?.name ?? '-'
+  const filteredPeople = useMemo(() => {
+    return people.filter((person) => {
+      const matchesSearch =
+        searchTerm === '' ||
+        person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        person.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        person.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+
+      const matchesMinistry =
+        filterMinistry === 'all' || person.ministryId === filterMinistry
+
+      const matchesTeam =
+        filterTeam === 'all' || person.teamId === filterTeam
+
+      return matchesSearch && matchesMinistry && matchesTeam
+    })
+  }, [people, searchTerm, filterMinistry, filterTeam])
+
+  function getMinistry(ministryId?: string) {
+    if (!ministryId) return undefined
+    return ministries.find((m) => m.id === ministryId)
   }
 
-  function getTeamName(teamId?: string) {
-    if (!teamId) return '-'
-    return teams.find((t) => t.id === teamId)?.name ?? '-'
+  function getTeam(teamId?: string) {
+    if (!teamId) return undefined
+    return teams.find((t) => t.id === teamId)
   }
 
   function handleOpenModal(person?: Person) {
@@ -177,15 +231,24 @@ export default function PeoplePage() {
     })
   }
 
+  function handleFilterMinistryChange(value: string) {
+    setFilterMinistry(value)
+    if (value === 'all') {
+      setFilterTeam('all')
+    } else {
+      setFilterTeam('all')
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    
+
     if (editingPerson) {
       update(editingPerson.id, formData)
     } else {
       create(formData)
     }
-    
+
     handleCloseModal()
   }
 
@@ -201,80 +264,69 @@ export default function PeoplePage() {
     }
   }
 
-  const columns = [
-    {
-      key: 'name',
-      label: 'Nome',
-      render: (person: Person) => (
-        <span className="font-medium">{person.name}</span>
-      ),
-    },
-    {
-      key: 'email',
-      label: 'Email',
-      render: (person: Person) => person.email ?? '-',
-    },
-    {
-      key: 'phone',
-      label: 'Telefone',
-      render: (person: Person) => person.phone ?? '-',
-    },
-    {
-      key: 'ministry',
-      label: 'Time',
-      render: (person: Person) => getMinistryName(person.ministryId),
-    },
-    {
-      key: 'team',
-      label: 'Equipe',
-      render: (person: Person) => getTeamName(person.teamId),
-    },
-    {
-      key: 'birthDate',
-      label: 'Data de Nascimento',
-      render: (person: Person) =>
-        person.birthDate ? formatDate(person.birthDate) : '-',
-    },
-  ]
+  const hasFilters = searchTerm !== '' || filterMinistry !== 'all' || filterTeam !== 'all'
 
   return (
     <>
-      <PageWithCrud
-        title="Servos"
-        description="Gerencie servos do Time Boas-Vindas"
-        createButtonLabel="Adicionar Servo"
-        items={people}
-        searchFields={['name', 'email', 'phone']}
-        searchPlaceholder="Buscar por nome, email ou telefone..."
-        emptyMessage="Nenhum servo cadastrado"
-        emptySearchMessage="Nenhum servo encontrado"
-        tableContent={(paginatedItems) => (
-          <DataTable
-            data={paginatedItems}
-            columns={columns}
-            hasSearch={false}
-            actions={(person) => (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleOpenModal(person)}
-                >
-                  Editar
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <PageHeader
+          title="Servos"
+          description="Gerencie servos do Time Boas-Vindas"
+          icon={<UserIcon className="h-8 w-8 text-primary-400" />}
+          action={
+            <Button onClick={() => handleOpenModal()} variant="primary" className="w-full sm:w-auto">
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Adicionar Servo
+            </Button>
+          }
+        />
+
+        <ServoFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          filterMinistry={filterMinistry}
+          onMinistryChange={handleFilterMinistryChange}
+          filterTeam={filterTeam}
+          onTeamChange={setFilterTeam}
+          ministries={ministries}
+          teams={teams}
+          availableTeams={availableTeams}
+        />
+
+        {filteredPeople.length === 0 ? (
+          <EmptyState
+            title={hasFilters ? 'Nenhum servo encontrado' : 'Nenhum servo cadastrado'}
+            description={
+              hasFilters
+                ? 'Tente ajustar os filtros para encontrar servos'
+                : 'Comece adicionando um novo servo'
+            }
+            action={
+              !hasFilters ? (
+                <Button onClick={() => handleOpenModal()} variant="primary">
+                  <PlusIcon className="h-5 w-5 mr-2" />
+                  Adicionar Servo
                 </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDeleteClick(person.id)}
-                >
-                  Excluir
-                </Button>
-              </>
-            )}
+              ) : undefined
+            }
           />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredPeople.map((person) => (
+              <ServoCard
+                key={person.id}
+                person={person}
+                ministry={getMinistry(person.ministryId)}
+                team={getTeam(person.teamId)}
+                onEdit={handleOpenModal}
+                onDelete={handleDeleteClick}
+                isUpdating={false}
+                isDeleting={false}
+              />
+            ))}
+          </div>
         )}
-        onCreateClick={() => handleOpenModal()}
-      />
+      </div>
 
       <Modal
         isOpen={modal.isOpen}
@@ -321,8 +373,15 @@ export default function PeoplePage() {
               onChange={(e) => setFormData({ ...formData, teamId: e.target.value })}
               disabled={!formData.ministryId}
               options={[
-                { value: '', label: formData.ministryId ? 'Selecione uma equipe' : 'Selecione um time primeiro' },
-                ...availableTeams.map((t) => ({ value: t.id, label: t.name })),
+                {
+                  value: '',
+                  label: formData.ministryId
+                    ? 'Selecione uma equipe'
+                    : 'Selecione um time primeiro',
+                },
+                ...teams
+                  .filter((t) => t.ministryId === formData.ministryId && t.isActive)
+                  .map((t) => ({ value: t.id, label: t.name })),
               ]}
             />
           </div>
@@ -345,11 +404,7 @@ export default function PeoplePage() {
             rows={4}
           />
           <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleCloseModal}
-            >
+            <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary">
