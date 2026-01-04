@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import LoginPage from "@/pages/LoginPage";
@@ -53,7 +54,7 @@ interface AppLayoutProps {
 function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-grain relative">
-      <div className="absolute inset-0 bg-dark-950/60" />
+      <div className="absolute inset-0 bg-white/40 dark:bg-dark-950/60" />
       <div className="relative z-10">
         <Sidebar />
         <div className="lg:ml-64">
@@ -70,8 +71,9 @@ const MOCK_MODE =
 
 function App() {
   return (
-    <AuthProvider>
-      <Routes>
+    <ThemeProvider>
+      <AuthProvider>
+        <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/dashboard"
@@ -285,7 +287,8 @@ function App() {
         />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

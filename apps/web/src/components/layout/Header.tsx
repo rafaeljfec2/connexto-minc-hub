@@ -1,8 +1,9 @@
 import { HeaderProfile } from "./HeaderProfile";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const HEADER_CLASSES = {
   container:
-    "sticky top-0 z-30 w-full border-b border-dark-800 bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-dark-950/80",
+    "sticky top-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80",
   content: "lg:ml-64",
   inner: "w-full flex h-16 items-center justify-between overflow-visible",
   logo: "hidden lg:flex items-center gap-2 -ml-56",
@@ -23,6 +24,7 @@ export function Header() {
             />
           </div>
           <div className={HEADER_CLASSES.profile}>
+            <ThemeToggle />
             <HeaderProfile />
           </div>
         </div>

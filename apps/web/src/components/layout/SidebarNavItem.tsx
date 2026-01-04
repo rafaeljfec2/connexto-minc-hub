@@ -24,7 +24,7 @@ export function SidebarNavItem({
         "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
         isActive
           ? "bg-primary-600 text-white"
-          : "text-dark-300 hover:bg-dark-800 hover:text-dark-50"
+          : "text-dark-600 hover:bg-dark-100 hover:text-dark-900 dark:text-dark-300 dark:hover:bg-dark-800 dark:hover:text-dark-50"
       )}
     >
       {icon}

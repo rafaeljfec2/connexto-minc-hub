@@ -9,7 +9,8 @@ export function Card({ className, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-xl bg-dark-900/80 border border-dark-800 p-4 sm:p-6',
+        'rounded-xl bg-white border border-dark-200 p-4 sm:p-6',
+        'dark:bg-dark-900/80 dark:border-dark-800',
         'backdrop-blur-sm',
         className
       )}
@@ -38,7 +39,7 @@ interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
 
 export function CardTitle({ className, children, ...props }: CardTitleProps) {
   return (
-    <h3 className={cn('text-lg font-semibold text-dark-50', className)} {...props}>
+    <h3 className={cn('text-lg font-semibold text-dark-900 dark:text-dark-50', className)} {...props}>
       {children}
     </h3>
   )

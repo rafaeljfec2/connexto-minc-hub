@@ -240,7 +240,7 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col w-64 bg-dark-900 border-r border-dark-800 fixed left-0 top-0 h-screen z-40">
+      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 fixed left-0 top-0 h-screen z-40">
         {sidebarContent}
       </aside>
 
@@ -254,11 +254,11 @@ export function Sidebar() {
           <>
             <button
               type="button"
-              className="fixed inset-0 bg-dark-950/50 backdrop-blur-sm z-40 cursor-pointer"
+              className="fixed inset-0 bg-white/50 dark:bg-dark-950/50 backdrop-blur-sm z-40 cursor-pointer"
               onClick={() => setIsMobileOpen(false)}
               aria-label="Fechar menu"
             />
-            <aside className="fixed left-0 top-0 h-full w-64 bg-dark-900 border-r border-dark-800 z-50 overflow-y-auto flex flex-col">
+            <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 z-50 overflow-y-auto flex flex-col">
               <SidebarBranding />
               <nav className="flex-1 overflow-y-auto p-4">
                 {renderNavItems(() => setIsMobileOpen(false))}

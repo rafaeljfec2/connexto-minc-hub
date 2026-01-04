@@ -148,10 +148,10 @@ export function MonthNavigator({
 
   return (
     <div className={cn("relative", className)} ref={dropdownRef}>
-      <div className="flex items-center gap-3 bg-dark-900 rounded-xl border border-dark-800 px-4 py-2">
+      <div className="flex items-center gap-3 bg-white rounded-xl border border-dark-200 dark:bg-dark-900 dark:border-dark-800 px-4 py-2">
         <button
           onClick={handlePrev}
-          className="rounded-full bg-dark-800 border border-dark-700 min-h-[44px] min-w-[44px] p-2 hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors active:scale-95 flex-shrink-0 flex items-center justify-center"
+          className="rounded-full bg-dark-100 border border-dark-300 min-h-[44px] min-w-[44px] p-2 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors active:scale-95 flex-shrink-0 flex items-center justify-center dark:bg-dark-800 dark:border-dark-700 dark:hover:bg-dark-700"
           aria-label="Mês anterior"
           type="button"
         >
@@ -173,7 +173,7 @@ export function MonthNavigator({
         <div className="flex-1 relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full h-11 px-4 rounded-lg bg-dark-800 border border-dark-700 text-dark-50 hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors flex items-center justify-between"
+            className="w-full h-11 px-4 rounded-lg bg-dark-100 border border-dark-300 text-dark-900 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors flex items-center justify-between dark:bg-dark-800 dark:border-dark-700 dark:text-dark-50 dark:hover:bg-dark-700"
             type="button"
             aria-label="Selecionar mês/ano"
           >
@@ -186,12 +186,12 @@ export function MonthNavigator({
                     // Não limpar, apenas fechar
                     setIsOpen(false);
                   }}
-                  className="p-0.5 rounded hover:bg-dark-600 transition-colors"
+                  className="p-0.5 rounded hover:bg-dark-200 dark:hover:bg-dark-600 transition-colors"
                   aria-label="Fechar"
                   type="button"
                 >
                   <svg
-                    className="h-3 w-3 text-dark-400"
+                    className="h-3 w-3 text-dark-500 dark:text-dark-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -225,15 +225,15 @@ export function MonthNavigator({
           </button>
 
           {isOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-dark-900 border border-dark-800 rounded-lg shadow-lg z-50 max-h-64 overflow-hidden flex flex-col">
-              <div className="p-2 border-b border-dark-800 flex-shrink-0">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-dark-200 rounded-lg shadow-lg z-50 max-h-64 overflow-hidden flex flex-col dark:bg-dark-900 dark:border-dark-800">
+              <div className="p-2 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
                 <input
                   ref={inputRef}
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar mês/ano..."
-                  className="w-full px-2 py-1.5 text-sm bg-dark-800 border border-dark-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-dark-50 placeholder:text-dark-500"
+                  className="w-full px-2 py-1.5 text-sm bg-dark-50 border border-dark-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 text-dark-900 placeholder:text-dark-500 dark:bg-dark-800 dark:border-dark-700 dark:text-dark-50 dark:placeholder:text-dark-500"
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && filteredOptions.length > 0) {
@@ -251,8 +251,9 @@ export function MonthNavigator({
                         key={option.value}
                         onClick={() => handleMonthYearChange(option.value)}
                         className={cn(
-                          "w-full px-3 py-2 text-sm text-left hover:bg-dark-800 focus:bg-dark-800 focus:outline-none transition-colors",
-                          isSelected && "bg-primary-500/20 text-primary-400"
+                          "w-full px-3 py-2 text-sm text-left hover:bg-dark-100 focus:bg-dark-100 focus:outline-none transition-colors dark:hover:bg-dark-800 dark:focus:bg-dark-800",
+                          isSelected &&
+                            "bg-primary-500/20 text-primary-600 dark:text-primary-400"
                         )}
                         type="button"
                       >
@@ -261,7 +262,7 @@ export function MonthNavigator({
                     );
                   })
                 ) : (
-                  <div className="px-3 py-2 text-sm text-dark-400 text-center">
+                  <div className="px-3 py-2 text-sm text-dark-500 dark:text-dark-400 text-center">
                     Nenhuma opção encontrada
                   </div>
                 )}
@@ -272,12 +273,12 @@ export function MonthNavigator({
 
         <button
           onClick={handleNext}
-          className="rounded-full bg-dark-800 border border-dark-700 min-h-[44px] min-w-[44px] p-2 hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors active:scale-95 flex-shrink-0 flex items-center justify-center"
+          className="rounded-full bg-dark-100 border border-dark-300 min-h-[44px] min-w-[44px] p-2 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors active:scale-95 flex-shrink-0 flex items-center justify-center dark:bg-dark-800 dark:border-dark-700 dark:hover:bg-dark-700"
           aria-label="Próximo mês"
           type="button"
         >
           <svg
-            className="h-5 w-5 text-dark-300"
+            className="h-5 w-5 text-dark-600 dark:text-dark-300"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

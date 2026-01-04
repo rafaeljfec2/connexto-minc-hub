@@ -18,7 +18,7 @@ export function BrandText({ className, size = 'md', ...props }: BrandTextProps) 
       className={cn('font-semibold uppercase tracking-tight', sizeClasses[size], className)}
       {...props}
     >
-      <span className="text-white">MINC</span>
+      <span className="text-dark-900 dark:text-white">MINC</span>
       <span className="bg-gradient-to-r from-primary-500 via-primary-600 to-red-600 bg-clip-text text-transparent">
         {' '}Hub
       </span>

@@ -8,11 +8,11 @@
   }
 
   * {
-    @apply border-dark-800;
+    @apply border-dark-800 dark:border-dark-800;
   }
 
   body {
-    @apply bg-dark-950 text-dark-50;
+    @apply bg-white text-dark-900 dark:bg-dark-950 dark:text-dark-50;
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 
@@ -36,6 +36,13 @@
     background-repeat: no-repeat;
   }
 
+  .light .bg-grain {
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(249, 115, 22, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(194, 65, 12, 0.1) 0%, transparent 50%),
+      linear-gradient(135deg, #ffffff 0%, #fff7ed 25%, #fed7aa 50%, #ffedd5 75%, #ffffff 100%);
+  }
+
   .bg-grain::before {
     content: '';
     position: absolute;
@@ -49,5 +56,16 @@
         rgba(0, 0, 0, 0.03) 4px
       );
     pointer-events: none;
+  }
+
+  .light .bg-grain::before {
+    background-image: 
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.01) 2px,
+        rgba(0, 0, 0, 0.01) 4px
+      );
   }
 }
