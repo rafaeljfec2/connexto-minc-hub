@@ -4,7 +4,6 @@
   "outputDirectory": "dist",
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
   "framework": "vite",
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet apps/web/ ../package.json ../pnpm-lock.yaml ../turbo.json",
   "rewrites": [
     {
       "source": "/(.*)",
