@@ -1,7 +1,8 @@
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Person, Ministry, Team } from '@/types'
-import { EditIcon, TrashIcon, MailIcon, PhoneIcon } from '@/components/icons'
+import { EditIcon, TrashIcon, MailIcon, PhoneIcon, UserIcon } from '@/components/icons'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { cn } from '@/lib/utils'
 
 interface ServoCardProps {
@@ -10,6 +11,8 @@ interface ServoCardProps {
   readonly team?: Team
   readonly onEdit: (person: Person) => void
   readonly onDelete: (id: string) => void
+  readonly onCreateUser?: (person: Person) => void
+  readonly hasUser?: boolean
   readonly isUpdating: boolean
   readonly isDeleting: boolean
 }
@@ -20,6 +23,8 @@ export function ServoCard({
   team,
   onEdit,
   onDelete,
+  onCreateUser,
+  hasUser,
   isUpdating,
   isDeleting,
 }: ServoCardProps) {
@@ -80,6 +85,9 @@ export function ServoCard({
               Sem time/equipe
             </span>
           )}
+          {hasUser && (
+            <StatusBadge status="active">Usuário Ativo</StatusBadge>
+          )}
         </div>
 
         <div className="flex gap-2 pt-4 border-t border-dark-200 dark:border-dark-800">
@@ -93,6 +101,19 @@ export function ServoCard({
             <EditIcon className="h-4 w-4 mr-2" />
             Editar
           </Button>
+          {onCreateUser && !hasUser && (
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => onCreateUser(person)}
+              disabled={isUpdating}
+              className="flex items-center gap-1.5 whitespace-nowrap"
+              title="Criar usuário para este servo"
+            >
+              <UserIcon className="h-4 w-4" />
+              <span>Usuário</span>
+            </Button>
+          )}
           <Button
             size="sm"
             variant="danger"

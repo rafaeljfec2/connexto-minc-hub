@@ -12,11 +12,12 @@ import { useViewMode } from "@/hooks/useViewMode";
 import { CrudPageLayout } from "@/components/crud/CrudPageLayout";
 import { CrudFilters } from "@/components/crud/CrudFilters";
 import { CrudView } from "@/components/crud/CrudView";
-import { Person, Ministry, Team } from "@/types";
+import { Person, Ministry, Team, User, UserRole } from "@/types";
 import { ServoCard } from "./people/components/ServoCard";
+import { CreateUserForm } from "./people/components/CreateUserForm";
 import { UserIcon, EditIcon, TrashIcon, PlusIcon } from "@/components/icons";
 import { formatDate } from "@/lib/utils";
-import { MOCK_MINISTRIES, MOCK_TEAMS, MOCK_PEOPLE } from "@/lib/mockData";
+import { MOCK_MINISTRIES, MOCK_TEAMS, MOCK_PEOPLE, MOCK_USERS } from "@/lib/mockData";
 
 export default function PeoplePage() {
   const {
@@ -29,17 +30,20 @@ export default function PeoplePage() {
   });
   const [ministries] = useState<Ministry[]>(MOCK_MINISTRIES);
   const [teams] = useState<Team[]>(MOCK_TEAMS);
-  const modal = useModal();
-  const deleteModal = useModal();
-  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterMinistry, setFilterMinistry] = useState<string>("all");
-  const [filterTeam, setFilterTeam] = useState<string>("all");
-  const { viewMode, setViewMode } = useViewMode({
-    storageKey: "servos-view-mode",
+  const {
+    items: users,
+    create: createUser,
+  } = useCrud<User>({
+    initialItems: MOCK_USERS,
   });
-  const [formData, setFormData] = useState({
+  // Modals
+  const personModal = useModal();
+  const deleteModal = useModal();
+  const createUserModal = useModal();
+
+  // Person form state
+  const [editingPerson, setEditingPerson] = useState<Person | null>(null);
+  const [personFormData, setPersonFormData] = useState({
     name: "",
     email: "",
     phone: "",
@@ -48,6 +52,23 @@ export default function PeoplePage() {
     notes: "",
     ministryId: "",
     teamId: "",
+  });
+
+  // User creation state
+  const [creatingUserForPerson, setCreatingUserForPerson] = useState<Person | null>(null);
+  const [userFormData, setUserFormData] = useState({
+    email: "",
+    password: "",
+    role: UserRole.MEMBER,
+  });
+
+  // Filters and search
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterMinistry, setFilterMinistry] = useState<string>("all");
+  const [filterTeam, setFilterTeam] = useState<string>("all");
+  const { viewMode, setViewMode } = useViewMode({
+    storageKey: "servos-view-mode",
   });
 
   const availableTeams = useMemo(() => {
@@ -84,10 +105,21 @@ export default function PeoplePage() {
     return teams.find((t) => t.id === teamId);
   }
 
-  function handleOpenModal(person?: Person) {
+  const initialPersonFormData = {
+    name: "",
+    email: "",
+    phone: "",
+    birthDate: "",
+    address: "",
+    notes: "",
+    ministryId: "",
+    teamId: "",
+  };
+
+  function handleOpenPersonModal(person?: Person) {
     if (person) {
       setEditingPerson(person);
-      setFormData({
+      setPersonFormData({
         name: person.name,
         email: person.email ?? "",
         phone: person.phone ?? "",
@@ -99,38 +131,20 @@ export default function PeoplePage() {
       });
     } else {
       setEditingPerson(null);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        birthDate: "",
-        address: "",
-        notes: "",
-        ministryId: "",
-        teamId: "",
-      });
+      setPersonFormData(initialPersonFormData);
     }
-    modal.open();
+    personModal.open();
   }
 
-  function handleCloseModal() {
-    modal.close();
+  function handleClosePersonModal() {
+    personModal.close();
     setEditingPerson(null);
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      birthDate: "",
-      address: "",
-      notes: "",
-      ministryId: "",
-      teamId: "",
-    });
+    setPersonFormData(initialPersonFormData);
   }
 
-  function handleMinistryChange(ministryId: string) {
-    setFormData({
-      ...formData,
+  function handlePersonMinistryChange(ministryId: string) {
+    setPersonFormData({
+      ...personFormData,
       ministryId,
       teamId: "",
     });
@@ -145,16 +159,44 @@ export default function PeoplePage() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function handlePersonSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (editingPerson) {
-      update(editingPerson.id, formData);
+      update(editingPerson.id, personFormData);
     } else {
-      create(formData);
+      create(personFormData);
     }
 
-    handleCloseModal();
+    handleClosePersonModal();
+  }
+
+  async function handleSavePersonAndCreateUser(e: React.FormEvent) {
+    e.preventDefault();
+
+    let savedPerson: Person | null = null;
+
+    if (editingPerson) {
+      await update(editingPerson.id, personFormData);
+      savedPerson = { ...editingPerson, ...personFormData };
+    } else {
+      const newId = `person-${Date.now()}`;
+      savedPerson = {
+        ...personFormData,
+        id: newId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      await create(savedPerson);
+    }
+
+    handleClosePersonModal();
+
+    if (savedPerson) {
+      setTimeout(() => {
+        handleOpenCreateUserModal(savedPerson!);
+      }, 200);
+    }
   }
 
   function handleDeleteClick(id: string) {
@@ -169,6 +211,46 @@ export default function PeoplePage() {
     }
   }
 
+  const initialUserFormData = {
+    email: "",
+    password: "",
+    role: UserRole.MEMBER,
+  };
+
+  function handleOpenCreateUserModal(person: Person) {
+    setCreatingUserForPerson(person);
+    setUserFormData({
+      email: person.email ?? "",
+      password: "",
+      role: UserRole.MEMBER,
+    });
+    createUserModal.open();
+  }
+
+  function handleCloseCreateUserModal() {
+    createUserModal.close();
+    setCreatingUserForPerson(null);
+    setUserFormData(initialUserFormData);
+  }
+
+  function handleCreateUserSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!creatingUserForPerson) return;
+
+    createUser({
+      name: creatingUserForPerson.name,
+      email: userFormData.email,
+      role: userFormData.role,
+      personId: creatingUserForPerson.id,
+    });
+
+    handleCloseCreateUserModal();
+  }
+
+  function hasUser(personId: string): boolean {
+    return users.some((user) => user.personId === personId);
+  }
+
   const hasFilters =
     searchTerm !== "" || filterMinistry !== "all" || filterTeam !== "all";
 
@@ -180,8 +262,10 @@ export default function PeoplePage() {
           person={person}
           ministry={getMinistry(person.ministryId)}
           team={getTeam(person.teamId)}
-          onEdit={handleOpenModal}
+          onEdit={handleOpenPersonModal}
           onDelete={handleDeleteClick}
+          onCreateUser={handleOpenCreateUserModal}
+          hasUser={hasUser(person.id)}
           isUpdating={false}
           isDeleting={false}
         />
@@ -206,14 +290,26 @@ export default function PeoplePage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => handleOpenModal(person)}
+            onClick={() => handleOpenPersonModal(person)}
+            title="Editar"
           >
             <EditIcon className="h-4 w-4" />
           </Button>
+          {!hasUser(person.id) && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleOpenCreateUserModal(person)}
+              title="Criar usuário para este servo"
+            >
+              <UserIcon className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="danger"
             size="sm"
             onClick={() => handleDeleteClick(person.id)}
+            title="Excluir"
           >
             <TrashIcon className="h-4 w-4" />
           </Button>
@@ -229,7 +325,7 @@ export default function PeoplePage() {
         description="Gerencie servos do Time Boas-Vindas"
         icon={<UserIcon className="h-8 w-8 text-primary-400" />}
         createButtonLabel="Adicionar Servo"
-        onCreateClick={() => handleOpenModal()}
+        onCreateClick={() => handleOpenPersonModal()}
         hasFilters={hasFilters}
         isEmpty={filteredPeople.length === 0}
         emptyTitle={
@@ -295,32 +391,32 @@ export default function PeoplePage() {
       />
 
       <Modal
-        isOpen={modal.isOpen}
-        onClose={handleCloseModal}
+        isOpen={personModal.isOpen}
+        onClose={handleClosePersonModal}
         title={editingPerson ? "Editar Servo" : "Novo Servo"}
         size="lg"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handlePersonSubmit} className="space-y-4">
           <Input
             label="Nome *"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={personFormData.name}
+            onChange={(e) => setPersonFormData({ ...personFormData, name: e.target.value })}
             required
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Email"
               type="email"
-              value={formData.email}
+              value={personFormData.email}
               onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
+                setPersonFormData({ ...personFormData, email: e.target.value })
               }
             />
             <Input
               label="Telefone"
-              value={formData.phone}
+              value={personFormData.phone}
               onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
+                setPersonFormData({ ...personFormData, phone: e.target.value })
               }
               placeholder="(11) 99999-9999"
             />
@@ -328,8 +424,8 @@ export default function PeoplePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
               label="Time"
-              value={formData.ministryId}
-              onChange={(e) => handleMinistryChange(e.target.value)}
+              value={personFormData.ministryId}
+              onChange={(e) => handlePersonMinistryChange(e.target.value)}
               options={[
                 { value: "", label: "Selecione um time" },
                 ...ministries
@@ -339,21 +435,21 @@ export default function PeoplePage() {
             />
             <Select
               label="Equipe"
-              value={formData.teamId}
+              value={personFormData.teamId}
               onChange={(e) =>
-                setFormData({ ...formData, teamId: e.target.value })
+                setPersonFormData({ ...personFormData, teamId: e.target.value })
               }
-              disabled={!formData.ministryId}
+              disabled={!personFormData.ministryId}
               options={[
                 {
                   value: "",
-                  label: formData.ministryId
+                  label: personFormData.ministryId
                     ? "Selecione uma equipe"
                     : "Selecione um time primeiro",
                 },
                 ...teams
                   .filter(
-                    (t) => t.ministryId === formData.ministryId && t.isActive
+                    (t) => t.ministryId === personFormData.ministryId && t.isActive
                   )
                   .map((t) => ({ value: t.id, label: t.name })),
               ]}
@@ -362,23 +458,23 @@ export default function PeoplePage() {
           <Input
             label="Data de Nascimento"
             type="date"
-            value={formData.birthDate}
+            value={personFormData.birthDate}
             onChange={(e) =>
-              setFormData({ ...formData, birthDate: e.target.value })
+              setPersonFormData({ ...personFormData, birthDate: e.target.value })
             }
           />
           <Input
             label="Endereço"
-            value={formData.address}
+            value={personFormData.address}
             onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
+              setPersonFormData({ ...personFormData, address: e.target.value })
             }
           />
           <Textarea
             label="Observações"
-            value={formData.notes}
+            value={personFormData.notes}
             onChange={(e) =>
-              setFormData({ ...formData, notes: e.target.value })
+              setPersonFormData({ ...personFormData, notes: e.target.value })
             }
             placeholder="Observações sobre o servo..."
             rows={4}
@@ -387,10 +483,21 @@ export default function PeoplePage() {
             <Button
               type="button"
               variant="secondary"
-              onClick={handleCloseModal}
+              onClick={handleClosePersonModal}
             >
               Cancelar
             </Button>
+            {!editingPerson && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSavePersonAndCreateUser}
+                className="flex items-center gap-2"
+              >
+                <UserIcon className="h-4 w-4" />
+                Salvar e Criar Usuário
+              </Button>
+            )}
             <Button type="submit" variant="primary">
               {editingPerson ? "Salvar Alterações" : "Adicionar Servo"}
             </Button>
@@ -408,6 +515,27 @@ export default function PeoplePage() {
         cancelText="Cancelar"
         variant="danger"
       />
+
+      <Modal
+        isOpen={createUserModal.isOpen}
+        onClose={handleCloseCreateUserModal}
+        title="Criar Usuário para Servo"
+        size="md"
+      >
+        {creatingUserForPerson && (
+          <CreateUserForm
+            person={creatingUserForPerson}
+            email={userFormData.email}
+            password={userFormData.password}
+            role={userFormData.role}
+            onEmailChange={(email) => setUserFormData({ ...userFormData, email })}
+            onPasswordChange={(password) => setUserFormData({ ...userFormData, password })}
+            onRoleChange={(role) => setUserFormData({ ...userFormData, role })}
+            onSubmit={handleCreateUserSubmit}
+            onCancel={handleCloseCreateUserModal}
+          />
+        )}
+      </Modal>
     </>
   );
 }

@@ -14,6 +14,7 @@ import ChurchesPage from '@/pages/ChurchesPage'
 import MinistriesPage from '@/pages/MinistriesPage'
 import ProfilePage from '@/pages/ProfilePage'
 import SettingsPage from '@/pages/SettingsPage'
+import UsersPage from '@/pages/UsersPage'
 import { UserRole } from '@/types'
 
 const routes = [
@@ -50,6 +51,11 @@ const routes = [
     path: '/churches',
     component: ChurchesPage,
     allowedRoles: [UserRole.ADMIN],
+  },
+  {
+    path: '/users',
+    component: UsersPage,
+    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR],
   },
   {
     path: '/ministries',
