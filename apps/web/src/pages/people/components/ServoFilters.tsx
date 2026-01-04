@@ -1,8 +1,11 @@
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { ViewModeToggle } from '@/components/ui/ViewModeToggle'
 import { SearchIcon } from '@/components/icons'
 import { Ministry, Team } from '@/types'
+
+type ViewMode = 'grid' | 'list'
 
 interface ServoFiltersProps {
   readonly searchTerm: string
@@ -14,6 +17,8 @@ interface ServoFiltersProps {
   readonly ministries: Ministry[]
   readonly teams: Team[]
   readonly availableTeams: Team[]
+  readonly viewMode: ViewMode
+  readonly onViewModeChange: (mode: ViewMode) => void
 }
 
 export function ServoFilters({
@@ -25,6 +30,8 @@ export function ServoFilters({
   onTeamChange,
   ministries,
   availableTeams,
+  viewMode,
+  onViewModeChange,
 }: ServoFiltersProps) {
   const ministryOptions = [
     { value: 'all', label: 'Todos os times' },
@@ -41,7 +48,7 @@ export function ServoFilters({
   return (
     <Card className="mb-6">
       <div className="p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-4">
           <div className="relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-500 dark:text-dark-400" />
             <Input
@@ -66,6 +73,9 @@ export function ServoFilters({
               disabled={filterMinistry === 'all'}
               options={teamOptions}
             />
+          </div>
+          <div className="hidden md:flex">
+            <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
           </div>
         </div>
       </div>

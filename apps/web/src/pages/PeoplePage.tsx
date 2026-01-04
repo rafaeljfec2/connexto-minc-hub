@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -7,12 +7,17 @@ import { Select } from '@/components/ui/Select'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useCrud } from '@/hooks/useCrud'
 import { Person, Ministry, Team } from '@/types'
 import { ServoCard } from './people/components/ServoCard'
 import { ServoFilters } from './people/components/ServoFilters'
-import { UserIcon } from '@/components/icons'
+import { UserIcon, EditIcon, TrashIcon } from '@/components/icons'
+import { formatDate } from '@/lib/utils'
+
+type ViewMode = 'grid' | 'list'
 
 const MOCK_MINISTRIES: Ministry[] = [
   {
@@ -133,6 +138,7 @@ export default function PeoplePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterMinistry, setFilterMinistry] = useState<string>('all')
   const [filterTeam, setFilterTeam] = useState<string>('all')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -150,6 +156,19 @@ export default function PeoplePage() {
     }
     return teams.filter((t) => t.ministryId === filterMinistry && t.isActive)
   }, [filterMinistry, teams])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setViewMode('grid')
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    handleResize()
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const filteredPeople = useMemo(() => {
     return people.filter((person) => {
@@ -291,6 +310,8 @@ export default function PeoplePage() {
           ministries={ministries}
           teams={teams}
           availableTeams={availableTeams}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
 
         {filteredPeople.length === 0 ? (
@@ -311,20 +332,82 @@ export default function PeoplePage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredPeople.map((person) => (
-              <ServoCard
-                key={person.id}
-                person={person}
-                ministry={getMinistry(person.ministryId)}
-                team={getTeam(person.teamId)}
-                onEdit={handleOpenModal}
-                onDelete={handleDeleteClick}
-                isUpdating={false}
-                isDeleting={false}
-              />
-            ))}
-          </div>
+          <>
+            {/* Grid View - Mobile sempre mostra, Web quando viewMode === 'grid' */}
+            <div className={viewMode === 'grid' ? 'block' : 'block md:hidden'}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredPeople.map((person) => (
+                  <ServoCard
+                    key={person.id}
+                    person={person}
+                    ministry={getMinistry(person.ministryId)}
+                    team={getTeam(person.teamId)}
+                    onEdit={handleOpenModal}
+                    onDelete={handleDeleteClick}
+                    isUpdating={false}
+                    isDeleting={false}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* List View - Apenas Web quando viewMode === 'list' (nunca no mobile) */}
+            <div className={viewMode === 'list' ? 'hidden md:block' : 'hidden'}>
+              <Card>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Telefone</TableHead>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Equipe</TableHead>
+                      <TableHead>Data de Nascimento</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPeople.map((person) => (
+                      <TableRow key={person.id}>
+                        <TableCell>
+                          <span className="font-medium">{person.name}</span>
+                        </TableCell>
+                        <TableCell>{person.email ?? '-'}</TableCell>
+                        <TableCell>{person.phone ?? '-'}</TableCell>
+                        <TableCell>
+                          {getMinistry(person.ministryId)?.name ?? '-'}
+                        </TableCell>
+                        <TableCell>
+                          {getTeam(person.teamId)?.name ?? '-'}
+                        </TableCell>
+                        <TableCell>
+                          {person.birthDate ? formatDate(person.birthDate) : '-'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleOpenModal(person)}
+                            >
+                              <EditIcon className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleDeleteClick(person.id)}
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            </div>
+          </>
         )}
       </div>
 
