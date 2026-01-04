@@ -17,65 +17,8 @@ import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
 import { Team, Person, Ministry } from '@/types'
 import { TeamCard } from './teams/components/TeamCard'
-import { EditIcon, TrashIcon } from '@/components/icons'
-
-function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 4v16m8-8H4"
-      />
-    </svg>
-  )
-}
-
-const MOCK_PEOPLE: Person[] = [
-  { id: '1', name: 'João Silva', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '2', name: 'Maria Santos', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  { id: '3', name: 'Pedro Costa', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-]
-
-const MOCK_MINISTRIES: Ministry[] = [
-  {
-    id: '1',
-    name: 'Time Boas-Vindas',
-    churchId: '1',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
-
-const MOCK_TEAMS: Team[] = [
-  {
-    id: '1',
-    name: 'Equipe Manhã',
-    description: 'Equipe responsável pelo culto da manhã',
-    ministryId: '1',
-    memberIds: ['1', '2'],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Equipe Noite',
-    description: 'Equipe responsável pelo culto da noite',
-    ministryId: '1',
-    memberIds: ['3'],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { MOCK_PEOPLE, MOCK_MINISTRIES, MOCK_TEAMS } from '@/lib/mockData'
 
 export default function TeamsPage() {
   const { items: teams, create, update, remove } = useCrud<Team>({

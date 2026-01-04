@@ -1,168 +1,125 @@
-import { useState, useMemo } from 'react'
-import { Button } from '@/components/ui/Button'
-import { Modal } from '@/components/ui/Modal'
-import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
-import { Checkbox } from '@/components/ui/Checkbox'
-import { StatusBadge } from '@/components/ui/StatusBadge'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { TableRow, TableCell } from '@/components/ui/Table'
-import { useModal } from '@/hooks/useModal'
-import { useCrud } from '@/hooks/useCrud'
-import { useViewMode } from '@/hooks/useViewMode'
-import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
-import { CrudFilters } from '@/components/crud/CrudFilters'
-import { CrudView } from '@/components/crud/CrudView'
-import { Service, ServiceType } from '@/types'
-import { formatTime } from '@/lib/utils'
-import { DAYS_OF_WEEK, SERVICE_TYPES, getDayLabel, getServiceTypeLabel } from '@/lib/constants'
-import { ServiceCard } from './services/components/ServiceCard'
-import { EditIcon, TrashIcon } from '@/components/icons'
-
-function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 4v16m8-8H4"
-      />
-    </svg>
-  )
-}
-
-const MOCK_SERVICES: Service[] = [
-  {
-    id: '1',
-    churchId: '1',
-    type: ServiceType.SUNDAY_MORNING,
-    dayOfWeek: 0,
-    time: '09:00',
-    name: 'Culto Dominical Manhã',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    churchId: '1',
-    type: ServiceType.SUNDAY_EVENING,
-    dayOfWeek: 0,
-    time: '19:00',
-    name: 'Culto Dominical Noite',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    churchId: '1',
-    type: ServiceType.WEDNESDAY,
-    dayOfWeek: 3,
-    time: '19:30',
-    name: 'Culto de Oração',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { TableRow, TableCell } from "@/components/ui/Table";
+import { useModal } from "@/hooks/useModal";
+import { useCrud } from "@/hooks/useCrud";
+import { useViewMode } from "@/hooks/useViewMode";
+import { CrudPageLayout } from "@/components/crud/CrudPageLayout";
+import { CrudFilters } from "@/components/crud/CrudFilters";
+import { CrudView } from "@/components/crud/CrudView";
+import { Service, ServiceType } from "@/types";
+import { formatTime } from "@/lib/utils";
+import {
+  DAYS_OF_WEEK,
+  SERVICE_TYPES,
+  getDayLabel,
+  getServiceTypeLabel,
+} from "@/lib/constants";
+import { ServiceCard } from "./services/components/ServiceCard";
+import { EditIcon, TrashIcon, PlusIcon } from "@/components/icons";
+import { MOCK_SERVICES } from "@/lib/mockData";
 
 export default function ServicesPage() {
-  const { items: services, create, update, remove } = useCrud<Service>({
+  const {
+    items: services,
+    create,
+    update,
+    remove,
+  } = useCrud<Service>({
     initialItems: MOCK_SERVICES,
-  })
-  const modal = useModal()
-  const deleteModal = useModal()
-  const [editingService, setEditingService] = useState<Service | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  });
+  const modal = useModal();
+  const deleteModal = useModal();
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { viewMode, setViewMode } = useViewMode({
-    storageKey: 'services-view-mode',
-  })
+    storageKey: "services-view-mode",
+  });
   const [formData, setFormData] = useState({
-    name: '',
+    name: "",
     type: ServiceType.SUNDAY_MORNING,
     dayOfWeek: 0,
-    time: '09:00',
+    time: "09:00",
     isActive: true,
-  })
+  });
 
   const filteredServices = useMemo(() => {
     return services.filter((service) => {
       const matchesSearch =
-        searchTerm === '' ||
-        service.name.toLowerCase().includes(searchTerm.toLowerCase())
+        searchTerm === "" ||
+        service.name.toLowerCase().includes(searchTerm.toLowerCase());
 
-      return matchesSearch
-    })
-  }, [services, searchTerm])
+      return matchesSearch;
+    });
+  }, [services, searchTerm]);
 
   function handleOpenModal(service?: Service) {
     if (service) {
-      setEditingService(service)
+      setEditingService(service);
       setFormData({
         name: service.name,
         type: service.type,
         dayOfWeek: service.dayOfWeek,
         time: service.time,
         isActive: service.isActive,
-      })
+      });
     } else {
-      setEditingService(null)
+      setEditingService(null);
       setFormData({
-        name: '',
+        name: "",
         type: ServiceType.SUNDAY_MORNING,
         dayOfWeek: 0,
-        time: '09:00',
+        time: "09:00",
         isActive: true,
-      })
+      });
     }
-    modal.open()
+    modal.open();
   }
 
   function handleCloseModal() {
-    modal.close()
-    setEditingService(null)
+    modal.close();
+    setEditingService(null);
     setFormData({
-      name: '',
+      name: "",
       type: ServiceType.SUNDAY_MORNING,
       dayOfWeek: 0,
-      time: '09:00',
+      time: "09:00",
       isActive: true,
-    })
+    });
   }
 
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+    e.preventDefault();
 
     if (editingService) {
-      update(editingService.id, formData)
+      update(editingService.id, formData);
     } else {
-      create({ ...formData, churchId: '1' })
+      create({ ...formData, churchId: "1" });
     }
 
-    handleCloseModal()
+    handleCloseModal();
   }
 
   function handleDeleteClick(id: string) {
-    setDeletingId(id)
-    deleteModal.open()
+    setDeletingId(id);
+    deleteModal.open();
   }
 
   function handleDeleteConfirm() {
     if (deletingId) {
-      remove(deletingId)
-      setDeletingId(null)
+      remove(deletingId);
+      setDeletingId(null);
     }
   }
 
-  const hasFilters = searchTerm !== ''
+  const hasFilters = searchTerm !== "";
 
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -177,7 +134,7 @@ export default function ServicesPage() {
         />
       ))}
     </div>
-  )
+  );
 
   const listViewRows = filteredServices.map((service) => (
     <TableRow key={service.id}>
@@ -188,13 +145,17 @@ export default function ServicesPage() {
       <TableCell>{getDayLabel(service.dayOfWeek)}</TableCell>
       <TableCell>{formatTime(service.time)}</TableCell>
       <TableCell>
-        <StatusBadge status={service.isActive ? 'active' : 'inactive'}>
-          {service.isActive ? 'Ativo' : 'Inativo'}
+        <StatusBadge status={service.isActive ? "active" : "inactive"}>
+          {service.isActive ? "Ativo" : "Inativo"}
         </StatusBadge>
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(service)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleOpenModal(service)}
+          >
             <EditIcon className="h-4 w-4" />
           </Button>
           <Button
@@ -207,7 +168,7 @@ export default function ServicesPage() {
         </div>
       </TableCell>
     </TableRow>
-  ))
+  ));
 
   return (
     <>
@@ -219,12 +180,12 @@ export default function ServicesPage() {
         hasFilters={hasFilters}
         isEmpty={filteredServices.length === 0}
         emptyTitle={
-          hasFilters ? 'Nenhum culto encontrado' : 'Nenhum culto cadastrado'
+          hasFilters ? "Nenhum culto encontrado" : "Nenhum culto cadastrado"
         }
         emptyDescription={
           hasFilters
-            ? 'Tente ajustar os filtros para encontrar cultos'
-            : 'Comece adicionando um novo culto'
+            ? "Tente ajustar os filtros para encontrar cultos"
+            : "Comece adicionando um novo culto"
         }
         createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
         filters={
@@ -241,7 +202,14 @@ export default function ServicesPage() {
             viewMode={viewMode}
             gridView={gridView}
             listView={{
-              headers: ['Nome', 'Tipo', 'Dia da Semana', 'Horário', 'Status', 'Ações'],
+              headers: [
+                "Nome",
+                "Tipo",
+                "Dia da Semana",
+                "Horário",
+                "Status",
+                "Ações",
+              ],
               rows: listViewRows,
             }}
           />
@@ -251,7 +219,7 @@ export default function ServicesPage() {
       <Modal
         isOpen={modal.isOpen}
         onClose={handleCloseModal}
-        title={editingService ? 'Editar Culto' : 'Novo Culto'}
+        title={editingService ? "Editar Culto" : "Novo Culto"}
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -264,7 +232,9 @@ export default function ServicesPage() {
           <Select
             label="Tipo de Culto *"
             value={formData.type}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value as ServiceType })}
+            onChange={(e) =>
+              setFormData({ ...formData, type: e.target.value as ServiceType })
+            }
             options={SERVICE_TYPES.map((type) => ({
               value: type.value,
               label: type.label,
@@ -274,7 +244,9 @@ export default function ServicesPage() {
           <Select
             label="Dia da Semana *"
             value={formData.dayOfWeek.toString()}
-            onChange={(e) => setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })}
+            onChange={(e) =>
+              setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })
+            }
             options={DAYS_OF_WEEK.map((day) => ({
               value: day.value.toString(),
               label: day.label,
@@ -291,7 +263,9 @@ export default function ServicesPage() {
           <Checkbox
             label="Culto ativo"
             checked={formData.isActive}
-            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+            onChange={(e) =>
+              setFormData({ ...formData, isActive: e.target.checked })
+            }
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button
@@ -302,7 +276,7 @@ export default function ServicesPage() {
               Cancelar
             </Button>
             <Button type="submit" variant="primary">
-              {editingService ? 'Salvar Alterações' : 'Criar Culto'}
+              {editingService ? "Salvar Alterações" : "Criar Culto"}
             </Button>
           </div>
         </form>
@@ -319,5 +293,5 @@ export default function ServicesPage() {
         variant="danger"
       />
     </>
-  )
+  );
 }

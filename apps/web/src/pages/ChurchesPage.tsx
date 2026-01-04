@@ -12,37 +12,8 @@ import { CrudFilters } from "@/components/crud/CrudFilters";
 import { CrudView } from "@/components/crud/CrudView";
 import { Church } from "@/types";
 import { ChurchCard } from "./churches/components/ChurchCard";
-import { EditIcon, TrashIcon } from "@/components/icons";
-
-function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 4v16m8-8H4"
-      />
-    </svg>
-  );
-}
-
-const MOCK_CHURCHES: Church[] = [
-  {
-    id: "1",
-    name: "Minha Igreja na Cidade - Sede",
-    address: "Rua Exemplo, 123 - Centro",
-    phone: "(11) 3333-3333",
-    email: "contato@minhaigrejanacidade.com",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import { EditIcon, TrashIcon, PlusIcon } from "@/components/icons";
+import { MOCK_CHURCHES } from "@/lib/mockData";
 
 export default function ChurchesPage() {
   const {

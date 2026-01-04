@@ -16,55 +16,8 @@ import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
 import { Ministry, Church } from '@/types'
 import { MinistryCard } from './ministries/components/MinistryCard'
-import { EditIcon, TrashIcon } from '@/components/icons'
-
-function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 4v16m8-8H4"
-      />
-    </svg>
-  )
-}
-
-const MOCK_CHURCHES: Church[] = [
-  {
-    id: '1',
-    name: 'Minha Igreja na Cidade - Sede',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
-
-const MOCK_MINISTRIES: Ministry[] = [
-  {
-    id: '1',
-    name: 'Time Boas-Vindas',
-    description: 'Ministério responsável pelo acolhimento e boas-vindas',
-    churchId: '1',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Louvor',
-    description: 'Ministério de música e adoração',
-    churchId: '1',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { MOCK_CHURCHES, MOCK_MINISTRIES } from '@/lib/mockData'
 
 export default function MinistriesPage() {
   const { items: ministries, create, update, remove } = useCrud<Ministry>({

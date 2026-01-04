@@ -15,79 +15,8 @@ import { CrudView } from '@/components/crud/CrudView'
 import { Schedule, Service, Team } from '@/types'
 import { formatDate } from '@/lib/utils'
 import { ScheduleCard } from './schedules/components/ScheduleCard'
-import { EditIcon, TrashIcon } from '@/components/icons'
-
-function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 4v16m8-8H4"
-      />
-    </svg>
-  )
-}
-
-const MOCK_SERVICES: Service[] = [
-  {
-    id: '1',
-    churchId: '1',
-    type: 'sunday_morning' as any,
-    dayOfWeek: 0,
-    time: '09:00',
-    name: 'Culto Dominical Manhã',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
-
-const MOCK_TEAMS: Team[] = [
-  {
-    id: '1',
-    name: 'Equipe Manhã',
-    ministryId: '1',
-    memberIds: [],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: 'Equipe Noite',
-    ministryId: '1',
-    memberIds: [],
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
-
-const MOCK_SCHEDULES: Schedule[] = [
-  {
-    id: '1',
-    serviceId: '1',
-    date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    teamIds: ['1'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    serviceId: '1',
-    date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-    teamIds: ['2'],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-]
+import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { MOCK_SERVICES, MOCK_TEAMS, MOCK_SCHEDULES } from '@/lib/mockData'
 
 export default function SchedulesPage() {
   const { items: schedules, create, update, remove } = useCrud<Schedule>({

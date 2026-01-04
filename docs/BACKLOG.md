@@ -2,7 +2,11 @@
 
 ## 📋 Visão Geral
 
-Este documento organiza todas as funcionalidades a serem implementadas no sistema MINC Teams, separadas por plataforma (Backend, Web e Mobile), seguindo a arquitetura definida e priorizando o desenvolvimento incremental.
+Este documento é um índice geral dos backlogs do sistema MINC Teams. Os backlogs foram separados por plataforma para melhor organização:
+
+- **[BACKLOG_BACKEND.md](./BACKLOG_BACKEND.md)** - Backend (NestJS + PostgreSQL)
+- **[BACKLOG_WEB.md](./BACKLOG_WEB.md)** - Frontend Web (React + Vite + TypeScript)
+- **[BACKLOG_MOBILE.md](./BACKLOG_MOBILE.md)** - Aplicativo Mobile (React Native)
 
 ---
 
