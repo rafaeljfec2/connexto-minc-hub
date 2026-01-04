@@ -4,7 +4,7 @@ export function SidebarBranding() {
       <img
         src="/Logo-minc.png"
         alt="Minha Igreja na Cidade"
-        className="h-12 w-auto object-contain"
+        className="h-12 w-auto object-contain brightness-0 dark:brightness-100"
       />
     </div>
   );
