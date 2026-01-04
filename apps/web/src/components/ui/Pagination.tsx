@@ -57,7 +57,7 @@ export function Pagination({
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
-      <div className="text-sm text-dark-400">
+      <div className="text-sm text-dark-600 dark:text-dark-400">
         Mostrando {startItem} a {endItem} de {totalItems} resultados
       </div>
       <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export function Pagination({
           {getPageNumbers().map((page, index) => {
             if (page === '...') {
               return (
-                <span key={`ellipsis-${index}`} className="px-2 text-dark-500">
+                <span key={`ellipsis-${index}`} className="px-2 text-dark-500 dark:text-dark-500">
                   ...
                 </span>
               )
@@ -83,10 +83,10 @@ export function Pagination({
               <button
                 key={pageNum}
                 onClick={() => onPageChange(pageNum)}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 ${
                   currentPage === pageNum
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-dark-800 text-dark-300 hover:bg-dark-700 hover:text-dark-50'
+                    ? 'bg-primary-600 text-white shadow-md'
+                    : 'bg-dark-100 text-dark-700 hover:bg-dark-200 hover:text-dark-900 dark:bg-dark-800 dark:text-dark-300 dark:hover:bg-dark-700 dark:hover:text-dark-50'
                 }`}
               >
                 {pageNum}

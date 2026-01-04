@@ -6,6 +6,7 @@ import { SidebarNavItem } from "./SidebarNavItem";
 import { SidebarBranding } from "./SidebarBranding";
 import { SidebarUserInfo } from "./SidebarUserInfo";
 import { MobileMenuButton } from "./MobileMenuButton";
+import { BrandText } from "@/components/ui/BrandText";
 
 interface NavItem {
   label: string;
@@ -263,7 +264,9 @@ export function Sidebar() {
               <nav className="flex-1 overflow-y-auto p-4">
                 {renderNavItems(() => setIsMobileOpen(false))}
               </nav>
-              {user && <SidebarUserInfo user={user} />}
+              <div className="p-4 border-t border-dark-200 dark:border-dark-800 flex items-center justify-center">
+                <BrandText size="sm" />
+              </div>
             </aside>
           </>
         )}

@@ -40,15 +40,15 @@ export function HeaderProfile() {
         trigger={
           <button
             type="button"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-dark-800 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800 transition-all duration-200"
           >
             <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-sm font-medium text-white">
               {user.name.charAt(0).toUpperCase()}
             </div>
-            <span className="text-sm text-dark-300 hidden sm:inline">
+            <span className="text-sm text-dark-700 dark:text-dark-300 hidden sm:inline">
               {user.name}
             </span>
-            <ChevronDownIcon className="h-4 w-4 text-dark-400" />
+            <ChevronDownIcon className="h-4 w-4 text-dark-500 dark:text-dark-400" />
           </button>
         }
         items={profileItems}

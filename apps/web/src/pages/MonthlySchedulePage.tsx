@@ -157,7 +157,7 @@ export default function MonthlySchedulePage() {
   function renderScheduleTeams(schedule: Schedule | undefined) {
     if (!schedule) {
       return (
-        <div className="text-xs text-dark-500 flex items-center gap-1">
+        <div className="text-xs text-dark-500 dark:text-dark-500 flex items-center gap-1">
           <svg
             className="h-3 w-3"
             fill="none"
@@ -187,10 +187,10 @@ export default function MonthlySchedulePage() {
               className="flex items-center gap-2 p-2 bg-primary-500/10 rounded border border-primary-500/20"
             >
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium text-primary-400 truncate">
+                <div className="text-xs font-medium text-primary-600 dark:text-primary-400 truncate">
                   {ministryName}
                 </div>
-                <div className="text-xs text-dark-300 truncate">
+                <div className="text-xs text-dark-600 dark:text-dark-300 truncate">
                   {team?.name ?? "Equipe não encontrada"}
                 </div>
               </div>
@@ -393,20 +393,20 @@ export default function MonthlySchedulePage() {
                           <div
                             key={date.toISOString()}
                             className={cn(
-                              "p-4 rounded-lg border transition-colors",
+                              "p-4 rounded-lg border transition-all duration-200",
                               schedule
-                                ? "bg-dark-900 border-dark-800 hover:border-primary-500/50"
-                                : "bg-dark-900/50 border-dark-800/50",
+                                ? "bg-white border-dark-200 hover:border-primary-500/50 dark:bg-dark-900 dark:border-dark-800"
+                                : "bg-white/50 border-dark-200/50 dark:bg-dark-900/50 dark:border-dark-800/50",
                               isToday && "ring-2 ring-primary-500/50",
                               isPast && !schedule && "opacity-60"
                             )}
                           >
                             <div className="flex items-start justify-between mb-2">
-                              <div className="font-semibold text-dark-50">
+                              <div className="font-semibold text-dark-900 dark:text-dark-50">
                                 {formatDate(date.toISOString())}
                               </div>
                               {isToday && (
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-400">
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-600 dark:text-primary-400">
                                   Hoje
                                 </span>
                               )}
@@ -433,7 +433,7 @@ export default function MonthlySchedulePage() {
                           />
                         </svg>
                       </div>
-                      <p className="text-dark-400 mb-2">
+                      <p className="text-dark-600 dark:text-dark-400 mb-2">
                         Nenhuma escala cadastrada para este mês
                       </p>
                       <Button

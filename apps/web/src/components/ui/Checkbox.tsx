@@ -16,7 +16,9 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           type="checkbox"
           id={checkboxId}
           className={cn(
-            'rounded border-dark-700 text-primary-600 focus:ring-primary-500',
+            'rounded border-dark-300 dark:border-dark-700 text-primary-600 focus:ring-primary-500',
+            'bg-white dark:bg-dark-900',
+            'transition-all duration-200',
             'disabled:opacity-50 disabled:cursor-not-allowed',
             className
           )}
@@ -25,7 +27,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         {label && (
           <label
             htmlFor={checkboxId}
-            className="text-sm text-dark-300 cursor-pointer"
+            className="text-sm text-dark-700 dark:text-dark-300 cursor-pointer"
           >
             {label}
           </label>

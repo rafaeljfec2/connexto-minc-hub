@@ -11,7 +11,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
       <div className="relative w-full">
         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
           <svg
-            className="h-5 w-5 text-dark-500"
+            className="h-5 w-5 text-dark-500 dark:text-dark-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -28,9 +28,13 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           ref={ref}
           type="search"
           className={cn(
-            'w-full h-11 pl-10 pr-10 rounded-lg bg-dark-900 border border-dark-700',
-            'text-dark-50 placeholder:text-dark-500',
+            'w-full h-11 pl-10 pr-10 rounded-lg bg-white border border-dark-300',
+            'text-dark-900 placeholder:text-dark-500',
+            'dark:bg-dark-900 dark:border-dark-700 dark:text-dark-50 dark:placeholder:text-dark-500',
             'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent',
+            'transition-all duration-200 ease-out',
+            'hover:border-primary-400 dark:hover:border-primary-600',
+            'focus:scale-[1.02]',
             className
           )}
           {...props}
@@ -39,7 +43,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           <button
             type="button"
             onClick={onClear}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-dark-500 hover:text-dark-300"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-dark-500 hover:text-dark-700 dark:hover:text-dark-300 transition-colors"
           >
             <svg
               className="h-5 w-5"

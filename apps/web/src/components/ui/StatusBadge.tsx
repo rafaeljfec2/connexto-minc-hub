@@ -7,11 +7,11 @@ interface StatusBadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const statusStyles = {
-  active: 'bg-green-500/20 text-green-400',
-  inactive: 'bg-red-500/20 text-red-400',
-  success: 'bg-green-500/20 text-green-400',
-  error: 'bg-red-500/20 text-red-400',
-  warning: 'bg-yellow-500/20 text-yellow-400',
+  active: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400',
+  inactive: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400',
+  success: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400',
+  error: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400',
+  warning: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400',
 }
 
 export function StatusBadge({
