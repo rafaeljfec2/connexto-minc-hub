@@ -1,13 +1,36 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
-import { DataTable } from "@/components/ui/DataTable";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { PageWithCrud } from "@/components/pages/PageWithCrud";
+import { TableRow, TableCell } from "@/components/ui/Table";
 import { useModal } from "@/hooks/useModal";
 import { useCrud } from "@/hooks/useCrud";
+import { useViewMode } from "@/hooks/useViewMode";
+import { CrudPageLayout } from "@/components/crud/CrudPageLayout";
+import { CrudFilters } from "@/components/crud/CrudFilters";
+import { CrudView } from "@/components/crud/CrudView";
 import { Church } from "@/types";
+import { ChurchCard } from "./churches/components/ChurchCard";
+import { EditIcon, TrashIcon } from "@/components/icons";
+
+function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 4v16m8-8H4"
+      />
+    </svg>
+  );
+}
 
 const MOCK_CHURCHES: Church[] = [
   {
@@ -22,19 +45,41 @@ const MOCK_CHURCHES: Church[] = [
 ];
 
 export default function ChurchesPage() {
-  const { items: churches, create, update, remove } = useCrud<Church>({
+  const {
+    items: churches,
+    create,
+    update,
+    remove,
+  } = useCrud<Church>({
     initialItems: MOCK_CHURCHES,
   });
   const modal = useModal();
   const deleteModal = useModal();
   const [editingChurch, setEditingChurch] = useState<Church | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { viewMode, setViewMode } = useViewMode({
+    storageKey: "churches-view-mode",
+  });
   const [formData, setFormData] = useState({
     name: "",
     address: "",
     phone: "",
     email: "",
   });
+
+  const filteredChurches = useMemo(() => {
+    return churches.filter((church) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        church.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        church.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        church.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        church.phone?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return matchesSearch;
+    });
+  }, [churches, searchTerm]);
 
   function handleOpenModal(church?: Church) {
     if (church) {
@@ -92,68 +137,89 @@ export default function ChurchesPage() {
     }
   }
 
-  const columns = [
-    {
-      key: "name",
-      label: "Nome",
-      render: (church: Church) => (
+  const hasFilters = searchTerm !== "";
+
+  const gridView = (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredChurches.map((church) => (
+        <ChurchCard
+          key={church.id}
+          church={church}
+          onEdit={handleOpenModal}
+          onDelete={handleDeleteClick}
+          isUpdating={false}
+          isDeleting={false}
+        />
+      ))}
+    </div>
+  );
+
+  const listViewRows = filteredChurches.map((church) => (
+    <TableRow key={church.id}>
+      <TableCell>
         <span className="font-medium">{church.name}</span>
-      ),
-    },
-    {
-      key: "address",
-      label: "Endereço",
-      render: (church: Church) => church.address ?? "-",
-    },
-    {
-      key: "phone",
-      label: "Telefone",
-      render: (church: Church) => church.phone ?? "-",
-    },
-    {
-      key: "email",
-      label: "Email",
-      render: (church: Church) => church.email ?? "-",
-    },
-  ];
+      </TableCell>
+      <TableCell>{church.address ?? "-"}</TableCell>
+      <TableCell>{church.phone ?? "-"}</TableCell>
+      <TableCell>{church.email ?? "-"}</TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleOpenModal(church)}
+          >
+            <EditIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleDeleteClick(church.id)}
+          >
+            <TrashIcon className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  ));
 
   return (
     <>
-      <PageWithCrud
+      <CrudPageLayout
         title="Igrejas"
         description="Gerencie as igrejas cadastradas no sistema"
         createButtonLabel="Nova Igreja"
-        items={churches}
-        searchFields={["name", "address", "email", "phone"]}
-        searchPlaceholder="Buscar por nome, endereço, email ou telefone..."
-        emptyMessage="Nenhuma igreja cadastrada"
-        emptySearchMessage="Nenhuma igreja encontrada"
-        tableContent={(paginatedItems) => (
-          <DataTable
-            data={paginatedItems}
-            columns={columns}
-            hasSearch={false}
-            actions={(church) => (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleOpenModal(church)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDeleteClick(church.id)}
-                >
-                  Excluir
-                </Button>
-              </>
-            )}
-          />
-        )}
         onCreateClick={() => handleOpenModal()}
+        hasFilters={hasFilters}
+        isEmpty={filteredChurches.length === 0}
+        emptyTitle={
+          hasFilters ? "Nenhuma igreja encontrada" : "Nenhuma igreja cadastrada"
+        }
+        emptyDescription={
+          hasFilters
+            ? "Tente ajustar os filtros para encontrar igrejas"
+            : "Comece adicionando uma nova igreja"
+        }
+        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+        filters={
+          <CrudFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar por nome, endereço, email ou telefone..."
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        }
+        content={
+          <CrudView
+            viewMode={viewMode}
+            gridView={gridView}
+            listView={{
+              headers: ["Nome", "Endereço", "Telefone", "Email", "Ações"],
+              rows: listViewRows,
+            }}
+          />
+        }
       />
 
       <Modal

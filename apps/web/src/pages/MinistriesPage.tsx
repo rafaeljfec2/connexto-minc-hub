@@ -1,17 +1,40 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { DataTable } from '@/components/ui/DataTable'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { PageWithCrud } from '@/components/pages/PageWithCrud'
+import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useCrud } from '@/hooks/useCrud'
+import { useViewMode } from '@/hooks/useViewMode'
+import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
+import { CrudFilters } from '@/components/crud/CrudFilters'
+import { CrudView } from '@/components/crud/CrudView'
 import { Ministry, Church } from '@/types'
+import { MinistryCard } from './ministries/components/MinistryCard'
+import { EditIcon, TrashIcon } from '@/components/icons'
+
+function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 4v16m8-8H4"
+      />
+    </svg>
+  )
+}
 
 const MOCK_CHURCHES: Church[] = [
   {
@@ -52,12 +75,31 @@ export default function MinistriesPage() {
   const deleteModal = useModal()
   const [editingMinistry, setEditingMinistry] = useState<Ministry | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const { viewMode, setViewMode } = useViewMode({
+    storageKey: 'ministries-view-mode',
+  })
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     churchId: churches[0]?.id ?? '',
     isActive: true,
   })
+
+  const filteredMinistries = useMemo(() => {
+    return ministries.filter((ministry) => {
+      const matchesSearch =
+        searchTerm === '' ||
+        ministry.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ministry.description?.toLowerCase().includes(searchTerm.toLowerCase())
+
+      return matchesSearch
+    })
+  }, [ministries, searchTerm])
+
+  function getChurchName(churchId: string) {
+    return churches.find((c) => c.id === churchId)?.name ?? 'Igreja não encontrada'
+  }
 
   function handleOpenModal(ministry?: Ministry) {
     if (ministry) {
@@ -115,76 +157,94 @@ export default function MinistriesPage() {
     }
   }
 
-  function getChurchName(churchId: string) {
-    return churches.find((c) => c.id === churchId)?.name ?? 'Igreja não encontrada'
-  }
+  const hasFilters = searchTerm !== ''
 
-  const columns = [
-    {
-      key: 'name',
-      label: 'Nome',
-      render: (ministry: Ministry) => (
+  const gridView = (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredMinistries.map((ministry) => (
+        <MinistryCard
+          key={ministry.id}
+          ministry={ministry}
+          churchName={getChurchName(ministry.churchId)}
+          onEdit={handleOpenModal}
+          onDelete={handleDeleteClick}
+          isUpdating={false}
+          isDeleting={false}
+        />
+      ))}
+    </div>
+  )
+
+  const listViewRows = filteredMinistries.map((ministry) => (
+    <TableRow key={ministry.id}>
+      <TableCell>
         <span className="font-medium">{ministry.name}</span>
-      ),
-    },
-    {
-      key: 'description',
-      label: 'Descrição',
-      render: (ministry: Ministry) => ministry.description ?? '-',
-    },
-    {
-      key: 'churchId',
-      label: 'Igreja',
-      render: (ministry: Ministry) => getChurchName(ministry.churchId),
-    },
-    {
-      key: 'isActive',
-      label: 'Status',
-      render: (ministry: Ministry) => (
+      </TableCell>
+      <TableCell>{ministry.description ?? '-'}</TableCell>
+      <TableCell>{getChurchName(ministry.churchId)}</TableCell>
+      <TableCell>
         <StatusBadge status={ministry.isActive ? 'active' : 'inactive'}>
           {ministry.isActive ? 'Ativo' : 'Inativo'}
         </StatusBadge>
-      ),
-    },
-  ]
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleOpenModal(ministry)}
+          >
+            <EditIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleDeleteClick(ministry.id)}
+          >
+            <TrashIcon className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  ))
 
   return (
     <>
-      <PageWithCrud
+      <CrudPageLayout
         title="Times"
         description="Gerencie os times (ministérios) da igreja"
         createButtonLabel="Novo Time"
-        items={ministries}
-        searchFields={['name', 'description']}
-        searchPlaceholder="Buscar por nome ou descrição..."
-        emptyMessage="Nenhum time cadastrado"
-        emptySearchMessage="Nenhum time encontrado"
-        tableContent={(paginatedItems) => (
-          <DataTable
-            data={paginatedItems}
-            columns={columns}
-            hasSearch={false}
-            actions={(ministry) => (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleOpenModal(ministry)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDeleteClick(ministry.id)}
-                >
-                  Excluir
-                </Button>
-              </>
-            )}
-          />
-        )}
         onCreateClick={() => handleOpenModal()}
+        hasFilters={hasFilters}
+        isEmpty={filteredMinistries.length === 0}
+        emptyTitle={
+          hasFilters ? 'Nenhum time encontrado' : 'Nenhum time cadastrado'
+        }
+        emptyDescription={
+          hasFilters
+            ? 'Tente ajustar os filtros para encontrar times'
+            : 'Comece adicionando um novo time'
+        }
+        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+        filters={
+          <CrudFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar por nome ou descrição..."
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        }
+        content={
+          <CrudView
+            viewMode={viewMode}
+            gridView={gridView}
+            listView={{
+              headers: ['Nome', 'Descrição', 'Igreja', 'Status', 'Ações'],
+              rows: listViewRows,
+            }}
+          />
+        }
       />
 
       <Modal

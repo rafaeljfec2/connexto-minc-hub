@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -6,13 +6,36 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { CheckboxList } from '@/components/ui/CheckboxList'
-import { DataTable } from '@/components/ui/DataTable'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { PageWithCrud } from '@/components/pages/PageWithCrud'
+import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useCrud } from '@/hooks/useCrud'
+import { useViewMode } from '@/hooks/useViewMode'
+import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
+import { CrudFilters } from '@/components/crud/CrudFilters'
+import { CrudView } from '@/components/crud/CrudView'
 import { Team, Person, Ministry } from '@/types'
+import { TeamCard } from './teams/components/TeamCard'
+import { EditIcon, TrashIcon } from '@/components/icons'
+
+function PlusIcon({ className = "h-5 w-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M12 4v16m8-8H4"
+      />
+    </svg>
+  )
+}
 
 const MOCK_PEOPLE: Person[] = [
   { id: '1', name: 'João Silva', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
@@ -64,6 +87,10 @@ export default function TeamsPage() {
   const deleteModal = useModal()
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const { viewMode, setViewMode } = useViewMode({
+    storageKey: 'teams-view-mode',
+  })
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -71,6 +98,21 @@ export default function TeamsPage() {
     memberIds: [] as string[],
     isActive: true,
   })
+
+  const filteredTeams = useMemo(() => {
+    return teams.filter((team) => {
+      const matchesSearch =
+        searchTerm === '' ||
+        team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        team.description?.toLowerCase().includes(searchTerm.toLowerCase())
+
+      return matchesSearch
+    })
+  }, [teams, searchTerm])
+
+  function getMinistryName(ministryId: string) {
+    return ministries.find((m) => m.id === ministryId)?.name ?? 'Time não encontrado'
+  }
 
   function handleOpenModal(team?: Team) {
     if (team) {
@@ -109,18 +151,14 @@ export default function TeamsPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    
+
     if (editingTeam) {
       update(editingTeam.id, formData)
     } else {
       create(formData)
     }
-    
-    handleCloseModal()
-  }
 
-  function getMinistryName(ministryId: string) {
-    return ministries.find((m) => m.id === ministryId)?.name ?? 'Time não encontrado'
+    handleCloseModal()
   }
 
   function handleDeleteClick(id: string) {
@@ -139,42 +177,60 @@ export default function TeamsPage() {
     setFormData({
       ...formData,
       memberIds: formData.memberIds.includes(memberId)
-        ? formData.memberIds.filter(id => id !== memberId)
+        ? formData.memberIds.filter((id) => id !== memberId)
         : [...formData.memberIds, memberId],
     })
   }
 
-  const columns = [
-    {
-      key: 'name',
-      label: 'Nome',
-      render: (team: Team) => <span className="font-medium">{team.name}</span>,
-    },
-    {
-      key: 'ministryId',
-      label: 'Time',
-      render: (team: Team) => getMinistryName(team.ministryId),
-    },
-    {
-      key: 'description',
-      label: 'Descrição',
-      render: (team: Team) => team.description ?? '-',
-    },
-    {
-      key: 'memberIds',
-      label: 'Membros',
-      render: (team: Team) => `${team.memberIds.length} membro${team.memberIds.length !== 1 ? 's' : ''}`,
-    },
-    {
-      key: 'isActive',
-      label: 'Status',
-      render: (team: Team) => (
+  const hasFilters = searchTerm !== ''
+
+  const gridView = (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredTeams.map((team) => (
+        <TeamCard
+          key={team.id}
+          team={team}
+          ministryName={getMinistryName(team.ministryId)}
+          onEdit={handleOpenModal}
+          onDelete={handleDeleteClick}
+          isUpdating={false}
+          isDeleting={false}
+        />
+      ))}
+    </div>
+  )
+
+  const listViewRows = filteredTeams.map((team) => (
+    <TableRow key={team.id}>
+      <TableCell>
+        <span className="font-medium">{team.name}</span>
+      </TableCell>
+      <TableCell>{getMinistryName(team.ministryId)}</TableCell>
+      <TableCell>{team.description ?? '-'}</TableCell>
+      <TableCell>
+        {team.memberIds.length} membro{team.memberIds.length !== 1 ? 's' : ''}
+      </TableCell>
+      <TableCell>
         <StatusBadge status={team.isActive ? 'active' : 'inactive'}>
           {team.isActive ? 'Ativa' : 'Inativa'}
         </StatusBadge>
-      ),
-    },
-  ]
+      </TableCell>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(team)}>
+            <EditIcon className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleDeleteClick(team.id)}
+          >
+            <TrashIcon className="h-4 w-4" />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  ))
 
   const checkboxItems = people.map((person) => ({
     id: person.id,
@@ -183,41 +239,41 @@ export default function TeamsPage() {
 
   return (
     <>
-      <PageWithCrud
+      <CrudPageLayout
         title="Equipes"
         description="Gerencie equipes do Time Boas-Vindas"
         createButtonLabel="Nova Equipe"
-        items={teams}
-        searchFields={['name', 'description']}
-        searchPlaceholder="Buscar por nome ou descrição..."
-        emptyMessage="Nenhuma equipe cadastrada"
-        emptySearchMessage="Nenhuma equipe encontrada"
-        tableContent={(paginatedItems) => (
-          <DataTable
-            data={paginatedItems}
-            columns={columns}
-            hasSearch={false}
-            actions={(team) => (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleOpenModal(team)}
-                >
-                  Editar
-                </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  onClick={() => handleDeleteClick(team.id)}
-                >
-                  Excluir
-                </Button>
-              </>
-            )}
-          />
-        )}
         onCreateClick={() => handleOpenModal()}
+        hasFilters={hasFilters}
+        isEmpty={filteredTeams.length === 0}
+        emptyTitle={
+          hasFilters ? 'Nenhuma equipe encontrada' : 'Nenhuma equipe cadastrada'
+        }
+        emptyDescription={
+          hasFilters
+            ? 'Tente ajustar os filtros para encontrar equipes'
+            : 'Comece adicionando uma nova equipe'
+        }
+        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+        filters={
+          <CrudFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar por nome ou descrição..."
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        }
+        content={
+          <CrudView
+            viewMode={viewMode}
+            gridView={gridView}
+            listView={{
+              headers: ['Nome', 'Time', 'Descrição', 'Membros', 'Status', 'Ações'],
+              rows: listViewRows,
+            }}
+          />
+        }
       />
 
       <Modal
@@ -248,12 +304,14 @@ export default function TeamsPage() {
           <Textarea
             label="Descrição"
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
             placeholder="Descrição da equipe..."
             rows={4}
           />
           <div>
-            <label className="block text-sm font-medium text-dark-300 mb-2">
+            <label className="block text-sm font-medium text-dark-600 dark:text-dark-300 mb-2">
               Membros da Equipe
             </label>
             <CheckboxList
@@ -265,7 +323,9 @@ export default function TeamsPage() {
           <Checkbox
             label="Equipe ativa"
             checked={formData.isActive}
-            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+            onChange={(e) =>
+              setFormData({ ...formData, isActive: e.target.checked })
+            }
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button
