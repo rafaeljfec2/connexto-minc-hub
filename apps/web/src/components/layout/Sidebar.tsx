@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types";
-import { cn } from "@/lib/utils";
-import { BrandText } from "@/components/ui/BrandText";
+import { SidebarNavItem } from "./SidebarNavItem";
+import { SidebarBranding } from "./SidebarBranding";
+import { SidebarUserInfo } from "./SidebarUserInfo";
+import { MobileMenuButton } from "./MobileMenuButton";
 
 interface NavItem {
   label: string;
@@ -193,70 +195,40 @@ export function Sidebar() {
     return MOCK_MODE || hasAnyRole(item.roles);
   });
 
+  const renderNavItems = (onItemClick?: () => void) => (
+    <div className="space-y-1">
+      {visibleItems.map((item) => (
+        <SidebarNavItem
+          key={item.href}
+          href={item.href}
+          icon={item.icon}
+          label={item.label}
+          isActive={location.pathname === item.href}
+          onClick={onItemClick}
+        />
+      ))}
+    </div>
+  );
+
+  const sidebarContent = (
+    <>
+      <SidebarBranding />
+      <nav className="flex-1 overflow-y-auto p-4">{renderNavItems()}</nav>
+      {user && <SidebarUserInfo user={user} />}
+    </>
+  );
+
   return (
     <>
       <aside className="hidden lg:flex flex-col w-64 bg-dark-900 border-r border-dark-800 fixed left-0 top-0 h-screen z-40">
-        <div className="flex items-center justify-center p-6 border-b border-dark-800">
-          <BrandText size="sm" />
-        </div>
-        <nav className="flex-1 overflow-y-auto p-4">
-          <div className="space-y-1">
-            {visibleItems.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary-600 text-white"
-                      : "text-dark-300 hover:bg-dark-800 hover:text-dark-50"
-                  )}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
-        {user && (
-          <div className="p-4 border-t border-dark-800">
-            <div className="px-4 py-2 text-sm text-dark-400">{user.name}</div>
-          </div>
-        )}
+        {sidebarContent}
       </aside>
 
       <div className="lg:hidden">
-        <button
+        <MobileMenuButton
+          isOpen={isMobileOpen}
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-dark-900 border border-dark-800 text-dark-300 hover:text-dark-50"
-          aria-label="Toggle menu"
-        >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            {isMobileOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            )}
-          </svg>
-        </button>
+        />
 
         {isMobileOpen && (
           <>
@@ -266,40 +238,12 @@ export function Sidebar() {
               onClick={() => setIsMobileOpen(false)}
               aria-label="Fechar menu"
             />
-            <aside className="fixed left-0 top-0 h-full w-64 bg-dark-900 border-r border-dark-800 z-50 overflow-y-auto">
-              <div className="flex items-center justify-center p-6 border-b border-dark-800">
-                <BrandText size="sm" />
-              </div>
-              <nav className="p-4">
-                <div className="space-y-1">
-                  {visibleItems.map((item) => {
-                    const isActive = location.pathname === item.href;
-                    return (
-                      <Link
-                        key={item.href}
-                        to={item.href}
-                        onClick={() => setIsMobileOpen(false)}
-                        className={cn(
-                          "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                          isActive
-                            ? "bg-primary-600 text-white"
-                            : "text-dark-300 hover:bg-dark-800 hover:text-dark-50"
-                        )}
-                      >
-                        {item.icon}
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
+            <aside className="fixed left-0 top-0 h-full w-64 bg-dark-900 border-r border-dark-800 z-50 overflow-y-auto flex flex-col">
+              <SidebarBranding />
+              <nav className="flex-1 overflow-y-auto p-4">
+                {renderNavItems(() => setIsMobileOpen(false))}
               </nav>
-              {user && (
-                <div className="p-4 border-t border-dark-800">
-                  <div className="px-4 py-2 text-sm text-dark-400">
-                    {user.name}
-                  </div>
-                </div>
-              )}
+              {user && <SidebarUserInfo user={user} />}
             </aside>
           </>
         )}
