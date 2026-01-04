@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
 import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
 import PeoplePage from "@/pages/PeoplePage";
@@ -50,8 +51,11 @@ function AppLayout({ children }: AppLayoutProps) {
     <div className="min-h-screen bg-grain relative">
       <div className="absolute inset-0 bg-dark-950/60" />
       <div className="relative z-10">
-        <Header />
-        {children}
+        <Sidebar />
+        <div className="lg:ml-64">
+          <Header />
+          <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+        </div>
       </div>
     </div>
   );
