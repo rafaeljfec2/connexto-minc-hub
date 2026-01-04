@@ -33,74 +33,89 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-grain relative">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-grain relative">
       <div className="absolute inset-0 bg-dark-950/40" />
-      <Card className="w-full max-w-md relative z-10">
-        <CardHeader>
-          <div className="flex items-center justify-center mb-4">
-            <img
-              src="/minc-teams-logo.png"
-              alt="MINC Teams"
-              className="h-20 w-auto object-contain"
-              onError={(e) => {
-                // Fallback para a logo antiga se a nova não existir
-                const target = e.target as HTMLImageElement;
-                target.src = "/Logo-minc.png";
-                target.className = "h-16 w-auto object-contain";
-              }}
-            />
-          </div>
-          <CardTitle className="text-center">
-            <BrandText size="lg" />
-          </CardTitle>
-          <p className="text-center text-sm text-dark-400 mt-2">
-            Sistema de gestão dos times da MINC
-          </p>
-          {isMockMode && (
-            <div className="mt-3 p-2 rounded-lg bg-primary-500/10 border border-primary-500/20">
-              <p className="text-center text-xs text-primary-400">
-                Modo Desenvolvimento: Use qualquer email/senha para entrar
-              </p>
+      <div className="flex-1 flex items-center justify-center w-full relative z-10">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <div className="flex items-center justify-center mb-4">
+              <img
+                src="/minc-teams-logo.png"
+                alt="MINC Teams"
+                className="h-20 w-auto object-contain"
+                onError={(e) => {
+                  // Fallback para a logo antiga se a nova não existir
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/Logo-minc.png";
+                  target.className = "h-16 w-auto object-contain";
+                }}
+              />
             </div>
-          )}
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
-                {error}
+            <CardTitle className="text-center">
+              <BrandText size="lg" />
+            </CardTitle>
+            <p className="text-center text-sm text-dark-400 mt-2">
+              Sistema de gestão dos times da MINC
+            </p>
+            {isMockMode && (
+              <div className="mt-3 p-2 rounded-lg bg-primary-500/10 border border-primary-500/20">
+                <p className="text-center text-xs text-primary-400">
+                  Modo Desenvolvimento: Use qualquer email/senha para entrar
+                </p>
               </div>
             )}
-            <Input
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              required
-              autoComplete="email"
-            />
-            <Input
-              label="Senha"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              autoComplete="current-password"
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              isLoading={isLoading}
-              className="w-full"
-            >
-              Entrar
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
+                  {error}
+                </div>
+              )}
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                required
+                autoComplete="email"
+              />
+              <Input
+                label="Senha"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                autoComplete="current-password"
+              />
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                isLoading={isLoading}
+                className="w-full"
+              >
+                Entrar
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+      <footer className="mb-6 text-center relative z-10 px-4 w-full">
+        <p className="text-sm text-dark-400 dark:text-dark-500">
+          Created by{" "}
+          <a
+            href="https://www.connexto.com.br/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 underline transition-colors font-medium"
+          >
+            Connexto Tecnologia
+          </a>
+        </p>
+      </footer>
     </div>
   );
 }
