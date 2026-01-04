@@ -20,7 +20,7 @@ export function CheckboxList({
     <div
       className={`space-y-2 overflow-y-auto border border-dark-200 dark:border-dark-800 rounded-lg p-3 bg-white dark:bg-dark-900 ${maxHeight}`}
     >
-      {items.map((item) => (
+      {items.map(item => (
         <label
           key={item.id}
           className="flex items-center gap-2 cursor-pointer hover:bg-dark-50 dark:hover:bg-dark-800/30 p-2 rounded transition-colors"

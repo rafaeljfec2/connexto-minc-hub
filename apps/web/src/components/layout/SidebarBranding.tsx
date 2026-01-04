@@ -5,13 +5,13 @@ export function SidebarBranding() {
         src="/minc-teams-logo.png"
         alt="MINC Teams"
         className="h-16 w-auto object-contain"
-        onError={(e) => {
+        onError={e => {
           // Fallback para a logo antiga se a nova não existir
-          const target = e.target as HTMLImageElement;
-          target.src = "/Logo-minc.png";
-          target.className = "h-12 w-auto object-contain brightness-0 dark:brightness-100";
+          const target = e.target as HTMLImageElement
+          target.src = '/Logo-minc.png'
+          target.className = 'h-12 w-auto object-contain brightness-0 dark:brightness-100'
         }}
       />
     </div>
-  );
+  )
 }

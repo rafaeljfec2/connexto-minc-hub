@@ -1,32 +1,27 @@
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useMockMode } from "@/hooks/useMockMode";
-import { UserRole } from "@/types";
-import { SidebarNavItem } from "./SidebarNavItem";
-import { SidebarBranding } from "./SidebarBranding";
-import { SidebarUserInfo } from "./SidebarUserInfo";
-import { MobileMenuButton } from "./MobileMenuButton";
-import { BrandText } from "@/components/ui/BrandText";
+import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { useMockMode } from '@/hooks/useMockMode'
+import { UserRole } from '@/types'
+import { SidebarNavItem } from './SidebarNavItem'
+import { SidebarBranding } from './SidebarBranding'
+import { SidebarUserInfo } from './SidebarUserInfo'
+import { MobileMenuButton } from './MobileMenuButton'
+import { BrandText } from '@/components/ui/BrandText'
 
 interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ReactNode;
-  roles?: UserRole[];
+  label: string
+  href: string
+  icon: React.ReactNode
+  roles?: UserRole[]
 }
 
 const navItems: NavItem[] = [
   {
-    label: "Dashboard",
-    href: "/dashboard",
+    label: 'Dashboard',
+    href: '/dashboard',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -35,23 +30,13 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [
-      UserRole.ADMIN,
-      UserRole.COORDINATOR,
-      UserRole.LEADER,
-      UserRole.MEMBER,
-    ],
+    roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER, UserRole.MEMBER],
   },
   {
-    label: "Igrejas",
-    href: "/churches",
+    label: 'Igrejas',
+    href: '/churches',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -63,15 +48,10 @@ const navItems: NavItem[] = [
     roles: [UserRole.ADMIN],
   },
   {
-    label: "Times",
-    href: "/ministries",
+    label: 'Times',
+    href: '/ministries',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -83,15 +63,10 @@ const navItems: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.COORDINATOR],
   },
   {
-    label: "Equipes",
-    href: "/teams",
+    label: 'Equipes',
+    href: '/teams',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -103,15 +78,10 @@ const navItems: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
   {
-    label: "Servos",
-    href: "/people",
+    label: 'Servos',
+    href: '/people',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -123,15 +93,10 @@ const navItems: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
   {
-    label: "Cultos",
-    href: "/services",
+    label: 'Cultos',
+    href: '/services',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -143,15 +108,10 @@ const navItems: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.COORDINATOR],
   },
   {
-    label: "Escalas",
-    href: "/schedules",
+    label: 'Escalas',
+    href: '/schedules',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -163,15 +123,10 @@ const navItems: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
   {
-    label: "Sorteio Mensal",
-    href: "/monthly-schedules",
+    label: 'Sorteio Mensal',
+    href: '/monthly-schedules',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -183,15 +138,10 @@ const navItems: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
   {
-    label: "Comunicação",
-    href: "/communication",
+    label: 'Comunicação',
+    href: '/communication',
     icon: (
-      <svg
-        className="h-5 w-5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -202,22 +152,22 @@ const navItems: NavItem[] = [
     ),
     roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
-];
+]
 
 export function Sidebar() {
-  const location = useLocation();
-  const { user, hasAnyRole } = useAuth();
-  const isMockMode = useMockMode();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const location = useLocation()
+  const { user, hasAnyRole } = useAuth()
+  const isMockMode = useMockMode()
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
 
-  const visibleItems = navItems.filter((item) => {
-    if (!item.roles) return true;
-    return isMockMode || hasAnyRole(item.roles);
-  });
+  const visibleItems = navItems.filter(item => {
+    if (!item.roles) return true
+    return isMockMode || hasAnyRole(item.roles)
+  })
 
   const renderNavItems = (onItemClick?: () => void) => (
     <div className="space-y-1">
-      {visibleItems.map((item) => (
+      {visibleItems.map(item => (
         <SidebarNavItem
           key={item.href}
           href={item.href}
@@ -228,7 +178,7 @@ export function Sidebar() {
         />
       ))}
     </div>
-  );
+  )
 
   const sidebarContent = (
     <>
@@ -236,7 +186,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto p-4">{renderNavItems()}</nav>
       {user && <SidebarUserInfo user={user} />}
     </>
-  );
+  )
 
   return (
     <>
@@ -245,10 +195,7 @@ export function Sidebar() {
       </aside>
 
       <div className="lg:hidden">
-        <MobileMenuButton
-          isOpen={isMobileOpen}
-          onClick={() => setIsMobileOpen(!isMobileOpen)}
-        />
+        <MobileMenuButton isOpen={isMobileOpen} onClick={() => setIsMobileOpen(!isMobileOpen)} />
 
         {isMobileOpen && (
           <>
@@ -271,5 +218,5 @@ export function Sidebar() {
         )}
       </div>
     </>
-  );
+  )
 }

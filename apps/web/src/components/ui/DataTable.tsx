@@ -1,12 +1,5 @@
 import { ReactNode } from 'react'
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from './Table'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './Table'
 import { EmptyState } from './EmptyState'
 
 interface Column<T> {
@@ -34,18 +27,14 @@ export function DataTable<T extends { id: string }>({
   actions,
 }: DataTableProps<T>) {
   if (data.length === 0) {
-    return (
-      <EmptyState
-        title={hasSearch ? emptySearchMessage : emptyMessage}
-      />
-    )
+    return <EmptyState title={hasSearch ? emptySearchMessage : emptyMessage} />
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          {columns.map((column) => (
+          {columns.map(column => (
             <TableHead
               key={String(column.key)}
               className={column.align === 'right' ? 'text-right' : ''}
@@ -57,23 +46,19 @@ export function DataTable<T extends { id: string }>({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((item) => (
+        {data.map(item => (
           <TableRow key={item.id}>
-            {columns.map((column) => (
+            {columns.map(column => (
               <TableCell
                 key={String(column.key)}
                 className={column.align === 'right' ? 'text-right' : ''}
               >
-                {column.render
-                  ? column.render(item)
-                  : String(item[column.key as keyof T] ?? '-')}
+                {column.render ? column.render(item) : String(item[column.key as keyof T] ?? '-')}
               </TableCell>
             ))}
             {actions && (
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
-                  {actions(item)}
-                </div>
+                <div className="flex items-center justify-end gap-2">{actions(item)}</div>
               </TableCell>
             )}
           </TableRow>

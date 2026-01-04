@@ -45,12 +45,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             onClick={onClear}
             className="absolute inset-y-0 right-0 flex items-center pr-3 text-dark-500 hover:text-dark-700 dark:hover:text-dark-300 transition-colors"
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

@@ -1,8 +1,8 @@
-import { useTheme } from "@/contexts/ThemeContext";
-import { Button } from "./Button";
+import { useTheme } from '@/contexts/ThemeContext'
+import { Button } from './Button'
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme()
 
   return (
     <Button
@@ -10,15 +10,10 @@ export function ThemeToggle() {
       size="sm"
       onClick={toggleTheme}
       className="min-w-[44px] transition-transform duration-300 hover:rotate-180"
-      aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
+      aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
     >
-      {theme === "dark" ? (
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+      {theme === 'dark' ? (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -27,12 +22,7 @@ export function ThemeToggle() {
           />
         </svg>
       ) : (
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -42,5 +32,5 @@ export function ThemeToggle() {
         </svg>
       )}
     </Button>
-  );
+  )
 }

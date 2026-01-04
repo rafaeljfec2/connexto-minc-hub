@@ -9,10 +9,7 @@ interface ProtectedRouteWrapperProps {
   readonly allowedRoles?: UserRole[]
 }
 
-export function ProtectedRouteWrapper({
-  children,
-  allowedRoles,
-}: ProtectedRouteWrapperProps) {
+export function ProtectedRouteWrapper({ children, allowedRoles }: ProtectedRouteWrapperProps) {
   const isMockMode = useMockMode()
 
   if (isMockMode) {

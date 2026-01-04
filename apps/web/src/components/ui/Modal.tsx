@@ -46,7 +46,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
           'animate-scale-in',
           sizeClasses[size]
         )}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b border-dark-200 dark:border-dark-800">
           <h2 className="text-xl font-semibold text-dark-900 dark:text-dark-50">{title}</h2>

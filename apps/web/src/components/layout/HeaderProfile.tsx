@@ -1,37 +1,37 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { useMockMode } from "@/hooks/useMockMode";
-import { Button } from "@/components/ui/Button";
-import { Dropdown } from "@/components/ui/Dropdown";
-import { useNavigate } from "react-router-dom";
-import { UserIcon, SettingsIcon, LogoutIcon, ChevronDownIcon } from "@/components/icons";
+import { useAuth } from '@/contexts/AuthContext'
+import { useMockMode } from '@/hooks/useMockMode'
+import { Button } from '@/components/ui/Button'
+import { Dropdown } from '@/components/ui/Dropdown'
+import { useNavigate } from 'react-router-dom'
+import { UserIcon, SettingsIcon, LogoutIcon, ChevronDownIcon } from '@/components/icons'
 
 export function HeaderProfile() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const isMockMode = useMockMode();
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const isMockMode = useMockMode()
 
   const profileItems = [
     {
-      label: "Meu Perfil",
+      label: 'Meu Perfil',
       icon: <UserIcon />,
-      onClick: () => navigate("/profile"),
+      onClick: () => navigate('/profile'),
     },
     {
-      label: "Configurações",
+      label: 'Configurações',
       icon: <SettingsIcon />,
-      onClick: () => navigate("/settings"),
+      onClick: () => navigate('/settings'),
     },
     {
-      label: "Sair",
+      label: 'Sair',
       icon: <LogoutIcon />,
       onClick: () => {
         if (!isMockMode) {
-          logout();
+          logout()
         }
       },
-      variant: "danger" as const,
+      variant: 'danger' as const,
     },
-  ];
+  ]
 
   if (user) {
     return (
@@ -53,20 +53,16 @@ export function HeaderProfile() {
         items={profileItems}
         align="right"
       />
-    );
+    )
   }
 
   if (isMockMode) {
-    return (
-      <span className="text-xs text-primary-400 hidden sm:inline">
-        Modo Dev
-      </span>
-    );
+    return <span className="text-xs text-primary-400 hidden sm:inline">Modo Dev</span>
   }
 
   return (
-    <Button variant="primary" size="sm" onClick={() => navigate("/login")}>
+    <Button variant="primary" size="sm" onClick={() => navigate('/login')}>
       Entrar
     </Button>
-  );
+  )
 }

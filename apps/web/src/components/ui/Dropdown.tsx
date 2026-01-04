@@ -20,10 +20,7 @@ export function Dropdown({ trigger, items, align = 'right' }: DropdownProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
@@ -47,10 +44,7 @@ export function Dropdown({ trigger, items, align = 'right' }: DropdownProps) {
       <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
       {isOpen && (
         <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div
             className={cn(
               'absolute z-50 mt-2 w-56 rounded-lg bg-white border border-dark-200 shadow-xl',

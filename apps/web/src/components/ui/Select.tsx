@@ -32,15 +32,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           )}
           {...props}
         >
-          {options.map((option) => (
+          {options.map(option => (
             <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
         </select>
-        {error && (
-          <p className="mt-1.5 text-sm text-red-500">{error}</p>
-        )}
+        {error && <p className="mt-1.5 text-sm text-red-500">{error}</p>}
       </div>
     )
   }

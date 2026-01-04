@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  type ReactNode,
+} from 'react'
 import { User, UserRole } from '@/types'
 import { api, apiClient } from '@/lib/api'
 
@@ -24,7 +32,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+interface AuthProviderProps {
+  readonly children: ReactNode
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -60,9 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function login(email: string, password: string) {
+  const login = useCallback(async (email: string, password: string) => {
     if (MOCK_MODE) {
-      const mockToken = 'mock-token-' + Date.now()
+      const mockToken = `mock-token-${Date.now()}`
       apiClient.setToken(mockToken)
       setUser(MOCK_USER)
       return
@@ -75,34 +87,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     apiClient.setToken(response.data.token)
     setUser(response.data.user)
-  }
+  }, [])
 
-  function logout() {
+  const logout = useCallback(() => {
     localStorage.removeItem('auth_token')
     setUser(null)
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+    if (globalThis.window !== undefined) {
+      globalThis.window.location.href = '/login'
     }
-  }
+  }, [])
 
-  function hasAnyRole(roles: UserRole[]): boolean {
-    return user ? roles.includes(user.role) : false
-  }
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        logout,
-        hasAnyRole,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const hasAnyRole = useCallback(
+    (roles: UserRole[]): boolean => {
+      return user ? roles.includes(user.role) : false
+    },
+    [user]
   )
+
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: !!user,
+      login,
+      logout,
+      hasAnyRole,
+    }),
+    [user, isLoading, login, logout, hasAnyRole]
+  )
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

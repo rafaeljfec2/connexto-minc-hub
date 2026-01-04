@@ -1,75 +1,75 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { ProtectedRouteWrapper } from "@/components/routing/ProtectedRouteWrapper";
-import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/DashboardPage";
-import PeoplePage from "@/pages/PeoplePage";
-import TeamsPage from "@/pages/TeamsPage";
-import ServicesPage from "@/pages/ServicesPage";
-import SchedulesPage from "@/pages/SchedulesPage";
-import MonthlySchedulePage from "@/pages/MonthlySchedulePage";
-import CommunicationPage from "@/pages/CommunicationPage";
-import ChurchesPage from "@/pages/ChurchesPage";
-import MinistriesPage from "@/pages/MinistriesPage";
-import ProfilePage from "@/pages/ProfilePage";
-import SettingsPage from "@/pages/SettingsPage";
-import { UserRole } from "@/types";
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+import { ProtectedRouteWrapper } from '@/components/routing/ProtectedRouteWrapper'
+import LoginPage from '@/pages/LoginPage'
+import DashboardPage from '@/pages/DashboardPage'
+import PeoplePage from '@/pages/PeoplePage'
+import TeamsPage from '@/pages/TeamsPage'
+import ServicesPage from '@/pages/ServicesPage'
+import SchedulesPage from '@/pages/SchedulesPage'
+import MonthlySchedulePage from '@/pages/MonthlySchedulePage'
+import CommunicationPage from '@/pages/CommunicationPage'
+import ChurchesPage from '@/pages/ChurchesPage'
+import MinistriesPage from '@/pages/MinistriesPage'
+import ProfilePage from '@/pages/ProfilePage'
+import SettingsPage from '@/pages/SettingsPage'
+import { UserRole } from '@/types'
 
 const routes = [
   {
-    path: "/dashboard",
+    path: '/dashboard',
     component: DashboardPage,
   },
   {
-    path: "/people",
+    path: '/people',
     component: PeoplePage,
     allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
   {
-    path: "/teams",
+    path: '/teams',
     component: TeamsPage,
     allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
   {
-    path: "/services",
+    path: '/services',
     component: ServicesPage,
     allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR],
   },
   {
-    path: "/schedules",
+    path: '/schedules',
     component: SchedulesPage,
     allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
   {
-    path: "/communication",
+    path: '/communication',
     component: CommunicationPage,
     allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
   {
-    path: "/churches",
+    path: '/churches',
     component: ChurchesPage,
     allowedRoles: [UserRole.ADMIN],
   },
   {
-    path: "/ministries",
+    path: '/ministries',
     component: MinistriesPage,
     allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR],
   },
   {
-    path: "/profile",
+    path: '/profile',
     component: ProfilePage,
   },
   {
-    path: "/settings",
+    path: '/settings',
     component: SettingsPage,
   },
   {
-    path: "/monthly-schedules",
+    path: '/monthly-schedules',
     component: MonthlySchedulePage,
     allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },
-];
+]
 
 function App() {
   return (
@@ -77,7 +77,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          {routes.map((route) => (
+          {routes.map(route => (
             <Route
               key={route.path}
               path={route.path}
@@ -92,7 +92,7 @@ function App() {
         </Routes>
       </AuthProvider>
     </ThemeProvider>
-  );
+  )
 }
 
-export default App;
+export default App

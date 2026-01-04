@@ -14,12 +14,7 @@ const statusStyles = {
   warning: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400',
 }
 
-export function StatusBadge({
-  status,
-  children,
-  className,
-  ...props
-}: StatusBadgeProps) {
+export function StatusBadge({ status, children, className, ...props }: StatusBadgeProps) {
   return (
     <span
       className={cn(

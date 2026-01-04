@@ -40,11 +40,10 @@ export function PageWithCrud<T extends { id: string }>({
     searchFields,
   })
 
-  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems } =
-    usePagination({
-      items: filteredItems,
-      itemsPerPage: ITEMS_PER_PAGE,
-    })
+  const { currentPage, totalPages, paginatedItems, setCurrentPage, totalItems } = usePagination({
+    items: filteredItems,
+    itemsPerPage: ITEMS_PER_PAGE,
+  })
 
   const hasSearch = searchTerm.length > 0
 
@@ -66,7 +65,7 @@ export function PageWithCrud<T extends { id: string }>({
             <SearchInput
               placeholder={searchPlaceholder}
               value={searchTerm}
-              onChange={(e) => {
+              onChange={e => {
                 setSearchTerm(e.target.value)
                 setCurrentPage(1)
               }}

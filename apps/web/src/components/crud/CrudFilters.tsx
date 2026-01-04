@@ -45,7 +45,7 @@ export function CrudFilters({
               type="text"
               placeholder={searchPlaceholder}
               value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={e => onSearchChange(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -54,7 +54,7 @@ export function CrudFilters({
             <div key={index} className="w-full sm:w-auto">
               <Select
                 value={filter.value}
-                onChange={(e) => filter.onChange(e.target.value)}
+                onChange={e => filter.onChange(e.target.value)}
                 disabled={filter.disabled}
                 options={filter.options}
               />
