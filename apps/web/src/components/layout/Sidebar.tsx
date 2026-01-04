@@ -199,7 +199,7 @@ export function Sidebar() {
         <div className="flex items-center gap-2 p-6 border-b border-dark-800">
           <img
             src="/Logo-minc.png"
-            alt="MINC Logo"
+            alt="MINC Hub Logo"
             className="h-8 w-auto object-contain"
           />
           <BrandText size="sm" />
@@ -275,7 +275,7 @@ export function Sidebar() {
               <div className="flex items-center gap-2 p-6 border-b border-dark-800">
                 <img
                   src="/Logo-minc.png"
-                  alt="MINC Logo"
+                  alt="MINC Hub Logo"
                   className="h-8 w-auto object-contain"
                 />
                 <BrandText size="sm" />

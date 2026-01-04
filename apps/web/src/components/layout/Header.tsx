@@ -85,7 +85,13 @@ export function Header() {
       <div className="lg:ml-64">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <div className="flex-1" />
+            <div className="flex items-center gap-2">
+              <img
+                src="/Logo-minc.png"
+                alt="Minha Igreja na Cidade"
+                className="h-8 w-auto object-contain"
+              />
+            </div>
             <div className="flex items-center gap-3">
               {user ? (
                 <Dropdown
