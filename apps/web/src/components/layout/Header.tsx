@@ -1,5 +1,6 @@
 import { HeaderProfile } from "./HeaderProfile";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { BrandText } from "@/components/ui/BrandText";
 
 const HEADER_CLASSES = {
   container:
@@ -17,11 +18,7 @@ export function Header() {
       <div className={HEADER_CLASSES.content}>
         <div className={HEADER_CLASSES.inner}>
           <div className={HEADER_CLASSES.logo}>
-            <img
-              src="/Logo-minc.png"
-              alt="Minha Igreja na Cidade"
-              className="h-8 w-auto object-contain"
-            />
+            <BrandText size="sm" />
           </div>
           <div className={HEADER_CLASSES.profile}>
             <ThemeToggle />

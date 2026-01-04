@@ -1,9 +1,11 @@
-import { BrandText } from "@/components/ui/BrandText";
-
 export function SidebarBranding() {
   return (
     <div className="flex items-center justify-center p-6 border-b border-dark-200 dark:border-dark-800">
-      <BrandText size="sm" />
+      <img
+        src="/Logo-minc.png"
+        alt="Minha Igreja na Cidade"
+        className="h-12 w-auto object-contain"
+      />
     </div>
   );
 }
