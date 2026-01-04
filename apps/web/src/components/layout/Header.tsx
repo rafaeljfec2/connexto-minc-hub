@@ -31,25 +31,25 @@ export function Header() {
                 <>
                   <Link
                     to="/dashboard"
-                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors"
+                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors whitespace-nowrap"
                   >
                     Dashboard
                   </Link>
                   <Link
                     to="/people"
-                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors"
+                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors whitespace-nowrap"
                   >
                     Pessoas
                   </Link>
                   <Link
                     to="/teams"
-                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors"
+                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors whitespace-nowrap"
                   >
                     Equipes
                   </Link>
                   <Link
                     to="/schedules"
-                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors"
+                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors whitespace-nowrap"
                   >
                     Escalas
                   </Link>

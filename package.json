@@ -2,7 +2,7 @@
   "name": "connexto-minc-hub",
   "version": "1.0.0",
   "private": true,
-  "description": "Sistema de gestão do Time Boas-Vindas - Minha Igreja na Cidade",
+  "description": "Sistema de gestão dos times da MINC - Minha Igreja na Cidade",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",

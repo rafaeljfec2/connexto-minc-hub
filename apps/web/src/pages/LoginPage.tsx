@@ -25,8 +25,9 @@ export default function LoginPage() {
     try {
       await login(email, password);
       navigate("/dashboard");
-    } catch (err) {
+    } catch (err: unknown) {
       setError("Email ou senha inválidos");
+      console.error("Login error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +49,7 @@ export default function LoginPage() {
             <BrandText size="lg" />
           </CardTitle>
           <p className="text-center text-sm text-dark-400 mt-2">
-            Sistema de gestão do Time Boas-Vindas
+            Sistema de gestão dos times da MINC
           </p>
           {MOCK_MODE && (
             <div className="mt-3 p-2 rounded-lg bg-primary-500/10 border border-primary-500/20">
