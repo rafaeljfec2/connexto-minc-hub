@@ -5,6 +5,10 @@ import LoginPage from "@/pages/LoginPage";
 import DashboardPage from "@/pages/DashboardPage";
 import PeoplePage from "@/pages/PeoplePage";
 import TeamsPage from "@/pages/TeamsPage";
+import ServicesPage from "@/pages/ServicesPage";
+import SchedulesPage from "@/pages/SchedulesPage";
+import CommunicationPage from "@/pages/CommunicationPage";
+import ChurchesPage from "@/pages/ChurchesPage";
 import { UserRole } from "@/types";
 import type { ReactNode } from "react";
 
@@ -116,6 +120,84 @@ function App() {
               >
                 <AppLayout>
                   <TeamsPage />
+                </AppLayout>
+              </ProtectedRoute>
+            )
+          }
+        />
+        <Route
+          path="/services"
+          element={
+            MOCK_MODE ? (
+              <AppLayout>
+                <ServicesPage />
+              </AppLayout>
+            ) : (
+              <ProtectedRoute
+                allowedRoles={[UserRole.ADMIN, UserRole.COORDINATOR]}
+              >
+                <AppLayout>
+                  <ServicesPage />
+                </AppLayout>
+              </ProtectedRoute>
+            )
+          }
+        />
+        <Route
+          path="/schedules"
+          element={
+            MOCK_MODE ? (
+              <AppLayout>
+                <SchedulesPage />
+              </AppLayout>
+            ) : (
+              <ProtectedRoute
+                allowedRoles={[
+                  UserRole.ADMIN,
+                  UserRole.COORDINATOR,
+                  UserRole.LEADER,
+                ]}
+              >
+                <AppLayout>
+                  <SchedulesPage />
+                </AppLayout>
+              </ProtectedRoute>
+            )
+          }
+        />
+        <Route
+          path="/communication"
+          element={
+            MOCK_MODE ? (
+              <AppLayout>
+                <CommunicationPage />
+              </AppLayout>
+            ) : (
+              <ProtectedRoute
+                allowedRoles={[
+                  UserRole.ADMIN,
+                  UserRole.COORDINATOR,
+                  UserRole.LEADER,
+                ]}
+              >
+                <AppLayout>
+                  <CommunicationPage />
+                </AppLayout>
+              </ProtectedRoute>
+            )
+          }
+        />
+        <Route
+          path="/churches"
+          element={
+            MOCK_MODE ? (
+              <AppLayout>
+                <ChurchesPage />
+              </AppLayout>
+            ) : (
+              <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
+                <AppLayout>
+                  <ChurchesPage />
                 </AppLayout>
               </ProtectedRoute>
             )

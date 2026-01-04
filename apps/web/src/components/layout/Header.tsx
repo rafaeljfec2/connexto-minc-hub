@@ -3,12 +3,14 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { BrandText } from '@/components/ui/BrandText'
 import { MobileNav } from './MobileNav'
+import { UserRole } from '@/types'
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true' || !import.meta.env.VITE_API_URL
 
 export function Header() {
-  const { user, logout } = useAuth()
+  const { user, logout, hasRole } = useAuth()
   const showNav = MOCK_MODE || user
+  const isAdmin = MOCK_MODE || (user && hasRole(UserRole.ADMIN))
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-dark-800 bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-dark-950/80">
@@ -53,6 +55,26 @@ export function Header() {
                   >
                     Escalas
                   </Link>
+                  <Link
+                    to="/services"
+                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors whitespace-nowrap"
+                  >
+                    Cultos
+                  </Link>
+                  <Link
+                    to="/communication"
+                    className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors whitespace-nowrap"
+                  >
+                    Comunicação
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/churches"
+                      className="text-sm font-medium text-dark-300 hover:text-dark-50 transition-colors whitespace-nowrap"
+                    >
+                      Igrejas
+                    </Link>
+                  )}
                 </>
               )}
             </div>

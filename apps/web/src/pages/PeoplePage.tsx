@@ -4,8 +4,12 @@ import { Button } from '@/components/ui/Button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { Pagination } from '@/components/ui/Pagination'
 import { Person } from '@/types'
 import { formatDate } from '@/lib/utils'
+
+const ITEMS_PER_PAGE = 10
 
 const MOCK_PEOPLE: Person[] = [
   {
@@ -30,6 +34,8 @@ const MOCK_PEOPLE: Person[] = [
 
 export default function PeoplePage() {
   const [people, setPeople] = useState<Person[]>(MOCK_PEOPLE)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPerson, setEditingPerson] = useState<Person | null>(null)
   const [formData, setFormData] = useState({
@@ -40,6 +46,22 @@ export default function PeoplePage() {
     address: '',
     notes: '',
   })
+
+  const filteredPeople = people.filter((person) => {
+    if (!searchTerm) return true
+    const searchLower = searchTerm.toLowerCase()
+    return (
+      person.name.toLowerCase().includes(searchLower) ||
+      person.email?.toLowerCase().includes(searchLower) ||
+      person.phone?.toLowerCase().includes(searchLower)
+    )
+  })
+
+  const totalPages = Math.ceil(filteredPeople.length / ITEMS_PER_PAGE)
+  const paginatedPeople = filteredPeople.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
 
   function handleOpenModal(person?: Person) {
     if (person) {
@@ -123,28 +145,48 @@ export default function PeoplePage() {
         </Button>
       </div>
 
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <SearchInput
+            placeholder="Buscar por nome, email ou telefone..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setCurrentPage(1)
+            }}
+            onClear={() => {
+              setSearchTerm('')
+              setCurrentPage(1)
+            }}
+          />
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Pessoas ({people.length})</CardTitle>
+          <CardTitle>Lista de Pessoas ({filteredPeople.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {people.length === 0 ? (
+          {filteredPeople.length === 0 ? (
             <div className="text-sm text-dark-400 text-center py-8">
-              Nenhuma pessoa cadastrada
+              {searchTerm
+                ? 'Nenhuma pessoa encontrada'
+                : 'Nenhuma pessoa cadastrada'}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Data de Nascimento</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {people.map((person) => (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead>Data de Nascimento</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedPeople.map((person) => (
                   <TableRow key={person.id}>
                     <TableCell className="font-medium">{person.name}</TableCell>
                     <TableCell>{person.email ?? '-'}</TableCell>
@@ -174,6 +216,14 @@ export default function PeoplePage() {
                 ))}
               </TableBody>
             </Table>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              itemsPerPage={ITEMS_PER_PAGE}
+              totalItems={filteredPeople.length}
+            />
+          </>
           )}
         </CardContent>
       </Card>

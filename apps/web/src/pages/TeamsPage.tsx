@@ -4,8 +4,12 @@ import { Button } from '@/components/ui/Button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { Pagination } from '@/components/ui/Pagination'
 import { Team, Person } from '@/types'
 import { formatDate } from '@/lib/utils'
+
+const ITEMS_PER_PAGE = 10
 
 const MOCK_PEOPLE: Person[] = [
   { id: '1', name: 'João Silva', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
@@ -39,6 +43,8 @@ const MOCK_TEAMS: Team[] = [
 export default function TeamsPage() {
   const [teams, setTeams] = useState<Team[]>(MOCK_TEAMS)
   const [people] = useState<Person[]>(MOCK_PEOPLE)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
   const [formData, setFormData] = useState({
@@ -47,6 +53,21 @@ export default function TeamsPage() {
     memberIds: [] as string[],
     isActive: true,
   })
+
+  const filteredTeams = teams.filter((team) => {
+    if (!searchTerm) return true
+    const searchLower = searchTerm.toLowerCase()
+    return (
+      team.name.toLowerCase().includes(searchLower) ||
+      team.description?.toLowerCase().includes(searchLower)
+    )
+  })
+
+  const totalPages = Math.ceil(filteredTeams.length / ITEMS_PER_PAGE)
+  const paginatedTeams = filteredTeams.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
 
   function handleOpenModal(team?: Team) {
     if (team) {
@@ -134,28 +155,48 @@ export default function TeamsPage() {
         </Button>
       </div>
 
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <SearchInput
+            placeholder="Buscar por nome ou descrição..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setCurrentPage(1)
+            }}
+            onClear={() => {
+              setSearchTerm('')
+              setCurrentPage(1)
+            }}
+          />
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Equipes ({teams.length})</CardTitle>
+          <CardTitle>Lista de Equipes ({filteredTeams.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {teams.length === 0 ? (
+          {filteredTeams.length === 0 ? (
             <div className="text-sm text-dark-400 text-center py-8">
-              Nenhuma equipe cadastrada
+              {searchTerm
+                ? 'Nenhuma equipe encontrada'
+                : 'Nenhuma equipe cadastrada'}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead>Membros</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {teams.map((team) => (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Membros</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedTeams.map((team) => (
                   <TableRow key={team.id}>
                     <TableCell className="font-medium">{team.name}</TableCell>
                     <TableCell>{team.description ?? '-'}</TableCell>
@@ -195,6 +236,14 @@ export default function TeamsPage() {
                 ))}
               </TableBody>
             </Table>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              itemsPerPage={ITEMS_PER_PAGE}
+              totalItems={filteredTeams.length}
+            />
+          </>
           )}
         </CardContent>
       </Card>
