@@ -40,9 +40,15 @@ export default function LoginPage() {
         <CardHeader>
           <div className="flex items-center justify-center mb-4">
             <img
-              src="/Logo-minc.png"
-              alt="MINC Logo"
-              className="h-16 w-auto object-contain"
+              src="/minc-teams-logo.png"
+              alt="MINC Teams"
+              className="h-20 w-auto object-contain"
+              onError={(e) => {
+                // Fallback para a logo antiga se a nova não existir
+                const target = e.target as HTMLImageElement;
+                target.src = "/Logo-minc.png";
+                target.className = "h-16 w-auto object-contain";
+              }}
             />
           </div>
           <CardTitle className="text-center">
