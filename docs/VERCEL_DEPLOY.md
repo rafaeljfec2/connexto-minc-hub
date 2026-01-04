@@ -23,17 +23,20 @@ Este documento contém instruções completas para fazer deploy do projeto na Ve
 
 **Root Directory:** Deixe vazio (raiz do projeto)
 
-**Build Command:** 
+**Build Command:**
+
 ```bash
 cd apps/web && pnpm build
 ```
 
-**Output Directory:** 
+**Output Directory:**
+
 ```
 apps/web/dist
 ```
 
 **Install Command:**
+
 ```bash
 pnpm install
 ```
@@ -43,18 +46,21 @@ pnpm install
 Configure as seguintes variáveis de ambiente no painel da Vercel:
 
 #### Produção
+
 ```
 VITE_API_URL=https://api.minc-teams.com
 VITE_MOCK_MODE=false
 ```
 
 #### Preview/Staging
+
 ```
 VITE_API_URL=https://api-staging.minc-teams.com
 VITE_MOCK_MODE=false
 ```
 
 #### Desenvolvimento (Branch)
+
 ```
 VITE_API_URL=http://localhost:3001
 VITE_MOCK_MODE=true
@@ -69,6 +75,7 @@ VITE_MOCK_MODE=true
 ## Otimizações Implementadas
 
 ### Build
+
 - ✅ Minificação com esbuild
 - ✅ Code splitting automático
 - ✅ Chunks separados para React e UI vendors
@@ -76,21 +83,25 @@ VITE_MOCK_MODE=true
 - ✅ Source maps desabilitados em produção
 
 ### Cache
+
 - ✅ Assets estáticos com cache de 1 ano
 - ✅ Cache imutável para arquivos versionados
 
 ### Routing
+
 - ✅ SPA routing configurado (todas as rotas redirecionam para index.html)
 
 ## Estrutura do Projeto
 
 O projeto é um monorepo com Turborepo:
+
 - **Raiz:** Configurações do monorepo
 - **apps/web:** Aplicação frontend React + Vite
 
 ## Comandos de Build
 
 O arquivo `vercel.json` já está configurado com os comandos corretos:
+
 - Build: `cd apps/web && pnpm build`
 - Output: `apps/web/dist`
 
@@ -107,15 +118,18 @@ Após o deploy, verifique:
 ## Troubleshooting
 
 ### Erro: "Build failed"
+
 - Verifique se todas as dependências estão no `package.json`
 - Confirme que o Node.js version está correto (18+)
 - Verifique os logs de build na Vercel
 
 ### Erro: "404 em rotas"
+
 - Verifique se o `vercel.json` tem a configuração de `rewrites`
 - Confirme que o `outputDirectory` está correto
 
 ### Erro: "Variáveis de ambiente não encontradas"
+
 - Verifique se as variáveis começam com `VITE_`
 - Confirme que foram configuradas no painel da Vercel
 - Faça um novo deploy após adicionar variáveis
@@ -131,6 +145,7 @@ Para configurar um domínio customizado:
 ## CI/CD
 
 A Vercel faz deploy automaticamente quando você:
+
 - Faz push para a branch principal (produção)
 - Cria um Pull Request (preview)
 - Faz push para outras branches (preview)
@@ -138,6 +153,7 @@ A Vercel faz deploy automaticamente quando você:
 ## Monitoramento
 
 A Vercel fornece:
+
 - Analytics de performance
 - Logs de erro
 - Métricas de build
@@ -146,5 +162,6 @@ A Vercel fornece:
 ## Suporte
 
 Para mais informações, consulte:
+
 - [Documentação Vercel](https://vercel.com/docs)
 - [Vite + Vercel](https://vercel.com/docs/frameworks/vite)
