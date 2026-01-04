@@ -10,6 +10,7 @@ import ServicesPage from "@/pages/ServicesPage";
 import SchedulesPage from "@/pages/SchedulesPage";
 import CommunicationPage from "@/pages/CommunicationPage";
 import ChurchesPage from "@/pages/ChurchesPage";
+import MinistriesPage from "@/pages/MinistriesPage";
 import ProfilePage from "@/pages/ProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
 import { UserRole } from "@/types";
@@ -204,6 +205,24 @@ function App() {
               <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
                 <AppLayout>
                   <ChurchesPage />
+                </AppLayout>
+              </ProtectedRoute>
+            )
+          }
+        />
+        <Route
+          path="/ministries"
+          element={
+            MOCK_MODE ? (
+              <AppLayout>
+                <MinistriesPage />
+              </AppLayout>
+            ) : (
+              <ProtectedRoute
+                allowedRoles={[UserRole.ADMIN, UserRole.COORDINATOR]}
+              >
+                <AppLayout>
+                  <MinistriesPage />
                 </AppLayout>
               </ProtectedRoute>
             )

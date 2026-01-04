@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    label: "Pessoas",
+    label: "Servos",
     href: "/people",
     roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
   },

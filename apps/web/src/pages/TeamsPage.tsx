@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { CheckboxList } from '@/components/ui/CheckboxList'
 import { DataTable } from '@/components/ui/DataTable'
@@ -11,12 +12,23 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { PageWithCrud } from '@/components/pages/PageWithCrud'
 import { useModal } from '@/hooks/useModal'
 import { useCrud } from '@/hooks/useCrud'
-import { Team, Person } from '@/types'
+import { Team, Person, Ministry } from '@/types'
 
 const MOCK_PEOPLE: Person[] = [
   { id: '1', name: 'João Silva', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
   { id: '2', name: 'Maria Santos', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
   { id: '3', name: 'Pedro Costa', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+]
+
+const MOCK_MINISTRIES: Ministry[] = [
+  {
+    id: '1',
+    name: 'Time Boas-Vindas',
+    churchId: '1',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ]
 
 const MOCK_TEAMS: Team[] = [
@@ -47,6 +59,7 @@ export default function TeamsPage() {
     initialItems: MOCK_TEAMS,
   })
   const [people] = useState<Person[]>(MOCK_PEOPLE)
+  const [ministries] = useState<Ministry[]>(MOCK_MINISTRIES)
   const modal = useModal()
   const deleteModal = useModal()
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
@@ -54,6 +67,7 @@ export default function TeamsPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    ministryId: ministries[0]?.id ?? '',
     memberIds: [] as string[],
     isActive: true,
   })
@@ -64,6 +78,7 @@ export default function TeamsPage() {
       setFormData({
         name: team.name,
         description: team.description ?? '',
+        ministryId: team.ministryId,
         memberIds: team.memberIds,
         isActive: team.isActive,
       })
@@ -72,6 +87,7 @@ export default function TeamsPage() {
       setFormData({
         name: '',
         description: '',
+        ministryId: ministries[0]?.id ?? '',
         memberIds: [],
         isActive: true,
       })
@@ -85,6 +101,7 @@ export default function TeamsPage() {
     setFormData({
       name: '',
       description: '',
+      ministryId: ministries[0]?.id ?? '',
       memberIds: [],
       isActive: true,
     })
@@ -96,10 +113,14 @@ export default function TeamsPage() {
     if (editingTeam) {
       update(editingTeam.id, formData)
     } else {
-      create({ ...formData, ministryId: '1' })
+      create(formData)
     }
     
     handleCloseModal()
+  }
+
+  function getMinistryName(ministryId: string) {
+    return ministries.find((m) => m.id === ministryId)?.name ?? 'Time não encontrado'
   }
 
   function handleDeleteClick(id: string) {
@@ -128,6 +149,11 @@ export default function TeamsPage() {
       key: 'name',
       label: 'Nome',
       render: (team: Team) => <span className="font-medium">{team.name}</span>,
+    },
+    {
+      key: 'ministryId',
+      label: 'Time',
+      render: (team: Team) => getMinistryName(team.ministryId),
     },
     {
       key: 'description',
@@ -201,6 +227,18 @@ export default function TeamsPage() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
+          <Select
+            label="Time *"
+            value={formData.ministryId}
+            onChange={(e) =>
+              setFormData({ ...formData, ministryId: e.target.value })
+            }
+            options={ministries.map((ministry) => ({
+              value: ministry.id,
+              label: ministry.name,
+            }))}
+            required
+          />
           <Input
             label="Nome da Equipe *"
             value={formData.name}

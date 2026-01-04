@@ -153,7 +153,7 @@ export default function CommunicationPage() {
     const personNames = message.recipients.ids
       .map((id) => MOCK_PEOPLE.find((p) => p.id === id)?.name)
       .filter(Boolean)
-    return `Pessoa${personNames.length > 1 ? 's' : ''}: ${personNames.join(', ')}`
+    return `Servo${personNames.length > 1 ? 's' : ''}: ${personNames.join(', ')}`
   }
 
   const checkboxItems =
@@ -255,13 +255,13 @@ export default function CommunicationPage() {
             options={[
               { value: 'all', label: 'Todos os membros' },
               { value: 'team', label: 'Equipe específica' },
-              { value: 'person', label: 'Pessoa específica' },
+              { value: 'person', label: 'Servo específico' },
             ]}
           />
           {formData.recipientType !== 'all' && (
             <div>
               <label className="block text-sm font-medium text-dark-300 mb-2">
-                Selecionar {formData.recipientType === 'team' ? 'Equipes' : 'Pessoas'}
+                Selecionar {formData.recipientType === 'team' ? 'Equipes' : 'Servos'}
               </label>
               <CheckboxList
                 items={checkboxItems}

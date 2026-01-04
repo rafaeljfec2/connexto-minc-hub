@@ -140,14 +140,14 @@ export default function PeoplePage() {
   return (
     <>
       <PageWithCrud
-        title="Pessoas"
-        description="Gerencie membros do Time Boas-Vindas"
-        createButtonLabel="Adicionar Pessoa"
+        title="Servos"
+        description="Gerencie servos do Time Boas-Vindas"
+        createButtonLabel="Adicionar Servo"
         items={people}
         searchFields={['name', 'email', 'phone']}
         searchPlaceholder="Buscar por nome, email ou telefone..."
-        emptyMessage="Nenhuma pessoa cadastrada"
-        emptySearchMessage="Nenhuma pessoa encontrada"
+        emptyMessage="Nenhum servo cadastrado"
+        emptySearchMessage="Nenhum servo encontrado"
         tableContent={(paginatedItems) => (
           <DataTable
             data={paginatedItems}
@@ -179,7 +179,7 @@ export default function PeoplePage() {
       <Modal
         isOpen={modal.isOpen}
         onClose={handleCloseModal}
-        title={editingPerson ? 'Editar Pessoa' : 'Nova Pessoa'}
+        title={editingPerson ? 'Editar Servo' : 'Novo Servo'}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -218,7 +218,7 @@ export default function PeoplePage() {
             label="Observações"
             value={formData.notes}
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            placeholder="Observações sobre a pessoa..."
+            placeholder="Observações sobre o servo..."
             rows={4}
           />
           <div className="flex justify-end gap-3 pt-4">
@@ -230,7 +230,7 @@ export default function PeoplePage() {
               Cancelar
             </Button>
             <Button type="submit" variant="primary">
-              {editingPerson ? 'Salvar Alterações' : 'Adicionar Pessoa'}
+              {editingPerson ? 'Salvar Alterações' : 'Adicionar Servo'}
             </Button>
           </div>
         </form>
@@ -240,8 +240,8 @@ export default function PeoplePage() {
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.close}
         onConfirm={handleDeleteConfirm}
-        title="Excluir Pessoa"
-        message="Tem certeza que deseja excluir esta pessoa? Esta ação não pode ser desfeita."
+        title="Excluir Servo"
+        message="Tem certeza que deseja excluir este servo? Esta ação não pode ser desfeita."
         confirmText="Excluir"
         cancelText="Cancelar"
         variant="danger"

@@ -21,7 +21,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-medium text-dark-400">
-              Total de Pessoas
+              Total de Servos
             </CardTitle>
           </CardHeader>
           <CardContent>
