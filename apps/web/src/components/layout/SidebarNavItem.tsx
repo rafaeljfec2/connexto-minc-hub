@@ -21,9 +21,10 @@ export function SidebarNavItem({
       to={href}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+        "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ease-out",
+        "transform hover:scale-105 active:scale-95",
         isActive
-          ? "bg-primary-600 text-white"
+          ? "bg-primary-600 text-white shadow-lg shadow-primary-500/30"
           : "text-dark-600 hover:bg-dark-100 hover:text-dark-900 dark:text-dark-300 dark:hover:bg-dark-800 dark:hover:text-dark-50"
       )}
     >

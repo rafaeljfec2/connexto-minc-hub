@@ -12,6 +12,9 @@ export function Card({ className, children, ...props }: CardProps) {
         'rounded-xl bg-white border border-dark-200 p-4 sm:p-6',
         'dark:bg-dark-900/80 dark:border-dark-800',
         'backdrop-blur-sm',
+        'transition-all duration-300 ease-out',
+        'hover:shadow-lg hover:shadow-primary-500/10 dark:hover:shadow-primary-500/20',
+        'animate-fade-in-up',
         className
       )}
       {...props}

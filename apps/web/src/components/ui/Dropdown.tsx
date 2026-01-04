@@ -53,7 +53,9 @@ export function Dropdown({ trigger, items, align = 'right' }: DropdownProps) {
           />
           <div
             className={cn(
-              'absolute z-50 mt-2 w-56 rounded-lg bg-dark-900 border border-dark-800 shadow-xl',
+              'absolute z-50 mt-2 w-56 rounded-lg bg-white border border-dark-200 shadow-xl',
+              'dark:bg-dark-900 dark:border-dark-800',
+              'animate-fade-in-down',
               align === 'right' ? 'right-0' : 'left-0'
             )}
           >
@@ -64,11 +66,12 @@ export function Dropdown({ trigger, items, align = 'right' }: DropdownProps) {
                   type="button"
                   onClick={() => handleItemClick(item)}
                   className={cn(
-                    'w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-                    'hover:bg-dark-800',
+                    'w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200',
+                    'hover:bg-dark-100 dark:hover:bg-dark-800',
+                    'active:scale-95',
                     item.variant === 'danger'
-                      ? 'text-red-400 hover:text-red-300'
-                      : 'text-dark-300 hover:text-dark-50'
+                      ? 'text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300'
+                      : 'text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50'
                   )}
                 >
                   {item.icon && <span className="flex-shrink-0">{item.icon}</span>}

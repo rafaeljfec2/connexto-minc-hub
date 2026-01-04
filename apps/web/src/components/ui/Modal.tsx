@@ -32,25 +32,27 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="fixed inset-0 bg-dark-950/80 backdrop-blur-sm"
+        className="fixed inset-0 bg-dark-950/80 backdrop-blur-sm animate-fade-in"
         onClick={onClose}
       />
       <div
         className={cn(
-          'relative z-50 w-full rounded-xl bg-dark-900 border border-dark-800 shadow-xl',
+          'relative z-50 w-full rounded-xl bg-white border border-dark-200 shadow-xl',
+          'dark:bg-dark-900 dark:border-dark-800',
+          'animate-scale-in',
           sizeClasses[size]
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-dark-800">
-          <h2 className="text-xl font-semibold text-dark-50">{title}</h2>
+        <div className="flex items-center justify-between p-6 border-b border-dark-200 dark:border-dark-800">
+          <h2 className="text-xl font-semibold text-dark-900 dark:text-dark-50">{title}</h2>
           <button
             onClick={onClose}
-            className="text-dark-400 hover:text-dark-50 transition-colors"
+            className="text-dark-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50 transition-all duration-200 hover:scale-110 active:scale-95"
             aria-label="Fechar"
           >
             <svg

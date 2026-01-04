@@ -148,10 +148,10 @@ export function MonthNavigator({
 
   return (
     <div className={cn("relative", className)} ref={dropdownRef}>
-      <div className="flex items-center gap-3 bg-white rounded-xl border border-dark-200 dark:bg-dark-900 dark:border-dark-800 px-4 py-2">
+      <div className="flex items-center gap-3 bg-white rounded-xl border border-dark-200 dark:bg-dark-900 dark:border-dark-800 px-4 py-2 transition-all duration-300 hover:shadow-lg hover:shadow-primary-500/10 dark:hover:shadow-primary-500/20">
         <button
           onClick={handlePrev}
-          className="rounded-full bg-dark-100 border border-dark-300 min-h-[44px] min-w-[44px] p-2 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors active:scale-95 flex-shrink-0 flex items-center justify-center dark:bg-dark-800 dark:border-dark-700 dark:hover:bg-dark-700"
+          className="rounded-full bg-dark-100 border border-dark-300 min-h-[44px] min-w-[44px] p-2 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200 ease-out hover:scale-110 active:scale-95 flex-shrink-0 flex items-center justify-center dark:bg-dark-800 dark:border-dark-700 dark:hover:bg-dark-700"
           aria-label="Mês anterior"
           type="button"
         >
@@ -173,7 +173,7 @@ export function MonthNavigator({
         <div className="flex-1 relative">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full h-11 px-4 rounded-lg bg-dark-100 border border-dark-300 text-dark-900 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors flex items-center justify-between dark:bg-dark-800 dark:border-dark-700 dark:text-dark-50 dark:hover:bg-dark-700"
+            className="w-full h-11 px-4 rounded-lg bg-dark-100 border border-dark-300 text-dark-900 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 flex items-center justify-between dark:bg-dark-800 dark:border-dark-700 dark:text-dark-50 dark:hover:bg-dark-700"
             type="button"
             aria-label="Selecionar mês/ano"
           >

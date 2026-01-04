@@ -9,7 +9,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="sm"
       onClick={toggleTheme}
-      className="min-w-[44px]"
+      className="min-w-[44px] transition-transform duration-300 hover:rotate-180"
       aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
     >
       {theme === "dark" ? (
