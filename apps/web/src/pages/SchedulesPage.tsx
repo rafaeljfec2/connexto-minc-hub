@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
-import { SearchInput } from '@/components/ui/SearchInput'
-import { Pagination } from '@/components/ui/Pagination'
+import { Select } from '@/components/ui/Select'
+import { DataTable } from '@/components/ui/DataTable'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { CheckboxList } from '@/components/ui/CheckboxList'
+import { PageWithCrud } from '@/components/pages/PageWithCrud'
+import { useModal } from '@/hooks/useModal'
+import { useCrud } from '@/hooks/useCrud'
 import { Schedule, Service, Team } from '@/types'
 import { formatDate } from '@/lib/utils'
 
@@ -63,37 +66,21 @@ const MOCK_SCHEDULES: Schedule[] = [
   },
 ]
 
-const ITEMS_PER_PAGE = 10
-
 export default function SchedulesPage() {
-  const [schedules, setSchedules] = useState<Schedule[]>(MOCK_SCHEDULES)
+  const { items: schedules, create, update, remove } = useCrud<Schedule>({
+    initialItems: MOCK_SCHEDULES,
+  })
   const [services] = useState<Service[]>(MOCK_SERVICES)
   const [teams] = useState<Team[]>(MOCK_TEAMS)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const modal = useModal()
+  const deleteModal = useModal()
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     serviceId: '',
     date: '',
     teamIds: [] as string[],
   })
-
-  const filteredSchedules = schedules.filter((schedule) => {
-    if (!searchTerm) return true
-    const service = services.find((s) => s.id === schedule.serviceId)
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      service?.name.toLowerCase().includes(searchLower) ||
-      formatDate(schedule.date).toLowerCase().includes(searchLower)
-    )
-  })
-
-  const totalPages = Math.ceil(filteredSchedules.length / ITEMS_PER_PAGE)
-  const paginatedSchedules = filteredSchedules.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
 
   function handleOpenModal(schedule?: Schedule) {
     if (schedule) {
@@ -111,11 +98,11 @@ export default function SchedulesPage() {
         teamIds: [],
       })
     }
-    setIsModalOpen(true)
+    modal.open()
   }
 
   function handleCloseModal() {
-    setIsModalOpen(false)
+    modal.close()
     setEditingSchedule(null)
     setFormData({
       serviceId: '',
@@ -127,36 +114,29 @@ export default function SchedulesPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
+    const scheduleData = {
+      ...formData,
+      date: new Date(formData.date).toISOString(),
+    }
+
     if (editingSchedule) {
-      setSchedules(
-        schedules.map((s) =>
-          s.id === editingSchedule.id
-            ? {
-                ...s,
-                ...formData,
-                date: new Date(formData.date).toISOString(),
-                updatedAt: new Date().toISOString(),
-              }
-            : s
-        )
-      )
+      update(editingSchedule.id, scheduleData)
     } else {
-      const newSchedule: Schedule = {
-        id: Date.now().toString(),
-        ...formData,
-        date: new Date(formData.date).toISOString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setSchedules([...schedules, newSchedule])
+      create(scheduleData)
     }
 
     handleCloseModal()
   }
 
-  function handleDelete(id: string) {
-    if (confirm('Tem certeza que deseja excluir esta escala?')) {
-      setSchedules(schedules.filter((s) => s.id !== id))
+  function handleDeleteClick(id: string) {
+    setDeletingId(id)
+    deleteModal.open()
+  }
+
+  function handleDeleteConfirm() {
+    if (deletingId) {
+      remove(deletingId)
+      setDeletingId(null)
     }
   }
 
@@ -199,137 +179,133 @@ export default function SchedulesPage() {
       .join(', ')
   }
 
+  // Custom search function for schedules
+  const [searchTerm, setSearchTerm] = useState('')
+  
+  function filterSchedules(searchTerm: string) {
+    if (!searchTerm) return schedules
+    const searchLower = searchTerm.toLowerCase()
+    return schedules.filter((schedule) => {
+      const service = services.find((s) => s.id === schedule.serviceId)
+      return (
+        service?.name.toLowerCase().includes(searchLower) ||
+        formatDate(schedule.date).toLowerCase().includes(searchLower)
+      )
+    })
+  }
+
+  const filteredSchedules = filterSchedules(searchTerm)
+
+  const columns = [
+    {
+      key: 'serviceId',
+      label: 'Culto',
+      render: (schedule: Schedule) => (
+        <span className="font-medium">{getServiceName(schedule.serviceId)}</span>
+      ),
+    },
+    {
+      key: 'date',
+      label: 'Data',
+      render: (schedule: Schedule) => formatDate(schedule.date),
+    },
+    {
+      key: 'teamIds',
+      label: 'Equipes',
+      render: (schedule: Schedule) => getTeamNames(schedule.teamIds) || '-',
+    },
+  ]
+
+  const checkboxItems = teams
+    .filter((t) => t.isActive)
+    .map((team) => ({
+      id: team.id,
+      label: team.name,
+    }))
+
   return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-dark-50 mb-2">Escalas</h1>
-          <p className="text-dark-400">
-            Gerencie as escalas dos cultos e equipes
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" size="md" onClick={handleAutoAssign}>
-            Sorteio Automático
-          </Button>
-          <Button variant="primary" size="md" onClick={() => handleOpenModal()}>
-            Nova Escala
-          </Button>
-        </div>
-      </div>
-
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <SearchInput
-            placeholder="Buscar por culto ou data..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value)
-              setCurrentPage(1)
-            }}
-            onClear={() => {
-              setSearchTerm('')
-              setCurrentPage(1)
-            }}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            Lista de Escalas ({filteredSchedules.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredSchedules.length === 0 ? (
-            <div className="text-sm text-dark-400 text-center py-8">
-              {searchTerm
-                ? 'Nenhuma escala encontrada'
-                : 'Nenhuma escala cadastrada'}
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Culto</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Equipes</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedSchedules.map((schedule) => (
-                    <TableRow key={schedule.id}>
-                      <TableCell className="font-medium">
-                        {getServiceName(schedule.serviceId)}
-                      </TableCell>
-                      <TableCell>{formatDate(schedule.date)}</TableCell>
-                      <TableCell>
-                        {getTeamNames(schedule.teamIds) || '-'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenModal(schedule)}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDelete(schedule.id)}
-                          >
-                            Excluir
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                itemsPerPage={ITEMS_PER_PAGE}
-                totalItems={filteredSchedules.length}
+    <>
+      <PageWithCrud
+        title="Escalas"
+        description="Gerencie as escalas dos cultos e equipes"
+        createButtonLabel="Nova Escala"
+        items={filteredSchedules}
+        searchFields={[]}
+        searchPlaceholder="Buscar por culto ou data..."
+        emptyMessage="Nenhuma escala cadastrada"
+        emptySearchMessage="Nenhuma escala encontrada"
+        searchCard={
+          <div className="mb-6">
+            <div className="bg-dark-900 rounded-lg border border-dark-800 p-6">
+              <input
+                type="text"
+                placeholder="Buscar por culto ou data..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-11 px-4 rounded-lg bg-dark-800 border border-dark-700 text-dark-50 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
-            </>
-          )}
-        </CardContent>
-      </Card>
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="mt-2 text-sm text-primary-400 hover:text-primary-300"
+                >
+                  Limpar busca
+                </button>
+              )}
+            </div>
+          </div>
+        }
+        tableContent={(paginatedItems) => (
+          <DataTable
+            data={paginatedItems}
+            columns={columns}
+            hasSearch={false}
+            actions={(schedule) => (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleOpenModal(schedule)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => handleDeleteClick(schedule.id)}
+                >
+                  Excluir
+                </Button>
+              </>
+            )}
+          />
+        )}
+        onCreateClick={() => handleOpenModal()}
+      />
 
       <Modal
-        isOpen={isModalOpen}
+        isOpen={modal.isOpen}
         onClose={handleCloseModal}
         title={editingSchedule ? 'Editar Escala' : 'Nova Escala'}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-1.5">
-              Culto *
-            </label>
-            <select
-              value={formData.serviceId}
-              onChange={(e) =>
-                setFormData({ ...formData, serviceId: e.target.value })
-              }
-              className="w-full h-11 px-4 rounded-lg bg-dark-900 border border-dark-700 text-dark-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              required
-            >
-              <option value="">Selecione um culto</option>
-              {services.map((service) => (
-                <option key={service.id} value={service.id}>
-                  {service.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Culto *"
+            value={formData.serviceId}
+            onChange={(e) =>
+              setFormData({ ...formData, serviceId: e.target.value })
+            }
+            options={[
+              { value: '', label: 'Selecione um culto' },
+              ...services.map((service) => ({
+                value: service.id,
+                label: service.name,
+              })),
+            ]}
+            required
+          />
           <Input
             label="Data *"
             type="date"
@@ -353,24 +329,11 @@ export default function SchedulesPage() {
                 Sortear Automaticamente
               </Button>
             </div>
-            <div className="space-y-2 max-h-48 overflow-y-auto border border-dark-800 rounded-lg p-3">
-              {teams
-                .filter((t) => t.isActive)
-                .map((team) => (
-                  <label
-                    key={team.id}
-                    className="flex items-center gap-2 cursor-pointer hover:bg-dark-800/30 p-2 rounded"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.teamIds.includes(team.id)}
-                      onChange={() => toggleTeam(team.id)}
-                      className="rounded border-dark-700 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="text-sm text-dark-200">{team.name}</span>
-                  </label>
-                ))}
-            </div>
+            <CheckboxList
+              items={checkboxItems}
+              selectedIds={formData.teamIds}
+              onToggle={toggleTeam}
+            />
           </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button
@@ -386,6 +349,17 @@ export default function SchedulesPage() {
           </div>
         </form>
       </Modal>
-    </main>
+
+      <ConfirmDialog
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.close}
+        onConfirm={handleDeleteConfirm}
+        title="Excluir Escala"
+        message="Tem certeza que deseja excluir esta escala? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+      />
+    </>
   )
 }

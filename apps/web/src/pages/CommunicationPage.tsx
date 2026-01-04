@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
+import { Select } from '@/components/ui/Select'
+import { CheckboxList } from '@/components/ui/CheckboxList'
 import { Modal } from '@/components/ui/Modal'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { useModal } from '@/hooks/useModal'
 import { Team, Person } from '@/types'
 
 const MOCK_TEAMS: Team[] = [
@@ -80,7 +85,7 @@ const MOCK_MESSAGES: Message[] = [
 
 export default function CommunicationPage() {
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const modal = useModal()
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -95,11 +100,11 @@ export default function CommunicationPage() {
       recipientType: 'all',
       selectedIds: [],
     })
-    setIsModalOpen(true)
+    modal.open()
   }
 
   function handleCloseModal() {
-    setIsModalOpen(false)
+    modal.close()
     setFormData({
       title: '',
       content: '',
@@ -151,48 +156,30 @@ export default function CommunicationPage() {
     return `Pessoa${personNames.length > 1 ? 's' : ''}: ${personNames.join(', ')}`
   }
 
+  const checkboxItems =
+    formData.recipientType === 'team'
+      ? MOCK_TEAMS.filter((t) => t.isActive).map((team) => ({
+          id: team.id,
+          label: team.name,
+        }))
+      : MOCK_PEOPLE.map((person) => ({
+          id: person.id,
+          label: person.name,
+        }))
+
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-dark-50 mb-2">
-            Comunicação
-          </h1>
-          <p className="text-dark-400">
-            Envie mensagens para membros e equipes
-          </p>
-        </div>
-        <Button variant="primary" size="md" onClick={handleOpenModal}>
-          Nova Mensagem
-        </Button>
-      </div>
+      <PageHeader
+        title="Comunicação"
+        description="Envie mensagens para membros e equipes"
+        action={
+          <Button variant="primary" size="md" onClick={handleOpenModal}>
+            Nova Mensagem
+          </Button>
+        }
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {messages.map((message) => (
-          <Card key={message.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{message.title}</CardTitle>
-                  <p className="text-xs text-dark-400 mt-1">
-                    {getRecipientLabel(message)}
-                  </p>
-                </div>
-                <span className="text-xs text-dark-500">
-                  {new Date(message.sentAt).toLocaleDateString('pt-BR')}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-dark-300 whitespace-pre-wrap">
-                {message.content}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {messages.length === 0 && (
+      {messages.length === 0 ? (
         <Card>
           <CardContent className="py-12">
             <div className="text-center text-dark-400">
@@ -203,10 +190,35 @@ export default function CommunicationPage() {
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {messages.map((message) => (
+            <Card key={message.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{message.title}</CardTitle>
+                    <p className="text-xs text-dark-400 mt-1">
+                      {getRecipientLabel(message)}
+                    </p>
+                  </div>
+                  <span className="text-xs text-dark-500">
+                    {new Date(message.sentAt).toLocaleDateString('pt-BR')}
+                  </span>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-dark-300 whitespace-pre-wrap">
+                  {message.content}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
       <Modal
-        isOpen={isModalOpen}
+        isOpen={modal.isOpen}
         onClose={handleCloseModal}
         title="Nova Mensagem"
         size="lg"
@@ -220,66 +232,44 @@ export default function CommunicationPage() {
             }
             required
           />
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-1.5">
-              Mensagem *
-            </label>
-            <textarea
-              value={formData.content}
-              onChange={(e) =>
-                setFormData({ ...formData, content: e.target.value })
-              }
-              className="w-full h-32 px-4 py-2 rounded-lg bg-dark-900 border border-dark-700 text-dark-50 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-              placeholder="Digite sua mensagem..."
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-1.5">
-              Destinatários *
-            </label>
-            <select
-              value={formData.recipientType}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  recipientType: e.target.value as 'all' | 'team' | 'person',
-                  selectedIds: [],
-                })
-              }
-              className="w-full h-11 px-4 rounded-lg bg-dark-900 border border-dark-700 text-dark-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent mb-3"
-            >
-              <option value="all">Todos os membros</option>
-              <option value="team">Equipe específica</option>
-              <option value="person">Pessoa específica</option>
-            </select>
-            {formData.recipientType !== 'all' && (
-              <div className="space-y-2 max-h-48 overflow-y-auto border border-dark-800 rounded-lg p-3">
-                {(formData.recipientType === 'team' ? MOCK_TEAMS : MOCK_PEOPLE)
-                  .filter((item) =>
-                    formData.recipientType === 'team'
-                      ? (item as Team).isActive
-                      : true
-                  )
-                  .map((item) => (
-                    <label
-                      key={item.id}
-                      className="flex items-center gap-2 cursor-pointer hover:bg-dark-800/30 p-2 rounded"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.selectedIds.includes(item.id)}
-                        onChange={() => toggleSelection(item.id)}
-                        className="rounded border-dark-700 text-primary-600 focus:ring-primary-500"
-                      />
-                      <span className="text-sm text-dark-200">
-                        {'name' in item ? item.name : (item as Person).name}
-                      </span>
-                    </label>
-                  ))}
-              </div>
-            )}
-          </div>
+          <Textarea
+            label="Mensagem *"
+            value={formData.content}
+            onChange={(e) =>
+              setFormData({ ...formData, content: e.target.value })
+            }
+            placeholder="Digite sua mensagem..."
+            rows={6}
+            required
+          />
+          <Select
+            label="Destinatários *"
+            value={formData.recipientType}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                recipientType: e.target.value as 'all' | 'team' | 'person',
+                selectedIds: [],
+              })
+            }
+            options={[
+              { value: 'all', label: 'Todos os membros' },
+              { value: 'team', label: 'Equipe específica' },
+              { value: 'person', label: 'Pessoa específica' },
+            ]}
+          />
+          {formData.recipientType !== 'all' && (
+            <div>
+              <label className="block text-sm font-medium text-dark-300 mb-2">
+                Selecionar {formData.recipientType === 'team' ? 'Equipes' : 'Pessoas'}
+              </label>
+              <CheckboxList
+                items={checkboxItems}
+                selectedIds={formData.selectedIds}
+                onToggle={toggleSelection}
+              />
+            </div>
+          )}
           <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"

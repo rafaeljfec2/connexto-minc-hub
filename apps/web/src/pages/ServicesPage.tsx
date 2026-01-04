@@ -1,29 +1,18 @@
 import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { DataTable } from '@/components/ui/DataTable'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { PageWithCrud } from '@/components/pages/PageWithCrud'
+import { useModal } from '@/hooks/useModal'
+import { useCrud } from '@/hooks/useCrud'
 import { Service, ServiceType } from '@/types'
 import { formatTime } from '@/lib/utils'
-
-const DAYS_OF_WEEK = [
-  { value: 0, label: 'Domingo' },
-  { value: 1, label: 'Segunda-feira' },
-  { value: 2, label: 'Terça-feira' },
-  { value: 3, label: 'Quarta-feira' },
-  { value: 4, label: 'Quinta-feira' },
-  { value: 5, label: 'Sexta-feira' },
-  { value: 6, label: 'Sábado' },
-]
-
-const SERVICE_TYPES = [
-  { value: ServiceType.SUNDAY_MORNING, label: 'Domingo Manhã' },
-  { value: ServiceType.SUNDAY_EVENING, label: 'Domingo Noite' },
-  { value: ServiceType.WEDNESDAY, label: 'Quarta-feira' },
-  { value: ServiceType.FRIDAY, label: 'Sexta-feira' },
-  { value: ServiceType.SPECIAL, label: 'Especial' },
-]
+import { DAYS_OF_WEEK, SERVICE_TYPES, getDayLabel, getServiceTypeLabel } from '@/lib/constants'
 
 const MOCK_SERVICES: Service[] = [
   {
@@ -62,9 +51,13 @@ const MOCK_SERVICES: Service[] = [
 ]
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>(MOCK_SERVICES)
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { items: services, create, update, remove } = useCrud<Service>({
+    initialItems: MOCK_SERVICES,
+  })
+  const modal = useModal()
+  const deleteModal = useModal()
   const [editingService, setEditingService] = useState<Service | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     type: ServiceType.SUNDAY_MORNING,
@@ -93,11 +86,11 @@ export default function ServicesPage() {
         isActive: true,
       })
     }
-    setIsModalOpen(true)
+    modal.open()
   }
 
   function handleCloseModal() {
-    setIsModalOpen(false)
+    modal.close()
     setEditingService(null)
     setFormData({
       name: '',
@@ -112,122 +105,99 @@ export default function ServicesPage() {
     e.preventDefault()
     
     if (editingService) {
-      setServices(services.map(s => 
-        s.id === editingService.id 
-          ? { ...s, ...formData, updatedAt: new Date().toISOString() }
-          : s
-      ))
+      update(editingService.id, formData)
     } else {
-      const newService: Service = {
-        id: Date.now().toString(),
-        ...formData,
-        churchId: '1',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setServices([...services, newService])
+      create({ ...formData, churchId: '1' })
     }
     
     handleCloseModal()
   }
 
-  function handleDelete(id: string) {
-    if (confirm('Tem certeza que deseja excluir este culto?')) {
-      setServices(services.filter(s => s.id !== id))
+  function handleDeleteClick(id: string) {
+    setDeletingId(id)
+    deleteModal.open()
+  }
+
+  function handleDeleteConfirm() {
+    if (deletingId) {
+      remove(deletingId)
+      setDeletingId(null)
     }
   }
 
-  function getServiceTypeLabel(type: ServiceType) {
-    return SERVICE_TYPES.find(t => t.value === type)?.label ?? type
-  }
-
-  function getDayLabel(day: number) {
-    return DAYS_OF_WEEK.find(d => d.value === day)?.label ?? 'Domingo'
-  }
+  const columns = [
+    {
+      key: 'name',
+      label: 'Nome',
+      render: (service: Service) => <span className="font-medium">{service.name}</span>,
+    },
+    {
+      key: 'type',
+      label: 'Tipo',
+      render: (service: Service) => getServiceTypeLabel(service.type),
+    },
+    {
+      key: 'dayOfWeek',
+      label: 'Dia da Semana',
+      render: (service: Service) => getDayLabel(service.dayOfWeek),
+    },
+    {
+      key: 'time',
+      label: 'Horário',
+      render: (service: Service) => formatTime(service.time),
+    },
+    {
+      key: 'isActive',
+      label: 'Status',
+      render: (service: Service) => (
+        <StatusBadge status={service.isActive ? 'active' : 'inactive'}>
+          {service.isActive ? 'Ativo' : 'Inativo'}
+        </StatusBadge>
+      ),
+    },
+  ]
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-dark-50 mb-2">
-            Cultos e Serviços
-          </h1>
-          <p className="text-dark-400">
-            Configure os cultos e horários da igreja
-          </p>
-        </div>
-        <Button variant="primary" size="md" onClick={() => handleOpenModal()}>
-          Novo Culto
-        </Button>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Cultos ({services.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {services.length === 0 ? (
-            <div className="text-sm text-dark-400 text-center py-8">
-              Nenhum culto cadastrado
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Dia da Semana</TableHead>
-                  <TableHead>Horário</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {services.map((service) => (
-                  <TableRow key={service.id}>
-                    <TableCell className="font-medium">{service.name}</TableCell>
-                    <TableCell>{getServiceTypeLabel(service.type)}</TableCell>
-                    <TableCell>{getDayLabel(service.dayOfWeek)}</TableCell>
-                    <TableCell>{formatTime(service.time)}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          service.isActive
-                            ? 'bg-green-500/20 text-green-400'
-                            : 'bg-red-500/20 text-red-400'
-                        }`}
-                      >
-                        {service.isActive ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenModal(service)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDelete(service.id)}
-                        >
-                          Excluir
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+    <>
+      <PageWithCrud
+        title="Cultos e Serviços"
+        description="Configure os cultos e horários da igreja"
+        createButtonLabel="Novo Culto"
+        items={services}
+        searchFields={['name']}
+        searchPlaceholder="Buscar por nome..."
+        emptyMessage="Nenhum culto cadastrado"
+        emptySearchMessage="Nenhum culto encontrado"
+        tableContent={(paginatedItems) => (
+          <DataTable
+            data={paginatedItems}
+            columns={columns}
+            hasSearch={false}
+            actions={(service) => (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleOpenModal(service)}
+                >
+                  Editar
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => handleDeleteClick(service.id)}
+                >
+                  Excluir
+                </Button>
+              </>
+            )}
+          />
+        )}
+        onCreateClick={() => handleOpenModal()}
+      />
 
       <Modal
-        isOpen={isModalOpen}
+        isOpen={modal.isOpen}
         onClose={handleCloseModal}
         title={editingService ? 'Editar Culto' : 'Novo Culto'}
         size="md"
@@ -239,40 +209,26 @@ export default function ServicesPage() {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-1.5">
-              Tipo de Culto *
-            </label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as ServiceType })}
-              className="w-full h-11 px-4 rounded-lg bg-dark-900 border border-dark-700 text-dark-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              required
-            >
-              {SERVICE_TYPES.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-dark-300 mb-1.5">
-              Dia da Semana *
-            </label>
-            <select
-              value={formData.dayOfWeek}
-              onChange={(e) => setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })}
-              className="w-full h-11 px-4 rounded-lg bg-dark-900 border border-dark-700 text-dark-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              required
-            >
-              {DAYS_OF_WEEK.map((day) => (
-                <option key={day.value} value={day.value}>
-                  {day.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Tipo de Culto *"
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value as ServiceType })}
+            options={SERVICE_TYPES.map((type) => ({
+              value: type.value,
+              label: type.label,
+            }))}
+            required
+          />
+          <Select
+            label="Dia da Semana *"
+            value={formData.dayOfWeek.toString()}
+            onChange={(e) => setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })}
+            options={DAYS_OF_WEEK.map((day) => ({
+              value: day.value.toString(),
+              label: day.label,
+            }))}
+            required
+          />
           <Input
             label="Horário *"
             type="time"
@@ -280,18 +236,11 @@ export default function ServicesPage() {
             onChange={(e) => setFormData({ ...formData, time: e.target.value })}
             required
           />
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="isActive"
-              checked={formData.isActive}
-              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-              className="rounded border-dark-700 text-primary-600 focus:ring-primary-500"
-            />
-            <label htmlFor="isActive" className="text-sm text-dark-300 cursor-pointer">
-              Culto ativo
-            </label>
-          </div>
+          <Checkbox
+            label="Culto ativo"
+            checked={formData.isActive}
+            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+          />
           <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"
@@ -306,6 +255,17 @@ export default function ServicesPage() {
           </div>
         </form>
       </Modal>
-    </main>
+
+      <ConfirmDialog
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.close}
+        onConfirm={handleDeleteConfirm}
+        title="Excluir Culto"
+        message="Tem certeza que deseja excluir este culto? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+      />
+    </>
   )
 }
