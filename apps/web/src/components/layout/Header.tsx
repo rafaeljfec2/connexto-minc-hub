@@ -85,14 +85,14 @@ export function Header() {
     <header className="sticky top-0 z-30 w-full border-b border-dark-800 bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-dark-950/80">
       <div className="lg:ml-64">
         <div className="w-full flex h-16 items-center justify-between overflow-visible">
-          <div className="flex items-center gap-2 ml-0 sm:-ml-6 lg:-ml-56">
+          <div className="hidden lg:flex items-center gap-2 -ml-56">
             <img
               src="/Logo-minc.png"
               alt="Minha Igreja na Cidade"
               className="h-8 w-auto object-contain"
             />
           </div>
-          <div className="flex items-center gap-3 pr-4 sm:pr-6 lg:pr-8">
+          <div className="flex-1 lg:flex-none flex items-center justify-end gap-3 pr-4 sm:pr-6 lg:pr-8">
             {user ? (
               <Dropdown
                 trigger={
