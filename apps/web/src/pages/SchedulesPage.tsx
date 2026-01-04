@@ -172,7 +172,7 @@ export default function SchedulesPage() {
         <span className="font-medium">{getServiceName(schedule.serviceId)}</span>
       </TableCell>
       <TableCell>{formatDate(schedule.date)}</TableCell>
-      <TableCell>{getTeamNames(schedule.teamIds) || '-'}</TableCell>
+      <TableCell>{getTeamNames(schedule.teamIds) ?? '-'}</TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
           <Button

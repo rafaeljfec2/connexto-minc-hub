@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMockMode } from "@/hooks/useMockMode";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { BrandText } from "@/components/ui/BrandText";
-
-const MOCK_MODE =
-  import.meta.env.VITE_MOCK_MODE === "true" || !import.meta.env.VITE_API_URL;
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -16,6 +14,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const isMockMode = useMockMode();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,7 +56,7 @@ export default function LoginPage() {
           <p className="text-center text-sm text-dark-400 mt-2">
             Sistema de gestão dos times da MINC
           </p>
-          {MOCK_MODE && (
+          {isMockMode && (
             <div className="mt-3 p-2 rounded-lg bg-primary-500/10 border border-primary-500/20">
               <p className="text-center text-xs text-primary-400">
                 Modo Desenvolvimento: Use qualquer email/senha para entrar

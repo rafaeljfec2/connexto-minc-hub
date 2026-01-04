@@ -1,10 +1,10 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { useAuth } from '@/contexts/AuthContext'
-
-const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true' || !import.meta.env.VITE_API_URL
+import { useMockMode } from '@/hooks/useMockMode'
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const isMockMode = useMockMode()
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -13,7 +13,7 @@ export default function DashboardPage() {
           Dashboard
         </h1>
         <p className="text-dark-600 dark:text-dark-400">
-          {MOCK_MODE ? 'Modo Desenvolvimento - Bem-vindo!' : `Bem-vindo, ${user?.name ?? 'Usuário'}`}
+          {isMockMode ? 'Modo Desenvolvimento - Bem-vindo!' : `Bem-vindo, ${user?.name ?? 'Usuário'}`}
         </p>
       </div>
 

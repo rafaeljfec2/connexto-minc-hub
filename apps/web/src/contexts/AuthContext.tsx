@@ -19,7 +19,6 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => void
-  hasRole: (role: UserRole) => boolean
   hasAnyRole: (roles: UserRole[]) => boolean
 }
 
@@ -52,7 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const response = await api.get<{ user: User }>('/auth/me')
       setUser(response.data.user)
-    } catch {
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error)
       localStorage.removeItem('auth_token')
       setUser(null)
     } finally {
@@ -85,10 +85,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  function hasRole(role: UserRole): boolean {
-    return user?.role === role
-  }
-
   function hasAnyRole(roles: UserRole[]): boolean {
     return user ? roles.includes(user.role) : false
   }
@@ -101,7 +97,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         login,
         logout,
-        hasRole,
         hasAnyRole,
       }}
     >
