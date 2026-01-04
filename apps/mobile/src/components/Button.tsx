@@ -1,5 +1,12 @@
 import React from 'react'
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, type ViewStyle, type TextStyle } from 'react-native'
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  type ViewStyle,
+  type TextStyle,
+} from 'react-native'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 
 interface ButtonProps {
@@ -23,7 +30,7 @@ export function Button({
 }: ButtonProps) {
   const isDisabled = disabled || isLoading
 
-  const buttonStyle: ViewStyle[] = [
+  const buttonStyle = [
     styles.base,
     styles[size],
     variant === 'primary' && styles.primary,
@@ -33,7 +40,7 @@ export function Button({
     style,
   ]
 
-  const textStyle: TextStyle[] = [
+  const textStyle = [
     styles.text,
     styles[`text${size.charAt(0).toUpperCase() + size.slice(1)}` as keyof typeof styles],
     variant === 'primary' && styles.textPrimary,

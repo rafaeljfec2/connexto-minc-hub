@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, Alert, Platform } from 'react-native'
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera'
+import { CameraView, useCameraPermissions } from 'expo-camera'
 import { Button } from '@/components'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 
@@ -64,7 +64,7 @@ export function QRCodeScannerScreen({ onScan, onClose }: QRCodeScannerScreenProp
     <View style={styles.container}>
       <CameraView
         style={styles.camera}
-        facing={CameraType.back}
+        facing="back"
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         barcodeScannerSettings={{
           barcodeTypes: ['qr'],
