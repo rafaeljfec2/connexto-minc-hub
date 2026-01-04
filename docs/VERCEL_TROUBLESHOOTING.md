@@ -121,3 +121,59 @@ pnpm build --filter=@minc-hub/web
 - [ ] Variáveis de ambiente estão configuradas
 - [ ] Node.js version está configurada (18+)
 - [ ] PNPM está sendo usado (detectado automaticamente)
+- [ ] **Ignored Build Step** está configurado corretamente (ou removido)
+- [ ] Webhook do GitHub está funcionando
+
+## Configuração Manual no Dashboard da Vercel
+
+Se os deploys automáticos não funcionarem, configure manualmente:
+
+### Settings > Git
+
+1. Verifique se o repositório está conectado
+2. Verifique se a branch principal está correta (geralmente `main` ou `master`)
+3. Clique em **"Disconnect"** e reconecte se necessário
+
+### Settings > Build & Development Settings
+
+**IMPORTANTE:** Deixe estes campos **VAZIOS** para usar o `vercel.json`:
+
+- **Root Directory:** (vazio)
+- **Build Command:** (vazio - usa do vercel.json)
+- **Output Directory:** (vazio - usa do vercel.json)
+- **Install Command:** (vazio - usa do vercel.json)
+- **Development Command:** (vazio)
+
+**OU configure manualmente:**
+
+- **Root Directory:** `.`
+- **Build Command:** `pnpm build --filter=@minc-hub/web`
+- **Output Directory:** `apps/web/dist`
+- **Install Command:** `pnpm install --frozen-lockfile`
+
+### Settings > Git > Ignored Build Step
+
+**IMPORTANTE:** Este campo deve estar **VAZIO** ou configurado como:
+
+```bash
+git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json
+```
+
+Isso garante que o deploy só seja ignorado se NENHUMA mudança relevante foi feita.
+
+### Verificar Webhooks
+
+1. Vá em **Settings > Git**
+2. Verifique se há webhooks configurados
+3. Se não houver, a Vercel deve criar automaticamente ao conectar o repositório
+4. No GitHub, vá em **Settings > Webhooks** do repositório
+5. Verifique se há um webhook da Vercel ativo
+
+## Forçar Deploy Manual
+
+Se nada funcionar, force um deploy:
+
+1. Na Vercel Dashboard, vá em **Deployments**
+2. Clique nos três pontos do último deploy
+3. Selecione **Redeploy**
+4. Ou use a CLI: `vercel --prod`

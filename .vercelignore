@@ -1,0 +1,22 @@
+# Ignore files that don't affect the build
+node_modules
+.git
+.vscode
+.idea
+*.log
+.DS_Store
+.env.local
+.env.*.local
+coverage
+.turbo
+dist
+build
+.next
+
+# Keep these for Vercel to detect changes
+!apps/web/**
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!turbo.json
+!vercel.json

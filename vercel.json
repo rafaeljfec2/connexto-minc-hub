@@ -2,8 +2,9 @@
   "version": 2,
   "buildCommand": "pnpm build --filter=@minc-hub/web",
   "outputDirectory": "apps/web/dist",
-  "installCommand": "pnpm install",
+  "installCommand": "pnpm install --frozen-lockfile",
   "framework": "vite",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json",
   "rewrites": [
     {
       "source": "/(.*)",
