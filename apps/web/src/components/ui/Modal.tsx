@@ -1,6 +1,5 @@
 import { ReactNode, useEffect } from 'react'
 import { cn } from '@/lib/utils'
-import { Button } from './Button'
 
 interface ModalProps {
   isOpen: boolean

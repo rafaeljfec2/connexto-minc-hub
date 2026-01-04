@@ -232,9 +232,7 @@ export default function ChurchesPage() {
           <Input
             label="Nome da Igreja *"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <Input

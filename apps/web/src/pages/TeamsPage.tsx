@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/Input'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Pagination } from '@/components/ui/Pagination'
 import { Team, Person } from '@/types'
-import { formatDate } from '@/lib/utils'
 
 const ITEMS_PER_PAGE = 10
 
