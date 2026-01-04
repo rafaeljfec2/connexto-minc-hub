@@ -1,43 +1,71 @@
 import { ApiClient } from '@minc-hub/shared/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3001'
+import { API_CONFIG, STORAGE_KEYS } from '@/constants/config'
 
 let tokenCache: string | null = null
 
+function getCachedToken(): string | null {
+  return tokenCache
+}
+
+function setTokenInCache(token: string): void {
+  tokenCache = token
+}
+
+function clearTokenCache(): void {
+  tokenCache = null
+}
+
+async function saveTokenToStorage(token: string): Promise<void> {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token)
+  } catch (error) {
+    console.error('Error saving token to storage:', error)
+  }
+}
+
+async function removeTokenFromStorage(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+  } catch (error) {
+    console.error('Error removing token from storage:', error)
+  }
+}
+
+async function loadTokenFromStorage(): Promise<void> {
+  try {
+    const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+    if (token) {
+      setTokenInCache(token)
+    }
+  } catch (error) {
+    console.error('Error loading token from storage:', error)
+  }
+}
+
 const apiClient = new ApiClient({
-  baseURL: API_BASE_URL,
-  getToken: () => {
-    // Return cached token, will be refreshed on each request
-    return tokenCache
-  },
+  baseURL: API_CONFIG.BASE_URL,
+  getToken: getCachedToken,
   setToken: (token: string) => {
-    tokenCache = token
-    AsyncStorage.setItem('auth_token', token).catch(() => {
-      // Handle error
+    setTokenInCache(token)
+    saveTokenToStorage(token).catch(() => {
+      // Error already logged in saveTokenToStorage
     })
   },
   clearToken: () => {
-    tokenCache = null
-    AsyncStorage.removeItem('auth_token').catch(() => {
-      // Handle error
+    clearTokenCache()
+    removeTokenFromStorage().catch(() => {
+      // Error already logged in removeTokenFromStorage
     })
   },
   onUnauthorized: () => {
-    // Handle unauthorized - navigation will be handled in navigator
+    // Navigation will be handled by navigator
   },
 })
 
-// Load token from storage on app start
-AsyncStorage.getItem('auth_token')
-  .then(token => {
-    if (token) {
-      tokenCache = token
-    }
-  })
-  .catch(() => {
-    // Handle error
-  })
+loadTokenFromStorage().catch(() => {
+  // Error already logged in loadTokenFromStorage
+})
 
 export { apiClient }
 export const api = apiClient.instance

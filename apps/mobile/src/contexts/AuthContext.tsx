@@ -1,16 +1,8 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  type ReactNode,
-} from 'react'
-import { User, UserRole } from '@minc-hub/shared/types'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { api, apiClient } from '@/lib/api'
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
+import { UserRole } from '@minc-hub/shared/types'
+import { useAuthState } from '@/hooks/useAuthState'
 import { createApiServices } from '@minc-hub/shared/services'
+import { api } from '@/lib/api'
 
 export const {
   peopleService,
@@ -23,23 +15,12 @@ export const {
   ministriesService,
 } = createApiServices(api)
 
-const MOCK_MODE = process.env.EXPO_PUBLIC_MOCK_MODE === 'true' || !process.env.EXPO_PUBLIC_API_URL
-
-const MOCK_USER: User = {
-  id: 'mock-user-1',
-  email: 'admin@minc.com',
-  name: 'Usuário Admin',
-  role: UserRole.ADMIN,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-}
-
 interface AuthContextType {
-  user: User | null
+  user: ReturnType<typeof useAuthState>['user']
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   hasAnyRole: (roles: UserRole[]) => boolean
 }
 
@@ -49,74 +30,14 @@ interface AuthProviderProps {
   readonly children: ReactNode
 }
 
+function hasAnyRole(user: ReturnType<typeof useAuthState>['user'], roles: UserRole[]): boolean {
+  return user ? roles.includes(user.role) : false
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, isLoading, login, logout } = useAuthState()
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  async function checkAuth() {
-    if (MOCK_MODE) {
-      try {
-        const mockToken = await AsyncStorage.getItem('auth_token')
-        if (mockToken) {
-          setUser(MOCK_USER)
-        }
-      } catch {
-        // Handle error
-      }
-      setIsLoading(false)
-      return
-    }
-
-    try {
-      const token = await AsyncStorage.getItem('auth_token')
-      if (!token) {
-        setIsLoading(false)
-        return
-      }
-
-      const response = await api.get<{ user: User }>('/auth/me')
-      setUser(response.data.user)
-    } catch (error) {
-      console.error('Erro ao verificar autenticação:', error)
-      await AsyncStorage.removeItem('auth_token')
-      setUser(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const login = useCallback(async (email: string, password: string) => {
-    if (MOCK_MODE) {
-      const mockToken = `mock-token-${Date.now()}`
-      apiClient.setToken(mockToken)
-      setUser(MOCK_USER)
-      return
-    }
-
-    const response = await api.post<{ token: string; user: User }>('/auth/login', {
-      email,
-      password,
-    })
-
-    apiClient.setToken(response.data.token)
-    setUser(response.data.user)
-  }, [])
-
-  const logout = useCallback(async () => {
-    await AsyncStorage.removeItem('auth_token')
-    setUser(null)
-  }, [])
-
-  const hasAnyRole = useCallback(
-    (roles: UserRole[]): boolean => {
-      return user ? roles.includes(user.role) : false
-    },
-    [user]
-  )
+  const hasAnyRoleCallback = (roles: UserRole[]) => hasAnyRole(user, roles)
 
   const contextValue = useMemo(
     () => ({
@@ -125,9 +46,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isAuthenticated: !!user,
       login,
       logout,
-      hasAnyRole,
+      hasAnyRole: hasAnyRoleCallback,
     }),
-    [user, isLoading, login, logout, hasAnyRole]
+    [user, isLoading, login, logout]
   )
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
