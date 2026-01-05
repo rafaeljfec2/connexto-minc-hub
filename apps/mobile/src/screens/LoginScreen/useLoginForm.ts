@@ -30,7 +30,7 @@ export function useLoginForm(): UseLoginFormReturn {
     clearError()
     try {
       await login(email, password)
-    } catch (err) {
+    } catch {
       setError('Email ou senha incorretos')
     }
   }, [email, password, login, clearError])

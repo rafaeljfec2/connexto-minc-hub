@@ -1,8 +1,9 @@
 import React from 'react'
 import { TextInput, View, Text } from 'react-native'
-import type { TextInputProps, ViewStyle } from 'react-native'
-import { getInputStyles } from './getInputStyles'
-import { inputStyles } from './styles'
+import type { TextInputProps, ViewStyle, TextStyle, StyleProp } from 'react-native'
+import { useTheme } from '@/contexts/ThemeContext'
+import { getThemeColors } from '@/theme/colors'
+import { themeSpacing, themeTypography } from '@/theme'
 
 interface InputProps extends TextInputProps {
   label?: string
@@ -11,13 +12,57 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, error, containerStyle, style, ...props }: InputProps) {
-  const inputStyle = getInputStyles({ error, style })
+  const { theme } = useTheme()
+  const colors = getThemeColors(theme)
+
+  const inputStyle: StyleProp<TextStyle> = [
+    {
+      borderWidth: 1,
+      borderColor: error ? '#ef4444' : colors.card.border,
+      borderRadius: 8,
+      paddingHorizontal: themeSpacing.md,
+      paddingVertical: themeSpacing.sm,
+      fontSize: themeTypography.sizes.md,
+      color: colors.text.default,
+      backgroundColor: colors.card.background,
+      minHeight: 44,
+    },
+    style,
+  ]
+
+  const containerStyles = [
+    {
+      marginBottom: themeSpacing.md,
+    },
+    containerStyle,
+  ]
+
+  const labelStyles: TextStyle = {
+    fontSize: themeTypography.sizes.sm,
+    fontWeight: themeTypography.weights.medium,
+    color: theme === 'light' ? colors.dark[600] : colors.dark[300],
+    marginBottom: themeSpacing.xs,
+  }
 
   return (
-    <View style={[inputStyles.container, containerStyle]}>
-      {label && <Text style={inputStyles.label}>{label}</Text>}
-      <TextInput style={inputStyle} placeholderTextColor="#a1a1aa" {...props} />
-      {error && <Text style={inputStyles.error}>{error}</Text>}
+    <View style={containerStyles}>
+      {label && <Text style={labelStyles}>{label}</Text>}
+      <TextInput
+        style={inputStyle}
+        placeholderTextColor={theme === 'light' ? colors.dark[500] : '#a1a1aa'}
+        {...props}
+      />
+      {error && (
+        <Text
+          style={{
+            fontSize: themeTypography.sizes.xs,
+            color: '#ef4444',
+            marginTop: themeSpacing.xs,
+          }}
+        >
+          {error}
+        </Text>
+      )}
     </View>
   )
 }
