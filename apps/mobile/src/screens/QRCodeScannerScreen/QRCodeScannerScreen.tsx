@@ -14,8 +14,7 @@ const SCAN_RESET_DELAY_MS = 2000
 
 export function QRCodeScannerScreen({ onScan, onClose }: QRCodeScannerScreenProps) {
   const [scanned, setScanned] = useState(false)
-  const { permission, requestPermission, showPermissionDeniedAlert } =
-    useCameraPermission(onClose)
+  const { permission, requestPermission } = useCameraPermission(onClose)
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     if (scanned) return

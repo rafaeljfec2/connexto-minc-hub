@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, useCallback, type ReactNode } from 'react'
 import { UserRole } from '@minc-hub/shared/types'
 import { useAuthState } from '@/hooks/useAuthState'
 import { createApiServices } from '@minc-hub/shared/services'
@@ -37,7 +37,10 @@ function hasAnyRole(user: ReturnType<typeof useAuthState>['user'], roles: UserRo
 export function AuthProvider({ children }: AuthProviderProps) {
   const { user, isLoading, login, logout } = useAuthState()
 
-  const hasAnyRoleCallback = (roles: UserRole[]) => hasAnyRole(user, roles)
+  const hasAnyRoleCallback = useCallback(
+    (roles: UserRole[]) => hasAnyRole(user, roles),
+    [user],
+  )
 
   const contextValue = useMemo(
     () => ({
@@ -48,7 +51,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       logout,
       hasAnyRole: hasAnyRoleCallback,
     }),
-    [user, isLoading, login, logout]
+    [user, isLoading, login, logout, hasAnyRoleCallback]
   )
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

@@ -27,11 +27,11 @@ export default function SchedulesScreen() {
     },
   })
 
-  function handleEdit(schedule: Schedule) {
+  function handleEdit(_schedule: Schedule) {
     // TODO: Implementar edição
   }
 
-  function handleDelete(id: string) {
+  function handleDelete(_id: string) {
     // TODO: Implementar deleção
   }
 

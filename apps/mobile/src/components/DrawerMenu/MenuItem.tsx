@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 import type { MenuItem as MenuItemType } from './menuItems'

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { View, StyleSheet, ScrollView } from 'react-native'
 import {
   Header,
@@ -21,14 +21,19 @@ import { getMinistry, getTeam } from '@/utils/entityHelpers'
 import { themeSpacing } from '@/theme'
 
 export default function PeopleScreen() {
-  const { items: people, create, update, remove } = useCrud<Person>({
+  const {
+    items: people,
+    create,
+    update,
+    remove,
+  } = useCrud<Person>({
     initialItems: MOCK_PEOPLE,
   })
   const [ministries] = useState<Ministry[]>(MOCK_MINISTRIES)
   const [teams] = useState<Team[]>(MOCK_TEAMS)
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterMinistry, setFilterMinistry] = useState<string>('all')
-  const [filterTeam, setFilterTeam] = useState<string>('all')
+  const [filterMinistry] = useState<string>('all')
+  const [filterTeam] = useState<string>('all')
   const modal = useModal()
   const deleteModal = useModal()
   const [editingPerson, setEditingPerson] = useState<Person | null>(null)
@@ -43,13 +48,6 @@ export default function PeopleScreen() {
     ministryId: '',
     teamId: '',
   })
-
-  const availableTeams = useMemo(() => {
-    if (filterMinistry === 'all') {
-      return teams.filter(t => t.isActive)
-    }
-    return teams.filter(t => t.ministryId === filterMinistry && t.isActive)
-  }, [filterMinistry, teams])
 
   const { filteredData, refreshing, handleRefresh } = useListScreen({
     data: people,

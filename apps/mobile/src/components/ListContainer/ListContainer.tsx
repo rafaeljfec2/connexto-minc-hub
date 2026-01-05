@@ -1,5 +1,5 @@
 import React, { type ReactElement } from 'react'
-import { View, StyleSheet, FlatList, RefreshControl, type ListRenderItem } from 'react-native'
+import { StyleSheet, FlatList, RefreshControl, type ListRenderItem } from 'react-native'
 import { themeSpacing } from '@/theme'
 
 interface ListContainerProps<T> {

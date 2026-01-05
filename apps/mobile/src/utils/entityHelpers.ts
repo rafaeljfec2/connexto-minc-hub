@@ -1,4 +1,4 @@
-import type { Person, Ministry, Team, Service, Schedule } from '@minc-hub/shared/types'
+import type { Person, Ministry, Team, Service } from '@minc-hub/shared/types'
 
 export function getMinistry(person: Person, ministries: Ministry[]): Ministry | undefined {
   if (!person.ministryId) return undefined
@@ -10,7 +10,7 @@ export function getTeam(person: Person, teams: Team[]): Team | undefined {
   return teams.find(t => t.id === person.teamId)
 }
 
-export function getChurchName(ministry: Ministry, churches: Array<{ id: string; name: string }>): string | undefined {
+export function getChurchName(ministry: Ministry, churches: { id: string; name: string }[]): string | undefined {
   return churches.find(c => c.id === ministry.churchId)?.name
 }
 

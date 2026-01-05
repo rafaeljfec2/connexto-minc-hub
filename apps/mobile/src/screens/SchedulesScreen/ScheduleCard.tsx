@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
-import { Schedule, Service, Team } from '@minc-hub/shared/types'
+import { Schedule } from '@minc-hub/shared/types'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 import { formatDate } from '@minc-hub/shared/utils'
 

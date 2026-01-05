@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
 import { Person, Ministry, Team } from '@minc-hub/shared/types'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'

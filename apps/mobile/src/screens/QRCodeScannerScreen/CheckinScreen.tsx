@@ -10,7 +10,7 @@ const SCAN_RESET_DELAY_MS = 2000
 
 export default function CheckinScreen() {
   const [scanned, setScanned] = useState(false)
-  const { permission, requestPermission } = useCameraPermission()
+  const { permission } = useCameraPermission()
 
   function handleBarCodeScanned({ data }: { data: string }) {
     if (scanned) return
