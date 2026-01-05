@@ -11,14 +11,14 @@ export function BackgroundGradient({ children }: BackgroundGradientProps) {
   const { theme } = useTheme()
 
   /*
-   * NEW DESIGN - Improved UX
-   * Top: Vibrant Brand Identity
-   * Body: clean dark background for readability.
+   * NEW DESIGN - Improved UX - V2 (Softer)
+   * Top: Very subtle brand hint (Dark Orange/Brown)
+   * Body: clean dark background.
    */
   const colors =
     theme === 'light'
-      ? ['#fff7ed', '#ffffff', '#ffffff'] // Light: subtle top tint
-      : ['#c2410c', '#09090b', '#09090b'] // Dark: Orange top -> Dark base
+      ? (['#fff7ed', '#ffffff', '#ffffff'] as const)
+      : (['#431407', '#09090b', '#09090b'] as const) // Darker start color (#431407 is orange-950 approx)
 
   return (
     <LinearGradient

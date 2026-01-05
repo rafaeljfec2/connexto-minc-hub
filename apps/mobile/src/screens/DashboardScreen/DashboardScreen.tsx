@@ -21,7 +21,7 @@ export default function DashboardScreen() {
   const handleActionPress = (actionId: string) => {
     switch (actionId) {
       case 'check-in':
-        navigation.navigate('MainTabs', { screen: 'Checkin' })
+        navigation.navigate('Checkin')
         break
       case 'schedules':
         // Navigate to schedules or show modal
@@ -32,7 +32,7 @@ export default function DashboardScreen() {
         Alert.alert('Em breve', 'Funcionalidade de equipes')
         break
       case 'chat':
-        navigation.navigate('MainTabs', { screen: 'Chat' })
+        navigation.navigate('Chat')
         break
       default:
         break

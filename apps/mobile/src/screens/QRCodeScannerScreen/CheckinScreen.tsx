@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, Alert } from 'react-native'
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native'
 import { CameraView } from 'expo-camera'
 import { Header } from '@/components'
 import { useCameraPermission } from './useCameraPermission'
 import { QRCodeScannerOverlay } from './QRCodeScannerOverlay'
+import { MyQRCode } from './MyQRCode'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 
 const SCAN_RESET_DELAY_MS = 2000
 
 export default function CheckinScreen() {
+  const [mode, setMode] = useState<'scan' | 'generate'>('generate')
   const [scanned, setScanned] = useState(false)
   const { permission } = useCameraPermission()
 
@@ -16,7 +18,7 @@ export default function CheckinScreen() {
     if (scanned) return
 
     setScanned(true)
-    
+
     Alert.alert('QR Code Escaneado', `Código: ${data}`, [
       {
         text: 'OK',
@@ -27,32 +29,27 @@ export default function CheckinScreen() {
     ])
   }
 
-  if (!permission) {
-    return (
-      <View style={styles.container}>
-        <Header title="Check-in" subtitle="Escaneie o QR code para registrar presença" />
+  function renderScanner() {
+    if (!permission) {
+      return (
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Carregando...</Text>
         </View>
-      </View>
-    )
-  }
+      )
+    }
 
-  if (!permission.granted) {
-    return (
-      <View style={styles.container}>
-        <Header title="Check-in" subtitle="Escaneie o QR code para registrar presença" />
+    if (!permission.granted) {
+      return (
         <View style={styles.permissionContainer}>
           <Text style={styles.permissionText}>Permissão de câmera necessária</Text>
-          <Text style={styles.permissionSubtext}>Por favor, permita o acesso à câmera nas configurações</Text>
+          <Text style={styles.permissionSubtext}>
+            Por favor, permita o acesso à câmera nas configurações
+          </Text>
         </View>
-      </View>
-    )
-  }
+      )
+    }
 
-  return (
-    <View style={styles.container}>
-      <Header title="Check-in" subtitle="Escaneie o QR code para registrar presença" />
+    return (
       <CameraView
         style={styles.camera}
         facing="back"
@@ -63,6 +60,35 @@ export default function CheckinScreen() {
       >
         <QRCodeScannerOverlay />
       </CameraView>
+    )
+  }
+
+  return (
+    <View style={styles.container}>
+      <Header title="Check-in" subtitle="Escaneie o QR code para registrar presença" />
+
+      <View style={styles.toggleContainer}>
+        <View style={styles.segments}>
+          <TouchableOpacity
+            style={[styles.segment, mode === 'generate' && styles.segmentActive]}
+            onPress={() => setMode('generate')}
+          >
+            <Text style={[styles.segmentText, mode === 'generate' && styles.segmentTextActive]}>
+              Meu Código
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.segment, mode === 'scan' && styles.segmentActive]}
+            onPress={() => setMode('scan')}
+          >
+            <Text style={[styles.segmentText, mode === 'scan' && styles.segmentTextActive]}>
+              Ler Código
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.content}>{mode === 'scan' ? renderScanner() : <MyQRCode />}</View>
     </View>
   )
 }
@@ -70,7 +96,43 @@ export default function CheckinScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: themeColors.dark[950],
+  },
+  toggleContainer: {
+    paddingHorizontal: themeSpacing.lg,
+    paddingBottom: themeSpacing.md,
+    paddingTop: themeSpacing.md, // Added spacing from header
+    backgroundColor: 'rgba(9, 9, 11, 0.95)', // Match header background
+    zIndex: 10,
+  },
+  segments: {
+    flexDirection: 'row',
+    backgroundColor: themeColors.dark[900],
+    borderRadius: 12,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: themeColors.dark[800],
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: themeSpacing.sm,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  segmentActive: {
+    backgroundColor: themeColors.dark[800],
+  },
+  segmentText: {
+    fontSize: themeTypography.sizes.sm,
+    fontWeight: themeTypography.weights.medium,
+    color: themeColors.dark[400],
+  },
+  segmentTextActive: {
+    color: '#ffffff',
+    fontWeight: themeTypography.weights.bold,
+  },
+  content: {
+    flex: 1,
   },
   camera: {
     flex: 1,
