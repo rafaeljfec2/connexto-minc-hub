@@ -28,10 +28,20 @@ const MENU_ITEMS: MenuItem[] = [
     screen: 'Dashboard',
   },
   {
-    id: 'people',
-    label: 'Servos',
-    icon: '👥',
-    screen: 'People',
+    id: 'churches',
+    label: 'Igrejas',
+    icon: '⛪',
+    onPress: () => {
+      // TODO: Implementar tela de Igrejas
+    },
+  },
+  {
+    id: 'ministries',
+    label: 'Times',
+    icon: '🏛️',
+    onPress: () => {
+      // TODO: Implementar tela de Times
+    },
   },
   {
     id: 'teams',
@@ -40,15 +50,53 @@ const MENU_ITEMS: MenuItem[] = [
     screen: 'Teams',
   },
   {
+    id: 'people',
+    label: 'Servos',
+    icon: '👥',
+    screen: 'People',
+  },
+  {
+    id: 'users',
+    label: 'Usuários',
+    icon: '👤',
+    onPress: () => {
+      // TODO: Implementar tela de Usuários
+    },
+  },
+  {
+    id: 'services',
+    label: 'Cultos',
+    icon: '📆',
+    onPress: () => {
+      // TODO: Implementar tela de Cultos
+    },
+  },
+  {
     id: 'schedules',
     label: 'Escalas',
     icon: '📅',
     screen: 'Schedules',
   },
   {
+    id: 'monthly-schedules',
+    label: 'Sorteio Mensal',
+    icon: '🎲',
+    onPress: () => {
+      // TODO: Implementar tela de Sorteio Mensal
+    },
+  },
+  {
+    id: 'communication',
+    label: 'Comunicação',
+    icon: '💬',
+    onPress: () => {
+      // TODO: Implementar tela de Comunicação
+    },
+  },
+  {
     id: 'profile',
     label: 'Perfil',
-    icon: '👤',
+    icon: '⚙️',
     screen: 'Profile',
   },
 ]
@@ -74,12 +122,13 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <View style={styles.drawer} onStartShouldSetResponder={() => true}>
+      <View style={styles.overlay}>
+        <TouchableOpacity
+          style={styles.overlayTouchable}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+        <View style={styles.drawer}>
           <View style={styles.handleContainer}>
             <View style={styles.handle} />
           </View>
@@ -95,26 +144,28 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
             <View style={styles.closeButtonPlaceholder} />
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            {MENU_ITEMS.map(item => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.menuItem}
-                onPress={() => handleItemPress(item)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.menuIcon}>{item.icon}</Text>
-                <Text style={styles.menuLabel}>{item.label}</Text>
-                <Text style={styles.chevron}>›</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <View style={styles.contentContainer}>
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+              {MENU_ITEMS.map(item => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.menuItem}
+                  onPress={() => handleItemPress(item)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.menuIcon}>{item.icon}</Text>
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <Text style={styles.chevron}>›</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>MINC TEAMS</Text>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     </Modal>
   )
 }
@@ -125,13 +176,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
   },
+  overlayTouchable: {
+    ...StyleSheet.absoluteFillObject,
+  },
   drawer: {
     width: '100%',
     maxHeight: '85%',
     backgroundColor: themeColors.dark[900],
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    alignSelf: 'flex-end',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
   },
   handleContainer: {
     alignItems: 'center',
@@ -173,8 +231,11 @@ const styles = StyleSheet.create({
   closeButtonPlaceholder: {
     width: 32,
   },
-  content: {
+  contentContainer: {
     flex: 1,
+  },
+  content: {
+    flexGrow: 1,
   },
   menuItem: {
     flexDirection: 'row',
