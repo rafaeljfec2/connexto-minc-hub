@@ -11,8 +11,7 @@ interface CardProps {
 }
 
 export function Card({ children, style }: CardProps) {
-  const { theme } = useTheme()
-  const colors = getThemeColors(theme)
+  const { theme, colors } = useTheme()
 
   const cardStyle = {
     backgroundColor: colors.card.background,

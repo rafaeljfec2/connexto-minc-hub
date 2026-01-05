@@ -24,17 +24,21 @@ import CommunicationScreen from '@/screens/CommunicationScreen'
 const Stack = createNativeStackNavigator<RootStackParamList>()
 const Tab = createBottomTabNavigator<MainTabParamList>()
 
+import { useTheme } from '@/contexts/ThemeContext'
+
 function MainTabs() {
+  const { colors } = useTheme()
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#f97316', // primary-500
-        tabBarInactiveTintColor: '#a1a1aa', // dark-400
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.text.dark,
         tabBarStyle: {
-          backgroundColor: '#09090b', // dark-950
+          backgroundColor: colors.background.default,
           borderTopWidth: 1,
-          borderTopColor: '#27272a', // dark-800
+          borderTopColor: colors.card.border,
           paddingBottom: 8,
           paddingTop: 8,
           height: 60,

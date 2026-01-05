@@ -2,7 +2,8 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
 import { Team, Ministry } from '@minc-hub/shared/types'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface TeamCardProps {
   team: Team
@@ -12,33 +13,49 @@ interface TeamCardProps {
 }
 
 export function TeamCard({ team, ministry, onEdit, onDelete }: TeamCardProps) {
+  const { colors } = useTheme()
+
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
         <View style={styles.info}>
-          <Text style={styles.name}>{team.name}</Text>
+          <Text style={[styles.name, { color: colors.text.default }]}>{team.name}</Text>
           {team.description && (
-            <Text style={styles.description} numberOfLines={2}>
+            <Text style={[styles.description, { color: colors.text.dark }]} numberOfLines={2}>
               {team.description}
             </Text>
           )}
           {ministry && (
-            <Text style={styles.ministry}>{ministry.name}</Text>
+            <Text style={[styles.ministry, { color: colors.text.dark }]}>{ministry.name}</Text>
           )}
-          <Text style={styles.members}>
+          <Text style={[styles.members, { color: colors.text.dark }]}>
             {team.memberIds.length} membro{team.memberIds.length !== 1 ? 's' : ''}
           </Text>
         </View>
       </View>
 
       <View style={styles.badges}>
-        <View style={[styles.badge, team.isActive ? styles.badgeActive : styles.badgeInactive]}>
-          <Text style={styles.badgeText}>{team.isActive ? 'Ativa' : 'Inativa'}</Text>
+        <View
+          style={[
+            styles.badge,
+            team.isActive
+              ? { backgroundColor: '#d1fae5' }
+              : { backgroundColor: colors.card.border },
+          ]}
+        >
+          <Text
+            style={[
+              styles.badgeText,
+              team.isActive ? { color: '#065f46' } : { color: colors.text.dark },
+            ]}
+          >
+            {team.isActive ? 'Ativa' : 'Inativa'}
+          </Text>
         </View>
       </View>
 
       {(onEdit || onDelete) && (
-        <View style={styles.actions}>
+        <View style={[styles.actions, { borderTopColor: colors.card.border }]}>
           {onEdit && (
             <Button
               title="Editar"
@@ -76,22 +93,18 @@ const styles = StyleSheet.create({
   name: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.xs,
   },
   description: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
     marginBottom: themeSpacing.xs,
   },
   ministry: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
     marginBottom: themeSpacing.xs,
   },
   members: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
   },
   badges: {
     flexDirection: 'row',
@@ -104,23 +117,15 @@ const styles = StyleSheet.create({
     paddingVertical: themeSpacing.xs / 2,
     borderRadius: 12,
   },
-  badgeActive: {
-    backgroundColor: '#d1fae5',
-  },
-  badgeInactive: {
-    backgroundColor: themeColors.dark[800],
-  },
   badgeText: {
     fontSize: themeTypography.sizes.xs,
     fontWeight: themeTypography.weights.medium,
-    color: themeColors.text.default,
   },
   actions: {
     flexDirection: 'row',
     gap: themeSpacing.sm,
     paddingTop: themeSpacing.md,
     borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
   },
   actionButton: {
     flex: 1,

@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 import { UserAvatar } from '@/components/Header/UserAvatar'
+import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle'
 
 interface DashboardHeaderProps {
   onMenuPress?: () => void
@@ -18,6 +20,7 @@ export function DashboardHeader({
   onNotificationPress,
 }: DashboardHeaderProps) {
   const { user } = useAuth()
+  const { colors } = useTheme()
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -30,7 +33,7 @@ export function DashboardHeader({
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.menuButton} onPress={onMenuPress}>
-          <Ionicons name="menu" size={28} color={themeColors.text.default} />
+          <Ionicons name="menu" size={28} color={colors.text.default} />
         </TouchableOpacity>
 
         <View style={styles.profileSection}>
@@ -40,17 +43,26 @@ export function DashboardHeader({
             size={42}
           />
           <View style={styles.textContainer}>
-            <Text style={styles.greeting}>{getGreeting()},</Text>
-            <Text style={styles.userName} numberOfLines={1}>
+            <Text style={[styles.greeting, { color: colors.text.default }]}>{getGreeting()},</Text>
+            <Text style={[styles.userName, { color: colors.text.default }]} numberOfLines={1}>
               {user?.name?.split(' ')[0] || 'Usuário'}
             </Text>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.notificationButton} onPress={onNotificationPress}>
-          <Ionicons name="notifications-outline" size={24} color={themeColors.text.default} />
-          <View style={styles.badge} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <ThemeToggle />
+          <TouchableOpacity
+            style={[
+              styles.notificationButton,
+              { backgroundColor: colors.card.background, borderColor: colors.card.border },
+            ]}
+            onPress={onNotificationPress}
+          >
+            <Ionicons name="notifications-outline" size={24} color={colors.text.default} />
+            <View style={styles.badge} />
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   )
@@ -63,9 +75,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: themeSpacing.md, // Reduced padding to fit menu
+    paddingHorizontal: themeSpacing.md,
     paddingVertical: themeSpacing.md,
-    gap: themeSpacing.sm, // Add gap between elements
+    gap: themeSpacing.sm,
   },
   menuButton: {
     padding: themeSpacing.xs,
@@ -82,20 +94,16 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.text.default,
     opacity: 0.8,
   },
   userName: {
     fontSize: themeTypography.sizes.xl,
     fontWeight: themeTypography.weights.bold,
-    color: themeColors.text.default,
   },
   notificationButton: {
     padding: themeSpacing.sm,
     borderRadius: 12,
-    backgroundColor: themeColors.card.background,
     borderWidth: 1,
-    borderColor: themeColors.card.border,
   },
   badge: {
     position: 'absolute',

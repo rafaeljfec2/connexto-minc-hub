@@ -1,7 +1,8 @@
 import React from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import { Card } from '@/components'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ServiceItem {
   id: string
@@ -18,13 +19,15 @@ interface UpcomingServicesProps {
 }
 
 export function UpcomingServices({ services = [] }: UpcomingServicesProps) {
+  const { colors } = useTheme()
+
   if (services.length === 0) {
     return null
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Próximas Escalas</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text.default }]}>Próximas Escalas</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -32,18 +35,18 @@ export function UpcomingServices({ services = [] }: UpcomingServicesProps) {
       >
         {services.map(service => (
           <Card key={service.id} style={styles.card}>
-            <View style={styles.dateBadge}>
-              <Text style={styles.dayText}>{service.day}</Text>
-              <Text style={styles.monthText}>{service.month}</Text>
+            <View style={[styles.dateBadge, { backgroundColor: colors.primary + '15' }]}>
+              <Text style={[styles.dayText, { color: colors.primary }]}>{service.day}</Text>
+              <Text style={[styles.monthText, { color: colors.primary }]}>{service.month}</Text>
             </View>
             <View style={styles.info}>
-              <Text style={styles.serviceName} numberOfLines={1}>
+              <Text style={[styles.serviceName, { color: colors.text.default }]} numberOfLines={1}>
                 {service.name}
               </Text>
-              <Text style={styles.serviceTeam} numberOfLines={1}>
+              <Text style={[styles.serviceTeam, { color: colors.text.default }]} numberOfLines={1}>
                 {service.team}
               </Text>
-              <Text style={styles.serviceTime}>{service.time}</Text>
+              <Text style={[styles.serviceTime, { color: colors.text.dark }]}>{service.time}</Text>
             </View>
           </Card>
         ))}
@@ -59,7 +62,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: themeTypography.sizes.md,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.md,
     paddingHorizontal: themeSpacing.md,
   },
@@ -75,7 +77,6 @@ const styles = StyleSheet.create({
     gap: themeSpacing.md,
   },
   dateBadge: {
-    backgroundColor: themeColors.primary[50],
     padding: themeSpacing.sm,
     borderRadius: 8,
     alignItems: 'center',
@@ -84,12 +85,10 @@ const styles = StyleSheet.create({
   dayText: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.bold,
-    color: themeColors.primary[600],
   },
   monthText: {
     fontSize: themeTypography.sizes.xs,
     fontWeight: themeTypography.weights.medium,
-    color: themeColors.primary[600],
     textTransform: 'uppercase',
   },
   info: {
@@ -98,16 +97,13 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: themeTypography.sizes.sm,
     fontWeight: themeTypography.weights.bold,
-    color: themeColors.text.default,
     marginBottom: 2,
   },
   serviceTeam: {
     fontSize: themeTypography.sizes.xs,
-    color: themeColors.text.default,
     marginBottom: 4,
   },
   serviceTime: {
     fontSize: themeTypography.sizes.xs,
-    color: themeColors.dark[400],
   },
 })

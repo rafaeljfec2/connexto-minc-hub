@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ChatInputProps {
   onSend: (text: string) => void
@@ -9,6 +10,7 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend }: ChatInputProps) {
   const [text, setText] = useState('')
+  const { colors } = useTheme()
 
   function handleSend() {
     if (text.trim()) {
@@ -18,16 +20,21 @@ export function ChatInput({ onSend }: ChatInputProps) {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: colors.card.background, borderTopColor: colors.card.border },
+      ]}
+    >
       <TouchableOpacity style={styles.attachButton}>
-        <Ionicons name="add" size={24} color={themeColors.dark[400]} />
+        <Ionicons name="add" size={24} color={colors.text.dark} />
       </TouchableOpacity>
-      
-      <View style={styles.inputContainer}>
+
+      <View style={[styles.inputContainer, { backgroundColor: colors.background.default }]}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: colors.text.default }]}
           placeholder="Digite uma mensagem..."
-          placeholderTextColor={themeColors.dark[400]}
+          placeholderTextColor={colors.text.dark}
           value={text}
           onChangeText={setText}
           multiline
@@ -35,16 +42,15 @@ export function ChatInput({ onSend }: ChatInputProps) {
         />
       </View>
 
-      <TouchableOpacity 
-        style={[styles.sendButton, !text.trim() && styles.sendButtonDisabled]} 
+      <TouchableOpacity
+        style={[
+          styles.sendButton,
+          { backgroundColor: text.trim() ? colors.primary : colors.card.border },
+        ]}
         onPress={handleSend}
         disabled={!text.trim()}
       >
-        <Ionicons 
-          name="send" 
-          size={20} 
-          color={text.trim() ? '#ffffff' : themeColors.dark[400]} 
-        />
+        <Ionicons name="send" size={20} color={text.trim() ? '#ffffff' : colors.text.dark} />
       </TouchableOpacity>
     </View>
   )
@@ -56,9 +62,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     padding: themeSpacing.md,
     paddingVertical: themeSpacing.sm,
-    backgroundColor: themeColors.dark[900],
     borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
   },
   attachButton: {
     padding: 10,
@@ -66,7 +70,6 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flex: 1,
-    backgroundColor: themeColors.dark[800],
     borderRadius: 20,
     paddingHorizontal: themeSpacing.md,
     paddingVertical: 8,
@@ -75,7 +78,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   input: {
-    color: themeColors.dark[50],
     fontSize: themeTypography.sizes.md,
     paddingTop: 0,
     paddingBottom: 0,
@@ -84,12 +86,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: themeColors.primary[600],
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: themeSpacing.sm,
-  },
-  sendButtonDisabled: {
-    backgroundColor: themeColors.dark[800],
   },
 })

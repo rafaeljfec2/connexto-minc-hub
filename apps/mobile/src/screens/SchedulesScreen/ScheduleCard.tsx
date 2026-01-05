@@ -2,8 +2,9 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
 import { Schedule } from '@minc-hub/shared/types'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
 import { formatDate } from '@minc-hub/shared/utils'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ScheduleCardProps {
   schedule: Schedule
@@ -20,26 +21,32 @@ export function ScheduleCard({
   onEdit,
   onDelete,
 }: ScheduleCardProps) {
+  const { colors } = useTheme()
+
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
         <View style={styles.info}>
-          <Text style={styles.name}>{serviceName ?? 'Culto não encontrado'}</Text>
+          <Text style={[styles.name, { color: colors.text.default }]}>
+            {serviceName ?? 'Culto não encontrado'}
+          </Text>
           <View style={styles.detail}>
-            <Text style={styles.detailLabel}>Data: </Text>
-            <Text style={styles.detailValue}>{formatDate(schedule.date)}</Text>
+            <Text style={[styles.detailLabel, { color: colors.text.dark }]}>Data: </Text>
+            <Text style={[styles.detailValue, { color: colors.text.dark }]}>
+              {formatDate(schedule.date)}
+            </Text>
           </View>
           {teamNames && (
             <View style={styles.detail}>
-              <Text style={styles.detailLabel}>Equipes: </Text>
-              <Text style={styles.detailValue}>{teamNames}</Text>
+              <Text style={[styles.detailLabel, { color: colors.text.dark }]}>Equipes: </Text>
+              <Text style={[styles.detailValue, { color: colors.text.dark }]}>{teamNames}</Text>
             </View>
           )}
         </View>
       </View>
 
       {(onEdit || onDelete) && (
-        <View style={styles.actions}>
+        <View style={[styles.actions, { borderTopColor: colors.card.border }]}>
           {onEdit && (
             <Button
               title="Editar"
@@ -77,7 +84,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.sm,
   },
   detail: {
@@ -87,11 +93,9 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: themeTypography.sizes.sm,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.dark[300],
   },
   detailValue: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
     flex: 1,
   },
   actions: {
@@ -99,7 +103,6 @@ const styles = StyleSheet.create({
     gap: themeSpacing.sm,
     paddingTop: themeSpacing.md,
     borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
   },
   actionButton: {
     flex: 1,

@@ -2,7 +2,8 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Card } from '@/components'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface StatsCardProps {
   title: string
@@ -12,17 +13,19 @@ interface StatsCardProps {
 }
 
 export function StatsCard({ title, value, icon, trend }: StatsCardProps) {
+  const { colors } = useTheme()
+
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <Ionicons name={icon} size={20} color={themeColors.primary[500]} />
+        <View style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
+          <Ionicons name={icon} size={20} color={colors.primary || '#f97316'} />
         </View>
-        {trend && <Text style={styles.trend}>{trend}</Text>}
+        {trend && <Text style={[styles.trend, { color: colors.primary }]}>{trend}</Text>}
       </View>
       <View style={styles.content}>
-        <Text style={styles.value}>{value}</Text>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.value, { color: colors.text.default }]}>{value}</Text>
+        <Text style={[styles.title, { color: colors.text.dark }]}>{title}</Text>
       </View>
     </Card>
   )
@@ -42,7 +45,6 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     padding: themeSpacing.xs,
-    backgroundColor: themeColors.primary[50] + '80', // Transparent primary
     borderRadius: 8,
   },
   content: {
@@ -51,16 +53,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: themeTypography.sizes.xs,
     fontWeight: themeTypography.weights.medium,
-    color: themeColors.dark[400],
   },
   value: {
     fontSize: themeTypography.sizes.xl,
     fontWeight: themeTypography.weights.bold,
-    color: themeColors.text.default,
   },
   trend: {
     fontSize: themeTypography.sizes.xs,
-    color: themeColors.primary[500],
     fontWeight: themeTypography.weights.medium,
   },
 })

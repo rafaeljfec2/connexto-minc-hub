@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, TextInput } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
 import { Option } from '../Select/Select'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface MultiSelectProps {
   label?: string
@@ -22,9 +23,10 @@ export function MultiSelect({
   placeholder = 'Selecione...',
   disabled = false,
   error,
-}: MultiSelectProps) {
+}: Readonly<MultiSelectProps>) {
   const [modalVisible, setModalVisible] = useState(false)
   const [searchText, setSearchText] = useState('')
+  const { colors, theme } = useTheme()
 
   const selectedOptions = options.filter(opt => values.includes(opt.value))
 
@@ -43,27 +45,32 @@ export function MultiSelect({
     return `${selectedOptions.length} selecionados`
   }
 
+  // Dynamic styles
+  const buttonStyle = {
+    backgroundColor: colors.card.background,
+    borderColor: error ? '#ef4444' : colors.card.border,
+    opacity: disabled ? 0.7 : 1,
+  }
+
+  const textColor = {
+    color: selectedOptions.length === 0 ? colors.text.dark : colors.text.default,
+  }
+
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: colors.text.dark }]}>{label}</Text>}
       <TouchableOpacity
-        style={[styles.button, error && styles.buttonError, disabled && styles.buttonDisabled]}
+        style={[styles.button, buttonStyle]}
         onPress={() => !disabled && setModalVisible(true)}
         activeOpacity={0.7}
       >
-        <Text
-          style={[
-            styles.valueText,
-            selectedOptions.length === 0 && styles.placeholderText,
-            disabled && styles.textDisabled,
-          ]}
-        >
+        <Text style={[styles.valueText, textColor, disabled && { color: colors.text.dark }]}>
           {getDisplayText()}
         </Text>
         <Ionicons
           name="chevron-down"
           size={20}
-          color={disabled ? themeColors.dark[500] : themeColors.dark[400]}
+          color={disabled ? colors.text.dark : colors.text.light}
         />
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -75,20 +82,22 @@ export function MultiSelect({
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.background.default }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{label || 'Selecione'}</Text>
+              <Text style={[styles.modalTitle, { color: colors.text.default }]}>
+                {label || 'Selecione'}
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color={themeColors.dark[900]} />
+                <Ionicons name="close" size={24} color={colors.text.default} />
               </TouchableOpacity>
             </View>
 
-            <View style={styles.searchContainer}>
-              <Ionicons name="search" size={20} color={themeColors.dark[400]} />
+            <View style={[styles.searchContainer, { backgroundColor: colors.card.background }]}>
+              <Ionicons name="search" size={20} color={colors.text.dark} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { color: colors.text.default }]}
                 placeholder="Buscar..."
-                placeholderTextColor={themeColors.dark[400]}
+                placeholderTextColor={colors.text.dark}
                 value={searchText}
                 onChangeText={setSearchText}
               />
@@ -101,34 +110,48 @@ export function MultiSelect({
                 const isSelected = values.includes(item.value)
                 return (
                   <TouchableOpacity
-                    style={[styles.optionItem, isSelected && styles.optionItemSelected]}
+                    style={[
+                      styles.optionItem,
+                      { borderBottomColor: colors.card.border },
+                      isSelected && {
+                        backgroundColor:
+                          theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                      },
+                    ]}
                     onPress={() => handleToggle(item.value)}
                   >
-                    <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+                    <Text
+                      style={[
+                        styles.optionText,
+                        { color: isSelected ? colors.primary : colors.text.default },
+                        isSelected && styles.optionTextSelected,
+                      ]}
+                    >
                       {item.label}
                     </Text>
                     {isSelected && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={20}
-                        color={themeColors.primary[600]}
-                      />
+                      <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
                     )}
                     {!isSelected && (
-                      <Ionicons name="ellipse-outline" size={20} color={themeColors.dark[400]} />
+                      <Ionicons name="ellipse-outline" size={20} color={colors.text.dark} />
                     )}
                   </TouchableOpacity>
                 )
               }}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>Nenhuma opção encontrada</Text>
+                  <Text style={[styles.emptyText, { color: colors.text.dark }]}>
+                    Nenhuma opção encontrada
+                  </Text>
                 </View>
               }
             />
 
             <View style={styles.footer}>
-              <TouchableOpacity style={styles.confirmButton} onPress={() => setModalVisible(false)}>
+              <TouchableOpacity
+                style={[styles.confirmButton, { backgroundColor: colors.primary }]}
+                onPress={() => setModalVisible(false)}
+              >
                 <Text style={styles.confirmButtonText}>Confirmar</Text>
               </TouchableOpacity>
             </View>
@@ -146,36 +169,19 @@ const styles = StyleSheet.create({
   label: {
     fontSize: themeTypography.sizes.sm,
     fontWeight: themeTypography.weights.medium,
-    color: themeColors.dark[300],
     marginBottom: themeSpacing.xs,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: themeColors.dark[900],
     borderWidth: 1,
-    borderColor: themeColors.dark[700],
     borderRadius: 8,
     paddingHorizontal: themeSpacing.md,
     height: 48,
   },
-  buttonError: {
-    borderColor: '#ef4444',
-  },
-  buttonDisabled: {
-    backgroundColor: themeColors.dark[950],
-    opacity: 0.7,
-  },
   valueText: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[100],
-  },
-  placeholderText: {
-    color: themeColors.dark[500],
-  },
-  textDisabled: {
-    color: themeColors.dark[600],
   },
   errorText: {
     fontSize: themeTypography.sizes.xs,
@@ -188,7 +194,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: themeColors.dark[900],
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     height: '80%',
@@ -204,12 +209,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.bold,
-    color: themeColors.dark[100],
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: themeColors.dark[800],
     borderRadius: 8,
     paddingHorizontal: themeSpacing.md,
     height: 44,
@@ -219,7 +222,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: themeSpacing.sm,
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[100],
   },
   optionItem: {
     flexDirection: 'row',
@@ -227,19 +229,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: themeSpacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: themeColors.dark[800],
-  },
-  optionItemSelected: {
-    backgroundColor: themeColors.dark[850],
-    marginHorizontal: -themeSpacing.md,
-    paddingHorizontal: themeSpacing.md,
   },
   optionText: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[300],
   },
   optionTextSelected: {
-    color: themeColors.primary[500],
     fontWeight: themeTypography.weights.semibold,
   },
   emptyContainer: {
@@ -247,14 +241,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: themeColors.dark[500],
     fontSize: themeTypography.sizes.md,
   },
   footer: {
     marginTop: themeSpacing.md,
   },
   confirmButton: {
-    backgroundColor: themeColors.primary[600],
     paddingVertical: themeSpacing.md,
     borderRadius: 8,
     alignItems: 'center',

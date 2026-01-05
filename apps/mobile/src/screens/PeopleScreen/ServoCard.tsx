@@ -2,7 +2,8 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
 import { Person, Ministry, Team } from '@minc-hub/shared/types'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ServoCardProps {
   person: Person
@@ -12,16 +13,18 @@ interface ServoCardProps {
   onDelete?: (id: string) => void
 }
 
-export function ServoCard({ person, ministry, team, onEdit, onDelete }: ServoCardProps) {
+export function ServoCard({ person, ministry, team, onEdit, onDelete }: Readonly<ServoCardProps>) {
+  const { colors } = useTheme()
+
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
         <View style={styles.info}>
-          <Text style={styles.name}>{person.name}</Text>
+          <Text style={[styles.name, { color: colors.text.default }]}>{person.name}</Text>
           {person.email && (
             <View style={styles.row}>
               <Text style={styles.label}>📧</Text>
-              <Text style={styles.text} numberOfLines={1}>
+              <Text style={[styles.text, { color: colors.text.dark }]} numberOfLines={1}>
                 {person.email}
               </Text>
             </View>
@@ -29,15 +32,20 @@ export function ServoCard({ person, ministry, team, onEdit, onDelete }: ServoCar
           {person.phone && (
             <View style={styles.row}>
               <Text style={styles.label}>📱</Text>
-              <Text style={styles.text}>{person.phone}</Text>
+              <Text style={[styles.text, { color: colors.text.dark }]}>{person.phone}</Text>
             </View>
           )}
         </View>
       </View>
 
       {ministry && (
-        <View style={[styles.badge, styles.badgePrimary]}>
-          <Text style={[styles.badgeText, styles.badgeTextPrimary]}>{ministry.name}</Text>
+        <View
+          style={[
+            styles.badge,
+            { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' },
+          ]}
+        >
+          <Text style={[styles.badgeText, { color: colors.primary }]}>{ministry.name}</Text>
         </View>
       )}
       {team && (
@@ -46,13 +54,13 @@ export function ServoCard({ person, ministry, team, onEdit, onDelete }: ServoCar
         </View>
       )}
       {!ministry && !team && (
-        <View style={[styles.badge, styles.badgeGray]}>
-          <Text style={[styles.badgeText, styles.badgeTextGray]}>Sem time/equipe</Text>
+        <View style={[styles.badge, { backgroundColor: colors.card.border }]}>
+          <Text style={[styles.badgeText, { color: colors.text.dark }]}>Sem time/equipe</Text>
         </View>
       )}
 
       {(onEdit || onDelete) && (
-        <View style={styles.actions}>
+        <View style={[styles.actions, { borderTopColor: colors.card.border }]}>
           {onEdit && (
             <Button
               title="Editar"
@@ -90,7 +98,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.xs,
   },
   row: {
@@ -104,52 +111,33 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
     flex: 1,
   },
-  badges: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: themeSpacing.xs,
-    marginBottom: themeSpacing.md,
-  },
   badge: {
+    alignSelf: 'flex-start',
     paddingHorizontal: themeSpacing.sm,
     paddingVertical: themeSpacing.xs / 2,
     borderRadius: 12,
     borderWidth: 1,
-  },
-  badgePrimary: {
-    backgroundColor: themeColors.primary[50] ?? '#fef3c7',
-    borderColor: themeColors.primary[200] ?? '#fde68a',
+    marginBottom: themeSpacing.xs,
+    marginRight: themeSpacing.xs,
   },
   badgeBlue: {
     backgroundColor: '#dbeafe',
     borderColor: '#93c5fd',
   },
-  badgeGray: {
-    backgroundColor: themeColors.dark[800],
-    borderColor: themeColors.dark[700],
-  },
   badgeText: {
     fontSize: themeTypography.sizes.xs,
     fontWeight: themeTypography.weights.bold,
   },
-  badgeTextPrimary: {
-    color: '#92400e', // Amber 800
-  },
   badgeTextBlue: {
     color: '#1e40af', // Blue 800
-  },
-  badgeTextGray: {
-    color: themeColors.dark[400],
   },
   actions: {
     flexDirection: 'row',
     gap: themeSpacing.sm,
     paddingTop: themeSpacing.md,
     borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
   },
   actionButton: {
     flex: 1,

@@ -5,7 +5,8 @@ import { Header } from '@/components'
 import { useCameraPermission } from './useCameraPermission'
 import { QRCodeScannerOverlay } from './QRCodeScannerOverlay'
 import { MyQRCode } from './MyQRCode'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 const SCAN_RESET_DELAY_MS = 2000
 
@@ -13,6 +14,7 @@ export default function CheckinScreen() {
   const [mode, setMode] = useState<'scan' | 'generate'>('generate')
   const [scanned, setScanned] = useState(false)
   const { permission } = useCameraPermission()
+  const { colors, theme } = useTheme()
 
   function handleBarCodeScanned({ data }: { data: string }) {
     if (scanned) return
@@ -33,7 +35,7 @@ export default function CheckinScreen() {
     if (!permission) {
       return (
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Carregando...</Text>
+          <Text style={[styles.loadingText, { color: colors.text.dark }]}>Carregando...</Text>
         </View>
       )
     }
@@ -41,8 +43,10 @@ export default function CheckinScreen() {
     if (!permission.granted) {
       return (
         <View style={styles.permissionContainer}>
-          <Text style={styles.permissionText}>Permissão de câmera necessária</Text>
-          <Text style={styles.permissionSubtext}>
+          <Text style={[styles.permissionText, { color: colors.text.default }]}>
+            Permissão de câmera necessária
+          </Text>
+          <Text style={[styles.permissionSubtext, { color: colors.text.dark }]}>
             Por favor, permita o acesso à câmera nas configurações
           </Text>
         </View>
@@ -63,25 +67,52 @@ export default function CheckinScreen() {
     )
   }
 
+  // Helper to get dynamic toggle styles
+  const getSegmentStyle = (isActive: boolean) => ({
+    backgroundColor: isActive ? colors.card.background : 'transparent',
+  })
+
   return (
     <View style={styles.container}>
       <Header title="Check-in" subtitle="Escaneie o QR code para registrar presença" />
 
-      <View style={styles.toggleContainer}>
-        <View style={styles.segments}>
+      <View
+        style={[
+          styles.toggleContainer,
+          { backgroundColor: theme === 'dark' ? 'rgba(9, 9, 11, 0.95)' : '#ffffff' },
+        ]}
+      >
+        <View
+          style={[
+            styles.segments,
+            { backgroundColor: colors.card.background, borderColor: colors.card.border },
+          ]}
+        >
           <TouchableOpacity
-            style={[styles.segment, mode === 'generate' && styles.segmentActive]}
+            style={[styles.segment, getSegmentStyle(mode === 'generate')]}
             onPress={() => setMode('generate')}
           >
-            <Text style={[styles.segmentText, mode === 'generate' && styles.segmentTextActive]}>
+            <Text
+              style={[
+                styles.segmentText,
+                { color: mode === 'generate' ? colors.text.default : colors.text.dark },
+                mode === 'generate' && styles.segmentTextActive,
+              ]}
+            >
               Meu Código
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.segment, mode === 'scan' && styles.segmentActive]}
+            style={[styles.segment, getSegmentStyle(mode === 'scan')]}
             onPress={() => setMode('scan')}
           >
-            <Text style={[styles.segmentText, mode === 'scan' && styles.segmentTextActive]}>
+            <Text
+              style={[
+                styles.segmentText,
+                { color: mode === 'scan' ? colors.text.default : colors.text.dark },
+                mode === 'scan' && styles.segmentTextActive,
+              ]}
+            >
               Ler Código
             </Text>
           </TouchableOpacity>
@@ -96,22 +127,18 @@ export default function CheckinScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themeColors.dark[950],
   },
   toggleContainer: {
     paddingHorizontal: themeSpacing.lg,
     paddingBottom: themeSpacing.md,
     paddingTop: themeSpacing.md, // Added spacing from header
-    backgroundColor: 'rgba(9, 9, 11, 0.95)', // Match header background
     zIndex: 10,
   },
   segments: {
     flexDirection: 'row',
-    backgroundColor: themeColors.dark[900],
     borderRadius: 12,
     padding: 4,
     borderWidth: 1,
-    borderColor: themeColors.dark[800],
   },
   segment: {
     flex: 1,
@@ -119,16 +146,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
   },
-  segmentActive: {
-    backgroundColor: themeColors.dark[800],
-  },
   segmentText: {
     fontSize: themeTypography.sizes.sm,
     fontWeight: themeTypography.weights.medium,
-    color: themeColors.dark[400],
   },
   segmentTextActive: {
-    color: '#ffffff',
     fontWeight: themeTypography.weights.bold,
   },
   content: {
@@ -144,7 +166,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[400],
   },
   permissionContainer: {
     flex: 1,
@@ -155,13 +176,11 @@ const styles = StyleSheet.create({
   permissionText: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.sm,
     textAlign: 'center',
   },
   permissionSubtext: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[400],
     textAlign: 'center',
   },
 })

@@ -1,7 +1,8 @@
 import React from 'react'
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface CheckboxProps {
   label?: string
@@ -11,6 +12,8 @@ interface CheckboxProps {
 }
 
 export function Checkbox({ label, checked, onChange, disabled = false }: CheckboxProps) {
+  const { colors } = useTheme()
+
   return (
     <TouchableOpacity
       style={[styles.container, disabled && styles.disabled]}
@@ -18,11 +21,26 @@ export function Checkbox({ label, checked, onChange, disabled = false }: Checkbo
       activeOpacity={0.7}
     >
       <View
-        style={[styles.checkbox, checked && styles.checked, disabled && styles.checkboxDisabled]}
+        style={[
+          styles.checkbox,
+          { borderColor: colors.primary },
+          checked && { backgroundColor: colors.primary },
+          disabled && { borderColor: colors.text.dark },
+        ]}
       >
-        {checked && <Ionicons name="checkmark" size={16} color={themeColors.dark[100]} />}
+        {checked && <Ionicons name="checkmark" size={16} color={'#ffffff'} />}
       </View>
-      {label && <Text style={[styles.label, disabled && styles.labelDisabled]}>{label}</Text>}
+      {label && (
+        <Text
+          style={[
+            styles.label,
+            { color: colors.text.default },
+            disabled && { color: colors.text.dark },
+          ]}
+        >
+          {label}
+        </Text>
+      )}
     </TouchableOpacity>
   )
 }
@@ -41,24 +59,12 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: themeColors.primary[600],
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
     marginRight: themeSpacing.sm,
   },
-  checked: {
-    backgroundColor: themeColors.primary[600],
-  },
-  checkboxDisabled: {
-    borderColor: themeColors.dark[600],
-    backgroundColor: 'transparent',
-  },
   label: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[100],
-  },
-  labelDisabled: {
-    color: themeColors.dark[500],
   },
 })

@@ -1,7 +1,8 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native'
 import { useAuth } from '@/contexts/AuthContext'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface UserMenuProps {
   readonly visible: boolean
@@ -21,6 +22,7 @@ function getUserInitials(userName?: string): string {
 
 export function UserMenu({ visible, onClose }: UserMenuProps) {
   const { user, logout } = useAuth()
+  const { colors } = useTheme()
 
   function handleLogout() {
     onClose()
@@ -41,32 +43,32 @@ export function UserMenu({ visible, onClose }: UserMenuProps) {
   const initials = getUserInitials(user?.name)
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <View style={styles.menu}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose}>
+        <View
+          style={[
+            styles.menu,
+            { backgroundColor: colors.card.background, borderTopColor: colors.card.border },
+          ]}
+        >
           <View style={styles.menuHeader}>
-            <View style={styles.menuAvatar}>
+            <View style={[styles.menuAvatar, { backgroundColor: colors.primary }]}>
               <Text style={styles.menuAvatarText}>{initials}</Text>
             </View>
             <View style={styles.menuUserInfo}>
-              <Text style={styles.menuUserName}>{user?.name ?? 'Usuário'}</Text>
-              <Text style={styles.menuUserEmail}>{user?.email ?? ''}</Text>
+              <Text style={[styles.menuUserName, { color: colors.text.default }]}>
+                {user?.name ?? 'Usuário'}
+              </Text>
+              <Text style={[styles.menuUserEmail, { color: colors.text.dark }]}>
+                {user?.email ?? ''}
+              </Text>
             </View>
           </View>
 
-          <View style={styles.menuSeparator} />
+          <View style={[styles.menuSeparator, { backgroundColor: colors.card.border }]} />
 
           <TouchableOpacity style={styles.menuItem} onPress={handleLogout} activeOpacity={0.7}>
-            <Text style={styles.menuItemText}>Sair</Text>
+            <Text style={[styles.menuItemText, { color: colors.text.default }]}>Sair</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
@@ -81,12 +83,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   menu: {
-    backgroundColor: themeColors.dark[900],
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     paddingBottom: themeSpacing.xl,
     borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
   },
   menuHeader: {
     flexDirection: 'row',
@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: themeColors.primary[600],
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -113,16 +112,13 @@ const styles = StyleSheet.create({
   menuUserName: {
     fontSize: themeTypography.sizes.md,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.xs / 2,
   },
   menuUserEmail: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
   },
   menuSeparator: {
     height: 1,
-    backgroundColor: themeColors.dark[800],
     marginVertical: themeSpacing.sm,
   },
   menuItem: {
@@ -130,6 +126,5 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.text.default,
   },
 })

@@ -1,17 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { View, StyleSheet, FlatList, Text, Image, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native'
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Text,
+  Image,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native'
 import { useRoute, useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
 import { MOCK_MESSAGES, MOCK_USERS, Message, User } from '@/constants/mockChatData'
 import { ChatBubble } from './components/ChatBubble'
 import { ChatInput } from './components/ChatInput'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function ChatDetailScreen() {
   const route = useRoute()
   const navigation = useNavigation()
-  const { conversationId, otherUserId } = route.params as { conversationId: string, otherUserId: string }
-  
+  const { conversationId, otherUserId } = route.params as {
+    conversationId: string
+    otherUserId: string
+  }
+  const { colors } = useTheme()
+
   const otherUser = MOCK_USERS[otherUserId]
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES[conversationId] || [])
   const flatListRef = useRef<FlatList>(null)
@@ -27,33 +41,45 @@ export default function ChatDetailScreen() {
       text,
       senderId: 'me',
       timestamp: new Date().toISOString(),
-      read: false
+      read: false,
     }
     setMessages(prev => [...prev, newMessage])
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100)
   }
 
+  const containerStyle = {
+    backgroundColor: colors.background.default,
+  }
+
+  const headerStyle = {
+    backgroundColor: colors.card.background,
+    borderBottomColor: colors.card.border,
+  }
+
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={[styles.container, containerStyle]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      <View style={styles.header}>
+      <View style={[styles.header, headerStyle]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={themeColors.dark[100]} />
+          <Ionicons name="arrow-back" size={24} color={colors.text.default} />
         </TouchableOpacity>
-        
+
         <View style={styles.headerContent}>
-          <Image source={{ uri: otherUser?.avatar }} style={styles.avatar} />
+          <Image
+            source={{ uri: otherUser?.avatar }}
+            style={[styles.avatar, { backgroundColor: colors.card.border }]}
+          />
           <View>
-            <Text style={styles.name}>{otherUser?.name}</Text>
+            <Text style={[styles.name, { color: colors.text.default }]}>{otherUser?.name}</Text>
             {otherUser?.isOnline && <Text style={styles.status}>Online</Text>}
           </View>
         </View>
-        
+
         <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="ellipsis-vertical" size={24} color={themeColors.dark[100]} />
+          <Ionicons name="ellipsis-vertical" size={24} color={colors.text.default} />
         </TouchableOpacity>
       </View>
 
@@ -62,9 +88,9 @@ export default function ChatDetailScreen() {
         data={messages}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <ChatBubble 
-            message={item.text} 
-            isMe={item.senderId === 'me'} 
+          <ChatBubble
+            message={item.text}
+            isMe={item.senderId === 'me'}
             timestamp={item.timestamp}
           />
         )}
@@ -80,16 +106,13 @@ export default function ChatDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themeColors.dark[950],
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: themeSpacing.md,
     paddingTop: themeSpacing.xl, // For status bar
-    backgroundColor: themeColors.dark[900],
     borderBottomWidth: 1,
-    borderBottomColor: themeColors.dark[800],
   },
   backButton: {
     padding: 8,
@@ -105,12 +128,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: themeSpacing.sm,
-    backgroundColor: themeColors.dark[700],
   },
   name: {
     fontSize: themeTypography.sizes.md,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.dark[100],
   },
   status: {
     fontSize: themeTypography.sizes.xs,

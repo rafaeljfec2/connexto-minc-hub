@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
-import { useCrud } from '@/hooks/useCrud'
+import { useChurches } from '@/hooks/useChurches'
 import { useViewMode } from '@/hooks/useViewMode'
 import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
 import { CrudFilters } from '@/components/crud/CrudFilters'
@@ -13,17 +13,15 @@ import { CrudView } from '@/components/crud/CrudView'
 import { Church } from '@minc-hub/shared/types'
 import { ChurchCard } from './churches/components/ChurchCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
-import { MOCK_CHURCHES } from '@/lib/mockData'
 
 export default function ChurchesPage() {
   const {
-    items: churches,
-    create,
-    update,
-    remove,
-  } = useCrud<Church>({
-    initialItems: MOCK_CHURCHES,
-  })
+    churches,
+    isLoading,
+    createChurch,
+    updateChurch,
+    deleteChurch,
+  } = useChurches()
   const modal = useModal()
   const deleteModal = useModal()
   const [editingChurch, setEditingChurch] = useState<Church | null>(null)
@@ -85,16 +83,20 @@ export default function ChurchesPage() {
     })
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (editingChurch) {
-      update(editingChurch.id, formData)
-    } else {
-      create(formData)
+    try {
+      if (editingChurch) {
+        await updateChurch(editingChurch.id, formData)
+      } else {
+        await createChurch(formData)
+      }
+      handleCloseModal()
+    } catch (err) {
+      // Error is already handled by the hook
+      console.error('Error saving church:', err)
     }
-
-    handleCloseModal()
   }
 
   function handleDeleteClick(id: string) {
@@ -102,10 +104,16 @@ export default function ChurchesPage() {
     deleteModal.open()
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (deletingId) {
-      remove(deletingId)
-      setDeletingId(null)
+      try {
+        await deleteChurch(deletingId)
+        setDeletingId(null)
+        deleteModal.close()
+      } catch (err) {
+        // Error is already handled by the hook
+        console.error('Error deleting church:', err)
+      }
     }
   }
 
@@ -119,8 +127,8 @@ export default function ChurchesPage() {
           church={church}
           onEdit={handleOpenModal}
           onDelete={handleDeleteClick}
-          isUpdating={false}
-          isDeleting={false}
+          isUpdating={isLoading}
+          isDeleting={isLoading && deletingId === church.id}
         />
       ))}
     </div>
@@ -155,7 +163,7 @@ export default function ChurchesPage() {
         createButtonLabel="Nova Igreja"
         onCreateClick={() => handleOpenModal()}
         hasFilters={hasFilters}
-        isEmpty={filteredChurches.length === 0}
+        isEmpty={filteredChurches.length === 0 && !isLoading}
         emptyTitle={hasFilters ? 'Nenhuma igreja encontrada' : 'Nenhuma igreja cadastrada'}
         emptyDescription={
           hasFilters
@@ -222,8 +230,12 @@ export default function ChurchesPage() {
             <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              {editingChurch ? 'Salvar Alterações' : 'Criar Igreja'}
+            <Button type="submit" variant="primary" disabled={isLoading}>
+              {isLoading
+                ? 'Salvando...'
+                : editingChurch
+                  ? 'Salvar Alterações'
+                  : 'Criar Igreja'}
             </Button>
           </div>
         </form>

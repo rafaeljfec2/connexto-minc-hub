@@ -2,7 +2,8 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
 import { Church } from '@minc-hub/shared/types'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ChurchCardProps {
   readonly church: Church
@@ -11,24 +12,26 @@ interface ChurchCardProps {
 }
 
 export function ChurchCard({ church, onEdit, onDelete }: ChurchCardProps) {
+  const { colors } = useTheme()
+
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
         <View style={styles.info}>
-          <Text style={styles.name}>{church.name}</Text>
+          <Text style={[styles.name, { color: colors.text.default }]}>{church.name}</Text>
           {church.address && (
-            <Text style={styles.address}>{church.address}</Text>
+            <Text style={[styles.address, { color: colors.text.dark }]}>{church.address}</Text>
           )}
           {church.email && (
-            <Text style={styles.contactText}>{church.email}</Text>
+            <Text style={[styles.contactText, { color: colors.text.dark }]}>{church.email}</Text>
           )}
           {church.phone && (
-            <Text style={styles.contactText}>{church.phone}</Text>
+            <Text style={[styles.contactText, { color: colors.text.dark }]}>{church.phone}</Text>
           )}
         </View>
       </View>
 
-      <View style={styles.actions}>
+      <View style={[styles.actions, { borderTopColor: colors.card.border }]}>
         <Button
           title="Editar"
           onPress={() => onEdit(church)}
@@ -59,17 +62,14 @@ const styles = StyleSheet.create({
   name: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.xs,
   },
   address: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
     marginBottom: themeSpacing.xs,
   },
   contactText: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
     marginBottom: themeSpacing.xs / 2,
   },
   actions: {
@@ -77,7 +77,6 @@ const styles = StyleSheet.create({
     gap: themeSpacing.sm,
     paddingTop: themeSpacing.md,
     borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
   },
   actionButton: {
     flex: 1,

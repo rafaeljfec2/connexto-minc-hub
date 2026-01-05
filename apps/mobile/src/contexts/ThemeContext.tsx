@@ -1,10 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  type ReactNode,
+} from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getThemeColors } from '@/theme'
 
 type Theme = 'light' | 'dark'
+type ThemeColors = ReturnType<typeof getThemeColors>
 
 interface ThemeContextType {
   theme: Theme
+  colors: ThemeColors
   toggleTheme: () => void
   setTheme: (theme: Theme) => void
 }
@@ -54,13 +64,16 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     setThemeState(newTheme)
   }
 
+  const colors = useMemo(() => getThemeColors(theme), [theme])
+
   const value = useMemo(
     () => ({
       theme,
+      colors,
       toggleTheme,
       setTheme,
     }),
-    [theme]
+    [theme, colors]
   )
 
   if (isLoading) {

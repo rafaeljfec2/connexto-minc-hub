@@ -2,7 +2,8 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
 import { Ministry } from '@minc-hub/shared/types'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface MinistryCardProps {
   readonly ministry: Ministry
@@ -12,29 +13,45 @@ interface MinistryCardProps {
 }
 
 export function MinistryCard({ ministry, churchName, onEdit, onDelete }: MinistryCardProps) {
+  const { colors } = useTheme()
+
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
         <View style={styles.info}>
-          <Text style={styles.name}>{ministry.name}</Text>
+          <Text style={[styles.name, { color: colors.text.default }]}>{ministry.name}</Text>
           {ministry.description && (
-            <Text style={styles.description} numberOfLines={2}>
+            <Text style={[styles.description, { color: colors.text.dark }]} numberOfLines={2}>
               {ministry.description}
             </Text>
           )}
           {churchName && (
-            <Text style={styles.churchName}>{churchName}</Text>
+            <Text style={[styles.churchName, { color: colors.text.dark }]}>{churchName}</Text>
           )}
         </View>
       </View>
 
       <View style={styles.badges}>
-        <View style={[styles.badge, ministry.isActive ? styles.badgeActive : styles.badgeInactive]}>
-          <Text style={styles.badgeText}>{ministry.isActive ? 'Ativo' : 'Inativo'}</Text>
+        <View
+          style={[
+            styles.badge,
+            ministry.isActive
+              ? { backgroundColor: '#d1fae5' }
+              : { backgroundColor: colors.card.border },
+          ]}
+        >
+          <Text
+            style={[
+              styles.badgeText,
+              ministry.isActive ? { color: '#065f46' } : { color: colors.text.dark },
+            ]}
+          >
+            {ministry.isActive ? 'Ativo' : 'Inativo'}
+          </Text>
         </View>
       </View>
 
-      <View style={styles.actions}>
+      <View style={[styles.actions, { borderTopColor: colors.card.border }]}>
         <Button
           title="Editar"
           onPress={() => onEdit(ministry)}
@@ -65,17 +82,14 @@ const styles = StyleSheet.create({
   name: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.xs,
   },
   description: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
     marginBottom: themeSpacing.xs,
   },
   churchName: {
     fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
   },
   badges: {
     flexDirection: 'row',
@@ -88,23 +102,15 @@ const styles = StyleSheet.create({
     paddingVertical: themeSpacing.xs / 2,
     borderRadius: 12,
   },
-  badgeActive: {
-    backgroundColor: '#d1fae5',
-  },
-  badgeInactive: {
-    backgroundColor: themeColors.dark[800],
-  },
   badgeText: {
     fontSize: themeTypography.sizes.xs,
     fontWeight: themeTypography.weights.medium,
-    color: themeColors.text.default,
   },
   actions: {
     flexDirection: 'row',
     gap: themeSpacing.sm,
     paddingTop: themeSpacing.md,
     borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
   },
   actionButton: {
     flex: 1,

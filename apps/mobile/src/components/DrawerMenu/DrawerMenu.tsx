@@ -5,11 +5,12 @@ import type { CompositeNavigationProp } from '@react-navigation/native'
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { RootStackParamList, MainTabParamList } from '@/navigator/navigator.types'
-import { themeColors, themeSpacing } from '@/theme'
+import { themeSpacing } from '@/theme'
 import { MENU_ITEMS, type MenuItem } from './menuItems'
 import { getScreenNameForMenuItem } from './navigationHelpers'
 import { DrawerHeader } from './DrawerHeader'
 import { MenuItem as MenuItemComponent } from './MenuItem'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface DrawerMenuProps {
   visible: boolean
@@ -23,6 +24,7 @@ type NavigationProp = CompositeNavigationProp<
 
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const navigation = useNavigation<NavigationProp>()
+  const { colors } = useTheme()
 
   function handleItemPress(item: MenuItem) {
     onClose()
@@ -48,27 +50,27 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
       statusBarTranslucent
     >
       <View style={styles.overlay}>
-        <TouchableOpacity
-          style={styles.overlayTouchable}
-          activeOpacity={1}
-          onPress={onClose}
-        />
-        <View style={styles.drawer}>
+        <TouchableOpacity style={styles.overlayTouchable} activeOpacity={1} onPress={onClose} />
+        <View style={[styles.drawer, { backgroundColor: colors.background.default }]}>
           <View style={styles.handleContainer}>
-            <View style={styles.handle} />
+            <View style={[styles.handle, { backgroundColor: colors.card.border }]} />
           </View>
           <DrawerHeader onClose={onClose} />
 
           <View style={styles.contentContainer}>
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
               {MENU_ITEMS.map(item => (
-                <MenuItemComponent key={item.id} item={item} onPress={() => handleItemPress(item)} />
+                <MenuItemComponent
+                  key={item.id}
+                  item={item}
+                  onPress={() => handleItemPress(item)}
+                />
               ))}
             </ScrollView>
           </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>MINC TEAMS</Text>
+          <View style={[styles.footer, { borderTopColor: colors.card.border }]}>
+            <Text style={[styles.footerText, { color: colors.text.default }]}>MINC TEAMS</Text>
           </View>
         </View>
       </View>
@@ -88,7 +90,6 @@ const styles = StyleSheet.create({
   drawer: {
     width: '100%',
     maxHeight: '85%',
-    backgroundColor: themeColors.dark[900],
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     position: 'absolute',
@@ -105,7 +106,6 @@ const styles = StyleSheet.create({
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: themeColors.dark[600],
     borderRadius: 2,
   },
   contentContainer: {
@@ -117,12 +117,10 @@ const styles = StyleSheet.create({
   footer: {
     padding: themeSpacing.md,
     borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
   },
   footerText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: themeColors.text.default,
     textAlign: 'center',
   },
 })

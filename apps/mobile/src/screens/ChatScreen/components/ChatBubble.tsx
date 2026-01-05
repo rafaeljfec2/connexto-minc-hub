@@ -1,6 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ChatBubbleProps {
   message: string
@@ -9,13 +10,31 @@ interface ChatBubbleProps {
 }
 
 export function ChatBubble({ message, isMe, timestamp }: ChatBubbleProps) {
+  const { colors } = useTheme()
   const time = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
+  // Dynamic styles
+  const bubbleStyle = isMe
+    ? {
+        alignSelf: 'flex-end' as const,
+        backgroundColor: colors.primary,
+        borderBottomRightRadius: 4,
+      }
+    : {
+        alignSelf: 'flex-start' as const,
+        backgroundColor: colors.card.border,
+        borderBottomLeftRadius: 4,
+      }
+
+  const messageColor = isMe ? { color: '#ffffff' } : { color: colors.text.default }
+
+  const timeColor = isMe ? { color: 'rgba(255, 255, 255, 0.7)' } : { color: colors.text.dark }
+
   return (
-    <View style={[styles.container, isMe ? styles.containerMe : styles.containerOther]}>
-      <Text style={[styles.message, isMe ? styles.messageMe : styles.messageOther]}>{message}</Text>
+    <View style={[styles.container, bubbleStyle]}>
+      <Text style={[styles.message, messageColor]}>{message}</Text>
       <View style={styles.footer}>
-        <Text style={[styles.time, isMe ? styles.timeMe : styles.timeOther]}>{time}</Text>
+        <Text style={[styles.time, timeColor]}>{time}</Text>
       </View>
     </View>
   )
@@ -29,25 +48,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: themeSpacing.sm,
   },
-  containerMe: {
-    alignSelf: 'flex-end',
-    backgroundColor: themeColors.primary[600],
-    borderBottomRightRadius: 4,
-  },
-  containerOther: {
-    alignSelf: 'flex-start',
-    backgroundColor: themeColors.dark[800],
-    borderBottomLeftRadius: 4,
-  },
   message: {
     fontSize: themeTypography.sizes.md,
     lineHeight: 22,
-  },
-  messageMe: {
-    color: '#ffffff',
-  },
-  messageOther: {
-    color: themeColors.dark[100],
   },
   footer: {
     flexDirection: 'row',
@@ -56,11 +59,5 @@ const styles = StyleSheet.create({
   },
   time: {
     fontSize: 10,
-  },
-  timeMe: {
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  timeOther: {
-    color: themeColors.dark[400],
   },
 })

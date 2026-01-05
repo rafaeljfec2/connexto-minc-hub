@@ -1,4 +1,4 @@
-import type { AxiosInstance } from 'axios';
+import type { AxiosInstance } from 'axios'
 import type {
   Person,
   Team,
@@ -7,47 +7,42 @@ import type {
   Attendance,
   Church,
   Ministry,
-} from '../types';
+  ApiResponse,
+} from '../types'
+
+type CreateEntity<T> = Omit<T, 'id' | 'createdAt' | 'updatedAt'>
 
 export function createApiServices(api: AxiosInstance) {
   return {
     peopleService: {
       getAll: () => api.get<Person[]>('/people'),
       getById: (id: string) => api.get<Person>(`/people/${id}`),
-      create: (data: Omit<Person, 'id' | 'createdAt' | 'updatedAt'>) =>
-        api.post<Person>('/people', data),
-      update: (id: string, data: Partial<Person>) =>
-        api.put<Person>(`/people/${id}`, data),
+      create: (data: CreateEntity<Person>) => api.post<Person>('/people', data),
+      update: (id: string, data: Partial<Person>) => api.put<Person>(`/people/${id}`, data),
       delete: (id: string) => api.delete(`/people/${id}`),
     },
 
     teamsService: {
       getAll: () => api.get<Team[]>('/teams'),
       getById: (id: string) => api.get<Team>(`/teams/${id}`),
-      create: (data: Omit<Team, 'id' | 'createdAt' | 'updatedAt'>) =>
-        api.post<Team>('/teams', data),
-      update: (id: string, data: Partial<Team>) =>
-        api.put<Team>(`/teams/${id}`, data),
+      create: (data: CreateEntity<Team>) => api.post<Team>('/teams', data),
+      update: (id: string, data: Partial<Team>) => api.put<Team>(`/teams/${id}`, data),
       delete: (id: string) => api.delete(`/teams/${id}`),
     },
 
     servicesService: {
       getAll: () => api.get<Service[]>('/services'),
       getById: (id: string) => api.get<Service>(`/services/${id}`),
-      create: (data: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>) =>
-        api.post<Service>('/services', data),
-      update: (id: string, data: Partial<Service>) =>
-        api.put<Service>(`/services/${id}`, data),
+      create: (data: CreateEntity<Service>) => api.post<Service>('/services', data),
+      update: (id: string, data: Partial<Service>) => api.put<Service>(`/services/${id}`, data),
       delete: (id: string) => api.delete(`/services/${id}`),
     },
 
     schedulesService: {
       getAll: () => api.get<Schedule[]>('/schedules'),
       getById: (id: string) => api.get<Schedule>(`/schedules/${id}`),
-      create: (data: Omit<Schedule, 'id' | 'createdAt' | 'updatedAt'>) =>
-        api.post<Schedule>('/schedules', data),
-      update: (id: string, data: Partial<Schedule>) =>
-        api.put<Schedule>(`/schedules/${id}`, data),
+      create: (data: CreateEntity<Schedule>) => api.post<Schedule>('/schedules', data),
+      update: (id: string, data: Partial<Schedule>) => api.put<Schedule>(`/schedules/${id}`, data),
       delete: (id: string) => api.delete(`/schedules/${id}`),
       autoAssign: (serviceId: string, date: string) =>
         api.post<Schedule>('/schedules/auto-assign', { serviceId, date }),
@@ -56,37 +51,85 @@ export function createApiServices(api: AxiosInstance) {
     attendanceService: {
       getBySchedule: (scheduleId: string) =>
         api.get<Attendance[]>(`/attendance/schedule/${scheduleId}`),
-      mark: (data: Omit<Attendance, 'id' | 'createdAt' | 'updatedAt'>) =>
-        api.post<Attendance>('/attendance', data),
+      mark: (data: CreateEntity<Attendance>) => api.post<Attendance>('/attendance', data),
       update: (id: string, data: Partial<Attendance>) =>
         api.put<Attendance>(`/attendance/${id}`, data),
     },
 
     communicationService: {
       send: (data: {
-        title: string;
-        content: string;
-        recipients: { type: 'all' | 'team' | 'person'; ids: string[] };
+        title: string
+        content: string
+        recipients: { type: 'all' | 'team' | 'person'; ids: string[] }
       }) => api.post('/communication/send', data),
       getHistory: () => api.get('/communication/history'),
     },
 
     churchesService: {
-      getAll: () => api.get<Church[]>('/churches'),
-      getById: (id: string) => api.get<Church>(`/churches/${id}`),
-      create: (data: Omit<Church, 'id' | 'createdAt' | 'updatedAt'>) =>
-        api.post<Church>('/churches', data),
+      getAll: () =>
+        api.get<ApiResponse<Church[]>>('/churches').then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Church[]>
+            return apiResponse.data ?? []
+          }
+          return (res.data as unknown as Church[]) ?? []
+        }),
+      getById: (id: string) =>
+        api.get<ApiResponse<Church>>(`/churches/${id}`).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Church>
+            if (!apiResponse.data) {
+              throw new Error('Church not found')
+            }
+            return apiResponse.data
+          }
+          const church = res.data as unknown as Church
+          if (!church) {
+            throw new Error('Church not found')
+          }
+          return church
+        }),
+      create: (data: CreateEntity<Church>) =>
+        api.post<ApiResponse<Church>>('/churches', data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Church>
+            if (!apiResponse.data) {
+              throw new Error('Failed to create church')
+            }
+            return apiResponse.data
+          }
+          const church = res.data as unknown as Church
+          if (!church) {
+            throw new Error('Failed to create church')
+          }
+          return church
+        }),
       update: (id: string, data: Partial<Church>) =>
-        api.put<Church>(`/churches/${id}`, data),
+        api.patch<ApiResponse<Church>>(`/churches/${id}`, data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Church>
+            if (!apiResponse.data) {
+              throw new Error('Church not found')
+            }
+            return apiResponse.data
+          }
+          const church = res.data as unknown as Church
+          if (!church) {
+            throw new Error('Church not found')
+          }
+          return church
+        }),
+      delete: (id: string) =>
+        api.delete<ApiResponse<void>>(`/churches/${id}`).then(() => {
+          // Delete doesn't return data
+        }),
     },
 
     ministriesService: {
       getAll: () => api.get<Ministry[]>('/ministries'),
       getById: (id: string) => api.get<Ministry>(`/ministries/${id}`),
-      create: (data: Omit<Ministry, 'id' | 'createdAt' | 'updatedAt'>) =>
-        api.post<Ministry>('/ministries', data),
-      update: (id: string, data: Partial<Ministry>) =>
-        api.put<Ministry>(`/ministries/${id}`, data),
+      create: (data: CreateEntity<Ministry>) => api.post<Ministry>('/ministries', data),
+      update: (id: string, data: Partial<Ministry>) => api.put<Ministry>(`/ministries/${id}`, data),
     },
-  };
+  }
 }

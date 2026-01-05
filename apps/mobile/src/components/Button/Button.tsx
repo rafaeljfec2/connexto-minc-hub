@@ -27,8 +27,7 @@ export function Button({
   disabled = false,
   style,
 }: ButtonProps) {
-  const { theme } = useTheme()
-  const colors = getThemeColors(theme)
+  const { colors } = useTheme()
   const isDisabled = disabled || isLoading
 
   const sizeStyles = {
@@ -39,15 +38,15 @@ export function Button({
 
   const variantStyles = {
     primary: {
-      backgroundColor: themeColors.primary[600],
+      backgroundColor: colors.primary,
     },
     secondary: {
-      backgroundColor: theme === 'light' ? colors.dark[200] : colors.dark[800],
+      backgroundColor: colors.card.border,
     },
     outline: {
       backgroundColor: 'transparent',
       borderWidth: 1,
-      borderColor: themeColors.primary[600],
+      borderColor: colors.primary,
     },
   }[variant]
 
@@ -60,8 +59,8 @@ export function Button({
     }[size],
     color: {
       primary: '#ffffff',
-      secondary: theme === 'light' ? colors.dark[900] : colors.dark[50],
-      outline: themeColors.primary[600],
+      secondary: colors.text.default,
+      outline: colors.primary,
     }[variant],
   }
 
@@ -75,8 +74,7 @@ export function Button({
     ...variantStyles,
   }
 
-  const activityIndicatorColor =
-    variant === 'primary' ? '#ffffff' : themeColors.primary[600]
+  const activityIndicatorColor = variant === 'primary' ? '#ffffff' : colors.primary
 
   return (
     <TouchableOpacity

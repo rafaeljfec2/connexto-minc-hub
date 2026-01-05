@@ -12,8 +12,7 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, error, containerStyle, style, ...props }: InputProps) {
-  const { theme } = useTheme()
-  const colors = getThemeColors(theme)
+  const { theme, colors } = useTheme()
 
   const inputStyle: StyleProp<TextStyle> = [
     {
@@ -40,7 +39,7 @@ export function Input({ label, error, containerStyle, style, ...props }: InputPr
   const labelStyles: TextStyle = {
     fontSize: themeTypography.sizes.sm,
     fontWeight: themeTypography.weights.medium,
-    color: theme === 'light' ? colors.dark[600] : colors.dark[300],
+    color: colors.text.default, // Use dynamic text color
     marginBottom: themeSpacing.xs,
   }
 
@@ -49,7 +48,7 @@ export function Input({ label, error, containerStyle, style, ...props }: InputPr
       {label && <Text style={labelStyles}>{label}</Text>}
       <TextInput
         style={inputStyle}
-        placeholderTextColor={theme === 'light' ? colors.dark[500] : '#a1a1aa'}
+        placeholderTextColor={colors.text.dark} // Use secondary text color
         {...props}
       />
       {error && (

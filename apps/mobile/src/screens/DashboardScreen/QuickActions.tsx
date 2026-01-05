@@ -1,7 +1,8 @@
 import React from 'react'
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface ActionItem {
   id: string
@@ -15,6 +16,8 @@ interface QuickActionsProps {
 }
 
 export function QuickActions({ onActionPress }: QuickActionsProps) {
+  const { colors } = useTheme()
+
   const actions: ActionItem[] = [
     {
       id: 'check-in',
@@ -44,7 +47,7 @@ export function QuickActions({ onActionPress }: QuickActionsProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Acesso Rápido</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text.default }]}>Acesso Rápido</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -52,10 +55,15 @@ export function QuickActions({ onActionPress }: QuickActionsProps) {
       >
         {actions.map(action => (
           <TouchableOpacity key={action.id} style={styles.actionButton} onPress={action.onPress}>
-            <View style={styles.iconContainer}>
-              <Ionicons name={action.icon} size={24} color={themeColors.primary[500]} />
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: colors.card.background, borderColor: colors.card.border },
+              ]}
+            >
+              <Ionicons name={action.icon} size={24} color={colors.text.default} />
             </View>
-            <Text style={styles.actionLabel}>{action.label}</Text>
+            <Text style={[styles.actionLabel, { color: colors.text.default }]}>{action.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -70,7 +78,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: themeTypography.sizes.md,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
     marginBottom: themeSpacing.md,
     paddingHorizontal: themeSpacing.md,
   },
@@ -86,11 +93,9 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: themeColors.card.background,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: themeColors.card.border,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -102,7 +107,6 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     fontSize: themeTypography.sizes.xs,
-    color: themeColors.text.default,
     fontWeight: themeTypography.weights.medium,
   },
 })

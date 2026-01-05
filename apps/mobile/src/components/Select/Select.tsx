@@ -1,16 +1,8 @@
 import React, { useState } from 'react'
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  FlatList,
-  StyleSheet,
-  SafeAreaView,
-  TextInput,
-} from 'react-native'
+import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, TextInput } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export interface Option {
   label: string
@@ -36,6 +28,7 @@ export function Select({
   disabled = false,
   error,
 }: SelectProps) {
+  const { colors } = useTheme()
   const [modalVisible, setModalVisible] = useState(false)
   const [searchText, setSearchText] = useState('')
 
@@ -53,17 +46,25 @@ export function Select({
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, { color: colors.text.default }]}>{label}</Text>}
       <TouchableOpacity
-        style={[styles.button, error && styles.buttonError, disabled && styles.buttonDisabled]}
+        style={[
+          styles.button,
+          {
+            backgroundColor: colors.card.background,
+            borderColor: error ? '#ef4444' : colors.card.border,
+          },
+          disabled && { backgroundColor: colors.background.dark, opacity: 0.7 },
+        ]}
         onPress={() => !disabled && setModalVisible(true)}
         activeOpacity={0.7}
       >
         <Text
           style={[
             styles.valueText,
-            !selectedOption && styles.placeholderText,
-            disabled && styles.textDisabled,
+            { color: colors.text.default },
+            !selectedOption && { color: colors.text.dark },
+            disabled && { color: colors.text.dark },
           ]}
         >
           {selectedOption ? selectedOption.label : placeholder}
@@ -71,7 +72,7 @@ export function Select({
         <Ionicons
           name="chevron-down"
           size={20}
-          color={disabled ? themeColors.dark[500] : themeColors.dark[400]}
+          color={disabled ? colors.text.dark : colors.text.default}
         />
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -83,20 +84,22 @@ export function Select({
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card.background }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{label || 'Selecione'}</Text>
+              <Text style={[styles.modalTitle, { color: colors.text.default }]}>
+                {label || 'Selecione'}
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Ionicons name="close" size={24} color={themeColors.dark[900]} />
+                <Ionicons name="close" size={24} color={colors.text.default} />
               </TouchableOpacity>
             </View>
 
-            <View style={styles.searchContainer}>
-              <Ionicons name="search" size={20} color={themeColors.dark[400]} />
+            <View style={[styles.searchContainer, { backgroundColor: colors.background.default }]}>
+              <Ionicons name="search" size={20} color={colors.text.dark} />
               <TextInput
-                style={styles.searchInput}
+                style={[styles.searchInput, { color: colors.text.default }]}
                 placeholder="Buscar..."
-                placeholderTextColor={themeColors.dark[400]}
+                placeholderTextColor={colors.text.dark}
                 value={searchText}
                 onChangeText={setSearchText}
               />
@@ -107,22 +110,32 @@ export function Select({
               keyExtractor={item => item.value}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.optionItem, item.value === value && styles.optionItemSelected]}
+                  style={[
+                    styles.optionItem,
+                    { borderBottomColor: colors.card.border },
+                    item.value === value && { backgroundColor: colors.primary + '15' },
+                  ]}
                   onPress={() => handleSelect(item.value)}
                 >
                   <Text
-                    style={[styles.optionText, item.value === value && styles.optionTextSelected]}
+                    style={[
+                      styles.optionText,
+                      { color: colors.text.default },
+                      item.value === value && { color: colors.primary, fontWeight: 'bold' },
+                    ]}
                   >
                     {item.label}
                   </Text>
                   {item.value === value && (
-                    <Ionicons name="checkmark" size={20} color={themeColors.primary[600]} />
+                    <Ionicons name="checkmark" size={20} color={colors.primary} />
                   )}
                 </TouchableOpacity>
               )}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>Nenhuma opção encontrada</Text>
+                  <Text style={[styles.emptyText, { color: colors.text.dark }]}>
+                    Nenhuma opção encontrada
+                  </Text>
                 </View>
               }
             />
@@ -140,36 +153,19 @@ const styles = StyleSheet.create({
   label: {
     fontSize: themeTypography.sizes.sm,
     fontWeight: themeTypography.weights.medium,
-    color: themeColors.dark[300], // Using a lighter color for label in dark mode context usually, but keeping consistent with Input
     marginBottom: themeSpacing.xs,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: themeColors.dark[900],
     borderWidth: 1,
-    borderColor: themeColors.dark[700],
     borderRadius: 8,
     paddingHorizontal: themeSpacing.md,
     height: 48,
   },
-  buttonError: {
-    borderColor: '#ef4444',
-  },
-  buttonDisabled: {
-    backgroundColor: themeColors.dark[950],
-    opacity: 0.7,
-  },
   valueText: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[100],
-  },
-  placeholderText: {
-    color: themeColors.dark[500],
-  },
-  textDisabled: {
-    color: themeColors.dark[600],
   },
   errorText: {
     fontSize: themeTypography.sizes.xs,
@@ -182,7 +178,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: themeColors.dark[900], // Dark theme modal
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     height: '70%',
@@ -197,12 +192,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.bold,
-    color: themeColors.dark[100],
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: themeColors.dark[800],
     borderRadius: 8,
     paddingHorizontal: themeSpacing.md,
     height: 44,
@@ -212,7 +205,6 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: themeSpacing.sm,
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[100],
   },
   optionItem: {
     flexDirection: 'row',
@@ -220,27 +212,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: themeSpacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: themeColors.dark[800],
-  },
-  optionItemSelected: {
-    backgroundColor: themeColors.dark[800],
-    marginHorizontal: -themeSpacing.md,
-    paddingHorizontal: themeSpacing.md,
   },
   optionText: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[300],
-  },
-  optionTextSelected: {
-    color: themeColors.primary[500],
-    fontWeight: themeTypography.weights.semibold,
   },
   emptyContainer: {
     padding: themeSpacing.xl,
     alignItems: 'center',
   },
   emptyText: {
-    color: themeColors.dark[500],
     fontSize: themeTypography.sizes.md,
   },
 })

@@ -6,11 +6,10 @@ import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
 import { BackgroundGradient } from '@/components/BackgroundGradient'
 import { RootNavigator } from '@/navigator/navigator'
 import { linking } from '@/navigator/linking'
-import { themeColors, getThemeColors } from '@/theme'
+import { themeColors } from '@/theme'
 
 function AppContent() {
-  const { theme } = useTheme()
-  const colors = getThemeColors(theme)
+  const { theme, colors } = useTheme()
 
   return (
     <BackgroundGradient>

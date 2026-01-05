@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '@/contexts/AuthContext'
 import { DrawerMenu } from '../DrawerMenu'
 import { UserMenu } from './UserMenu'
 import { UserAvatar } from './UserAvatar'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface HeaderProps {
   readonly title: string
@@ -15,6 +16,8 @@ interface HeaderProps {
 
 export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
   const { user } = useAuth()
+  const { colors, theme } = useTheme()
+  const insets = useSafeAreaInsets()
   const [showMenu, setShowMenu] = useState(false)
   const [showDrawer, setShowDrawer] = useState(false)
 
@@ -25,16 +28,24 @@ export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
     }
   }
 
+  // Dynamic background style
+  const containerStyle = {
+    backgroundColor: theme === 'dark' ? 'rgba(9, 9, 11, 0.95)' : '#ffffff',
+    borderBottomColor: colors.card.border,
+  }
+
   return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <View style={styles.container}>
+    <View style={{ backgroundColor: containerStyle.backgroundColor, paddingTop: insets.top }}>
+      <View style={[styles.container, containerStyle]}>
         <TouchableOpacity style={styles.menuButton} onPress={handleMenuPress} activeOpacity={0.7}>
-          <Text style={styles.menuIcon}>☰</Text>
+          <Text style={[styles.menuIcon, { color: colors.text.default }]}>☰</Text>
         </TouchableOpacity>
 
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>{title}</Text>
-          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          <Text style={[styles.title, { color: colors.text.default }]}>{title}</Text>
+          {subtitle && (
+            <Text style={[styles.subtitle, { color: colors.text.dark }]}>{subtitle}</Text>
+          )}
         </View>
 
         <View style={styles.rightContainer}>
@@ -45,23 +56,18 @@ export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
       <UserMenu visible={showMenu} onClose={() => setShowMenu(false)} />
 
       <DrawerMenu visible={showDrawer} onClose={() => setShowDrawer(false)} />
-    </SafeAreaView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    backgroundColor: 'rgba(9, 9, 11, 0.95)', // dark-950/95 com backdrop blur effect
-  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: themeSpacing.md,
     paddingVertical: themeSpacing.sm,
-    backgroundColor: 'rgba(9, 9, 11, 0.95)', // dark-950/95
     borderBottomWidth: 1,
-    borderBottomColor: themeColors.dark[800], // dark-800
     minHeight: 56,
   },
   menuButton: {
@@ -70,7 +76,6 @@ const styles = StyleSheet.create({
   },
   menuIcon: {
     fontSize: themeTypography.sizes.xl,
-    color: themeColors.text.default,
   },
   titleContainer: {
     flex: 1,
@@ -79,11 +84,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: themeTypography.sizes.xl,
     fontWeight: themeTypography.weights.bold,
-    color: themeColors.text.default,
   },
   subtitle: {
     fontSize: themeTypography.sizes.xs,
-    color: themeColors.dark[400],
     marginTop: 2,
   },
   rightContainer: {

@@ -21,9 +21,9 @@ export function getThemeColors(theme: 'light' | 'dark') {
         default: '#ffffff',
       },
       text: {
-        light: colors.dark[900],
-        dark: colors.dark[50],
-        default: colors.dark[900],
+        light: colors.dark[900], // Black text
+        dark: colors.dark[500], // Dark grey for secondary text
+        default: colors.dark[900], // Black text default
         inverted: '#ffffff',
       },
       card: {
@@ -31,6 +31,7 @@ export function getThemeColors(theme: 'light' | 'dark') {
         border: colors.dark[200],
       },
       dark: colors.dark,
+      primary: colors.primary[500],
     }
   }
 
@@ -42,7 +43,7 @@ export function getThemeColors(theme: 'light' | 'dark') {
     },
     text: {
       light: colors.dark[900],
-      dark: colors.dark[50],
+      dark: colors.dark[50], // Light grey for secondary text
       default: colors.dark[50],
       inverted: '#ffffff',
     },
@@ -51,5 +52,6 @@ export function getThemeColors(theme: 'light' | 'dark') {
       border: colors.dark[800],
     },
     dark: colors.dark,
+    primary: colors.primary[500],
   }
 }
