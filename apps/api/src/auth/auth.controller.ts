@@ -26,6 +26,7 @@ import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserEntity } from '../users/entities/user.entity';
+import { logSecurityEvent } from '../common/utils/security-logger.util';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -65,10 +66,28 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
+    const endpoint = (req as any)?.route?.path || req?.url || '/auth/login';
+
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) {
-      throw new UnauthorizedException('Credenciais inválidas');
+      logSecurityEvent('login_failed', {
+        email: loginDto.email,
+        ip,
+        status: 'fail',
+        reason: 'invalid_credentials',
+        endpoint,
+      });
+      throw new UnauthorizedException('Invalid credentials');
     }
+
+    logSecurityEvent('login_success', {
+      userId: user.id,
+      email: user.email,
+      ip,
+      status: 'success',
+      endpoint,
+    });
 
     const result = await this.authService.login(user);
     this.setAuthCookies(res, result);
@@ -103,9 +122,18 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
+    const endpoint = (req as any)?.route?.path || req?.url || '/auth/refresh-token';
+
     const refreshToken = req.cookies?.refresh_token ?? refreshTokenBody;
 
     if (!refreshToken) {
+      logSecurityEvent('refresh_token_failed', {
+        ip,
+        status: 'fail',
+        reason: 'token_missing',
+        endpoint,
+      });
       throw new UnauthorizedException('Refresh token is required');
     }
 
@@ -113,10 +141,22 @@ export class AuthController {
       const result = await this.authService.refreshToken(refreshToken);
       this.setAuthCookies(res, result);
 
+      logSecurityEvent('refresh_token_success', {
+        ip,
+        status: 'success',
+        endpoint,
+      });
+
       return {
         message: 'Tokens refreshed successfully',
       };
     } catch (error) {
+      logSecurityEvent('refresh_token_failed', {
+        ip,
+        status: 'fail',
+        reason: error instanceof Error ? error.message : 'unknown_error',
+        endpoint,
+      });
       throw error;
     }
   }
@@ -131,16 +171,36 @@ export class AuthController {
   })
   async logout(
     @GetUser() user: UserEntity,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
+    const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
+    const endpoint = (req as any)?.route?.path || req?.url || '/auth/logout';
+
     try {
       const result = await this.authService.logout(user);
 
       res.clearCookie('access_token', { path: '/' });
       res.clearCookie('refresh_token', { path: '/' });
 
+      logSecurityEvent('logout_success', {
+        userId: user.id,
+        email: user.email,
+        ip,
+        status: 'success',
+        endpoint,
+      });
+
       return result;
     } catch (error) {
+      logSecurityEvent('logout_failed', {
+        userId: user.id,
+        email: user.email,
+        ip,
+        status: 'fail',
+        reason: error instanceof Error ? error.message : 'unknown_error',
+        endpoint,
+      });
       throw error;
     }
   }
@@ -166,8 +226,29 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'Too many recovery attempts. Please try again later.',
   })
-  async forgotPassword(@Body('email') email: string) {
-    return this.authService.forgotPassword(email);
+  async forgotPassword(@Body('email') email: string, @Req() req: Request) {
+    const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
+    const endpoint = (req as any)?.route?.path || req?.url || '/auth/forgot-password';
+
+    try {
+      const result = await this.authService.forgotPassword(email);
+      logSecurityEvent('forgot_password_success', {
+        email,
+        ip,
+        status: 'success',
+        endpoint,
+      });
+      return result;
+    } catch (error) {
+      logSecurityEvent('forgot_password_failed', {
+        email,
+        ip,
+        status: 'fail',
+        reason: error instanceof Error ? error.message : 'unknown_error',
+        endpoint,
+      });
+      throw error;
+    }
   }
 
   @Post('reset-password')
@@ -190,8 +271,29 @@ export class AuthController {
   @ApiTooManyRequestsResponse({
     description: 'Too many reset attempts. Please try again later.',
   })
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(resetPasswordDto);
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @Req() req: Request) {
+    const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
+    const endpoint = (req as any)?.route?.path || req?.url || '/auth/reset-password';
+
+    try {
+      const result = await this.authService.resetPassword(resetPasswordDto);
+      logSecurityEvent('reset_password_success', {
+        email: resetPasswordDto.email,
+        ip,
+        status: 'success',
+        endpoint,
+      });
+      return result;
+    } catch (error) {
+      logSecurityEvent('reset_password_failed', {
+        email: resetPasswordDto.email,
+        ip,
+        status: 'fail',
+        reason: error instanceof Error ? error.message : 'unknown_error',
+        endpoint,
+      });
+      throw error;
+    }
   }
 
   @ApiOkResponse({ description: 'Current user information' })

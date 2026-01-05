@@ -21,7 +21,10 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      navigate("/dashboard", { replace: true });
+      // Pequeno delay para garantir que o estado seja atualizado
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 100);
     } catch (err: unknown) {
       let errorMessage = "Email ou senha inválidos";
       

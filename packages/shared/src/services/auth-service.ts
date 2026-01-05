@@ -1,5 +1,6 @@
 import type { AxiosInstance } from 'axios'
 import type { User } from '../types'
+import type { ApiResponse } from '../types'
 
 export interface AuthServiceConfig {
   api: AxiosInstance
@@ -30,18 +31,42 @@ export function createAuthService(config: AuthServiceConfig): AuthService {
   return {
     async login(email: string, password: string): Promise<LoginResponse> {
       try {
-        const response = await api.post<LoginResponse>('/auth/login', {
+        const response = await api.post<ApiResponse<{ user: User; token?: string; refreshToken?: string }>>('/auth/login', {
           email,
           password,
         })
 
-        const { user, token, refreshToken } = response.data
+        // Handle ApiResponse format
+        if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+          const apiResponse = response.data as ApiResponse<{ user: User; token?: string; refreshToken?: string } | { user: User }>
+          
+          if (apiResponse.success && apiResponse.data) {
+            // Check if data has user property directly
+            if ('user' in apiResponse.data) {
+              const user = apiResponse.data.user
+              const token = 'token' in apiResponse.data ? apiResponse.data.token : undefined
+              const refreshToken = 'refreshToken' in apiResponse.data ? apiResponse.data.refreshToken : undefined
 
-        if (token) {
-          await Promise.resolve(storage.setToken(token))
+              // Token may come in body (mobile) or cookies (web)
+              if (token) {
+                await Promise.resolve(storage.setToken(token))
+              }
+
+              return { user, token, refreshToken }
+            }
+          }
         }
 
-        return { user, token, refreshToken }
+        // Fallback for direct format (if not using ApiResponse)
+        const directData = response.data as unknown as { user: User; token?: string; refreshToken?: string }
+        if (directData && directData.user) {
+          if (directData.token) {
+            await Promise.resolve(storage.setToken(directData.token))
+          }
+          return { user: directData.user, token: directData.token, refreshToken: directData.refreshToken }
+        }
+
+        throw new Error('Invalid response format')
       } catch (error) {
         console.error('Login error:', error)
         throw error
@@ -63,8 +88,24 @@ export function createAuthService(config: AuthServiceConfig): AuthService {
 
     async getCurrentUser(): Promise<User | null> {
       try {
-        const response = await api.get<{ user: User }>('/auth/me')
-        return response.data.user
+        const response = await api.get<ApiResponse<{ user: User }>>('/auth/me')
+        
+        // Handle ApiResponse format
+        if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+          const apiResponse = response.data as ApiResponse<{ user: User }>
+          
+          if (apiResponse.success && apiResponse.data && apiResponse.data.user) {
+            return apiResponse.data.user
+          }
+        }
+
+        // Fallback for direct format
+        const directData = response.data as unknown as { user: User }
+        if (directData && directData.user) {
+          return directData.user
+        }
+
+        return null
       } catch (error) {
         console.error('Error getting current user:', error)
         await Promise.resolve(storage.clearToken())
@@ -76,15 +117,29 @@ export function createAuthService(config: AuthServiceConfig): AuthService {
     },
 
     async refreshToken(): Promise<LoginResponse> {
-      const response = await api.post<LoginResponse>('/auth/refresh-token')
+      const response = await api.post<ApiResponse<{ user: User; token?: string; refreshToken?: string }>>('/auth/refresh-token')
 
-      const { user, token, refreshToken } = response.data
+      // Handle ApiResponse format
+      if (response.data.success && response.data.data) {
+        const { user, token, refreshToken } = response.data.data
 
-      if (token) {
-        await Promise.resolve(storage.setToken(token))
+        if (token) {
+          await Promise.resolve(storage.setToken(token))
+        }
+
+        return { user, token, refreshToken }
       }
 
-      return { user, token, refreshToken }
+      // Fallback for direct format
+      const directData = response.data as unknown as { user: User; token?: string; refreshToken?: string }
+      if (directData.user) {
+        if (directData.token) {
+          await Promise.resolve(storage.setToken(directData.token))
+        }
+        return { user: directData.user, token: directData.token, refreshToken: directData.refreshToken }
+      }
+
+      throw new Error('Invalid response format')
     },
   }
 }
