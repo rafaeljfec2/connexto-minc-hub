@@ -18,8 +18,12 @@ const QUICK_ACTIONS = [
 ] as const
 
 export function QuickActionsCard({ navigation }: QuickActionsCardProps) {
-  const handleNavigation = (screen: typeof QUICK_ACTIONS[number]['screen']) => {
-    navigation.navigate('Main', { screen })
+  function handleNavigation(screen: 'People' | 'Teams' | 'Schedules') {
+    if (screen === 'Schedules') {
+      navigation.navigate('Main', { screen: 'Schedules' })
+    } else {
+      navigation.navigate(screen as never)
+    }
   }
 
   return (

@@ -12,6 +12,14 @@ import SchedulesScreen from '@/screens/SchedulesScreen'
 import CheckinScreen from '@/screens/QRCodeScannerScreen/CheckinScreen'
 import ChatScreen from '@/screens/ChatScreen'
 import ProfileScreen from '@/screens/ProfileScreen'
+import ChurchesScreen from '@/screens/ChurchesScreen'
+import MinistriesScreen from '@/screens/MinistriesScreen'
+import TeamsScreen from '@/screens/TeamsScreen'
+import PeopleScreen from '@/screens/PeopleScreen'
+import UsersScreen from '@/screens/UsersScreen'
+import ServicesScreen from '@/screens/ServicesScreen'
+import MonthlyScheduleScreen from '@/screens/MonthlyScheduleScreen'
+import CommunicationScreen from '@/screens/CommunicationScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 const Tab = createBottomTabNavigator<MainTabParamList>()
@@ -97,7 +105,17 @@ export function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
-        <Stack.Screen name="Main" component={MainTabs} />
+        <>
+          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="Churches" component={ChurchesScreen} />
+          <Stack.Screen name="Ministries" component={MinistriesScreen} />
+          <Stack.Screen name="Teams" component={TeamsScreen} />
+          <Stack.Screen name="People" component={PeopleScreen} />
+          <Stack.Screen name="Users" component={UsersScreen} />
+          <Stack.Screen name="Services" component={ServicesScreen} />
+          <Stack.Screen name="MonthlySchedule" component={MonthlyScheduleScreen} />
+          <Stack.Screen name="Communication" component={CommunicationScreen} />
+        </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
       )}

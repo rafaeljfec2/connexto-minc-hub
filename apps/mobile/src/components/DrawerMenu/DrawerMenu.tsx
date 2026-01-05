@@ -18,7 +18,6 @@ interface MenuItem {
   label: string
   iconName: keyof typeof Ionicons.glyphMap
   screen?: 'Dashboard' | 'Schedules' | 'Checkin' | 'Chat' | 'Profile'
-  onPress?: () => void
 }
 
 const MENU_ITEMS: MenuItem[] = [
@@ -31,50 +30,32 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'churches',
     label: 'Igrejas',
-    iconName: 'church',
-    onPress: () => {
-      // TODO: Implementar tela de Igrejas
-    },
+    iconName: 'business',
   },
   {
     id: 'ministries',
     label: 'Times',
     iconName: 'people',
-    onPress: () => {
-      // TODO: Implementar tela de Times
-    },
   },
   {
     id: 'teams',
     label: 'Equipes',
     iconName: 'people-circle',
-    onPress: () => {
-      // TODO: Implementar tela de Equipes
-    },
   },
   {
     id: 'people',
     label: 'Servos',
     iconName: 'person',
-    onPress: () => {
-      // TODO: Implementar tela de Servos
-    },
   },
   {
     id: 'users',
     label: 'Usuários',
     iconName: 'person-circle',
-    onPress: () => {
-      // TODO: Implementar tela de Usuários
-    },
   },
   {
     id: 'services',
     label: 'Cultos',
     iconName: 'calendar',
-    onPress: () => {
-      // TODO: Implementar tela de Cultos
-    },
   },
   {
     id: 'schedules',
@@ -86,17 +67,11 @@ const MENU_ITEMS: MenuItem[] = [
     id: 'monthly-schedules',
     label: 'Sorteio Mensal',
     iconName: 'dice',
-    onPress: () => {
-      // TODO: Implementar tela de Sorteio Mensal
-    },
   },
   {
     id: 'communication',
     label: 'Comunicação',
     iconName: 'chatbubbles',
-    onPress: () => {
-      // TODO: Implementar tela de Comunicação
-    },
   },
   {
     id: 'profile',
@@ -114,8 +89,21 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
     
     if (item.screen) {
       navigation.navigate('Main', { screen: item.screen })
-    } else if (item.onPress) {
-      item.onPress()
+    } else {
+      const screenMap: Record<string, 'Churches' | 'Ministries' | 'Teams' | 'People' | 'Users' | 'Services' | 'MonthlySchedule' | 'Communication'> = {
+        churches: 'Churches',
+        ministries: 'Ministries',
+        teams: 'Teams',
+        people: 'People',
+        users: 'Users',
+        services: 'Services',
+        'monthly-schedules': 'MonthlySchedule',
+        communication: 'Communication',
+      }
+      const screenName = screenMap[item.id]
+      if (screenName) {
+        navigation.navigate(screenName as never)
+      }
     }
   }
 
@@ -150,20 +138,20 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
           </View>
 
           <View style={styles.contentContainer}>
-              <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {MENU_ITEMS.map(item => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={styles.menuItem}
-                    onPress={() => handleItemPress(item)}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons name={item.iconName} size={24} color={themeColors.text.default} style={styles.menuIcon} />
-                    <Text style={styles.menuLabel}>{item.label}</Text>
-                    <Ionicons name="chevron-forward" size={20} color={themeColors.dark[400]} />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+              {MENU_ITEMS.map(item => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.menuItem}
+                  onPress={() => handleItemPress(item)}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name={item.iconName} size={24} color={themeColors.text.default} style={styles.menuIcon} />
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <Ionicons name="chevron-forward" size={20} color={themeColors.dark[400]} />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
 
           <View style={styles.footer}>
@@ -250,17 +238,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: themeColors.dark[800],
   },
-      menuIcon: {
-        marginRight: themeSpacing.md,
-        width: 24,
-      },
-      menuLabel: {
-        flex: 1,
-        fontSize: themeTypography.sizes.md,
-        fontWeight: themeTypography.weights.medium,
-        color: themeColors.text.default,
-      },
-      footer: {
+  menuIcon: {
+    marginRight: themeSpacing.md,
+    width: 24,
+  },
+  menuLabel: {
+    flex: 1,
+    fontSize: themeTypography.sizes.md,
+    fontWeight: themeTypography.weights.medium,
+    color: themeColors.text.default,
+  },
+  footer: {
     padding: themeSpacing.md,
     borderTopWidth: 1,
     borderTopColor: themeColors.dark[800],

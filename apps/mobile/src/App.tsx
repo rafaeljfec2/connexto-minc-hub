@@ -12,7 +12,20 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <BackgroundGradient>
-          <NavigationContainer linking={linking} theme={{ dark: true, colors: { background: 'transparent' } }}>
+          <NavigationContainer
+            linking={linking}
+            theme={{
+              dark: true,
+              colors: {
+                primary: '#f97316',
+                background: 'transparent',
+                card: '#18181b',
+                text: '#fafafa',
+                border: '#27272a',
+                notification: '#f97316',
+              },
+            }}
+          >
             <RootNavigator />
             <StatusBar style="light" />
           </NavigationContainer>

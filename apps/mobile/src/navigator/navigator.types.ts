@@ -3,6 +3,14 @@ import type { NavigatorScreenParams } from '@react-navigation/native'
 export type RootStackParamList = {
   Login: undefined
   Main: NavigatorScreenParams<MainTabParamList>
+  Churches: undefined
+  Ministries: undefined
+  Teams: undefined
+  People: undefined
+  Users: undefined
+  Services: undefined
+  MonthlySchedule: undefined
+  Communication: undefined
 }
 
 export type MainTabParamList = {

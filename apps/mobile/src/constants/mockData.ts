@@ -1,4 +1,4 @@
-import { User, UserRole, Person, Team, Ministry, Service, Schedule, ServiceType } from '@minc-hub/shared/types'
+import { User, UserRole, Person, Team, Ministry, Service, Schedule, ServiceType, Church } from '@minc-hub/shared/types'
 
 export const MOCK_USER: User = {
   id: 'mock-user-1',
@@ -8,6 +8,38 @@ export const MOCK_USER: User = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 }
+
+export const MOCK_CHURCHES: Church[] = [
+  {
+    id: '1',
+    name: 'Minha Igreja na Cidade - Sede',
+    address: 'Rua Exemplo, 123 - Centro',
+    phone: '(11) 3333-3333',
+    email: 'contato@minhaigrejanacidade.com',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+]
+
+export const MOCK_USERS: User[] = [
+  {
+    id: '1',
+    email: 'admin@minchteams.com',
+    name: 'Usuário Admin',
+    role: UserRole.ADMIN,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    email: 'coord@minchteams.com',
+    name: 'Coordenador Teste',
+    role: UserRole.COORDINATOR,
+    personId: '1',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+]
 
 export const MOCK_MINISTRIES: Ministry[] = [
   {

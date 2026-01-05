@@ -23,13 +23,13 @@ const styles = StyleSheet.create({
     minWidth: '48%',
   },
   title: {
-    fontSize: themeTypography.sizes.base,
+    fontSize: themeTypography.sizes.md,
     fontWeight: themeTypography.weights.medium,
     color: themeColors.dark[400], // text-dark-400
     marginBottom: themeSpacing.xs,
   },
   value: {
-    fontSize: themeTypography.sizes['3xl'],
+    fontSize: themeTypography.sizes['2xl'],
     fontWeight: themeTypography.weights.bold,
     color: themeColors.text.default, // text-dark-50
   },
