@@ -12,7 +12,7 @@ import {
 import { useRoute, useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { themeSpacing, themeTypography } from '@/theme'
-import { MOCK_MESSAGES, MOCK_USERS, Message, User } from '@/constants/mockChatData'
+import { MOCK_MESSAGES, MOCK_USERS, Message } from '@/constants/mockChatData'
 import { ChatBubble } from './components/ChatBubble'
 import { ChatInput } from './components/ChatInput'
 import { useTheme } from '@/contexts/ThemeContext'

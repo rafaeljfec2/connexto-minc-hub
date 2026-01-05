@@ -8,7 +8,7 @@ interface ChatInputProps {
   onSend: (text: string) => void
 }
 
-export function ChatInput({ onSend }: ChatInputProps) {
+export function ChatInput({ onSend }: Readonly<ChatInputProps>) {
   const [text, setText] = useState('')
   const { colors } = useTheme()
 

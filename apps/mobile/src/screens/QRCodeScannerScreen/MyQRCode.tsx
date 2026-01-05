@@ -14,12 +14,7 @@ export function MyQRCode() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background.default }]}>
-      <View
-        style={[
-          styles.card,
-          { backgroundColor: colors.card.background, shadowColor: colors.shadow },
-        ]}
-      >
+      <View style={[styles.card, { backgroundColor: colors.card.background }]}>
         <Text style={[styles.title, { color: colors.text.default }]}>Meu Código de Check-in</Text>
         <Text style={[styles.subtitle, { color: colors.text.dark }]}>
           Apresente este código para leitura

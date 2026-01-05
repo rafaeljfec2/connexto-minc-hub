@@ -9,7 +9,7 @@ interface ChatBubbleProps {
   timestamp: string
 }
 
-export function ChatBubble({ message, isMe, timestamp }: ChatBubbleProps) {
+export function ChatBubble({ message, isMe, timestamp }: Readonly<ChatBubbleProps>) {
   const { colors } = useTheme()
   const time = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 

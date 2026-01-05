@@ -26,6 +26,22 @@ const Tab = createBottomTabNavigator<MainTabParamList>()
 
 import { useTheme } from '@/contexts/ThemeContext'
 
+const DashboardIcon = ({ color, size }: { color: string; size: number }) => (
+  <Ionicons name="home" size={size} color={color} />
+)
+const SchedulesIcon = ({ color, size }: { color: string; size: number }) => (
+  <Ionicons name="calendar" size={size} color={color} />
+)
+const CheckinIcon = ({ color, size }: { color: string; size: number }) => (
+  <Ionicons name="qr-code" size={size} color={color} />
+)
+const ChatIcon = ({ color, size }: { color: string; size: number }) => (
+  <Ionicons name="chatbubbles" size={size} color={color} />
+)
+const ProfileIcon = ({ color, size }: { color: string; size: number }) => (
+  <Ionicons name="person" size={size} color={color} />
+)
+
 function MainTabs() {
   const { colors } = useTheme()
 
@@ -50,7 +66,7 @@ function MainTabs() {
         component={DashboardScreen}
         options={{
           tabBarLabel: 'Início',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+          tabBarIcon: DashboardIcon,
         }}
       />
       <Tab.Screen
@@ -58,7 +74,7 @@ function MainTabs() {
         component={SchedulesScreen}
         options={{
           tabBarLabel: 'Escalas',
-          tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
+          tabBarIcon: SchedulesIcon,
         }}
       />
       <Tab.Screen
@@ -66,7 +82,7 @@ function MainTabs() {
         component={CheckinScreen}
         options={{
           tabBarLabel: 'Check-in',
-          tabBarIcon: ({ color, size }) => <Ionicons name="qr-code" size={size} color={color} />,
+          tabBarIcon: CheckinIcon,
         }}
       />
       <Tab.Screen
@@ -74,9 +90,7 @@ function MainTabs() {
         component={ChatScreen}
         options={{
           tabBarLabel: 'Chat',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles" size={size} color={color} />
-          ),
+          tabBarIcon: ChatIcon,
         }}
       />
       <Tab.Screen
@@ -84,7 +98,7 @@ function MainTabs() {
         component={ProfileScreen}
         options={{
           tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+          tabBarIcon: ProfileIcon,
         }}
       />
       {/* Hidden tabs - these screens are accessible but don't show in the tab bar */}
