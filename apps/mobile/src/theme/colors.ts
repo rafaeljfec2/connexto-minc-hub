@@ -3,6 +3,9 @@ import { colors } from '@minc-hub/shared/design-tokens'
 export const themeColors = {
   primary: colors.primary,
   dark: colors.dark,
+  text: {
+    default: colors.dark[50],
+  },
 }
 
 export function getThemeColors(theme: 'light' | 'dark') {
@@ -23,6 +26,7 @@ export function getThemeColors(theme: 'light' | 'dark') {
         background: '#ffffff',
         border: colors.dark[200],
       },
+      dark: colors.dark,
     }
   }
 
@@ -42,5 +46,6 @@ export function getThemeColors(theme: 'light' | 'dark') {
       background: colors.dark[900],
       border: colors.dark[800],
     },
+    dark: colors.dark,
   }
 }
