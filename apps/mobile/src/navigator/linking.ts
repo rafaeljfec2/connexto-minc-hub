@@ -8,9 +8,9 @@ export const linking: LinkingOptions<ReactNavigation.RootParamList> = {
       Main: {
         screens: {
           Dashboard: 'dashboard',
-          People: 'people',
-          Teams: 'teams',
           Schedules: 'schedules',
+          Checkin: 'checkin',
+          Activities: 'activities',
           Profile: 'profile',
         },
       },

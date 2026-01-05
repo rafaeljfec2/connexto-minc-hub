@@ -7,9 +7,9 @@ export type RootStackParamList = {
 
 export type MainTabParamList = {
   Dashboard: undefined
-  People: undefined
-  Teams: undefined
   Schedules: undefined
+  Checkin: undefined
+  Activities: undefined
   Profile: undefined
   QRCodeScanner: undefined
 }
