@@ -25,11 +25,14 @@
       }
     },
     "production": {
+      "distribution": "store",
       "ios": {
-        "resourceClass": "m-medium"
+        "resourceClass": "m-medium",
+        "buildConfiguration": "Release"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease"
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.minc-teams.com"

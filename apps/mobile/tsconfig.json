@@ -4,10 +4,19 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@minc-hub/shared": ["../../packages/shared/src"],
-      "@minc-hub/shared/*": ["../../packages/shared/src/*"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@minc-hub/shared": [
+        "../../packages/shared/src"
+      ],
+      "@minc-hub/shared/*": [
+        "../../packages/shared/src/*"
+      ]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ]
 }

@@ -4,7 +4,7 @@ import { Button, Input, Card } from '@/components'
 import { useLoginForm } from './useLoginForm'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 
-const BRAND_NAME = 'MINC Hub'
+const BRAND_NAME = 'MINC Teams'
 const BRAND_SUBTITLE = 'Sistema de Gestão de Times'
 
 export default function LoginScreen() {

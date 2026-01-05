@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "MINC Hub",
-    "slug": "minc-hub",
+    "name": "MINC Teams",
+    "slug": "minc-teams",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "minchub",
+    "scheme": "mincteams",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -29,7 +29,9 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.minc.hub",
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
@@ -42,6 +44,12 @@
     ],
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2f28567e-5782-4302-a923-98f0b2de5607"
+      }
+    },
+    "owner": "rafaeljfec2"
   }
 }

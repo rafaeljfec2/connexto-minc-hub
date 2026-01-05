@@ -1,4 +1,4 @@
-# MINC Hub Mobile
+# MINC Teams Mobile
 
 Aplicativo mobile para o sistema de gestão de times da MINC (Minha Igreja na Cidade).
 
@@ -97,6 +97,6 @@ Configuradas automaticamente via `app.json`.
 
 ## Notas
 
-- O app usa `@minc-hub/shared` para compartilhar types, services e utils com o web
+- O app usa `@minc-teams/shared` para compartilhar types, services e utils com o web
 - Navegação híbrida: Stack Navigator + Tab Navigator
 - Design system baseado em tokens compartilhados
