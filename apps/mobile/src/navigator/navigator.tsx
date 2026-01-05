@@ -21,8 +21,16 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#f97316',
-        tabBarInactiveTintColor: '#71717a',
+        tabBarActiveTintColor: '#f97316', // primary-500
+        tabBarInactiveTintColor: '#a1a1aa', // dark-400
+        tabBarStyle: {
+          backgroundColor: '#09090b', // dark-950
+          borderTopWidth: 1,
+          borderTopColor: '#27272a', // dark-800
+          paddingBottom: 8,
+          paddingTop: 8,
+          height: 60,
+        },
       }}
     >
       <Tab.Screen

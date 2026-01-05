@@ -21,14 +21,11 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     minWidth: '48%',
-    backgroundColor: themeColors.card.background,
-    borderColor: themeColors.primary[500],
-    borderWidth: 1,
   },
   title: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
+    color: themeColors.text.default, // text-dark-50
     marginBottom: themeSpacing.md,
   },
   content: {

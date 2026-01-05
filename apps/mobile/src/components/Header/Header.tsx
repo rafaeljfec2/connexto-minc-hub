@@ -115,7 +115,7 @@ export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: themeColors.dark[900],
+    backgroundColor: 'rgba(9, 9, 11, 0.95)', // dark-950/95 com backdrop blur effect
   },
   container: {
     flexDirection: 'row',
@@ -123,9 +123,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: themeSpacing.md,
     paddingVertical: themeSpacing.sm,
-    backgroundColor: themeColors.dark[900],
+    backgroundColor: 'rgba(9, 9, 11, 0.95)', // dark-950/95
     borderBottomWidth: 1,
-    borderBottomColor: themeColors.dark[800],
+    borderBottomColor: themeColors.dark[800], // dark-800
     minHeight: 56,
   },
   menuButton: {
