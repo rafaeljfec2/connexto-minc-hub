@@ -35,7 +35,7 @@ export default function UsersPage() {
     name: '',
     email: '',
     password: '',
-    role: UserRole.MEMBER,
+    role: UserRole.SERVO,
     personId: '',
   })
 
@@ -72,7 +72,7 @@ export default function UsersPage() {
         name: '',
         email: '',
         password: '',
-        role: UserRole.MEMBER,
+        role: UserRole.SERVO,
         personId: '',
       })
     }
@@ -86,7 +86,7 @@ export default function UsersPage() {
       name: '',
       email: '',
       password: '',
-      role: UserRole.MEMBER,
+      role: UserRole.SERVO,
       personId: '',
     })
   }

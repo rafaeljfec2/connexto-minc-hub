@@ -216,21 +216,25 @@ Este documento organiza todas as funcionalidades a serem implementadas no **Fron
 ## 📅 Roadmap Sugerido
 
 ### Q1 2024
+
 - ✅ Estrutura base e frontend MVP
 - 🚧 Autenticação (EPIC-002)
 - 🚧 Integração com backend
 
 ### Q2 2024
+
 - 📝 Funcionalidades de negócio (EPIC-004, EPIC-005, EPIC-006)
 - 📝 Sistema de usuários (EPIC-003)
 - 📝 Dashboard (EPIC-008)
 
 ### Q3 2024
+
 - 📝 Estudo e implementação de QR Code (EPIC-012, EPIC-013)
 - 📝 Relatórios (EPIC-015)
 - 📝 Automações (EPIC-016)
 
 ### Q4 2024
+
 - 📝 Expansão multi-ministério (EPIC-017)
 - 📝 Funcionalidades avançadas (EPIC-018)
 - 📝 Melhorias e refinamentos
@@ -241,7 +245,7 @@ Este documento organiza todas as funcionalidades a serem implementadas no **Fron
 
 ### Hierarquia de Usuários
 
-1. **Pastor** - Acesso total ao sistema
+1. **PASTORr** - Acesso total ao sistema
 2. **Líder de Time/Ministério** - Gerencia o time/ministério
 3. **Líder de Equipe** - Gerencia a equipe, pode ler QR Code
 4. **Servo** - Gera QR Code, não faz check-in próprio

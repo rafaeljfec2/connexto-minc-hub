@@ -124,10 +124,12 @@ Este documento organiza todas as funcionalidades a serem implementadas no **Apli
 ## 📅 Roadmap Sugerido
 
 ### Q3 2024
+
 - 📝 Setup do App Mobile (EPIC-019)
 - 📝 Autenticação Mobile (EPIC-020)
 
 ### Q4 2024
+
 - 📝 Funcionalidades Mobile principais (EPIC-020)
 - 📝 QR Code Mobile (EPIC-020)
 - 📝 Modo Offline (EPIC-020)
@@ -139,7 +141,7 @@ Este documento organiza todas as funcionalidades a serem implementadas no **Apli
 
 ### Hierarquia de Usuários
 
-1. **Pastor** - Acesso total ao sistema
+1. **PASTORr** - Acesso total ao sistema
 2. **Líder de Time/Ministério** - Gerencia o time/ministério
 3. **Líder de Equipe** - Gerencia a equipe, pode ler QR Code
 4. **Servo** - Gera QR Code, não faz check-in próprio

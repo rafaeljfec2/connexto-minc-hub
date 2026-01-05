@@ -1,8 +1,8 @@
 export enum UserRole {
-  ADMIN = "admin",
-  COORDINATOR = "coordinator",
-  LEADER = "leader",
-  MEMBER = "member",
+  PASTOR = "PASTOR",
+  LIDER_DE_TIME = "lider_de_time",
+  LIDER_DE_EQUIPE = "lider_de_equipe",
+  SERVO = "servo",
 }
 
 export interface User {

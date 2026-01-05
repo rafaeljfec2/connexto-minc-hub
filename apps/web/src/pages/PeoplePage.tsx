@@ -59,7 +59,7 @@ export default function PeoplePage() {
   const [userFormData, setUserFormData] = useState({
     email: "",
     password: "",
-    role: UserRole.MEMBER,
+    role: UserRole.SERVO,
   });
 
   // Filters and search
@@ -214,7 +214,7 @@ export default function PeoplePage() {
   const initialUserFormData = {
     email: "",
     password: "",
-    role: UserRole.MEMBER,
+    role: UserRole.SERVO,
   };
 
   function handleOpenCreateUserModal(person: Person) {
@@ -222,7 +222,7 @@ export default function PeoplePage() {
     setUserFormData({
       email: person.email ?? "",
       password: "",
-      role: UserRole.MEMBER,
+      role: UserRole.SERVO,
     });
     createUserModal.open();
   }

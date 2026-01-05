@@ -22,42 +22,42 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/people',
     component: PeoplePage,
-    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     path: '/teams',
     component: TeamsPage,
-    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     path: '/services',
     component: ServicesPage,
-    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR],
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
   },
   {
     path: '/schedules',
     component: SchedulesPage,
-    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     path: '/communication',
     component: CommunicationPage,
-    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     path: '/churches',
     component: ChurchesPage,
-    allowedRoles: [UserRole.ADMIN],
+    allowedRoles: [UserRole.PASTOR],
   },
   {
     path: '/users',
     component: UsersPage,
-    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR],
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
   },
   {
     path: '/ministries',
     component: MinistriesPage,
-    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR],
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
   },
   {
     path: '/profile',
@@ -70,6 +70,6 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/monthly-schedules',
     component: MonthlySchedulePage,
-    allowedRoles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
 ]

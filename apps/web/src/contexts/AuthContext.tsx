@@ -16,7 +16,7 @@ const MOCK_USER: User = {
   id: 'mock-user-1',
   email: 'admin@minc.com',
   name: 'Usuário Admin',
-  role: UserRole.ADMIN,
+  role: UserRole.PASTOR,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 }

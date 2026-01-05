@@ -3,16 +3,12 @@ import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
 import { Service } from '@minc-hub/shared/types'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { getDayLabel } from '@/utils/formatters'
 
 interface ServiceCardProps {
   readonly service: Service
   readonly onEdit: (service: Service) => void
   readonly onDelete: (id: string) => void
-}
-
-function getDayLabel(dayOfWeek: number): string {
-  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
-  return days[dayOfWeek] ?? 'Dom'
 }
 
 export function ServiceCard({ service, onEdit, onDelete }: ServiceCardProps) {

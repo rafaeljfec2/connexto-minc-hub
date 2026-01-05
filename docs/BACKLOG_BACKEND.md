@@ -249,7 +249,7 @@ Este documento organiza todas as funcionalidades a serem implementadas no **Back
 
 ### Hierarquia de Usuários
 
-1. **Pastor** - Acesso total ao sistema
+1. **PASTORr** - Acesso total ao sistema
 2. **Líder de Time/Ministério** - Gerencia o time/ministério
 3. **Líder de Equipe** - Gerencia a equipe, pode ler QR Code
 4. **Servo** - Gera QR Code, não faz check-in próprio

@@ -14,34 +14,34 @@ const navItems: NavItem[] = [
   {
     label: 'Dashboard',
     href: '/dashboard',
-    roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER, UserRole.MEMBER],
+    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
   },
   {
     label: 'Servos',
     href: '/people',
-    roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     label: 'Equipes',
     href: '/teams',
-    roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     label: 'Cultos',
     href: '/services',
-    roles: [UserRole.ADMIN, UserRole.COORDINATOR],
+    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME],
   },
   {
     label: 'Escalas',
     href: '/schedules',
-    roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     label: 'Comunicação',
     href: '/communication',
-    roles: [UserRole.ADMIN, UserRole.COORDINATOR, UserRole.LEADER],
+    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
-  { label: 'Igrejas', href: '/churches', roles: [UserRole.ADMIN] },
+  { label: 'Igrejas', href: '/churches', roles: [UserRole.PASTO] },
 ]
 
 export function MobileNav() {

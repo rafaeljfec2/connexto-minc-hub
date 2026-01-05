@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '@/contexts/AuthContext'
 import { DrawerMenu } from '@/components/DrawerMenu'
+import { UserMenu } from './UserMenu'
+import { UserAvatar } from './UserAvatar'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 
 interface HeaderProps {
@@ -12,7 +14,7 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const [showMenu, setShowMenu] = useState(false)
   const [showDrawer, setShowDrawer] = useState(false)
 
@@ -21,33 +23,6 @@ export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
     if (onMenuPress) {
       onMenuPress()
     }
-  }
-
-  function handleLogout() {
-    setShowMenu(false)
-    Alert.alert('Sair', 'Tem certeza que deseja sair?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: () => {
-          logout().catch(() => {
-            // Error handled silently
-          })
-        },
-      },
-    ])
-  }
-
-  function getUserInitials() {
-    if (!user?.name) return 'U'
-    const parts = user.name.split(' ')
-    if (parts.length >= 2) {
-      const first = parts[0]?.[0] ?? ''
-      const last = parts.at(-1)?.[0] ?? ''
-      return `${first}${last}`.toUpperCase()
-    }
-    return user.name[0]?.toUpperCase() ?? 'U'
   }
 
   return (
@@ -63,49 +38,11 @@ export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
         </View>
 
         <View style={styles.rightContainer}>
-          <TouchableOpacity
-            style={styles.userButton}
-            onPress={() => setShowMenu(!showMenu)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{getUserInitials()}</Text>
-            </View>
-            <Text style={styles.chevron}>▼</Text>
-          </TouchableOpacity>
+          <UserAvatar userName={user?.name} onPress={() => setShowMenu(true)} />
         </View>
       </View>
 
-      <Modal
-        visible={showMenu}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowMenu(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowMenu(false)}
-        >
-          <View style={styles.menu}>
-            <View style={styles.menuHeader}>
-              <View style={styles.menuAvatar}>
-                <Text style={styles.menuAvatarText}>{getUserInitials()}</Text>
-              </View>
-              <View style={styles.menuUserInfo}>
-                <Text style={styles.menuUserName}>{user?.name ?? 'Usuário'}</Text>
-                <Text style={styles.menuUserEmail}>{user?.email ?? ''}</Text>
-              </View>
-            </View>
-
-            <View style={styles.menuSeparator} />
-
-            <TouchableOpacity style={styles.menuItem} onPress={handleLogout} activeOpacity={0.7}>
-              <Text style={styles.menuItemText}>Sair</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      <UserMenu visible={showMenu} onClose={() => setShowMenu(false)} />
 
       <DrawerMenu visible={showDrawer} onClose={() => setShowDrawer(false)} />
     </SafeAreaView>
@@ -153,84 +90,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginLeft: themeSpacing.sm,
-  },
-  userButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: themeSpacing.xs,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: themeColors.primary[600],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontSize: themeTypography.sizes.md,
-    fontWeight: themeTypography.weights.semibold,
-    color: '#ffffff',
-  },
-  chevron: {
-    fontSize: themeTypography.sizes.xs,
-    color: themeColors.text.default,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  menu: {
-    backgroundColor: themeColors.dark[900],
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingBottom: themeSpacing.xl,
-    borderTopWidth: 1,
-    borderTopColor: themeColors.dark[800],
-  },
-  menuHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: themeSpacing.md,
-    gap: themeSpacing.md,
-  },
-  menuAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: themeColors.primary[600],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuAvatarText: {
-    fontSize: themeTypography.sizes.lg,
-    fontWeight: themeTypography.weights.semibold,
-    color: '#ffffff',
-  },
-  menuUserInfo: {
-    flex: 1,
-  },
-  menuUserName: {
-    fontSize: themeTypography.sizes.md,
-    fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.default,
-    marginBottom: themeSpacing.xs / 2,
-  },
-  menuUserEmail: {
-    fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
-  },
-  menuSeparator: {
-    height: 1,
-    backgroundColor: themeColors.dark[800],
-    marginVertical: themeSpacing.sm,
-  },
-  menuItem: {
-    padding: themeSpacing.md,
-  },
-  menuItemText: {
-    fontSize: themeTypography.sizes.md,
-    color: themeColors.text.default,
   },
 })

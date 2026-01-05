@@ -1,40 +1,27 @@
-import React, { useState, useMemo } from 'react'
-import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native'
-import { Input, Header } from '@/components'
+import React, { useState } from 'react'
+import { View, StyleSheet } from 'react-native'
+import { Header, SearchBar, ListContainer, EmptyState } from '@/components'
 import { Church } from '@minc-hub/shared/types'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
 import { MOCK_CHURCHES } from '@/constants/mockData'
 import { ChurchCard } from './ChurchCard'
+import { useListScreen } from '@/hooks/useListScreen'
 
 export default function ChurchesScreen() {
   const [churches] = useState<Church[]>(MOCK_CHURCHES)
   const [searchTerm, setSearchTerm] = useState('')
-  const [refreshing, setRefreshing] = useState(false)
 
-  const filteredChurches = useMemo(() => {
-    return churches.filter(church => {
-      const matchesSearch =
-        searchTerm === '' ||
-        church.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        church.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        church.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        church.phone?.toLowerCase().includes(searchTerm.toLowerCase())
-
-      return matchesSearch
-    })
-  }, [churches, searchTerm])
-
-  function handleRefresh() {
-    setRefreshing(true)
-    setTimeout(() => setRefreshing(false), 1000)
-  }
+  const { filteredData, refreshing, handleRefresh } = useListScreen({
+    data: churches,
+    searchFields: ['name', 'address', 'email', 'phone'],
+    searchTerm,
+  })
 
   function handleEdit(church: Church) {
-    console.log('Edit church:', church)
+    // TODO: Implementar edição
   }
 
   function handleDelete(id: string) {
-    console.log('Delete church:', id)
+    // TODO: Implementar deleção
   }
 
   function renderItem({ item }: { item: Church }) {
@@ -47,36 +34,29 @@ export default function ChurchesScreen() {
     )
   }
 
-  function renderEmpty() {
-    return (
-      <View style={styles.empty}>
-        <Text style={styles.emptyText}>
-          {searchTerm ? 'Nenhuma igreja encontrada' : 'Nenhuma igreja cadastrada'}
-        </Text>
-      </View>
-    )
-  }
+  const emptyComponent = (
+    <EmptyState
+      message="Nenhuma igreja encontrada"
+      emptyMessage="Nenhuma igreja cadastrada"
+      searchTerm={searchTerm}
+    />
+  )
 
   return (
     <View style={styles.container}>
       <Header title="Igrejas" subtitle="Gerencie as igrejas cadastradas no sistema" />
-      <View style={styles.filters}>
-        <Input
-          placeholder="Buscar por nome, endereço, email ou telefone..."
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-          containerStyle={styles.searchInput}
-        />
-      </View>
-
-      <FlatList
-        data={filteredChurches}
+      <SearchBar
+        placeholder="Buscar por nome, endereço, email ou telefone..."
+        value={searchTerm}
+        onChangeText={setSearchTerm}
+      />
+      <ListContainer
+        data={filteredData}
         renderItem={renderItem}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={renderEmpty}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-        showsVerticalScrollIndicator={false}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        emptyComponent={emptyComponent}
       />
     </View>
   )
@@ -86,25 +66,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
-  },
-  filters: {
-    paddingHorizontal: themeSpacing.md,
-    paddingBottom: themeSpacing.sm,
-  },
-  searchInput: {
-    marginBottom: 0,
-  },
-  list: {
-    padding: themeSpacing.md,
-    paddingTop: 0,
-  },
-  empty: {
-    padding: themeSpacing.xl,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[400],
-    textAlign: 'center',
   },
 })

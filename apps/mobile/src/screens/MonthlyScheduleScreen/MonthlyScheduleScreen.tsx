@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: themeSpacing.md,
+    paddingTop: themeSpacing.md,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 200,

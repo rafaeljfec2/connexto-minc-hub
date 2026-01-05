@@ -3,21 +3,12 @@ import { View, Text, StyleSheet } from 'react-native'
 import { Card, Button } from '@/components'
 import { User } from '@minc-hub/shared/types'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { getRoleLabel } from '@/utils/formatters'
 
 interface UserCardProps {
   readonly user: User
   readonly onEdit: (user: User) => void
   readonly onDelete: (id: string) => void
-}
-
-function getRoleLabel(role: string): string {
-  const roleMap: Record<string, string> = {
-    ADMIN: 'Admin',
-    COORDINATOR: 'Coordenador',
-    LEADER: 'Líder',
-    MEMBER: 'Membro',
-  }
-  return roleMap[role] ?? role
 }
 
 export function UserCard({ user, onEdit, onDelete }: UserCardProps) {

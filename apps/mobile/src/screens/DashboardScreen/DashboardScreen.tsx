@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: themeSpacing.md,
+    paddingTop: themeSpacing.md,
   },
   statsGrid: {
     flexDirection: 'row',

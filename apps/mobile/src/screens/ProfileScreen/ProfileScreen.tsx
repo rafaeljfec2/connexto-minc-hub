@@ -100,6 +100,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: themeSpacing.md,
+    paddingTop: themeSpacing.md,
   },
   card: {
     marginBottom: themeSpacing.md,

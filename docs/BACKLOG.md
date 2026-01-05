@@ -552,7 +552,7 @@ Este documento é um índice geral dos backlogs do sistema MINC Teams. Os backlo
 
 ### Hierarquia de Usuários - Detalhamento
 
-1. **Pastor**
+1. **PASTORr**
 
    - Acesso total ao sistema
    - Pode gerenciar todos os níveis
