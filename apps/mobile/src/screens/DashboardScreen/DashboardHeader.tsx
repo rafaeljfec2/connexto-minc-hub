@@ -8,10 +8,15 @@ import { UserAvatar } from '@/components/Header/UserAvatar'
 
 interface DashboardHeaderProps {
   onMenuPress?: () => void
+  onProfilePress?: () => void
   onNotificationPress?: () => void
 }
 
-export function DashboardHeader({ onMenuPress, onNotificationPress }: DashboardHeaderProps) {
+export function DashboardHeader({
+  onMenuPress,
+  onProfilePress,
+  onNotificationPress,
+}: DashboardHeaderProps) {
   const { user } = useAuth()
 
   const getGreeting = () => {
@@ -31,7 +36,7 @@ export function DashboardHeader({ onMenuPress, onNotificationPress }: DashboardH
         <View style={styles.profileSection}>
           <UserAvatar
             userName={user?.name || 'User'}
-            onPress={onMenuPress || (() => {})}
+            onPress={onProfilePress || (() => {})}
             size={42}
           />
           <View style={styles.textContainer}>

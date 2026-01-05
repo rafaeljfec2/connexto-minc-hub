@@ -7,6 +7,7 @@ import { QuickActions } from './QuickActions'
 import { ActivityFeed } from './ActivityFeed'
 import { UpcomingServices } from './UpcomingServices'
 import { DrawerMenu } from '@/components/DrawerMenu'
+import { UserMenu } from '@/components/Header/UserMenu'
 import { themeSpacing } from '@/theme'
 import { API_CONFIG } from '@/constants/config'
 import { MOCK_PEOPLE, MOCK_TEAMS, MOCK_SCHEDULES } from '@/constants/mockData'
@@ -14,6 +15,7 @@ import { MOCK_PEOPLE, MOCK_TEAMS, MOCK_SCHEDULES } from '@/constants/mockData'
 export default function DashboardScreen() {
   const navigation = useNavigation<any>()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const isMockMode = API_CONFIG.MOCK_MODE
 
   const handleActionPress = (actionId: string) => {
@@ -86,6 +88,7 @@ export default function DashboardScreen() {
     <View style={styles.container}>
       <DashboardHeader
         onMenuPress={() => setIsDrawerOpen(true)}
+        onProfilePress={() => setIsUserMenuOpen(true)}
         onNotificationPress={() => Alert.alert('Notificações', 'Sem novas notificações')}
       />
 
@@ -122,6 +125,7 @@ export default function DashboardScreen() {
       </ScrollView>
 
       <DrawerMenu visible={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+      <UserMenu visible={isUserMenuOpen} onClose={() => setIsUserMenuOpen(false)} />
     </View>
   )
 }
