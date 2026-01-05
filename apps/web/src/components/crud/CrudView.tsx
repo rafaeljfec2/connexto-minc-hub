@@ -14,26 +14,29 @@ interface CrudViewProps {
 }
 
 export function CrudView({ viewMode, gridView, listView }: CrudViewProps) {
-  if (viewMode === 'grid') {
-    return <div className="block">{gridView}</div>
-  }
-
   return (
     <>
+      {/* Mobile: sempre mostra cards (grid) */}
       <div className="block md:hidden">{gridView}</div>
+      
+      {/* Web: respeita o viewMode escolhido */}
       <div className="hidden md:block">
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {listView.headers.map((header, index) => (
-                  <TableHead key={index}>{header}</TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>{listView.rows}</TableBody>
-          </Table>
-        </Card>
+        {viewMode === 'grid' ? (
+          gridView
+        ) : (
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {listView.headers.map((header, index) => (
+                    <TableHead key={index}>{header}</TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>{listView.rows}</TableBody>
+            </Table>
+          </Card>
+        )}
       </div>
     </>
   )

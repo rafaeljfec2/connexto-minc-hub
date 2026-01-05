@@ -30,7 +30,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
   },
   {
     label: 'Igrejas',
@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO],
+    roles: [UserRole.PASTOR],
   },
   {
     label: 'Times',
@@ -60,7 +60,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
   },
   {
     label: 'Equipes',
@@ -75,7 +75,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     label: 'Servos',
@@ -90,7 +90,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     label: 'Usuários',
@@ -105,7 +105,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
   },
   {
     label: 'Cultos',
@@ -120,7 +120,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
   },
   {
     label: 'Escalas',
@@ -135,7 +135,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     label: 'Sorteio Mensal',
@@ -150,7 +150,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
     label: 'Comunicação',
@@ -165,7 +165,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTO, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
 ]
 

@@ -31,6 +31,7 @@ export default function ChurchesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { viewMode, setViewMode } = useViewMode({
     storageKey: "churches-view-mode",
+    defaultMode: 'grid',
   });
   const [formData, setFormData] = useState({
     name: "",

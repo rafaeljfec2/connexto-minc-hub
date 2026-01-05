@@ -33,6 +33,7 @@ export default function TeamsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { viewMode, setViewMode } = useViewMode({
     storageKey: 'teams-view-mode',
+    defaultMode: 'grid',
   })
   const [formData, setFormData] = useState({
     name: '',

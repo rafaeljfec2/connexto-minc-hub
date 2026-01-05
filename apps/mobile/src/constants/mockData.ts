@@ -4,7 +4,7 @@ export const MOCK_USER: User = {
   id: 'mock-user-1',
   email: 'admin@minc.com',
   name: 'Usuário Admin',
-  role: UserRole.PASTO,
+  role: UserRole.PASTOR,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 }
@@ -26,7 +26,7 @@ export const MOCK_USERS: User[] = [
     id: '1',
     email: 'admin@minchteams.com',
     name: 'Usuário Admin',
-    role: UserRole.PASTO,
+    role: UserRole.PASTOR,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
