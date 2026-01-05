@@ -1,34 +1,42 @@
 import React from 'react'
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
-import { Button, Input, Card } from '@/components'
+import { Button, Input, Card, BackgroundGradient } from '@/components'
 import { useLoginForm } from './useLoginForm'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { API_CONFIG } from '@/constants/config'
 
 const BRAND_NAME = 'MINC Teams'
-const BRAND_SUBTITLE = 'Sistema de Gestão de Times'
+const BRAND_SUBTITLE = 'Sistema de gestão dos times da MINC'
 
 export default function LoginScreen() {
   const { email, password, error, setEmail, setPassword, handleLogin } = useLoginForm()
+  const isMockMode = API_CONFIG.MOCK_MODE
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <View style={styles.content}>
-          <BrandHeader />
-          <LoginForm
-            email={email}
-            password={password}
-            error={error}
-            onEmailChange={setEmail}
-            onPasswordChange={setPassword}
-            onLogin={handleLogin}
-          />
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <BackgroundGradient>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            <BrandHeader />
+            <LoginForm
+              email={email}
+              password={password}
+              error={error}
+              isMockMode={isMockMode}
+              onEmailChange={setEmail}
+              onPasswordChange={setPassword}
+              onLogin={handleLogin}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </BackgroundGradient>
   )
 }
 
@@ -45,6 +53,7 @@ interface LoginFormProps {
   readonly email: string
   readonly password: string
   readonly error: string
+  readonly isMockMode: boolean
   readonly onEmailChange: (email: string) => void
   readonly onPasswordChange: (password: string) => void
   readonly onLogin: () => Promise<void>
@@ -54,41 +63,56 @@ function LoginForm({
   email,
   password,
   error,
+  isMockMode,
   onEmailChange,
   onPasswordChange,
   onLogin,
 }: LoginFormProps) {
   return (
     <Card style={styles.card}>
-      <Input
-        label="Email"
-        placeholder="seu@email.com"
-        value={email}
-        onChangeText={onEmailChange}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-      />
+      <View style={styles.formContent}>
+        {isMockMode && (
+          <View style={styles.mockModeBanner}>
+            <Text style={styles.mockModeText}>
+              Modo Desenvolvimento: Use qualquer email/senha para entrar
+            </Text>
+          </View>
+        )}
 
-      <Input
-        label="Senha"
-        placeholder="••••••••"
-        value={password}
-        onChangeText={onPasswordChange}
-        secureTextEntry
-        autoCapitalize="none"
-        autoComplete="password"
-      />
+        {error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : null}
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <Input
+          label="Email"
+          placeholder="seu@email.com"
+          value={email}
+          onChangeText={onEmailChange}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+        />
 
-      <Button
-        title="Entrar"
-        onPress={onLogin}
-        variant="primary"
-        size="lg"
-        style={styles.loginButton}
-      />
+        <Input
+          label="Senha"
+          placeholder="••••••••"
+          value={password}
+          onChangeText={onPasswordChange}
+          secureTextEntry
+          autoCapitalize="none"
+          autoComplete="password"
+        />
+
+        <Button
+          title="Entrar"
+          onPress={onLogin}
+          variant="primary"
+          size="lg"
+          style={styles.loginButton}
+        />
+      </View>
     </Card>
   )
 }
@@ -96,38 +120,63 @@ function LoginForm({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themeColors.background.light,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
+    padding: themeSpacing.md,
   },
   content: {
-    padding: themeSpacing.md,
+    width: '100%',
+    maxWidth: 400,
+    alignSelf: 'center',
   },
   title: {
     fontSize: themeTypography.sizes['4xl'],
     fontWeight: themeTypography.weights.bold,
-    color: themeColors.primary[600],
+    color: themeColors.primary[500],
     textAlign: 'center',
     marginBottom: themeSpacing.xs,
   },
   subtitle: {
-    fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[600],
+    fontSize: themeTypography.sizes.sm,
+    color: themeColors.dark[400],
     textAlign: 'center',
     marginBottom: themeSpacing.xl,
   },
   card: {
-    marginTop: themeSpacing.lg,
+    width: '100%',
+  },
+  formContent: {
+    gap: themeSpacing.md,
+  },
+  mockModeBanner: {
+    padding: themeSpacing.sm,
+    borderRadius: 8,
+    backgroundColor: `${themeColors.primary[500]}20`,
+    borderWidth: 1,
+    borderColor: `${themeColors.primary[500]}40`,
+    marginBottom: themeSpacing.sm,
+  },
+  mockModeText: {
+    fontSize: themeTypography.sizes.xs,
+    color: themeColors.primary[400],
+    textAlign: 'center',
+  },
+  errorContainer: {
+    padding: themeSpacing.sm,
+    borderRadius: 8,
+    backgroundColor: '#ef444410',
+    borderWidth: 1,
+    borderColor: '#ef444440',
   },
   errorText: {
     color: '#ef4444',
     fontSize: themeTypography.sizes.sm,
-    marginBottom: themeSpacing.sm,
     textAlign: 'center',
   },
   loginButton: {
-    marginTop: themeSpacing.md,
+    marginTop: themeSpacing.sm,
   },
 })
