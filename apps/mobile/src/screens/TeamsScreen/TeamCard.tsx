@@ -1,0 +1,131 @@
+import React from 'react'
+import { View, Text, StyleSheet } from 'react-native'
+import { Card, Button } from '@/components'
+import { Team, Ministry } from '@minc-hub/shared/types'
+import { themeColors, themeSpacing, themeTypography } from '@/theme'
+
+interface TeamCardProps {
+  team: Team
+  ministry?: Ministry
+  onEdit?: (team: Team) => void
+  onDelete?: (id: string) => void
+}
+
+export function TeamCard({ team, ministry, onEdit, onDelete }: TeamCardProps) {
+  return (
+    <Card style={styles.card}>
+      <View style={styles.header}>
+        <View style={styles.info}>
+          <Text style={styles.name}>{team.name}</Text>
+          {team.description && (
+            <Text style={styles.description} numberOfLines={2}>
+              {team.description}
+            </Text>
+          )}
+          {ministry && (
+            <Text style={styles.ministry}>{ministry.name}</Text>
+          )}
+          <Text style={styles.members}>
+            {team.memberIds.length} membro{team.memberIds.length !== 1 ? 's' : ''}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.badges}>
+        <View style={[styles.badge, team.isActive ? styles.badgeActive : styles.badgeInactive]}>
+          <Text style={styles.badgeText}>{team.isActive ? 'Ativa' : 'Inativa'}</Text>
+        </View>
+      </View>
+
+      {(onEdit || onDelete) && (
+        <View style={styles.actions}>
+          {onEdit && (
+            <Button
+              title="Editar"
+              onPress={() => onEdit(team)}
+              variant="outline"
+              size="sm"
+              style={styles.actionButton}
+            />
+          )}
+          {onDelete && (
+            <Button
+              title="🗑️"
+              onPress={() => onDelete(team.id)}
+              variant="outline"
+              size="sm"
+              style={styles.deleteButton}
+            />
+          )}
+        </View>
+      )}
+    </Card>
+  )
+}
+
+const styles = StyleSheet.create({
+  card: {
+    marginBottom: themeSpacing.md,
+  },
+  header: {
+    marginBottom: themeSpacing.md,
+  },
+  info: {
+    flex: 1,
+  },
+  name: {
+    fontSize: themeTypography.sizes.lg,
+    fontWeight: themeTypography.weights.semibold,
+    color: themeColors.text.default,
+    marginBottom: themeSpacing.xs,
+  },
+  description: {
+    fontSize: themeTypography.sizes.sm,
+    color: themeColors.dark[400],
+    marginBottom: themeSpacing.xs,
+  },
+  ministry: {
+    fontSize: themeTypography.sizes.sm,
+    color: themeColors.dark[400],
+    marginBottom: themeSpacing.xs,
+  },
+  members: {
+    fontSize: themeTypography.sizes.sm,
+    color: themeColors.dark[400],
+  },
+  badges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: themeSpacing.xs,
+    marginBottom: themeSpacing.md,
+  },
+  badge: {
+    paddingHorizontal: themeSpacing.sm,
+    paddingVertical: themeSpacing.xs / 2,
+    borderRadius: 12,
+  },
+  badgeActive: {
+    backgroundColor: '#d1fae5',
+  },
+  badgeInactive: {
+    backgroundColor: themeColors.dark[800],
+  },
+  badgeText: {
+    fontSize: themeTypography.sizes.xs,
+    fontWeight: themeTypography.weights.medium,
+    color: themeColors.text.default,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: themeSpacing.sm,
+    paddingTop: themeSpacing.md,
+    borderTopWidth: 1,
+    borderTopColor: themeColors.dark[800],
+  },
+  actionButton: {
+    flex: 1,
+  },
+  deleteButton: {
+    paddingHorizontal: themeSpacing.md,
+  },
+})

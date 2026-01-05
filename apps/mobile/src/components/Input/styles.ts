@@ -8,18 +8,18 @@ export const inputStyles = StyleSheet.create({
   label: {
     fontSize: themeTypography.sizes.sm,
     fontWeight: themeTypography.weights.medium,
-    color: themeColors.text.light,
+    color: themeColors.dark[300],
     marginBottom: themeSpacing.xs,
   },
   input: {
     borderWidth: 1,
-    borderColor: themeColors.dark[300],
+    borderColor: themeColors.dark[700],
     borderRadius: 8,
     paddingHorizontal: themeSpacing.md,
     paddingVertical: themeSpacing.sm,
     fontSize: themeTypography.sizes.md,
-    color: themeColors.text.light,
-    backgroundColor: '#ffffff',
+    color: themeColors.text.default,
+    backgroundColor: themeColors.card.background,
     minHeight: 44,
   },
   inputError: {

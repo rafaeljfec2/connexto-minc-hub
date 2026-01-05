@@ -29,12 +29,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.light,
+    color: themeColors.text.default,
     marginBottom: themeSpacing.xs,
   },
   cardDescription: {
     fontSize: themeTypography.sizes.md,
-    color: themeColors.dark[600],
+    color: themeColors.dark[400],
     marginBottom: themeSpacing.md,
   },
   button: {

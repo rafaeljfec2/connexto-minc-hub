@@ -1,0 +1,215 @@
+import React from 'react'
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import type { RootStackParamList } from '@/navigator/navigator.types'
+import { themeColors, themeSpacing, themeTypography } from '@/theme'
+
+interface DrawerMenuProps {
+  visible: boolean
+  onClose: () => void
+}
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>
+
+interface MenuItem {
+  id: string
+  label: string
+  icon: string
+  screen?: 'Dashboard' | 'People' | 'Teams' | 'Schedules' | 'Profile'
+  onPress?: () => void
+}
+
+const MENU_ITEMS: MenuItem[] = [
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    icon: '🏠',
+    screen: 'Dashboard',
+  },
+  {
+    id: 'people',
+    label: 'Servos',
+    icon: '👥',
+    screen: 'People',
+  },
+  {
+    id: 'teams',
+    label: 'Equipes',
+    icon: '👔',
+    screen: 'Teams',
+  },
+  {
+    id: 'schedules',
+    label: 'Escalas',
+    icon: '📅',
+    screen: 'Schedules',
+  },
+  {
+    id: 'profile',
+    label: 'Perfil',
+    icon: '👤',
+    screen: 'Profile',
+  },
+]
+
+export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
+  const navigation = useNavigation<NavigationProp>()
+
+  function handleItemPress(item: MenuItem) {
+    onClose()
+    
+    if (item.screen) {
+      navigation.navigate('Main', { screen: item.screen })
+    } else if (item.onPress) {
+      item.onPress()
+    }
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
+      <TouchableOpacity
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <View style={styles.drawer} onStartShouldSetResponder={() => true}>
+          <View style={styles.handleContainer}>
+            <View style={styles.handle} />
+          </View>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.closeIcon}>✕</Text>
+            </TouchableOpacity>
+            <Text style={styles.title}>Menu</Text>
+            <View style={styles.closeButtonPlaceholder} />
+          </View>
+
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {MENU_ITEMS.map(item => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.menuItem}
+                onPress={() => handleItemPress(item)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.menuIcon}>{item.icon}</Text>
+                <Text style={styles.menuLabel}>{item.label}</Text>
+                <Text style={styles.chevron}>›</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>MINC TEAMS</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  )
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  drawer: {
+    width: '100%',
+    maxHeight: '85%',
+    backgroundColor: themeColors.dark[900],
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    alignSelf: 'flex-end',
+  },
+  handleContainer: {
+    alignItems: 'center',
+    paddingTop: themeSpacing.sm,
+    paddingBottom: themeSpacing.xs,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: themeColors.dark[600],
+    borderRadius: 2,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: themeSpacing.md,
+    paddingHorizontal: themeSpacing.md,
+    paddingBottom: themeSpacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: themeColors.dark[800],
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeIcon: {
+    fontSize: themeTypography.sizes.xl,
+    color: themeColors.text.default,
+    fontWeight: themeTypography.weights.bold,
+  },
+  title: {
+    fontSize: themeTypography.sizes.xl,
+    fontWeight: themeTypography.weights.bold,
+    color: themeColors.text.default,
+  },
+  closeButtonPlaceholder: {
+    width: 32,
+  },
+  content: {
+    flex: 1,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: themeSpacing.md,
+    paddingVertical: themeSpacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: themeColors.dark[800],
+  },
+  menuIcon: {
+    fontSize: themeTypography.sizes.xl,
+    marginRight: themeSpacing.md,
+    width: 32,
+    textAlign: 'center',
+  },
+  menuLabel: {
+    flex: 1,
+    fontSize: themeTypography.sizes.md,
+    fontWeight: themeTypography.weights.medium,
+    color: themeColors.text.default,
+  },
+  chevron: {
+    fontSize: themeTypography.sizes.xl,
+    color: themeColors.dark[400],
+    fontWeight: themeTypography.weights.bold,
+  },
+  footer: {
+    padding: themeSpacing.md,
+    borderTopWidth: 1,
+    borderTopColor: themeColors.dark[800],
+  },
+  footerText: {
+    fontSize: themeTypography.sizes.sm,
+    fontWeight: themeTypography.weights.bold,
+    color: themeColors.text.default,
+    textAlign: 'center',
+  },
+})

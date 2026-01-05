@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: themeTypography.sizes.lg,
     fontWeight: themeTypography.weights.semibold,
-    color: themeColors.text.light,
+    color: themeColors.text.default,
     marginBottom: themeSpacing.sm,
   },
   button: {

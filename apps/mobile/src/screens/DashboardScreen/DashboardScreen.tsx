@@ -1,41 +1,71 @@
 import React from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
-import { Card, Button } from '@/components'
+import { Header } from '@/components'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
-import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import type { RootStackParamList } from '@/navigator/navigator.types'
-import { QuickActionsCard } from './QuickActionsCard'
-import { QRCodeCard } from './QRCodeCard'
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>
+import { useAuth } from '@/contexts/AuthContext'
+import { API_CONFIG } from '@/constants/config'
+import { StatsCard } from './StatsCard'
+import { InfoCard } from './InfoCard'
 
 export default function DashboardScreen() {
-  const navigation = useNavigation<NavigationProp>()
+  const { user } = useAuth()
+  const isMockMode = API_CONFIG.MOCK_MODE
+
+  const greeting = isMockMode
+    ? 'Modo Desenvolvimento - Bem-vindo!'
+    : `Bem-vindo, ${user?.name ?? 'Usuário'}`
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Dashboard</Text>
-        <QRCodeCard />
-        <QuickActionsCard navigation={navigation} />
-      </View>
-    </ScrollView>
+    <View style={styles.container}>
+      <Header title="Dashboard" subtitle={greeting} />
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
+
+        <View style={styles.statsGrid}>
+          <StatsCard title="Total de Servos" value="0" />
+          <StatsCard title="Equipes Ativas" value="0" />
+          <StatsCard title="Próximo Culto" value="-" />
+          <StatsCard title="Presença (Mês)" value="0%" />
+        </View>
+
+        <View style={styles.infoGrid}>
+          <InfoCard title="Atividades Recentes">
+            <Text style={styles.emptyText}>Nenhuma atividade recente</Text>
+          </InfoCard>
+          <InfoCard title="Próximas Escalas">
+            <Text style={styles.emptyText}>Nenhuma escala agendada</Text>
+          </InfoCard>
+        </View>
+        </View>
+      </ScrollView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themeColors.background.light,
+    backgroundColor: themeColors.background.default,
+  },
+  scrollView: {
+    flex: 1,
   },
   content: {
     padding: themeSpacing.md,
   },
-  title: {
-    fontSize: themeTypography.sizes['3xl'],
-    fontWeight: themeTypography.weights.bold,
-    color: themeColors.text.light,
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: themeSpacing.md,
     marginBottom: themeSpacing.lg,
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: themeSpacing.md,
+  },
+  emptyText: {
+    fontSize: themeTypography.sizes.sm,
+    color: themeColors.dark[400],
   },
 })

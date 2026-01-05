@@ -3,7 +3,7 @@ import { themeColors, themeSpacing } from '@/theme'
 
 export const cardStyles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: themeColors.card.background,
     borderRadius: 8,
     padding: themeSpacing.md,
     shadowColor: '#000',
@@ -11,10 +11,10 @@ export const cardStyles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.3,
     shadowRadius: 3.84,
     elevation: 5,
     borderWidth: 1,
-    borderColor: themeColors.dark[200],
+    borderColor: themeColors.card.border,
   },
 })

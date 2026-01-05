@@ -12,7 +12,7 @@ export default function App() {
       <AuthProvider>
         <NavigationContainer linking={linking}>
           <RootNavigator />
-          <StatusBar style="auto" />
+          <StatusBar style="light" />
         </NavigationContainer>
       </AuthProvider>
     </ThemeProvider>
