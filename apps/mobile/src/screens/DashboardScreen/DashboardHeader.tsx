@@ -24,14 +24,16 @@ export function DashboardHeader({ onMenuPress, onNotificationPress }: DashboardH
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
+        <TouchableOpacity style={styles.menuButton} onPress={onMenuPress}>
+          <Ionicons name="menu" size={28} color={themeColors.text.default} />
+        </TouchableOpacity>
+
         <View style={styles.profileSection}>
-          <TouchableOpacity onPress={onMenuPress}>
-            <UserAvatar
-              userName={user?.name || 'User'}
-              onPress={onMenuPress || (() => {})}
-              size={48}
-            />
-          </TouchableOpacity>
+          <UserAvatar
+            userName={user?.name || 'User'}
+            onPress={onMenuPress || (() => {})}
+            size={42}
+          />
           <View style={styles.textContainer}>
             <Text style={styles.greeting}>{getGreeting()},</Text>
             <Text style={styles.userName} numberOfLines={1}>
@@ -56,9 +58,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: themeSpacing.lg,
+    paddingHorizontal: themeSpacing.md, // Reduced padding to fit menu
     paddingVertical: themeSpacing.md,
+    gap: themeSpacing.sm, // Add gap between elements
+  },
+  menuButton: {
+    padding: themeSpacing.xs,
+    marginRight: 4,
   },
   profileSection: {
     flexDirection: 'row',

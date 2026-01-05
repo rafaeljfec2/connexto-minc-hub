@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, StyleSheet, ScrollView, Alert } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { DashboardHeader } from './DashboardHeader'
@@ -6,12 +6,14 @@ import { StatsCard } from './StatsCard'
 import { QuickActions } from './QuickActions'
 import { ActivityFeed } from './ActivityFeed'
 import { UpcomingServices } from './UpcomingServices'
+import { DrawerMenu } from '@/components/DrawerMenu'
 import { themeSpacing } from '@/theme'
 import { API_CONFIG } from '@/constants/config'
 import { MOCK_PEOPLE, MOCK_TEAMS, MOCK_SCHEDULES } from '@/constants/mockData'
 
 export default function DashboardScreen() {
   const navigation = useNavigation<any>()
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const isMockMode = API_CONFIG.MOCK_MODE
 
   const handleActionPress = (actionId: string) => {
@@ -83,7 +85,7 @@ export default function DashboardScreen() {
   return (
     <View style={styles.container}>
       <DashboardHeader
-        onMenuPress={() => navigation.openDrawer()}
+        onMenuPress={() => setIsDrawerOpen(true)}
         onNotificationPress={() => Alert.alert('Notificações', 'Sem novas notificações')}
       />
 
@@ -118,6 +120,8 @@ export default function DashboardScreen() {
 
         <ActivityFeed activities={recentActivities as any} />
       </ScrollView>
+
+      <DrawerMenu visible={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
     </View>
   )
 }
