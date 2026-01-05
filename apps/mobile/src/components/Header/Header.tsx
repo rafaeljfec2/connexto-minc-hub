@@ -17,10 +17,9 @@ export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
   const [showDrawer, setShowDrawer] = useState(false)
 
   function handleMenuPress() {
+    setShowDrawer(true)
     if (onMenuPress) {
       onMenuPress()
-    } else {
-      setShowDrawer(true)
     }
   }
 

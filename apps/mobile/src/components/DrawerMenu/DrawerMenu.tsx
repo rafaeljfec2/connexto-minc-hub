@@ -16,7 +16,7 @@ interface MenuItem {
   id: string
   label: string
   icon: string
-  screen?: 'Dashboard' | 'People' | 'Teams' | 'Schedules' | 'Profile'
+  screen?: 'Dashboard' | 'Schedules' | 'Checkin' | 'Activities' | 'Profile'
   onPress?: () => void
 }
 
@@ -47,13 +47,17 @@ const MENU_ITEMS: MenuItem[] = [
     id: 'teams',
     label: 'Equipes',
     icon: '👔',
-    screen: 'Teams',
+    onPress: () => {
+      // TODO: Implementar tela de Equipes
+    },
   },
   {
     id: 'people',
     label: 'Servos',
     icon: '👥',
-    screen: 'People',
+    onPress: () => {
+      // TODO: Implementar tela de Servos
+    },
   },
   {
     id: 'users',
