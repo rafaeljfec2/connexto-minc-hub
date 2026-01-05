@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, StyleSheet } from 'react-native'
-import { Input } from '@/components'
+import { Input } from '../Input'
 import { themeSpacing } from '@/theme'
 
 interface SearchBarProps {
