@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { useNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { RootStackParamList } from '@/navigator/navigator.types'
@@ -15,7 +16,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>
 interface MenuItem {
   id: string
   label: string
-  icon: string
+  iconName: keyof typeof Ionicons.glyphMap
   screen?: 'Dashboard' | 'Schedules' | 'Checkin' | 'Activities' | 'Profile'
   onPress?: () => void
 }
@@ -24,13 +25,13 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    icon: '🏠',
+    iconName: 'home',
     screen: 'Dashboard',
   },
   {
     id: 'churches',
     label: 'Igrejas',
-    icon: '⛪',
+    iconName: 'church',
     onPress: () => {
       // TODO: Implementar tela de Igrejas
     },
@@ -38,7 +39,7 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'ministries',
     label: 'Times',
-    icon: '🏛️',
+    iconName: 'people',
     onPress: () => {
       // TODO: Implementar tela de Times
     },
@@ -46,7 +47,7 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'teams',
     label: 'Equipes',
-    icon: '👔',
+    iconName: 'people-circle',
     onPress: () => {
       // TODO: Implementar tela de Equipes
     },
@@ -54,7 +55,7 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'people',
     label: 'Servos',
-    icon: '👥',
+    iconName: 'person',
     onPress: () => {
       // TODO: Implementar tela de Servos
     },
@@ -62,7 +63,7 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'users',
     label: 'Usuários',
-    icon: '👤',
+    iconName: 'person-circle',
     onPress: () => {
       // TODO: Implementar tela de Usuários
     },
@@ -70,7 +71,7 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'services',
     label: 'Cultos',
-    icon: '📆',
+    iconName: 'calendar',
     onPress: () => {
       // TODO: Implementar tela de Cultos
     },
@@ -78,13 +79,13 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'schedules',
     label: 'Escalas',
-    icon: '📅',
+    iconName: 'calendar-outline',
     screen: 'Schedules',
   },
   {
     id: 'monthly-schedules',
     label: 'Sorteio Mensal',
-    icon: '🎲',
+    iconName: 'dice',
     onPress: () => {
       // TODO: Implementar tela de Sorteio Mensal
     },
@@ -92,7 +93,7 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'communication',
     label: 'Comunicação',
-    icon: '💬',
+    iconName: 'chatbubbles',
     onPress: () => {
       // TODO: Implementar tela de Comunicação
     },
@@ -100,7 +101,7 @@ const MENU_ITEMS: MenuItem[] = [
   {
     id: 'profile',
     label: 'Perfil',
-    icon: '⚙️',
+    iconName: 'settings',
     screen: 'Profile',
   },
 ]
@@ -149,20 +150,20 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
           </View>
 
           <View style={styles.contentContainer}>
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-              {MENU_ITEMS.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={styles.menuItem}
-                  onPress={() => handleItemPress(item)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.menuIcon}>{item.icon}</Text>
-                  <Text style={styles.menuLabel}>{item.label}</Text>
-                  <Text style={styles.chevron}>›</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+              <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                {MENU_ITEMS.map(item => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.menuItem}
+                    onPress={() => handleItemPress(item)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name={item.iconName} size={24} color={themeColors.text.default} style={styles.menuIcon} />
+                    <Text style={styles.menuLabel}>{item.label}</Text>
+                    <Ionicons name="chevron-forward" size={20} color={themeColors.dark[400]} />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
           </View>
 
           <View style={styles.footer}>
@@ -249,24 +250,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: themeColors.dark[800],
   },
-  menuIcon: {
-    fontSize: themeTypography.sizes.xl,
-    marginRight: themeSpacing.md,
-    width: 32,
-    textAlign: 'center',
-  },
-  menuLabel: {
-    flex: 1,
-    fontSize: themeTypography.sizes.md,
-    fontWeight: themeTypography.weights.medium,
-    color: themeColors.text.default,
-  },
-  chevron: {
-    fontSize: themeTypography.sizes.xl,
-    color: themeColors.dark[400],
-    fontWeight: themeTypography.weights.bold,
-  },
-  footer: {
+      menuIcon: {
+        marginRight: themeSpacing.md,
+        width: 24,
+      },
+      menuLabel: {
+        flex: 1,
+        fontSize: themeTypography.sizes.md,
+        fontWeight: themeTypography.weights.medium,
+        color: themeColors.text.default,
+      },
+      footer: {
     padding: themeSpacing.md,
     borderTopWidth: 1,
     borderTopColor: themeColors.dark[800],
