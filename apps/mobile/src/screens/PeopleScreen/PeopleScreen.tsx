@@ -1,17 +1,6 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, ScrollView } from 'react-native'
-import {
-  Header,
-  SearchBar,
-  ListContainer,
-  EmptyState,
-  Modal,
-  ConfirmDialog,
-  FloatingActionButton,
-  Button,
-  Input,
-  Select,
-} from '@/components'
+import { View } from 'react-native'
+import { Button, Input, Select, CrudScreen } from '@/components'
 import { Person, Ministry, Team } from '@minc-hub/shared/types'
 import { MOCK_PEOPLE, MOCK_MINISTRIES, MOCK_TEAMS } from '@/constants/mockData'
 import { ServoCard } from './ServoCard'
@@ -150,38 +139,27 @@ export default function PeopleScreen() {
   }
 
   const hasFilters = searchTerm || filterMinistry !== 'all' || filterTeam !== 'all'
-  const emptyComponent = (
-    <EmptyState
-      message="Nenhum servo encontrado"
-      emptyMessage="Nenhum servo cadastrado"
-      searchTerm={hasFilters ? searchTerm : undefined}
-    />
-  )
-
   return (
-    <View style={styles.container}>
-      <Header title="Servos" subtitle="Gerencie servos do Time Boas-Vindas" />
-      <SearchBar
-        placeholder="Buscar por nome, email ou telefone..."
-        value={searchTerm}
-        onChangeText={setSearchTerm}
-      />
-      <ListContainer
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-        emptyComponent={emptyComponent}
-      />
-      <FloatingActionButton onPress={() => handleOpenModal()} />
-
-      <Modal
-        visible={modal.visible}
-        onClose={handleCloseModal}
-        title={editingPerson ? 'Editar Servo' : 'Novo Servo'}
-      >
-        <ScrollView style={styles.form}>
+    <CrudScreen
+      title="Servos"
+      subtitle="Gerencie servos do Time Boas-Vindas"
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
+      data={filteredData}
+      renderItem={renderItem}
+      keyExtractor={item => item.id}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      emptyMessage={hasFilters ? 'Nenhum servo encontrado' : 'Nenhum servo cadastrado'}
+      onAddPress={() => handleOpenModal()}
+      // Modal Props
+      modalVisible={modal.visible}
+      onCloseModal={handleCloseModal}
+      modalTitle={editingPerson ? 'Editar Servo' : 'Novo Servo'}
+      onSubmit={handleSubmit}
+      onCancel={handleCloseModal}
+      renderForm={() => (
+        <>
           <Input
             label="Nome *"
             value={formData.name}
@@ -243,56 +221,18 @@ export default function PeopleScreen() {
             multiline
             numberOfLines={3}
           />
-          <View style={styles.modalActions}>
-            <Button
-              title="Cancelar"
-              onPress={handleCloseModal}
-              variant="secondary"
-              style={styles.cancelButton}
-            />
-            <Button
-              title={editingPerson ? 'Salvar' : 'Criar'}
-              onPress={handleSubmit}
-              variant="primary"
-              style={styles.submitButton}
-            />
-          </View>
-        </ScrollView>
-      </Modal>
-
-      <ConfirmDialog
-        visible={deleteModal.visible}
-        onClose={() => {
-          deleteModal.close()
-          setDeletingId(null)
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Confirmar Exclusão"
-        message="Tem certeza que deseja excluir este servo? Esta ação não pode ser desfeita."
-        confirmText="Excluir"
-        cancelText="Cancelar"
-      />
-    </View>
+        </>
+      )}
+      // Delete Dialog Props
+      deleteModalVisible={deleteModal.visible}
+      onCloseDeleteModal={() => {
+        deleteModal.close()
+        setDeletingId(null)
+      }}
+      onConfirmDelete={handleDeleteConfirm}
+      deleteMessage="Tem certeza que deseja excluir este servo? Esta ação não pode ser desfeita."
+    />
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  form: {
-    flex: 1,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: themeSpacing.sm,
-    marginTop: themeSpacing.md,
-  },
-  cancelButton: {
-    flex: 1,
-  },
-  submitButton: {
-    flex: 1,
-  },
-})
+const styles = {}
