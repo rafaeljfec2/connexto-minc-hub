@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { UserRole } from '@/types'
+import { UserRole } from '@minc-hub/shared/types'
 import { SidebarNavItem } from './SidebarNavItem'
 import { SidebarBranding } from './SidebarBranding'
 import { SidebarUserInfo } from './SidebarUserInfo'
@@ -175,23 +175,38 @@ export function Sidebar() {
 
   const visibleItems = navItems.filter(item => {
     if (!item.roles) return true
+
+    if (!user) return true
+
+    const userRole = String(user.role).toLowerCase()
+    if (userRole === 'admin') return true
     return hasAnyRole(item.roles)
   })
 
-  const renderNavItems = (onItemClick?: () => void) => (
-    <div className="space-y-1">
-      {visibleItems.map(item => (
-        <SidebarNavItem
-          key={item.href}
-          href={item.href}
-          icon={item.icon}
-          label={item.label}
-          isActive={location.pathname === item.href}
-          onClick={onItemClick}
-        />
-      ))}
-    </div>
-  )
+  const renderNavItems = (onItemClick?: () => void) => {
+    if (visibleItems.length === 0) {
+      return (
+        <div className="p-4 text-sm text-dark-500 dark:text-dark-400">
+          Nenhum item de menu disponível
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-1">
+        {visibleItems.map(item => (
+          <SidebarNavItem
+            key={item.href}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            isActive={location.pathname === item.href}
+            onClick={onItemClick}
+          />
+        ))}
+      </div>
+    )
+  }
 
   const sidebarContent = (
     <>
@@ -203,7 +218,7 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 fixed left-0 top-0 h-screen z-40 animate-slide-in-left">
+      <aside className="flex flex-col w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 fixed left-0 top-0 h-screen z-40">
         {sidebarContent}
       </aside>
 

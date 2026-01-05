@@ -31,9 +31,13 @@ export class ApiClient {
   private setupInterceptors(): void {
     this.client.interceptors.request.use(
       config => {
-        const token = this.config.getToken()
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
+        // Só adiciona token no header se não estiver usando cookies
+        // Quando usa cookies, o token é enviado automaticamente via withCredentials
+        if (!this.config.useCookies) {
+          const token = this.config.getToken()
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`
+          }
         }
         return config
       },
@@ -44,11 +48,21 @@ export class ApiClient {
       response => response,
       (error: AxiosError) => {
         if (error.response?.status === 401) {
-          this.config.clearToken()
+          // Only clear token from storage if not using cookies
+          // When using cookies, the token is managed by the server
+          if (!this.config.useCookies) {
+            this.config.clearToken()
+          }
           // Evita chamar onUnauthorized se já estamos na tela de login
+          // ou se a requisição é para /auth/me (verificação inicial)
           if (this.config.onUnauthorized && globalThis.window !== undefined) {
             const currentPath = globalThis.window.location.pathname
-            if (!currentPath.includes('/login')) {
+            const requestUrl = error.config?.url ?? ''
+            const isAuthCheck = requestUrl.includes('/auth/me')
+            
+            // Não chama onUnauthorized durante verificação inicial
+            // Deixa o AuthContext decidir se deve limpar o usuário
+            if (!currentPath.includes('/login') && !isAuthCheck) {
               this.config.onUnauthorized()
             }
           }

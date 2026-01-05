@@ -1,4 +1,4 @@
-import { User } from '@/types'
+import { User } from '@minc-hub/shared/types'
 
 interface SidebarUserInfoProps {
   readonly user: User

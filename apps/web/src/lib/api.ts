@@ -17,7 +17,11 @@ const apiClient = new ApiClient({
     localStorage.removeItem('auth_token')
   },
   onUnauthorized: () => {
-    if (globalThis.window !== undefined) {
+    // Verifica se há usuário no storage antes de limpar
+    // Isso evita limpar durante verificação inicial
+    const storedUser = localStorage.getItem('auth_user')
+    if (!storedUser && globalThis.window !== undefined) {
+      // Só redireciona se não houver usuário no storage
       globalThis.window.location.href = '/login'
     }
   },
