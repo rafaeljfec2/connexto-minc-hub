@@ -41,7 +41,7 @@ export default function ServicesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { viewMode, setViewMode } = useViewMode({
     storageKey: "services-view-mode",
-    defaultMode: 'grid',
+    defaultMode: 'list',
   });
   const [formData, setFormData] = useState({
     name: "",

@@ -30,7 +30,7 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { viewMode, setViewMode } = useViewMode({
     storageKey: 'users-view-mode',
-    defaultMode: 'grid',
+    defaultMode: 'list',
   })
   const [formData, setFormData] = useState({
     name: '',

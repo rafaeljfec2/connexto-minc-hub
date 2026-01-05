@@ -31,7 +31,7 @@ export default function MinistriesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { viewMode, setViewMode } = useViewMode({
     storageKey: 'ministries-view-mode',
-    defaultMode: 'grid',
+    defaultMode: 'list',
   })
   const [formData, setFormData] = useState({
     name: '',

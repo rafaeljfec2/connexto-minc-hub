@@ -31,7 +31,7 @@ export default function SchedulesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const { viewMode, setViewMode } = useViewMode({
     storageKey: 'schedules-view-mode',
-    defaultMode: 'grid',
+    defaultMode: 'list',
   })
   const [formData, setFormData] = useState({
     serviceId: '',

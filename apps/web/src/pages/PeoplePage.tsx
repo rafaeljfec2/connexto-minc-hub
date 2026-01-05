@@ -69,7 +69,7 @@ export default function PeoplePage() {
   const [filterTeam, setFilterTeam] = useState<string>("all");
   const { viewMode, setViewMode } = useViewMode({
     storageKey: "servos-view-mode",
-    defaultMode: 'grid',
+    defaultMode: 'list',
   });
 
   const availableTeams = useMemo(() => {

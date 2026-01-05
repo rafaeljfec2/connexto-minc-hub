@@ -7,7 +7,7 @@ interface UseViewModeOptions {
   readonly defaultMode?: ViewMode
 }
 
-export function useViewMode({ storageKey, defaultMode = 'grid' }: UseViewModeOptions) {
+export function useViewMode({ storageKey, defaultMode = 'list' }: UseViewModeOptions) {
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     if (globalThis.window !== undefined) {
       const isWeb = globalThis.window.innerWidth >= 768
@@ -29,9 +29,6 @@ export function useViewMode({ storageKey, defaultMode = 'grid' }: UseViewModeOpt
       if (isWeb) {
         const saved = globalThis.window.localStorage.getItem(storageKey) as ViewMode | null
         if (saved !== 'list' && saved !== 'grid') {
-          setViewMode(defaultMode)
-          globalThis.window.localStorage.setItem(storageKey, defaultMode)
-        } else if (saved === null) {
           setViewMode(defaultMode)
           globalThis.window.localStorage.setItem(storageKey, defaultMode)
         }

@@ -33,7 +33,7 @@ const navItems: NavItem[] = [
     roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
   },
   {
-    label: 'Igrejas',
+    label: 'Mincs',
     href: '/churches',
     icon: (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
