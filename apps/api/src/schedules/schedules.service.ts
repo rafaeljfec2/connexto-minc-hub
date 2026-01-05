@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { ScheduleTeamEntity } from './entities/schedule-team.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
@@ -20,7 +20,7 @@ export class SchedulesService {
     const date = new Date(createScheduleDto.date);
 
     const existing = await this.schedulesRepository.findOne({
-      where: { serviceId: createScheduleDto.serviceId, date, deletedAt: null },
+      where: { serviceId: createScheduleDto.serviceId, date, deletedAt: IsNull() },
     });
 
     if (existing) {
@@ -49,7 +49,7 @@ export class SchedulesService {
 
   async findAll(): Promise<ScheduleEntity[]> {
     return this.schedulesRepository.find({
-      where: { deletedAt: null },
+      where: { deletedAt: IsNull() },
       relations: ['service', 'service.church', 'scheduleTeams', 'scheduleTeams.team'],
       order: { date: 'DESC' },
     });
@@ -57,7 +57,7 @@ export class SchedulesService {
 
   async findByService(serviceId: string): Promise<ScheduleEntity[]> {
     return this.schedulesRepository.find({
-      where: { serviceId, deletedAt: null },
+      where: { serviceId, deletedAt: IsNull() },
       relations: ['service', 'scheduleTeams', 'scheduleTeams.team'],
       order: { date: 'DESC' },
     });
@@ -79,7 +79,7 @@ export class SchedulesService {
 
   async findOne(id: string): Promise<ScheduleEntity> {
     const schedule = await this.schedulesRepository.findOne({
-      where: { id, deletedAt: null },
+      where: { id, deletedAt: IsNull() },
       relations: [
         'service',
         'service.church',

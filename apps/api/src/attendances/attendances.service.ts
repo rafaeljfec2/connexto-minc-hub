@@ -90,7 +90,7 @@ export class AttendancesService {
 
   async remove(id: string): Promise<void> {
     await this.findOne(id);
-    await this.attendancesRepository.remove(id);
+    await this.attendancesRepository.delete(id);
   }
 
   async getScheduleAttendance(scheduleId: string): Promise<{

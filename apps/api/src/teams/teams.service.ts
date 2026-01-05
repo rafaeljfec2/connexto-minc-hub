@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { TeamEntity } from './entities/team.entity';
 import { TeamMemberEntity } from './entities/team-member.entity';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -26,7 +26,7 @@ export class TeamsService {
 
   async findAll(): Promise<TeamEntity[]> {
     return this.teamsRepository.find({
-      where: { deletedAt: null },
+      where: { deletedAt: IsNull() },
       relations: ['ministry', 'leader'],
       order: { name: 'ASC' },
     });
@@ -34,7 +34,7 @@ export class TeamsService {
 
   async findByMinistry(ministryId: string): Promise<TeamEntity[]> {
     return this.teamsRepository.find({
-      where: { ministryId, deletedAt: null },
+      where: { ministryId, deletedAt: IsNull() },
       relations: ['ministry', 'leader'],
       order: { name: 'ASC' },
     });
@@ -42,7 +42,7 @@ export class TeamsService {
 
   async findOne(id: string): Promise<TeamEntity> {
     const team = await this.teamsRepository.findOne({
-      where: { id, deletedAt: null },
+      where: { id, deletedAt: IsNull() },
       relations: ['ministry', 'leader', 'teamMembers', 'teamMembers.person'],
     });
 

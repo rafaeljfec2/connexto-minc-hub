@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { ServiceEntity } from './entities/service.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -22,7 +22,7 @@ export class ServicesService {
 
   async findAll(): Promise<ServiceEntity[]> {
     return this.servicesRepository.find({
-      where: { deletedAt: null },
+      where: { deletedAt: IsNull() },
       relations: ['church'],
       order: { dayOfWeek: 'ASC', time: 'ASC' },
     });
@@ -30,7 +30,7 @@ export class ServicesService {
 
   async findByChurch(churchId: string): Promise<ServiceEntity[]> {
     return this.servicesRepository.find({
-      where: { churchId, deletedAt: null },
+      where: { churchId, deletedAt: IsNull() },
       relations: ['church'],
       order: { dayOfWeek: 'ASC', time: 'ASC' },
     });
@@ -38,7 +38,7 @@ export class ServicesService {
 
   async findOne(id: string): Promise<ServiceEntity> {
     const service = await this.servicesRepository.findOne({
-      where: { id, deletedAt: null },
+      where: { id, deletedAt: IsNull() },
       relations: ['church', 'schedules'],
     });
 

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { UserEntity, UserRole } from './entities/user.entity';
 
 @Injectable()
@@ -12,14 +12,14 @@ export class UsersService {
 
   async findOne(id: string): Promise<UserEntity | null> {
     return this.usersRepository.findOne({
-      where: { id, deletedAt: null },
+      where: { id, deletedAt: IsNull() },
       relations: ['person'],
     });
   }
 
   async findAuthUser(email: string): Promise<UserEntity | null> {
     return this.usersRepository.findOne({
-      where: { email, deletedAt: null },
+      where: { email, deletedAt: IsNull() },
       relations: ['person'],
     });
   }
@@ -55,7 +55,7 @@ export class UsersService {
 
   async findAll(): Promise<UserEntity[]> {
     return this.usersRepository.find({
-      where: { deletedAt: null },
+      where: { deletedAt: IsNull() },
       relations: ['person'],
     });
   }

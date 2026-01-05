@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import LoginScreen from '@/screens/LoginScreen'
 import DashboardScreen from '@/screens/DashboardScreen'
 import SchedulesScreen from '@/screens/SchedulesScreen'
-import CheckinScreen from '@/screens/QRCodeScannerScreen/CheckinScreen'
+import { CheckinScreen } from '@/screens/QRCodeScannerScreen'
 import ChatScreen from '@/screens/ChatScreen'
 import ProfileScreen from '@/screens/ProfileScreen'
 import ChurchesScreen from '@/screens/ChurchesScreen'
@@ -45,9 +45,7 @@ function MainTabs() {
         component={DashboardScreen}
         options={{
           tabBarLabel: 'Início',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tab.Screen
@@ -55,9 +53,7 @@ function MainTabs() {
         component={SchedulesScreen}
         options={{
           tabBarLabel: 'Escalas',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="calendar" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
         }}
       />
       <Tab.Screen
@@ -65,9 +61,7 @@ function MainTabs() {
         component={CheckinScreen}
         options={{
           tabBarLabel: 'Check-in',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="qr-code" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="qr-code" size={size} color={color} />,
         }}
       />
       <Tab.Screen
@@ -85,9 +79,7 @@ function MainTabs() {
         component={ProfileScreen}
         options={{
           tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
       />
       {/* Hidden tabs - these screens are accessible but don't show in the tab bar */}

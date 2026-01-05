@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { MinistryEntity } from './entities/ministry.entity';
 import { CreateMinistryDto } from './dto/create-ministry.dto';
 import { UpdateMinistryDto } from './dto/update-ministry.dto';
@@ -22,7 +22,7 @@ export class MinistriesService {
 
   async findAll(): Promise<MinistryEntity[]> {
     return this.ministriesRepository.find({
-      where: { deletedAt: null },
+      where: { deletedAt: IsNull() },
       relations: ['church'],
       order: { name: 'ASC' },
     });
@@ -30,7 +30,7 @@ export class MinistriesService {
 
   async findByChurch(churchId: string): Promise<MinistryEntity[]> {
     return this.ministriesRepository.find({
-      where: { churchId, deletedAt: null },
+      where: { churchId, deletedAt: IsNull() },
       relations: ['church'],
       order: { name: 'ASC' },
     });
@@ -38,7 +38,7 @@ export class MinistriesService {
 
   async findOne(id: string): Promise<MinistryEntity> {
     const ministry = await this.ministriesRepository.findOne({
-      where: { id, deletedAt: null },
+      where: { id, deletedAt: IsNull() },
       relations: ['church', 'teams', 'persons'],
     });
 

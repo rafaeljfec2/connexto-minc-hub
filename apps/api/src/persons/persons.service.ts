@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { PersonEntity } from './entities/person.entity';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
@@ -22,7 +22,7 @@ export class PersonsService {
 
   async findAll(): Promise<PersonEntity[]> {
     return this.personsRepository.find({
-      where: { deletedAt: null },
+      where: { deletedAt: IsNull() },
       relations: ['ministry', 'team'],
       order: { name: 'ASC' },
     });
@@ -30,7 +30,7 @@ export class PersonsService {
 
   async findByMinistry(ministryId: string): Promise<PersonEntity[]> {
     return this.personsRepository.find({
-      where: { ministryId, deletedAt: null },
+      where: { ministryId, deletedAt: IsNull() },
       relations: ['ministry', 'team'],
       order: { name: 'ASC' },
     });
@@ -38,7 +38,7 @@ export class PersonsService {
 
   async findByTeam(teamId: string): Promise<PersonEntity[]> {
     return this.personsRepository.find({
-      where: { teamId, deletedAt: null },
+      where: { teamId, deletedAt: IsNull() },
       relations: ['ministry', 'team'],
       order: { name: 'ASC' },
     });
@@ -46,7 +46,7 @@ export class PersonsService {
 
   async findOne(id: string): Promise<PersonEntity> {
     const person = await this.personsRepository.findOne({
-      where: { id, deletedAt: null },
+      where: { id, deletedAt: IsNull() },
       relations: ['ministry', 'team', 'teamMembers', 'attendances'],
     });
 
