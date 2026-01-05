@@ -28,13 +28,18 @@ export function ListContainer<T extends { id: string }>({
       ListEmptyComponent={emptyComponent}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       showsVerticalScrollIndicator={false}
+      style={styles.container}
     />
   )
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   list: {
     padding: themeSpacing.md,
     paddingTop: 0,
+    flexGrow: 1,
   },
 })

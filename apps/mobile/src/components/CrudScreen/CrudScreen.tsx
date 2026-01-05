@@ -43,7 +43,7 @@ interface CrudScreenProps<T> {
   deleteMessage?: string
 }
 
-export function CrudScreen<T>({
+export function CrudScreen<T extends { id: string }>({
   title,
   subtitle,
   searchTerm,

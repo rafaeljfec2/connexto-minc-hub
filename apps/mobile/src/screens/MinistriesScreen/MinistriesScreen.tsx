@@ -1,16 +1,6 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, ScrollView } from 'react-native'
-import {
-  Header,
-  SearchBar,
-  ListContainer,
-  EmptyState,
-  Modal,
-  ConfirmDialog,
-  FloatingActionButton,
-  Button,
-  Input,
-} from '@/components'
+import { View } from 'react-native'
+import { Button, Input, CrudScreen } from '@/components'
 import { Ministry, Church } from '@minc-hub/shared/types'
 import { MOCK_MINISTRIES, MOCK_CHURCHES } from '@/constants/mockData'
 import { MinistryCard } from './MinistryCard'
@@ -21,7 +11,12 @@ import { getChurchName } from '@/utils/entityHelpers'
 import { themeSpacing } from '@/theme'
 
 export default function MinistriesScreen() {
-  const { items: ministries, create, update, remove } = useCrud<Ministry>({
+  const {
+    items: ministries,
+    create,
+    update,
+    remove,
+  } = useCrud<Ministry>({
     initialItems: MOCK_MINISTRIES,
   })
   const [churches] = useState<Church[]>(MOCK_CHURCHES)
@@ -109,38 +104,27 @@ export default function MinistriesScreen() {
     )
   }
 
-  const emptyComponent = (
-    <EmptyState
-      message="Nenhum time encontrado"
-      emptyMessage="Nenhum time cadastrado"
-      searchTerm={searchTerm}
-    />
-  )
-
   return (
-    <View style={styles.container}>
-      <Header title="Times" subtitle="Gerencie os times cadastrados" />
-      <SearchBar
-        placeholder="Buscar por nome ou descrição..."
-        value={searchTerm}
-        onChangeText={setSearchTerm}
-      />
-      <ListContainer
-        data={filteredData}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-        emptyComponent={emptyComponent}
-      />
-      <FloatingActionButton onPress={() => handleOpenModal()} />
-
-      <Modal
-        visible={modal.visible}
-        onClose={handleCloseModal}
-        title={editingMinistry ? 'Editar Time' : 'Novo Time'}
-      >
-        <ScrollView style={styles.form}>
+    <CrudScreen
+      title="Times"
+      subtitle="Gerencie os times cadastrados"
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
+      data={filteredData}
+      renderItem={renderItem}
+      keyExtractor={item => item.id}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      emptyMessage={searchTerm ? 'Nenhum time encontrado' : 'Nenhum time cadastrado'}
+      onAddPress={() => handleOpenModal()}
+      // Modal Props
+      modalVisible={modal.visible}
+      onCloseModal={handleCloseModal}
+      modalTitle={editingMinistry ? 'Editar Time' : 'Novo Time'}
+      onSubmit={handleSubmit}
+      onCancel={handleCloseModal}
+      renderForm={() => (
+        <>
           <Input
             label="Nome *"
             value={formData.name}
@@ -155,56 +139,18 @@ export default function MinistriesScreen() {
             multiline
             numberOfLines={3}
           />
-          <View style={styles.modalActions}>
-            <Button
-              title="Cancelar"
-              onPress={handleCloseModal}
-              variant="secondary"
-              style={styles.cancelButton}
-            />
-            <Button
-              title={editingMinistry ? 'Salvar' : 'Criar'}
-              onPress={handleSubmit}
-              variant="primary"
-              style={styles.submitButton}
-            />
-          </View>
-        </ScrollView>
-      </Modal>
-
-      <ConfirmDialog
-        visible={deleteModal.visible}
-        onClose={() => {
-          deleteModal.close()
-          setDeletingId(null)
-        }}
-        onConfirm={handleDeleteConfirm}
-        title="Confirmar Exclusão"
-        message="Tem certeza que deseja excluir este time? Esta ação não pode ser desfeita."
-        confirmText="Excluir"
-        cancelText="Cancelar"
-      />
-    </View>
+        </>
+      )}
+      // Delete Dialog Props
+      deleteModalVisible={deleteModal.visible}
+      onCloseDeleteModal={() => {
+        deleteModal.close()
+        setDeletingId(null)
+      }}
+      onConfirmDelete={handleDeleteConfirm}
+      deleteMessage="Tem certeza que deseja excluir este time? Esta ação não pode ser desfeita."
+    />
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  form: {
-    flex: 1,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: themeSpacing.sm,
-    marginTop: themeSpacing.md,
-  },
-  cancelButton: {
-    flex: 1,
-  },
-  submitButton: {
-    flex: 1,
-  },
-})
+const styles = {}
