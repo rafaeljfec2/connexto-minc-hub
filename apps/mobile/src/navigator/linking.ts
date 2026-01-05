@@ -5,15 +5,15 @@ export const linking: LinkingOptions<ReactNavigation.RootParamList> = {
   config: {
     screens: {
       Login: 'login',
-      Main: {
-        screens: {
-          Dashboard: 'dashboard',
-          Schedules: 'schedules',
-          Checkin: 'checkin',
-          Activities: 'activities',
-          Profile: 'profile',
-        },
-      },
+          Main: {
+            screens: {
+              Dashboard: 'dashboard',
+              Schedules: 'schedules',
+              Checkin: 'checkin',
+              Chat: 'chat',
+              Profile: 'profile',
+            },
+          },
     },
   },
 }

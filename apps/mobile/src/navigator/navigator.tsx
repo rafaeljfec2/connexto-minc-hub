@@ -10,7 +10,7 @@ import LoginScreen from '@/screens/LoginScreen'
 import DashboardScreen from '@/screens/DashboardScreen'
 import SchedulesScreen from '@/screens/SchedulesScreen'
 import CheckinScreen from '@/screens/QRCodeScannerScreen/CheckinScreen'
-import ActivitiesScreen from '@/screens/ActivitiesScreen'
+import ChatScreen from '@/screens/ChatScreen'
 import ProfileScreen from '@/screens/ProfileScreen'
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -64,12 +64,12 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Activities"
-        component={ActivitiesScreen}
+        name="Chat"
+        component={ChatScreen}
         options={{
-          tabBarLabel: 'Atividades',
+          tabBarLabel: 'Chat',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list" size={size} color={color} />
+            <Ionicons name="chatbubbles" size={size} color={color} />
           ),
         }}
       />

@@ -9,7 +9,7 @@ export type MainTabParamList = {
   Dashboard: undefined
   Schedules: undefined
   Checkin: undefined
-  Activities: undefined
+  Chat: undefined
   Profile: undefined
   QRCodeScanner: undefined
 }

@@ -17,7 +17,7 @@ interface MenuItem {
   id: string
   label: string
   iconName: keyof typeof Ionicons.glyphMap
-  screen?: 'Dashboard' | 'Schedules' | 'Checkin' | 'Activities' | 'Profile'
+  screen?: 'Dashboard' | 'Schedules' | 'Checkin' | 'Chat' | 'Profile'
   onPress?: () => void
 }
 
