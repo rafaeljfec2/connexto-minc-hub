@@ -10,17 +10,22 @@ interface BackgroundGradientProps {
 export function BackgroundGradient({ children }: BackgroundGradientProps) {
   const { theme } = useTheme()
 
+  /*
+   * NEW DESIGN - Improved UX
+   * Top: Vibrant Brand Identity
+   * Body: clean dark background for readability.
+   */
   const colors =
     theme === 'light'
-      ? ['#ffffff', '#fff7ed', '#fed7aa', '#ffedd5', '#ffffff']
-      : ['#09090b', '#431407', '#c2410c', '#f97316', '#09090b']
+      ? ['#fff7ed', '#ffffff', '#ffffff'] // Light: subtle top tint
+      : ['#c2410c', '#09090b', '#09090b'] // Dark: Orange top -> Dark base
 
   return (
     <LinearGradient
       colors={colors}
-      locations={[0, 0.25, 0.5, 0.75, 1]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      locations={[0, 0.35, 1]} // Gradient covers top 35%, then solid
+      start={{ x: 0.5, y: 0 }} // Top Center
+      end={{ x: 0.5, y: 1 }} // Bottom Center
       style={styles.container}
     >
       {children}
