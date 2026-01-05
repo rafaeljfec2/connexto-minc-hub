@@ -25,7 +25,7 @@ export class AttendancesService {
     });
 
     if (existing) {
-      throw new ConflictException('Check-in já registrado para esta pessoa nesta escala');
+      throw new ConflictException('Attendance already registered for this person in this schedule');
     }
 
     const attendance = this.attendancesRepository.create({
@@ -73,7 +73,7 @@ export class AttendancesService {
     });
 
     if (!attendance) {
-      throw new NotFoundException(`Check-in com ID ${id} não encontrado`);
+      throw new NotFoundException(`Attendance with ID ${id} not found`);
     }
 
     return attendance;

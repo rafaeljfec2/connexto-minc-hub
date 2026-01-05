@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { useMockMode } from '@/hooks/useMockMode'
 import { UserRole } from '@/types'
 import { SidebarNavItem } from './SidebarNavItem'
 import { SidebarBranding } from './SidebarBranding'
@@ -172,12 +171,11 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const location = useLocation()
   const { user, hasAnyRole } = useAuth()
-  const isMockMode = useMockMode()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   const visibleItems = navItems.filter(item => {
     if (!item.roles) return true
-    return isMockMode || hasAnyRole(item.roles)
+    return hasAnyRole(item.roles)
   })
 
   const renderNavItems = (onItemClick?: () => void) => (

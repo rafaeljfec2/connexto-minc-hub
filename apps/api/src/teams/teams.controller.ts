@@ -33,16 +33,16 @@ export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar uma nova equipe' })
-  @ApiResponse({ status: 201, description: 'Equipe criada com sucesso', type: TeamEntity })
+  @ApiOperation({ summary: 'Create a new team' })
+  @ApiResponse({ status: 201, description: 'Team created successfully', type: TeamEntity })
   create(@Body() createTeamDto: CreateTeamDto): Promise<TeamEntity> {
     return this.teamsService.create(createTeamDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas as equipes' })
-  @ApiQuery({ name: 'ministryId', required: false, description: 'Filtrar por ministério' })
-  @ApiResponse({ status: 200, description: 'Lista de equipes', type: [TeamEntity] })
+  @ApiOperation({ summary: 'List all teams' })
+  @ApiQuery({ name: 'ministryId', required: false, description: 'Filter by ministry' })
+  @ApiResponse({ status: 200, description: 'List of teams', type: [TeamEntity] })
   findAll(@Query('ministryId') ministryId?: string): Promise<TeamEntity[]> {
     if (ministryId) {
       return this.teamsService.findByMinistry(ministryId);
@@ -51,16 +51,16 @@ export class TeamsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obter uma equipe por ID' })
-  @ApiResponse({ status: 200, description: 'Equipe encontrada', type: TeamEntity })
-  @ApiResponse({ status: 404, description: 'Equipe não encontrada' })
+  @ApiOperation({ summary: 'Get a team by ID' })
+  @ApiResponse({ status: 200, description: 'Team found', type: TeamEntity })
+  @ApiResponse({ status: 404, description: 'Team not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<TeamEntity> {
     return this.teamsService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar uma equipe' })
-  @ApiResponse({ status: 200, description: 'Equipe atualizada com sucesso', type: TeamEntity })
+  @ApiOperation({ summary: 'Update a team' })
+  @ApiResponse({ status: 200, description: 'Team updated successfully', type: TeamEntity })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTeamDto: UpdateTeamDto,
@@ -69,16 +69,16 @@ export class TeamsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover uma equipe (soft delete)' })
-  @ApiResponse({ status: 200, description: 'Equipe removida com sucesso' })
+  @ApiOperation({ summary: 'Remove a team (soft delete)' })
+  @ApiResponse({ status: 200, description: 'Team removed successfully' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.teamsService.remove(id);
   }
 
   @Post(':id/members')
-  @ApiOperation({ summary: 'Adicionar membro à equipe' })
-  @ApiResponse({ status: 201, description: 'Membro adicionado com sucesso', type: TeamMemberEntity })
-  @ApiResponse({ status: 409, description: 'Pessoa já é membro da equipe' })
+  @ApiOperation({ summary: 'Add member to team' })
+  @ApiResponse({ status: 201, description: 'Member added successfully', type: TeamMemberEntity })
+  @ApiResponse({ status: 409, description: 'Person is already a member of the team' })
   addMember(
     @Param('id', ParseUUIDPipe) teamId: string,
     @Body() addTeamMemberDto: AddTeamMemberDto,
@@ -87,16 +87,16 @@ export class TeamsController {
   }
 
   @Get(':id/members')
-  @ApiOperation({ summary: 'Listar membros da equipe' })
-  @ApiResponse({ status: 200, description: 'Lista de membros', type: [TeamMemberEntity] })
+  @ApiOperation({ summary: 'List team members' })
+  @ApiResponse({ status: 200, description: 'List of members', type: [TeamMemberEntity] })
   getMembers(@Param('id', ParseUUIDPipe) teamId: string): Promise<TeamMemberEntity[]> {
     return this.teamsService.getMembers(teamId);
   }
 
   @Delete(':id/members/:personId')
-  @ApiOperation({ summary: 'Remover membro da equipe' })
-  @ApiResponse({ status: 200, description: 'Membro removido com sucesso' })
-  @ApiResponse({ status: 404, description: 'Pessoa não é membro da equipe' })
+  @ApiOperation({ summary: 'Remove member from team' })
+  @ApiResponse({ status: 200, description: 'Member removed successfully' })
+  @ApiResponse({ status: 404, description: 'Person is not a member of the team' })
   removeMember(
     @Param('id', ParseUUIDPipe) teamId: string,
     @Param('personId', ParseUUIDPipe) personId: string,

@@ -24,7 +24,7 @@ export class SchedulesService {
     });
 
     if (existing) {
-      throw new ConflictException('Já existe uma escala para este culto nesta data');
+      throw new ConflictException('A schedule already exists for this service on this date');
     }
 
     const schedule = this.schedulesRepository.create({
@@ -91,7 +91,7 @@ export class SchedulesService {
     });
 
     if (!schedule) {
-      throw new NotFoundException(`Escala com ID ${id} não encontrada`);
+      throw new NotFoundException(`Schedule with ID ${id} not found`);
     }
 
     return schedule;
@@ -140,7 +140,7 @@ export class SchedulesService {
     });
 
     if (existing) {
-      throw new ConflictException('Equipe já está atribuída a esta escala');
+      throw new ConflictException('Team is already assigned to this schedule');
     }
 
     const scheduleTeam = this.scheduleTeamsRepository.create({
@@ -159,7 +159,7 @@ export class SchedulesService {
     });
 
     if (!scheduleTeam) {
-      throw new NotFoundException('Equipe não está atribuída a esta escala');
+      throw new NotFoundException('Team is not assigned to this schedule');
     }
 
     await this.scheduleTeamsRepository.remove(scheduleTeam);

@@ -90,17 +90,17 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<LoginResponse> {
     const isValid = await this.refreshTokenService.validateRefreshToken(refreshToken);
     if (!isValid) {
-      throw new UnauthorizedException('Token de refresh inválido ou expirado');
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
     const refreshTokenDoc = await this.refreshTokenService.getRefreshToken(refreshToken);
     if (!refreshTokenDoc) {
-      throw new UnauthorizedException('Token de refresh não encontrado');
+      throw new UnauthorizedException('Refresh token not found');
     }
 
     const user = await this.usersService.findOne(refreshTokenDoc.userId);
     if (!user) {
-      throw new UnauthorizedException('Usuário não encontrado');
+      throw new UnauthorizedException('User not found');
     }
 
     await this.refreshTokenService.revokeRefreshToken(refreshToken);
@@ -109,12 +109,12 @@ export class AuthService {
 
   async logout(user: UserEntity): Promise<{ message: string }> {
     await this.refreshTokenService.revokeAllUserTokens(user.id);
-    return { message: 'Logout realizado com sucesso' };
+    return { message: 'Logout successful' };
   }
 
   async forgotPassword(email: string): Promise<{ message: string }> {
     await this.passwordResetService.generateResetToken(email);
-    return { message: 'E-mail de recuperação enviado com sucesso' };
+    return { message: 'Password reset email sent successfully' };
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
@@ -122,7 +122,7 @@ export class AuthService {
       resetPasswordDto.token,
     );
     if (!isValid) {
-      throw new UnauthorizedException('Token de reset inválido ou expirado');
+      throw new UnauthorizedException('Invalid or expired reset token');
     }
 
     const success = await this.passwordResetService.resetPassword(
@@ -131,9 +131,9 @@ export class AuthService {
     );
 
     if (!success) {
-      throw new UnauthorizedException('Falha ao resetar senha');
+      throw new UnauthorizedException('Failed to reset password');
     }
 
-    return { message: 'Senha alterada com sucesso' };
+    return { message: 'Password reset successfully' };
   }
 }

@@ -33,19 +33,19 @@ export class SchedulesController {
   constructor(private readonly schedulesService: SchedulesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar uma nova escala' })
-  @ApiResponse({ status: 201, description: 'Escala criada com sucesso', type: ScheduleEntity })
-  @ApiResponse({ status: 409, description: 'Já existe uma escala para este culto nesta data' })
+  @ApiOperation({ summary: 'Create a new schedule' })
+  @ApiResponse({ status: 201, description: 'Schedule created successfully', type: ScheduleEntity })
+  @ApiResponse({ status: 409, description: 'A schedule already exists for this service on this date' })
   create(@Body() createScheduleDto: CreateScheduleDto): Promise<ScheduleEntity> {
     return this.schedulesService.create(createScheduleDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas as escalas' })
-  @ApiQuery({ name: 'serviceId', required: false, description: 'Filtrar por culto' })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Data inicial (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'Data final (YYYY-MM-DD)' })
-  @ApiResponse({ status: 200, description: 'Lista de escalas', type: [ScheduleEntity] })
+  @ApiOperation({ summary: 'List all schedules' })
+  @ApiQuery({ name: 'serviceId', required: false, description: 'Filter by service' })
+  @ApiQuery({ name: 'startDate', required: false, description: 'Start date (YYYY-MM-DD)' })
+  @ApiQuery({ name: 'endDate', required: false, description: 'End date (YYYY-MM-DD)' })
+  @ApiResponse({ status: 200, description: 'List of schedules', type: [ScheduleEntity] })
   findAll(
     @Query('serviceId') serviceId?: string,
     @Query('startDate') startDate?: string,
@@ -61,16 +61,16 @@ export class SchedulesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obter uma escala por ID' })
-  @ApiResponse({ status: 200, description: 'Escala encontrada', type: ScheduleEntity })
-  @ApiResponse({ status: 404, description: 'Escala não encontrada' })
+  @ApiOperation({ summary: 'Get a schedule by ID' })
+  @ApiResponse({ status: 200, description: 'Schedule found', type: ScheduleEntity })
+  @ApiResponse({ status: 404, description: 'Schedule not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<ScheduleEntity> {
     return this.schedulesService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar uma escala' })
-  @ApiResponse({ status: 200, description: 'Escala atualizada com sucesso', type: ScheduleEntity })
+  @ApiOperation({ summary: 'Update a schedule' })
+  @ApiResponse({ status: 200, description: 'Schedule updated successfully', type: ScheduleEntity })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateScheduleDto: UpdateScheduleDto,
@@ -79,16 +79,16 @@ export class SchedulesController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover uma escala (soft delete)' })
-  @ApiResponse({ status: 200, description: 'Escala removida com sucesso' })
+  @ApiOperation({ summary: 'Remove a schedule (soft delete)' })
+  @ApiResponse({ status: 200, description: 'Schedule removed successfully' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.schedulesService.remove(id);
   }
 
   @Post(':id/teams')
-  @ApiOperation({ summary: 'Adicionar equipe à escala' })
-  @ApiResponse({ status: 201, description: 'Equipe adicionada com sucesso', type: ScheduleTeamEntity })
-  @ApiResponse({ status: 409, description: 'Equipe já está atribuída a esta escala' })
+  @ApiOperation({ summary: 'Add team to schedule' })
+  @ApiResponse({ status: 201, description: 'Team added successfully', type: ScheduleTeamEntity })
+  @ApiResponse({ status: 409, description: 'Team is already assigned to this schedule' })
   addTeam(
     @Param('id', ParseUUIDPipe) scheduleId: string,
     @Body() addTeamDto: AddTeamToScheduleDto,
@@ -97,16 +97,16 @@ export class SchedulesController {
   }
 
   @Get(':id/teams')
-  @ApiOperation({ summary: 'Listar equipes da escala' })
-  @ApiResponse({ status: 200, description: 'Lista de equipes', type: [ScheduleTeamEntity] })
+  @ApiOperation({ summary: 'List schedule teams' })
+  @ApiResponse({ status: 200, description: 'List of teams', type: [ScheduleTeamEntity] })
   getTeams(@Param('id', ParseUUIDPipe) scheduleId: string): Promise<ScheduleTeamEntity[]> {
     return this.schedulesService.getTeams(scheduleId);
   }
 
   @Delete(':id/teams/:teamId')
-  @ApiOperation({ summary: 'Remover equipe da escala' })
-  @ApiResponse({ status: 200, description: 'Equipe removida com sucesso' })
-  @ApiResponse({ status: 404, description: 'Equipe não está atribuída a esta escala' })
+  @ApiOperation({ summary: 'Remove team from schedule' })
+  @ApiResponse({ status: 200, description: 'Team removed successfully' })
+  @ApiResponse({ status: 404, description: 'Team is not assigned to this schedule' })
   removeTeam(
     @Param('id', ParseUUIDPipe) scheduleId: string,
     @Param('teamId', ParseUUIDPipe) teamId: string,

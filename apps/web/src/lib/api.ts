@@ -3,7 +3,7 @@ import { ApiClient } from '@minc-hub/shared/services'
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
 
 const apiClient = new ApiClient({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/minc-teams/v1`,
   getToken: () => {
     if (typeof window === 'undefined') return null
     return localStorage.getItem('auth_token')
@@ -17,8 +17,8 @@ const apiClient = new ApiClient({
     localStorage.removeItem('auth_token')
   },
   onUnauthorized: () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+    if (globalThis.window !== undefined) {
+      globalThis.window.location.href = '/login'
     }
   },
   useCookies: true,

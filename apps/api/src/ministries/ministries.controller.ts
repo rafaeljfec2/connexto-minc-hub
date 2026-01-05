@@ -31,16 +31,16 @@ export class MinistriesController {
   constructor(private readonly ministriesService: MinistriesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar um novo ministério' })
-  @ApiResponse({ status: 201, description: 'Ministério criado com sucesso', type: MinistryEntity })
+  @ApiOperation({ summary: 'Create a new ministry' })
+  @ApiResponse({ status: 201, description: 'Ministry created successfully', type: MinistryEntity })
   create(@Body() createMinistryDto: CreateMinistryDto): Promise<MinistryEntity> {
     return this.ministriesService.create(createMinistryDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos os ministérios' })
-  @ApiQuery({ name: 'churchId', required: false, description: 'Filtrar por igreja' })
-  @ApiResponse({ status: 200, description: 'Lista de ministérios', type: [MinistryEntity] })
+  @ApiOperation({ summary: 'List all ministries' })
+  @ApiQuery({ name: 'churchId', required: false, description: 'Filter by church' })
+  @ApiResponse({ status: 200, description: 'List of ministries', type: [MinistryEntity] })
   findAll(@Query('churchId') churchId?: string): Promise<MinistryEntity[]> {
     if (churchId) {
       return this.ministriesService.findByChurch(churchId);
@@ -49,16 +49,16 @@ export class MinistriesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obter um ministério por ID' })
-  @ApiResponse({ status: 200, description: 'Ministério encontrado', type: MinistryEntity })
-  @ApiResponse({ status: 404, description: 'Ministério não encontrado' })
+  @ApiOperation({ summary: 'Get a ministry by ID' })
+  @ApiResponse({ status: 200, description: 'Ministry found', type: MinistryEntity })
+  @ApiResponse({ status: 404, description: 'Ministry not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<MinistryEntity> {
     return this.ministriesService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar um ministério' })
-  @ApiResponse({ status: 200, description: 'Ministério atualizado com sucesso', type: MinistryEntity })
+  @ApiOperation({ summary: 'Update a ministry' })
+  @ApiResponse({ status: 200, description: 'Ministry updated successfully', type: MinistryEntity })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateMinistryDto: UpdateMinistryDto,
@@ -67,8 +67,8 @@ export class MinistriesController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover um ministério (soft delete)' })
-  @ApiResponse({ status: 200, description: 'Ministério removido com sucesso' })
+  @ApiOperation({ summary: 'Remove a ministry (soft delete)' })
+  @ApiResponse({ status: 200, description: 'Ministry removed successfully' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.ministriesService.remove(id);
   }

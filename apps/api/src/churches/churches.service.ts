@@ -31,7 +31,7 @@ export class ChurchesService {
     });
 
     if (!church) {
-      throw new NotFoundException(`Igreja com ID ${id} não encontrada`);
+      throw new NotFoundException(`Church with ID ${id} not found`);
     }
 
     return church;

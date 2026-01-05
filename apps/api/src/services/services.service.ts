@@ -43,7 +43,7 @@ export class ServicesService {
     });
 
     if (!service) {
-      throw new NotFoundException(`Culto com ID ${id} não encontrado`);
+      throw new NotFoundException(`Service with ID ${id} not found`);
     }
 
     return service;

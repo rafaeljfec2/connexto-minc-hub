@@ -31,17 +31,17 @@ export class PersonsController {
   constructor(private readonly personsService: PersonsService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar uma nova pessoa/servo' })
-  @ApiResponse({ status: 201, description: 'Pessoa criada com sucesso', type: PersonEntity })
+  @ApiOperation({ summary: 'Create a new person/servant' })
+  @ApiResponse({ status: 201, description: 'Person created successfully', type: PersonEntity })
   create(@Body() createPersonDto: CreatePersonDto): Promise<PersonEntity> {
     return this.personsService.create(createPersonDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas as pessoas' })
-  @ApiQuery({ name: 'ministryId', required: false, description: 'Filtrar por ministério' })
-  @ApiQuery({ name: 'teamId', required: false, description: 'Filtrar por equipe' })
-  @ApiResponse({ status: 200, description: 'Lista de pessoas', type: [PersonEntity] })
+  @ApiOperation({ summary: 'List all persons' })
+  @ApiQuery({ name: 'ministryId', required: false, description: 'Filter by ministry' })
+  @ApiQuery({ name: 'teamId', required: false, description: 'Filter by team' })
+  @ApiResponse({ status: 200, description: 'List of persons', type: [PersonEntity] })
   findAll(
     @Query('ministryId') ministryId?: string,
     @Query('teamId') teamId?: string,
@@ -56,16 +56,16 @@ export class PersonsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obter uma pessoa por ID' })
-  @ApiResponse({ status: 200, description: 'Pessoa encontrada', type: PersonEntity })
-  @ApiResponse({ status: 404, description: 'Pessoa não encontrada' })
+  @ApiOperation({ summary: 'Get a person by ID' })
+  @ApiResponse({ status: 200, description: 'Person found', type: PersonEntity })
+  @ApiResponse({ status: 404, description: 'Person not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<PersonEntity> {
     return this.personsService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar uma pessoa' })
-  @ApiResponse({ status: 200, description: 'Pessoa atualizada com sucesso', type: PersonEntity })
+  @ApiOperation({ summary: 'Update a person' })
+  @ApiResponse({ status: 200, description: 'Person updated successfully', type: PersonEntity })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updatePersonDto: UpdatePersonDto,
@@ -74,8 +74,8 @@ export class PersonsController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover uma pessoa (soft delete)' })
-  @ApiResponse({ status: 200, description: 'Pessoa removida com sucesso' })
+  @ApiOperation({ summary: 'Remove a person (soft delete)' })
+  @ApiResponse({ status: 200, description: 'Person removed successfully' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.personsService.remove(id);
   }

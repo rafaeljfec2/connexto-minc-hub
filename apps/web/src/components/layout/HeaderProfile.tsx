@@ -1,5 +1,4 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { useMockMode } from '@/hooks/useMockMode'
 import { Button } from '@/components/ui/Button'
 import { Dropdown } from '@/components/ui/Dropdown'
 import { useNavigate } from 'react-router-dom'
@@ -8,7 +7,6 @@ import { UserIcon, SettingsIcon, LogoutIcon, ChevronDownIcon } from '@/component
 export function HeaderProfile() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const isMockMode = useMockMode()
 
   const profileItems = [
     {
@@ -25,9 +23,7 @@ export function HeaderProfile() {
       label: 'Sair',
       icon: <LogoutIcon />,
       onClick: () => {
-        if (!isMockMode) {
-          logout()
-        }
+        logout()
       },
       variant: 'danger' as const,
     },
@@ -54,10 +50,6 @@ export function HeaderProfile() {
         align="right"
       />
     )
-  }
-
-  if (isMockMode) {
-    return <span className="text-xs text-primary-400 hidden sm:inline">Modo Dev</span>
   }
 
   return (

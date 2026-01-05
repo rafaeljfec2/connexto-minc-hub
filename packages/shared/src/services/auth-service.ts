@@ -29,18 +29,23 @@ export function createAuthService(config: AuthServiceConfig): AuthService {
 
   return {
     async login(email: string, password: string): Promise<LoginResponse> {
-      const response = await api.post<LoginResponse>('/auth/login', {
-        email,
-        password,
-      })
+      try {
+        const response = await api.post<LoginResponse>('/auth/login', {
+          email,
+          password,
+        })
 
-      const { user, token, refreshToken } = response.data
+        const { user, token, refreshToken } = response.data
 
-      if (token) {
-        await Promise.resolve(storage.setToken(token))
+        if (token) {
+          await Promise.resolve(storage.setToken(token))
+        }
+
+        return { user, token, refreshToken }
+      } catch (error) {
+        console.error('Login error:', error)
+        throw error
       }
-
-      return { user, token, refreshToken }
     },
 
     async logout(): Promise<void> {

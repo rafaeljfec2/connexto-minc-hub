@@ -45,8 +45,12 @@ export class ApiClient {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           this.config.clearToken()
-          if (this.config.onUnauthorized) {
-            this.config.onUnauthorized()
+          // Evita chamar onUnauthorized se já estamos na tela de login
+          if (this.config.onUnauthorized && globalThis.window !== undefined) {
+            const currentPath = globalThis.window.location.pathname
+            if (!currentPath.includes('/login')) {
+              this.config.onUnauthorized()
+            }
           }
         }
         return Promise.reject(error)

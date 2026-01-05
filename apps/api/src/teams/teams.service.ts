@@ -47,7 +47,7 @@ export class TeamsService {
     });
 
     if (!team) {
-      throw new NotFoundException(`Equipe com ID ${id} não encontrada`);
+      throw new NotFoundException(`Team with ID ${id} not found`);
     }
 
     return team;
@@ -72,7 +72,7 @@ export class TeamsService {
     });
 
     if (existing) {
-      throw new ConflictException('Pessoa já é membro desta equipe');
+      throw new ConflictException('Person is already a member of this team');
     }
 
     const teamMember = this.teamMembersRepository.create({
@@ -91,7 +91,7 @@ export class TeamsService {
     });
 
     if (!teamMember) {
-      throw new NotFoundException('Pessoa não é membro desta equipe');
+      throw new NotFoundException('Person is not a member of this team');
     }
 
     await this.teamMembersRepository.remove(teamMember);

@@ -31,16 +31,16 @@ export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar um novo culto/serviço' })
-  @ApiResponse({ status: 201, description: 'Culto criado com sucesso', type: ServiceEntity })
+  @ApiOperation({ summary: 'Create a new service' })
+  @ApiResponse({ status: 201, description: 'Service created successfully', type: ServiceEntity })
   create(@Body() createServiceDto: CreateServiceDto): Promise<ServiceEntity> {
     return this.servicesService.create(createServiceDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos os cultos' })
-  @ApiQuery({ name: 'churchId', required: false, description: 'Filtrar por igreja' })
-  @ApiResponse({ status: 200, description: 'Lista de cultos', type: [ServiceEntity] })
+  @ApiOperation({ summary: 'List all services' })
+  @ApiQuery({ name: 'churchId', required: false, description: 'Filter by church' })
+  @ApiResponse({ status: 200, description: 'List of services', type: [ServiceEntity] })
   findAll(@Query('churchId') churchId?: string): Promise<ServiceEntity[]> {
     if (churchId) {
       return this.servicesService.findByChurch(churchId);
@@ -49,16 +49,16 @@ export class ServicesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obter um culto por ID' })
-  @ApiResponse({ status: 200, description: 'Culto encontrado', type: ServiceEntity })
-  @ApiResponse({ status: 404, description: 'Culto não encontrado' })
+  @ApiOperation({ summary: 'Get a service by ID' })
+  @ApiResponse({ status: 200, description: 'Service found', type: ServiceEntity })
+  @ApiResponse({ status: 404, description: 'Service not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<ServiceEntity> {
     return this.servicesService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar um culto' })
-  @ApiResponse({ status: 200, description: 'Culto atualizado com sucesso', type: ServiceEntity })
+  @ApiOperation({ summary: 'Update a service' })
+  @ApiResponse({ status: 200, description: 'Service updated successfully', type: ServiceEntity })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateServiceDto: UpdateServiceDto,
@@ -67,8 +67,8 @@ export class ServicesController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover um culto (soft delete)' })
-  @ApiResponse({ status: 200, description: 'Culto removido com sucesso' })
+  @ApiOperation({ summary: 'Remove a service (soft delete)' })
+  @ApiResponse({ status: 200, description: 'Service removed successfully' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.servicesService.remove(id);
   }

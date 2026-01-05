@@ -33,9 +33,9 @@ export class AttendancesController {
   constructor(private readonly attendancesService: AttendancesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Registrar check-in/presença' })
-  @ApiResponse({ status: 201, description: 'Check-in registrado com sucesso', type: AttendanceEntity })
-  @ApiResponse({ status: 409, description: 'Check-in já registrado para esta pessoa nesta escala' })
+  @ApiOperation({ summary: 'Register attendance/check-in' })
+  @ApiResponse({ status: 201, description: 'Attendance registered successfully', type: AttendanceEntity })
+  @ApiResponse({ status: 409, description: 'Attendance already registered for this person in this schedule' })
   create(
     @Body() createAttendanceDto: CreateAttendanceDto,
     @GetUser() user: UserEntity,
@@ -44,10 +44,10 @@ export class AttendancesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todos os check-ins' })
-  @ApiQuery({ name: 'scheduleId', required: false, description: 'Filtrar por escala' })
-  @ApiQuery({ name: 'personId', required: false, description: 'Filtrar por pessoa' })
-  @ApiResponse({ status: 200, description: 'Lista de check-ins', type: [AttendanceEntity] })
+  @ApiOperation({ summary: 'List all attendances' })
+  @ApiQuery({ name: 'scheduleId', required: false, description: 'Filter by schedule' })
+  @ApiQuery({ name: 'personId', required: false, description: 'Filter by person' })
+  @ApiResponse({ status: 200, description: 'List of attendances', type: [AttendanceEntity] })
   findAll(
     @Query('scheduleId') scheduleId?: string,
     @Query('personId') personId?: string,
@@ -62,10 +62,10 @@ export class AttendancesController {
   }
 
   @Get('schedule/:scheduleId/stats')
-  @ApiOperation({ summary: 'Obter estatísticas de presença de uma escala' })
+  @ApiOperation({ summary: 'Get attendance statistics for a schedule' })
   @ApiResponse({
     status: 200,
-    description: 'Estatísticas de presença',
+    description: 'Attendance statistics',
     schema: {
       example: {
         total: 10,
@@ -80,16 +80,16 @@ export class AttendancesController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obter um check-in por ID' })
-  @ApiResponse({ status: 200, description: 'Check-in encontrado', type: AttendanceEntity })
-  @ApiResponse({ status: 404, description: 'Check-in não encontrado' })
+  @ApiOperation({ summary: 'Get an attendance by ID' })
+  @ApiResponse({ status: 200, description: 'Attendance found', type: AttendanceEntity })
+  @ApiResponse({ status: 404, description: 'Attendance not found' })
   findOne(@Param('id', ParseUUIDPipe) id: string): Promise<AttendanceEntity> {
     return this.attendancesService.findOne(id);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar um check-in' })
-  @ApiResponse({ status: 200, description: 'Check-in atualizado com sucesso', type: AttendanceEntity })
+  @ApiOperation({ summary: 'Update an attendance' })
+  @ApiResponse({ status: 200, description: 'Attendance updated successfully', type: AttendanceEntity })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAttendanceDto: UpdateAttendanceDto,
@@ -98,8 +98,8 @@ export class AttendancesController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover um check-in' })
-  @ApiResponse({ status: 200, description: 'Check-in removido com sucesso' })
+  @ApiOperation({ summary: 'Remove an attendance' })
+  @ApiResponse({ status: 200, description: 'Attendance removed successfully' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.attendancesService.remove(id);
   }

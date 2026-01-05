@@ -51,7 +51,7 @@ export class PersonsService {
     });
 
     if (!person) {
-      throw new NotFoundException(`Pessoa com ID ${id} não encontrada`);
+      throw new NotFoundException(`Person with ID ${id} not found`);
     }
 
     return person;

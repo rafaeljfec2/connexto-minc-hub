@@ -96,7 +96,7 @@ cd apps/api
 pnpm dev
 ```
 
-A API estará disponível em `http://localhost:3001`
+A API estará disponível em `http://localhost:3001/minc-teams/v1`
 
 ### Build
 
@@ -115,7 +115,7 @@ pnpm start:prod
 A documentação Swagger está disponível em:
 
 ```
-http://localhost:3001/api/docs
+http://localhost:3001/minc-teams/v1/docs
 ```
 
 ## Estrutura do Projeto
@@ -139,84 +139,84 @@ apps/api/
 
 ### Autenticação
 
-- `POST /auth/login` - Login
-- `POST /auth/refresh-token` - Refresh token
-- `POST /auth/logout` - Logout
-- `POST /auth/forgot-password` - Solicitar recuperação de senha
-- `POST /auth/reset-password` - Resetar senha
-- `GET /auth/me` - Obter usuário atual
+- `POST /minc-teams/v1/auth/login` - Login
+- `POST /minc-teams/v1/auth/refresh-token` - Refresh token
+- `POST /minc-teams/v1/auth/logout` - Logout
+- `POST /minc-teams/v1/auth/forgot-password` - Solicitar recuperação de senha
+- `POST /minc-teams/v1/auth/reset-password` - Resetar senha
+- `GET /minc-teams/v1/auth/me` - Obter usuário atual
 
 ### Churches (Igrejas)
 
-- `GET /churches` - Listar todas as igrejas
-- `GET /churches/:id` - Obter igreja por ID
-- `POST /churches` - Criar nova igreja
-- `PATCH /churches/:id` - Atualizar igreja
-- `DELETE /churches/:id` - Remover igreja (soft delete)
+- `GET /minc-teams/v1/churches` - Listar todas as igrejas
+- `GET /minc-teams/v1/churches/:id` - Obter igreja por ID
+- `POST /minc-teams/v1/churches` - Criar nova igreja
+- `PATCH /minc-teams/v1/churches/:id` - Atualizar igreja
+- `DELETE /minc-teams/v1/churches/:id` - Remover igreja (soft delete)
 
 ### Ministries (Ministérios)
 
-- `GET /ministries` - Listar todos os ministérios
-- `GET /ministries?churchId=uuid` - Filtrar por igreja
-- `GET /ministries/:id` - Obter ministério por ID
-- `POST /ministries` - Criar novo ministério
-- `PATCH /ministries/:id` - Atualizar ministério
-- `DELETE /ministries/:id` - Remover ministério (soft delete)
+- `GET /minc-teams/v1/ministries` - Listar todos os ministérios
+- `GET /minc-teams/v1/ministries?churchId=uuid` - Filtrar por igreja
+- `GET /minc-teams/v1/ministries/:id` - Obter ministério por ID
+- `POST /minc-teams/v1/ministries` - Criar novo ministério
+- `PATCH /minc-teams/v1/ministries/:id` - Atualizar ministério
+- `DELETE /minc-teams/v1/ministries/:id` - Remover ministério (soft delete)
 
 ### Persons (Pessoas/Servos)
 
-- `GET /persons` - Listar todas as pessoas
-- `GET /persons?ministryId=uuid` - Filtrar por ministério
-- `GET /persons?teamId=uuid` - Filtrar por equipe
-- `GET /persons/:id` - Obter pessoa por ID
-- `POST /persons` - Criar nova pessoa
-- `PATCH /persons/:id` - Atualizar pessoa
-- `DELETE /persons/:id` - Remover pessoa (soft delete)
+- `GET /minc-teams/v1/persons` - Listar todas as pessoas
+- `GET /minc-teams/v1/persons?ministryId=uuid` - Filtrar por ministério
+- `GET /minc-teams/v1/persons?teamId=uuid` - Filtrar por equipe
+- `GET /minc-teams/v1/persons/:id` - Obter pessoa por ID
+- `POST /minc-teams/v1/persons` - Criar nova pessoa
+- `PATCH /minc-teams/v1/persons/:id` - Atualizar pessoa
+- `DELETE /minc-teams/v1/persons/:id` - Remover pessoa (soft delete)
 
 ### Services (Cultos/Serviços)
 
-- `GET /services` - Listar todos os cultos
-- `GET /services?churchId=uuid` - Filtrar por igreja
-- `GET /services/:id` - Obter culto por ID
-- `POST /services` - Criar novo culto
-- `PATCH /services/:id` - Atualizar culto
-- `DELETE /services/:id` - Remover culto (soft delete)
+- `GET /minc-teams/v1/services` - Listar todos os cultos
+- `GET /minc-teams/v1/services?churchId=uuid` - Filtrar por igreja
+- `GET /minc-teams/v1/services/:id` - Obter culto por ID
+- `POST /minc-teams/v1/services` - Criar novo culto
+- `PATCH /minc-teams/v1/services/:id` - Atualizar culto
+- `DELETE /minc-teams/v1/services/:id` - Remover culto (soft delete)
 
 ### Teams (Equipes)
 
-- `GET /teams` - Listar todas as equipes
-- `GET /teams?ministryId=uuid` - Filtrar por ministério
-- `GET /teams/:id` - Obter equipe por ID
-- `POST /teams` - Criar nova equipe
-- `PATCH /teams/:id` - Atualizar equipe
-- `DELETE /teams/:id` - Remover equipe (soft delete)
-- `POST /teams/:id/members` - Adicionar membro à equipe
-- `GET /teams/:id/members` - Listar membros da equipe
-- `DELETE /teams/:id/members/:personId` - Remover membro da equipe
+- `GET /minc-teams/v1/teams` - Listar todas as equipes
+- `GET /minc-teams/v1/teams?ministryId=uuid` - Filtrar por ministério
+- `GET /minc-teams/v1/teams/:id` - Obter equipe por ID
+- `POST /minc-teams/v1/teams` - Criar nova equipe
+- `PATCH /minc-teams/v1/teams/:id` - Atualizar equipe
+- `DELETE /minc-teams/v1/teams/:id` - Remover equipe (soft delete)
+- `POST /minc-teams/v1/teams/:id/members` - Adicionar membro à equipe
+- `GET /minc-teams/v1/teams/:id/members` - Listar membros da equipe
+- `DELETE /minc-teams/v1/teams/:id/members/:personId` - Remover membro da equipe
 
 ### Schedules (Escalas)
 
-- `GET /schedules` - Listar todas as escalas
-- `GET /schedules?serviceId=uuid` - Filtrar por culto
-- `GET /schedules?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` - Filtrar por período
-- `GET /schedules/:id` - Obter escala por ID
-- `POST /schedules` - Criar nova escala
-- `PATCH /schedules/:id` - Atualizar escala
-- `DELETE /schedules/:id` - Remover escala (soft delete)
-- `POST /schedules/:id/teams` - Adicionar equipe à escala
-- `GET /schedules/:id/teams` - Listar equipes da escala
-- `DELETE /schedules/:id/teams/:teamId` - Remover equipe da escala
+- `GET /minc-teams/v1/schedules` - Listar todas as escalas
+- `GET /minc-teams/v1/schedules?serviceId=uuid` - Filtrar por culto
+- `GET /minc-teams/v1/schedules?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` - Filtrar por período
+- `GET /minc-teams/v1/schedules/:id` - Obter escala por ID
+- `POST /minc-teams/v1/schedules` - Criar nova escala
+- `PATCH /minc-teams/v1/schedules/:id` - Atualizar escala
+- `DELETE /minc-teams/v1/schedules/:id` - Remover escala (soft delete)
+- `POST /minc-teams/v1/schedules/:id/teams` - Adicionar equipe à escala
+- `GET /minc-teams/v1/schedules/:id/teams` - Listar equipes da escala
+- `DELETE /minc-teams/v1/schedules/:id/teams/:teamId` - Remover equipe da escala
 
 ### Attendances (Check-ins)
 
-- `GET /attendances` - Listar todos os check-ins
-- `GET /attendances?scheduleId=uuid` - Filtrar por escala
-- `GET /attendances?personId=uuid` - Filtrar por pessoa
-- `GET /attendances/schedule/:scheduleId/stats` - Estatísticas de presença
-- `GET /attendances/:id` - Obter check-in por ID
-- `POST /attendances` - Registrar check-in
-- `PATCH /attendances/:id` - Atualizar check-in
-- `DELETE /attendances/:id` - Remover check-in
+- `GET /minc-teams/v1/attendances` - Listar todos os check-ins
+- `GET /minc-teams/v1/attendances?scheduleId=uuid` - Filtrar por escala
+- `GET /minc-teams/v1/attendances?personId=uuid` - Filtrar por pessoa
+- `GET /minc-teams/v1/attendances/schedule/:scheduleId/stats` - Estatísticas de presença
+- `GET /minc-teams/v1/attendances/:id` - Obter check-in por ID
+- `POST /minc-teams/v1/attendances` - Registrar check-in
+- `PATCH /minc-teams/v1/attendances/:id` - Atualizar check-in
+- `DELETE /minc-teams/v1/attendances/:id` - Remover check-in
 
 ## Comandos Úteis
 

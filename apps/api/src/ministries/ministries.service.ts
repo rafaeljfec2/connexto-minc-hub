@@ -43,7 +43,7 @@ export class MinistriesService {
     });
 
     if (!ministry) {
-      throw new NotFoundException(`Ministério com ID ${id} não encontrado`);
+      throw new NotFoundException(`Ministry with ID ${id} not found`);
     }
 
     return ministry;

@@ -1,6 +1,5 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { useMockMode } from '@/hooks/useMockMode'
 import { UserRole } from '@minc-hub/shared/types'
 import type { ReactNode } from 'react'
 
@@ -11,9 +10,8 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, hasAnyRole } = useAuth()
-  const isMockMode = useMockMode()
 
-  if (isLoading && !isMockMode) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-grain">
         <div className="text-dark-400">Carregando...</div>
@@ -21,11 +19,11 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     )
   }
 
-  if (!isAuthenticated && !isMockMode) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
-  if (allowedRoles && !hasAnyRole(allowedRoles) && !isMockMode) {
+  if (allowedRoles && !hasAnyRole(allowedRoles)) {
     return <Navigate to="/dashboard" replace />
   }
 

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useMockMode } from "@/hooks/useMockMode";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
@@ -14,7 +13,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const isMockMode = useMockMode();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,9 +21,31 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
-      setError("Email ou senha inválidos");
+      let errorMessage = "Email ou senha inválidos";
+      
+      if (err && typeof err === 'object' && 'response' in err) {
+        const axiosError = err as { response?: { status?: number; data?: { message?: string } } };
+        if (axiosError.response?.status === 401) {
+          errorMessage = "Credenciais inválidas";
+        } else if (axiosError.response?.data?.message) {
+          errorMessage = axiosError.response.data.message;
+        } else if (axiosError.response?.status === 429) {
+          errorMessage = "Muitas tentativas. Tente novamente mais tarde.";
+        } else if (axiosError.response?.status === 500) {
+          errorMessage = "Erro no servidor. Tente novamente mais tarde.";
+        } else if (axiosError.response?.status === 0 || axiosError.response?.status === undefined) {
+          errorMessage = "Não foi possível conectar ao servidor. Verifique sua conexão.";
+        }
+      } else if (err && typeof err === 'object' && 'message' in err) {
+        const error = err as { message?: string };
+        if (error.message) {
+          errorMessage = error.message;
+        }
+      }
+      
+      setError(errorMessage);
       console.error("Login error:", err);
     } finally {
       setIsLoading(false);
@@ -57,13 +77,6 @@ export default function LoginPage() {
             <p className="text-center text-sm text-dark-400 mt-2">
               Sistema de gestão dos times da MINC
             </p>
-            {isMockMode && (
-              <div className="mt-3 p-2 rounded-lg bg-primary-500/10 border border-primary-500/20">
-                <p className="text-center text-xs text-primary-400">
-                  Modo Desenvolvimento: Use qualquer email/senha para entrar
-                </p>
-              </div>
-            )}
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
