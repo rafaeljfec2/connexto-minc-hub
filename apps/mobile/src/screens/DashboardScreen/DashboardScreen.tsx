@@ -1,42 +1,122 @@
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView } from 'react-native'
-import { Header } from '@/components'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
-import { useAuth } from '@/contexts/AuthContext'
-import { API_CONFIG } from '@/constants/config'
+import { View, StyleSheet, ScrollView, Alert } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import { DashboardHeader } from './DashboardHeader'
 import { StatsCard } from './StatsCard'
-import { InfoCard } from './InfoCard'
+import { QuickActions } from './QuickActions'
+import { ActivityFeed } from './ActivityFeed'
+import { UpcomingServices } from './UpcomingServices'
+import { themeSpacing } from '@/theme'
+import { API_CONFIG } from '@/constants/config'
+import { MOCK_PEOPLE, MOCK_TEAMS, MOCK_SCHEDULES } from '@/constants/mockData'
 
 export default function DashboardScreen() {
-  const { user } = useAuth()
+  const navigation = useNavigation<any>()
   const isMockMode = API_CONFIG.MOCK_MODE
 
-  const greeting = isMockMode
-    ? 'Modo Desenvolvimento - Bem-vindo!'
-    : `Bem-vindo, ${user?.name ?? 'Usuário'}`
+  const handleActionPress = (actionId: string) => {
+    switch (actionId) {
+      case 'check-in':
+        navigation.navigate('MainTabs', { screen: 'Checkin' })
+        break
+      case 'schedules':
+        // Navigate to schedules or show modal
+        Alert.alert('Em breve', 'Funcionalidade de escalas')
+        break
+      case 'teams':
+        // Navigate to teams
+        Alert.alert('Em breve', 'Funcionalidade de equipes')
+        break
+      case 'chat':
+        navigation.navigate('MainTabs', { screen: 'Chat' })
+        break
+      default:
+        break
+    }
+  }
+
+  // Transform Mocks for UI components
+  const recentActivities = isMockMode
+    ? [
+        {
+          id: '1',
+          title: 'Novo Membro',
+          description: 'João Silva foi adicionado',
+          time: '2h atrás',
+          icon: 'person-add-outline',
+          color: '#10b981',
+        },
+        {
+          id: '2',
+          title: 'Escala Atualizada',
+          description: 'Domingo Manhã - Louvor',
+          time: '4h atrás',
+          icon: 'calendar-outline',
+          color: '#3b82f6',
+        },
+        {
+          id: '3',
+          title: 'Estudo Cancelado',
+          description: 'Jovens - Sábado',
+          time: 'ontem',
+          icon: 'close-circle-outline',
+          color: '#ef4444',
+        },
+      ]
+    : []
+
+  const upcomingServices = isMockMode
+    ? MOCK_SCHEDULES.map(s => {
+        const date = new Date(s.date)
+        return {
+          id: s.id,
+          date: s.date,
+          day: date.getDate().toString(),
+          month: date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+          time: date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          name: 'Culto de Celebração',
+          team: 'Equipe de Louvor',
+        }
+      })
+    : []
 
   return (
     <View style={styles.container}>
-      <Header title="Dashboard" subtitle={greeting} />
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.content}>
+      <DashboardHeader
+        onMenuPress={() => navigation.openDrawer()}
+        onNotificationPress={() => Alert.alert('Notificações', 'Sem novas notificações')}
+      />
 
-        <View style={styles.statsGrid}>
-          <StatsCard title="Total de Servos" value="0" />
-          <StatsCard title="Equipes Ativas" value="0" />
-          <StatsCard title="Próximo Culto" value="-" />
-          <StatsCard title="Presença (Mês)" value="0%" />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <QuickActions onActionPress={handleActionPress} />
+
+        <View style={styles.statsContainer}>
+          <View style={styles.statsRow}>
+            <StatsCard
+              title="Total Servos"
+              value={isMockMode ? MOCK_PEOPLE.length.toString() : '0'}
+              icon="people"
+              trend="+2 novos"
+            />
+            <StatsCard
+              title="Equipes"
+              value={isMockMode ? MOCK_TEAMS.filter(t => t.isActive).length.toString() : '0'}
+              icon="layers"
+            />
+          </View>
+          <View style={styles.statsRow}>
+            <StatsCard title="Próx. Culto" value="Dom 9h" icon="calendar" />
+            <StatsCard title="Presença" value="85%" icon="stats-chart" trend="+5%" />
+          </View>
         </View>
 
-        <View style={styles.infoGrid}>
-          <InfoCard title="Atividades Recentes">
-            <Text style={styles.emptyText}>Nenhuma atividade recente</Text>
-          </InfoCard>
-          <InfoCard title="Próximas Escalas">
-            <Text style={styles.emptyText}>Nenhuma escala agendada</Text>
-          </InfoCard>
-        </View>
-        </View>
+        <UpcomingServices services={upcomingServices} />
+
+        <ActivityFeed activities={recentActivities as any} />
       </ScrollView>
     </View>
   )
@@ -50,23 +130,16 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  content: {
-    padding: themeSpacing.md,
-    paddingTop: themeSpacing.md,
+  scrollContent: {
+    paddingBottom: themeSpacing.xl,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  statsContainer: {
+    paddingHorizontal: themeSpacing.md,
     gap: themeSpacing.md,
     marginBottom: themeSpacing.lg,
   },
-  infoGrid: {
+  statsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: themeSpacing.md,
-  },
-  emptyText: {
-    fontSize: themeTypography.sizes.sm,
-    color: themeColors.dark[400],
   },
 })

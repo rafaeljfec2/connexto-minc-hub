@@ -6,6 +6,10 @@ export const themeColors = {
   text: {
     default: colors.dark[50],
   },
+  card: {
+    background: colors.dark[900],
+    border: colors.dark[800],
+  },
 }
 
 export function getThemeColors(theme: 'light' | 'dark') {

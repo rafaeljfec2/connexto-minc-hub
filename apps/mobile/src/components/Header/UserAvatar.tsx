@@ -5,6 +5,7 @@ import { themeColors, themeSpacing, themeTypography } from '@/theme'
 interface UserAvatarProps {
   readonly userName?: string
   readonly onPress: () => void
+  readonly size?: number
 }
 
 function getUserInitials(userName?: string): string {
@@ -18,17 +19,14 @@ function getUserInitials(userName?: string): string {
   return userName[0]?.toUpperCase() ?? 'U'
 }
 
-export function UserAvatar({ userName, onPress }: UserAvatarProps) {
+export function UserAvatar({ userName, onPress, size = 36 }: UserAvatarProps) {
   const initials = getUserInitials(userName)
+  const fontSize = size * 0.4
 
   return (
-    <TouchableOpacity
-      style={styles.userButton}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{initials}</Text>
+    <TouchableOpacity style={styles.userButton} onPress={onPress} activeOpacity={0.7}>
+      <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
+        <Text style={[styles.avatarText, { fontSize }]}>{initials}</Text>
       </View>
       <Text style={styles.chevron}>▼</Text>
     </TouchableOpacity>
@@ -42,15 +40,11 @@ const styles = StyleSheet.create({
     gap: themeSpacing.xs,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     backgroundColor: themeColors.primary[600],
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: themeTypography.sizes.md,
     fontWeight: themeTypography.weights.semibold,
     color: '#ffffff',
   },
