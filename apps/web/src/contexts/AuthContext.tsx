@@ -49,6 +49,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const mockToken = localStorage.getItem('auth_token')
       if (mockToken) {
         setUser(MOCK_USER)
+      } else {
+        // No modo mock, define o usuário automaticamente se não houver token
+        const newMockToken = `mock-token-${Date.now()}`
+        apiClient.setToken(newMockToken)
+        setUser(MOCK_USER)
       }
       setIsLoading(false)
       return
