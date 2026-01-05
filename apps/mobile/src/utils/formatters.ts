@@ -3,9 +3,9 @@ import { UserRole, ServiceType } from '@minc-hub/shared/types'
 export function getRoleLabel(role: UserRole | string): string {
   const roleMap: Record<string, string> = {
     [UserRole.ADMIN]: 'Administrador',
-    [UserRole.COORDINATOR]: 'Coordenador',
-    [UserRole.LEADER]: 'Líder',
-    [UserRole.MEMBER]: 'Membro',
+    [UserRole.LIDER_DE_EQUIPE]: 'Líder de Equipe',
+    [UserRole.LIDER_DE_TIME]: 'Líder de Time',
+    [UserRole.SERVO]: 'Servo',
   }
   return roleMap[role] ?? 'Desconhecido'
 }
@@ -23,8 +23,6 @@ export function getServiceTypeLabel(type: ServiceType): string {
       return 'Culto Dominical Noite'
     case ServiceType.WEDNESDAY:
       return 'Culto de Oração'
-    case ServiceType.OTHER:
-      return 'Outro'
     default:
       return 'Desconhecido'
   }

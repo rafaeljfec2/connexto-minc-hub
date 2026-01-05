@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -12,20 +12,23 @@ import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useCrud } from '@/hooks/useCrud'
 import { useViewMode } from '@/hooks/useViewMode'
+import { useChurches } from '@/hooks/useChurches'
+import { useMinistries } from '@/hooks/useMinistries'
 import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
 import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
-import { Team, Person, Ministry } from '@/types'
+import { Team, Person } from '@minc-hub/shared/types'
 import { TeamCard } from './teams/components/TeamCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
-import { MOCK_PEOPLE, MOCK_MINISTRIES, MOCK_TEAMS } from '@/lib/mockData'
+import { MOCK_PEOPLE, MOCK_TEAMS } from '@/lib/mockData'
 
 export default function TeamsPage() {
   const { items: teams, create, update, remove } = useCrud<Team>({
     initialItems: MOCK_TEAMS,
   })
   const [people] = useState<Person[]>(MOCK_PEOPLE)
-  const [ministries] = useState<Ministry[]>(MOCK_MINISTRIES)
+  const { churches } = useChurches()
+  const { ministries } = useMinistries()
   const modal = useModal()
   const deleteModal = useModal()
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
@@ -38,10 +41,31 @@ export default function TeamsPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    ministryId: ministries[0]?.id ?? '',
+    churchId: '',
+    ministryId: '',
     memberIds: [] as string[],
     isActive: true,
   })
+
+  // Filter ministries by selected church
+  const filteredMinistries = useMemo(() => {
+    if (!formData.churchId) {
+      return ministries
+    }
+    return ministries.filter(ministry => ministry.churchId === formData.churchId)
+  }, [ministries, formData.churchId])
+
+  // Update ministryId when church changes or ministries are loaded
+  useEffect(() => {
+    if (filteredMinistries.length > 0) {
+      const currentMinistry = filteredMinistries.find(m => m.id === formData.ministryId)
+      if (!currentMinistry) {
+        setFormData(prev => ({ ...prev, ministryId: filteredMinistries[0]?.id ?? '' }))
+      }
+    } else {
+      setFormData(prev => ({ ...prev, ministryId: '' }))
+    }
+  }, [filteredMinistries, formData.ministryId])
 
   const filteredTeams = useMemo(() => {
     return teams.filter((team) => {
@@ -60,10 +84,12 @@ export default function TeamsPage() {
 
   function handleOpenModal(team?: Team) {
     if (team) {
+      const teamMinistry = ministries.find(m => m.id === team.ministryId)
       setEditingTeam(team)
       setFormData({
         name: team.name,
         description: team.description ?? '',
+        churchId: teamMinistry?.churchId ?? '',
         ministryId: team.ministryId,
         memberIds: team.memberIds,
         isActive: team.isActive,
@@ -73,7 +99,8 @@ export default function TeamsPage() {
       setFormData({
         name: '',
         description: '',
-        ministryId: ministries[0]?.id ?? '',
+        churchId: churches[0]?.id ?? '',
+        ministryId: '',
         memberIds: [],
         isActive: true,
       })
@@ -87,7 +114,8 @@ export default function TeamsPage() {
     setFormData({
       name: '',
       description: '',
-      ministryId: ministries[0]?.id ?? '',
+      churchId: churches[0]?.id ?? '',
+      ministryId: '',
       memberIds: [],
       isActive: true,
     })
@@ -228,16 +256,29 @@ export default function TeamsPage() {
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <Select
+            label="Igreja *"
+            value={formData.churchId}
+            onChange={(e) =>
+              setFormData({ ...formData, churchId: e.target.value, ministryId: '' })
+            }
+            options={churches.map((church) => ({
+              value: church.id,
+              label: church.name,
+            }))}
+            required
+          />
+          <Select
             label="Time *"
             value={formData.ministryId}
             onChange={(e) =>
               setFormData({ ...formData, ministryId: e.target.value })
             }
-            options={ministries.map((ministry) => ({
+            options={filteredMinistries.map((ministry) => ({
               value: ministry.id,
               label: ministry.name,
             }))}
             required
+            disabled={!formData.churchId || filteredMinistries.length === 0}
           />
           <Input
             label="Nome da Equipe *"

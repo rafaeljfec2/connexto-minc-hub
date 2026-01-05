@@ -126,10 +126,63 @@ export function createApiServices(api: AxiosInstance) {
     },
 
     ministriesService: {
-      getAll: () => api.get<Ministry[]>('/ministries'),
-      getById: (id: string) => api.get<Ministry>(`/ministries/${id}`),
-      create: (data: CreateEntity<Ministry>) => api.post<Ministry>('/ministries', data),
-      update: (id: string, data: Partial<Ministry>) => api.put<Ministry>(`/ministries/${id}`, data),
+      getAll: () =>
+        api.get<ApiResponse<Ministry[]>>('/ministries').then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Ministry[]>
+            return apiResponse.data ?? []
+          }
+          return (res.data as unknown as Ministry[]) ?? []
+        }),
+      getById: (id: string) =>
+        api.get<ApiResponse<Ministry>>(`/ministries/${id}`).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Ministry>
+            if (!apiResponse.data) {
+              throw new Error('Ministry not found')
+            }
+            return apiResponse.data
+          }
+          const ministry = res.data as unknown as Ministry
+          if (!ministry) {
+            throw new Error('Ministry not found')
+          }
+          return ministry
+        }),
+      create: (data: CreateEntity<Ministry>) =>
+        api.post<ApiResponse<Ministry>>('/ministries', data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Ministry>
+            if (!apiResponse.data) {
+              throw new Error('Failed to create ministry')
+            }
+            return apiResponse.data
+          }
+          const ministry = res.data as unknown as Ministry
+          if (!ministry) {
+            throw new Error('Failed to create ministry')
+          }
+          return ministry
+        }),
+      update: (id: string, data: Partial<Ministry>) =>
+        api.patch<ApiResponse<Ministry>>(`/ministries/${id}`, data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Ministry>
+            if (!apiResponse.data) {
+              throw new Error('Ministry not found')
+            }
+            return apiResponse.data
+          }
+          const ministry = res.data as unknown as Ministry
+          if (!ministry) {
+            throw new Error('Ministry not found')
+          }
+          return ministry
+        }),
+      delete: (id: string) =>
+        api.delete<ApiResponse<void>>(`/ministries/${id}`).then(() => {
+          // Delete doesn't return data
+        }),
     },
   }
 }

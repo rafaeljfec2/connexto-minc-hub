@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -9,21 +9,25 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
-import { useCrud } from '@/hooks/useCrud'
+import { useMinistries } from '@/hooks/useMinistries'
+import { useChurches } from '@/hooks/useChurches'
 import { useViewMode } from '@/hooks/useViewMode'
 import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
 import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
-import { Ministry, Church } from '@/types'
+import { Ministry } from '@minc-hub/shared/types'
 import { MinistryCard } from './ministries/components/MinistryCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
-import { MOCK_CHURCHES, MOCK_MINISTRIES } from '@/lib/mockData'
 
 export default function MinistriesPage() {
-  const { items: ministries, create, update, remove } = useCrud<Ministry>({
-    initialItems: MOCK_MINISTRIES,
-  })
-  const [churches] = useState<Church[]>(MOCK_CHURCHES)
+  const {
+    ministries,
+    isLoading,
+    createMinistry,
+    updateMinistry,
+    deleteMinistry,
+  } = useMinistries()
+  const { churches } = useChurches()
   const modal = useModal()
   const deleteModal = useModal()
   const [editingMinistry, setEditingMinistry] = useState<Ministry | null>(null)
@@ -36,9 +40,16 @@ export default function MinistriesPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    churchId: churches[0]?.id ?? '',
+    churchId: '',
     isActive: true,
   })
+
+  // Update churchId when churches are loaded
+  useEffect(() => {
+    if (churches.length > 0 && !formData.churchId) {
+      setFormData(prev => ({ ...prev, churchId: churches[0]?.id ?? '' }))
+    }
+  }, [churches, formData.churchId])
 
   const filteredMinistries = useMemo(() => {
     return ministries.filter((ministry) => {
@@ -87,16 +98,19 @@ export default function MinistriesPage() {
     })
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (editingMinistry) {
-      update(editingMinistry.id, formData)
-    } else {
-      create(formData)
+    try {
+      if (editingMinistry) {
+        await updateMinistry(editingMinistry.id, formData)
+      } else {
+        await createMinistry(formData)
+      }
+      handleCloseModal()
+    } catch (error) {
+      // Error already handled in the hook with toast
     }
-
-    handleCloseModal()
   }
 
   function handleDeleteClick(id: string) {
@@ -104,10 +118,14 @@ export default function MinistriesPage() {
     deleteModal.open()
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (deletingId) {
-      remove(deletingId)
-      setDeletingId(null)
+      try {
+        await deleteMinistry(deletingId)
+        setDeletingId(null)
+      } catch (error) {
+        // Error already handled in the hook with toast
+      }
     }
   }
 
@@ -122,8 +140,8 @@ export default function MinistriesPage() {
           churchName={getChurchName(ministry.churchId)}
           onEdit={handleOpenModal}
           onDelete={handleDeleteClick}
-          isUpdating={false}
-          isDeleting={false}
+          isUpdating={isLoading}
+          isDeleting={isLoading}
         />
       ))}
     </div>
@@ -170,7 +188,7 @@ export default function MinistriesPage() {
         createButtonLabel="Novo Time"
         onCreateClick={() => handleOpenModal()}
         hasFilters={hasFilters}
-        isEmpty={filteredMinistries.length === 0}
+        isEmpty={filteredMinistries.length === 0 && !isLoading}
         emptyTitle={
           hasFilters ? 'Nenhum time encontrado' : 'Nenhum time cadastrado'
         }
