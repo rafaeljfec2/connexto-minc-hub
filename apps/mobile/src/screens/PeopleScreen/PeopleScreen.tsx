@@ -121,7 +121,8 @@ export default function PeopleScreen() {
     deleteModal.close()
   }
 
-  function renderItem({ item }: { item: Person }) {
+  function renderItem(props: { item: Person }) {
+    const { item } = props
     const ministry = getMinistry(item, ministries)
     const team = getTeam(item, teams)
 

@@ -90,7 +90,8 @@ export default function MinistriesScreen() {
     deleteModal.close()
   }
 
-  function renderItem({ item }: { item: Ministry }) {
+  function renderItem(props: { item: Ministry }) {
+    const { item } = props
     const churchName = getChurchName(item, churches)
     return (
       <MinistryCard

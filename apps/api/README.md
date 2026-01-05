@@ -301,4 +301,5 @@ Para mais informações sobre migrations, consulte [MIGRATIONS.md](./MIGRATIONS.
 - [ENV_VARIABLES.md](./ENV_VARIABLES.md) - Documentação detalhada das variáveis de ambiente
 - [MIGRATIONS.md](./MIGRATIONS.md) - Guia completo sobre migrations
 - [API_ENDPOINTS.md](./API_ENDPOINTS.md) - Documentação completa de todos os endpoints
+- [CHAT_API.md](./CHAT_API.md) - Especificação completa da API de Chat (baseada na implementação mobile)
 - [scripts/setup.sh](./scripts/setup.sh) - Script automatizado de setup

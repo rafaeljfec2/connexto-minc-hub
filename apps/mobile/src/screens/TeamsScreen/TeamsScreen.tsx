@@ -97,7 +97,8 @@ export default function TeamsScreen() {
     deleteModal.close()
   }
 
-  function renderItem({ item }: { item: Team }) {
+  function renderItem(props: { item: Team }) {
+    const { item } = props
     const ministry = getMinistry(item)
 
     return (

@@ -668,6 +668,24 @@ Remove um check-in.
 
 ---
 
+## Chat (Comunicação)
+
+> **Nota:** Para especificações completas do Chat API, consulte [CHAT_API.md](./CHAT_API.md)
+
+O sistema de chat permite comunicação entre usuários do sistema. Os principais endpoints são:
+
+- `GET /api/chat/conversations` - Listar conversas do usuário
+- `GET /api/chat/conversations/:id/messages` - Obter mensagens de uma conversa
+- `POST /api/chat/conversations/:id/messages` - Enviar mensagem
+- `POST /api/chat/conversations` - Criar ou obter conversa
+- `PUT /api/chat/conversations/:id/messages/read` - Marcar mensagens como lidas
+- `GET /api/chat/users/:id/status` - Obter status online de usuário
+- `GET /api/chat/conversations/unread-count` - Contagem de mensagens não lidas
+
+Para detalhes completos, exemplos de requisições/respostas, estrutura de banco de dados e especificação de WebSocket, consulte [CHAT_API.md](./CHAT_API.md).
+
+---
+
 ## Health Check
 
 ### GET /health
