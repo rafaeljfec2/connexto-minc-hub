@@ -21,6 +21,8 @@ const apiClient = new ApiClient({
       window.location.href = '/login'
     }
   },
+  useCookies: true,
+  requestTokenInBody: false,
 })
 
 export { apiClient }

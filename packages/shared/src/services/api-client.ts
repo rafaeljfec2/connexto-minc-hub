@@ -6,6 +6,8 @@ export interface ApiClientConfig {
   setToken: (token: string) => void
   clearToken: () => void
   onUnauthorized?: () => void
+  useCookies?: boolean
+  requestTokenInBody?: boolean
 }
 
 export class ApiClient {
@@ -18,7 +20,9 @@ export class ApiClient {
       baseURL: config.baseURL,
       headers: {
         'Content-Type': 'application/json',
+        ...(config.requestTokenInBody && { 'X-Request-Token-Body': 'true' }),
       },
+      withCredentials: config.useCookies ?? false,
     })
 
     this.setupInterceptors()

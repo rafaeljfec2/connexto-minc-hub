@@ -27,7 +27,7 @@ async function bootstrap() {
   const corsOrigin = process.env.FRONTEND_URL ?? process.env.CORS_ORIGIN;
   const allowedOrigins = corsOrigin
     ? corsOrigin.split(',').map((origin) => origin.trim())
-    : ['http://localhost:5173', 'http://localhost:3000'];
+    : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001'];
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -41,7 +41,7 @@ async function bootstrap() {
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-Token-Body'],
     exposedHeaders: ['Set-Cookie'],
     maxAge: 86400,
   });

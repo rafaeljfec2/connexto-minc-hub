@@ -8,9 +8,9 @@ import {
   type ReactNode,
 } from 'react'
 import { User, UserRole } from '@minc-hub/shared/types'
+import { createAuthService } from '@minc-hub/shared/services'
 import { api, apiClient } from '@/lib/api'
-
-const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true' || !import.meta.env.VITE_API_URL
+import { useMockMode } from '@/hooks/useMockMode'
 
 const MOCK_USER: User = {
   id: 'mock-user-1',
@@ -26,7 +26,7 @@ interface AuthContextType {
   isLoading: boolean
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
   hasAnyRole: (roles: UserRole[]) => boolean
 }
 
@@ -39,18 +39,42 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const isMockMode = useMockMode()
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
+  const authService = useMemo(
+    () =>
+      createAuthService({
+        api,
+        storage: {
+          getToken: () => {
+            if (typeof window === 'undefined') return null
+            return localStorage.getItem('auth_token')
+          },
+          setToken: (token: string) => {
+            if (typeof window === 'undefined') return
+            localStorage.setItem('auth_token', token)
+          },
+          clearToken: () => {
+            if (typeof window === 'undefined') return
+            localStorage.removeItem('auth_token')
+          },
+        },
+        onUnauthorized: () => {
+          setUser(null)
+          if (globalThis.window !== undefined) {
+            globalThis.window.location.href = '/login'
+          }
+        },
+      }),
+    []
+  )
 
-  async function checkAuth() {
-    if (MOCK_MODE) {
+  const checkAuth = useCallback(async () => {
+    if (isMockMode) {
       const mockToken = localStorage.getItem('auth_token')
       if (mockToken) {
         setUser(MOCK_USER)
       } else {
-        // No modo mock, define o usuário automaticamente se não houver token
         const newMockToken = `mock-token-${Date.now()}`
         apiClient.setToken(newMockToken)
         setUser(MOCK_USER)
@@ -60,47 +84,61 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     try {
-      const token = localStorage.getItem('auth_token')
-      if (!token) {
-        setIsLoading(false)
-        return
-      }
-
-      const response = await api.get<{ user: User }>('/auth/me')
-      setUser(response.data.user)
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error)
-      localStorage.removeItem('auth_token')
       setUser(null)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [isMockMode, authService])
 
-  const login = useCallback(async (email: string, password: string) => {
-    if (MOCK_MODE) {
-      const mockToken = `mock-token-${Date.now()}`
-      apiClient.setToken(mockToken)
-      setUser(MOCK_USER)
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      if (isMockMode) {
+        const mockToken = `mock-token-${Date.now()}`
+        apiClient.setToken(mockToken)
+        setUser(MOCK_USER)
+        return
+      }
+
+      try {
+        const result = await authService.login(email, password)
+        setUser(result.user)
+      } catch (error) {
+        console.error('Erro ao fazer login:', error)
+        throw error
+      }
+    },
+    [isMockMode, authService]
+  )
+
+  const logout = useCallback(async () => {
+    if (isMockMode) {
+      localStorage.removeItem('auth_token')
+      setUser(null)
+      if (globalThis.window !== undefined) {
+        globalThis.window.location.href = '/login'
+      }
       return
     }
 
-    const response = await api.post<{ token: string; user: User }>('/auth/login', {
-      email,
-      password,
-    })
-
-    apiClient.setToken(response.data.token)
-    setUser(response.data.user)
-  }, [])
-
-  const logout = useCallback(() => {
-    localStorage.removeItem('auth_token')
-    setUser(null)
-    if (globalThis.window !== undefined) {
-      globalThis.window.location.href = '/login'
+    try {
+      await authService.logout()
+      setUser(null)
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error)
+      setUser(null)
+      if (globalThis.window !== undefined) {
+        globalThis.window.location.href = '/login'
+      }
     }
-  }, [])
+  }, [isMockMode, authService])
 
   const hasAnyRole = useCallback(
     (roles: UserRole[]): boolean => {

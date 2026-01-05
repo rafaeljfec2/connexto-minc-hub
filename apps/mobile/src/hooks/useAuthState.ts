@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { User } from '@minc-hub/shared/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { createAuthService } from '@minc-hub/shared/services'
 import { api, apiClient } from '@/lib/api'
 import { API_CONFIG, STORAGE_KEYS } from '@/constants/config'
 import { MOCK_USER } from '@/constants/mockData'
@@ -17,31 +18,93 @@ export function useAuthState(): UseAuthStateReturn {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const authService = useMemo(
+    () =>
+      createAuthService({
+        api,
+        storage: {
+          getToken: async () => {
+            try {
+              return await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
+            } catch (error) {
+              console.error('Error getting token:', error)
+              return null
+            }
+          },
+          setToken: async (token: string) => {
+            try {
+              await AsyncStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token)
+              apiClient.setToken(token)
+            } catch (error) {
+              console.error('Error setting token:', error)
+            }
+          },
+          clearToken: async () => {
+            try {
+              await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+              apiClient.setToken('')
+            } catch (error) {
+              console.error('Error clearing token:', error)
+            }
+          },
+        },
+      }),
+    []
+  )
+
   const checkAuth = useCallback(async () => {
     if (API_CONFIG.MOCK_MODE) {
       await checkMockAuth(setUser, setIsLoading)
       return
     }
 
-    await checkRealAuth(setUser, setIsLoading)
-  }, [])
+    try {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+    } catch (error) {
+      console.error('Error checking auth:', error)
+      setUser(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [authService])
 
   useEffect(() => {
     checkAuth()
   }, [checkAuth])
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(
+    async (email: string, password: string) => {
+      if (API_CONFIG.MOCK_MODE) {
+        await performMockLogin(setUser)
+        return
+      }
+
+      try {
+        const result = await authService.login(email, password)
+        setUser(result.user)
+      } catch (error) {
+        console.error('Error during login:', error)
+        throw error
+      }
+    },
+    [authService]
+  )
+
+  const logout = useCallback(async () => {
     if (API_CONFIG.MOCK_MODE) {
-      await performMockLogin(setUser)
+      await performLogout(setUser)
       return
     }
 
-    await performRealLogin(email, password, setUser)
-  }, [])
-
-  const logout = useCallback(async () => {
-    await performLogout(setUser)
-  }, [])
+    try {
+      await authService.logout()
+      setUser(null)
+    } catch (error) {
+      console.error('Error during logout:', error)
+      setUser(null)
+    }
+  }, [authService])
 
   return {
     user,
@@ -68,49 +131,14 @@ async function checkMockAuth(
   }
 }
 
-async function checkRealAuth(
-  setUser: (user: User | null) => void,
-  setIsLoading: (loading: boolean) => void
-): Promise<void> {
-  try {
-    const token = await AsyncStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)
-    if (!token) {
-      setIsLoading(false)
-      return
-    }
-
-    const response = await api.get<{ user: User }>('/auth/me')
-    setUser(response.data.user)
-  } catch (error) {
-    console.error('Error checking auth:', error)
-    await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
-    setUser(null)
-  } finally {
-    setIsLoading(false)
-  }
-}
-
 async function performMockLogin(setUser: (user: User | null) => void): Promise<void> {
   const mockToken = `mock-token-${Date.now()}`
   apiClient.setToken(mockToken)
   setUser(MOCK_USER)
 }
 
-async function performRealLogin(
-  email: string,
-  password: string,
-  setUser: (user: User | null) => void
-): Promise<void> {
-  const response = await api.post<{ token: string; user: User }>('/auth/login', {
-    email,
-    password,
-  })
-
-  apiClient.setToken(response.data.token)
-  setUser(response.data.user)
-}
-
 async function performLogout(setUser: (user: User | null) => void): Promise<void> {
   await AsyncStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN)
+  apiClient.setToken('')
   setUser(null)
 }

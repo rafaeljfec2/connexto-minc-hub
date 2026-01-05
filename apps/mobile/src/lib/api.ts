@@ -61,6 +61,8 @@ const apiClient = new ApiClient({
   onUnauthorized: () => {
     // Navigation will be handled by navigator
   },
+  useCookies: false,
+  requestTokenInBody: true,
 })
 
 loadTokenFromStorage().catch(() => {

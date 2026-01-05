@@ -73,8 +73,11 @@ export class AuthController {
     const result = await this.authService.login(user);
     this.setAuthCookies(res, result);
 
+    const shouldReturnToken = req.headers['x-request-token-body'] === 'true';
+
     return {
       user: result.user,
+      ...(shouldReturnToken && { token: result.token, refreshToken: result.refreshToken }),
     };
   }
 
