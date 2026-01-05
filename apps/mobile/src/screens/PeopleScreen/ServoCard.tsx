@@ -35,23 +35,21 @@ export function ServoCard({ person, ministry, team, onEdit, onDelete }: ServoCar
         </View>
       </View>
 
-      <View style={styles.badges}>
-        {ministry && (
-          <View style={[styles.badge, styles.badgePrimary]}>
-            <Text style={styles.badgeText}>{ministry.name}</Text>
-          </View>
-        )}
-        {team && (
-          <View style={[styles.badge, styles.badgeBlue]}>
-            <Text style={styles.badgeText}>{team.name}</Text>
-          </View>
-        )}
-        {!ministry && !team && (
-          <View style={[styles.badge, styles.badgeGray]}>
-            <Text style={styles.badgeText}>Sem time/equipe</Text>
-          </View>
-        )}
-      </View>
+      {ministry && (
+        <View style={[styles.badge, styles.badgePrimary]}>
+          <Text style={[styles.badgeText, styles.badgeTextPrimary]}>{ministry.name}</Text>
+        </View>
+      )}
+      {team && (
+        <View style={[styles.badge, styles.badgeBlue]}>
+          <Text style={[styles.badgeText, styles.badgeTextBlue]}>{team.name}</Text>
+        </View>
+      )}
+      {!ministry && !team && (
+        <View style={[styles.badge, styles.badgeGray]}>
+          <Text style={[styles.badgeText, styles.badgeTextGray]}>Sem time/equipe</Text>
+        </View>
+      )}
 
       {(onEdit || onDelete) && (
         <View style={styles.actions}>
@@ -135,8 +133,16 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: themeTypography.sizes.xs,
-    fontWeight: themeTypography.weights.medium,
-    color: themeColors.text.default,
+    fontWeight: themeTypography.weights.bold,
+  },
+  badgeTextPrimary: {
+    color: '#92400e', // Amber 800
+  },
+  badgeTextBlue: {
+    color: '#1e40af', // Blue 800
+  },
+  badgeTextGray: {
+    color: themeColors.dark[400],
   },
   actions: {
     flexDirection: 'row',

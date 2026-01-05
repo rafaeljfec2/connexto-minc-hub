@@ -10,9 +10,12 @@ import {
   FloatingActionButton,
   Button,
   Input,
+  Select,
+  Checkbox,
+  MultiSelect,
 } from '@/components'
 import { Team, Ministry } from '@minc-hub/shared/types'
-import { MOCK_TEAMS, MOCK_MINISTRIES } from '@/constants/mockData'
+import { MOCK_TEAMS, MOCK_MINISTRIES, MOCK_PEOPLE } from '@/constants/mockData'
 import { TeamCard } from './TeamCard'
 import { useListScreen } from '@/hooks/useListScreen'
 import { useCrud } from '@/hooks/useCrud'
@@ -20,7 +23,12 @@ import { useModal } from '@/hooks/useModal'
 import { themeSpacing } from '@/theme'
 
 export default function TeamsScreen() {
-  const { items: teams, create, update, remove } = useCrud<Team>({
+  const {
+    items: teams,
+    create,
+    update,
+    remove,
+  } = useCrud<Team>({
     initialItems: MOCK_TEAMS,
   })
   const [ministries] = useState<Ministry[]>(MOCK_MINISTRIES)
@@ -149,6 +157,13 @@ export default function TeamsScreen() {
         title={editingTeam ? 'Editar Equipe' : 'Nova Equipe'}
       >
         <ScrollView style={styles.form}>
+          <Select
+            label="Time *"
+            value={formData.ministryId}
+            onChange={value => setFormData({ ...formData, ministryId: value })}
+            options={ministries.filter(m => m.isActive).map(m => ({ label: m.name, value: m.id }))}
+            placeholder="Selecione um time"
+          />
           <Input
             label="Nome *"
             value={formData.name}
@@ -162,6 +177,20 @@ export default function TeamsScreen() {
             placeholder="Descrição da equipe"
             multiline
             numberOfLines={3}
+          />
+
+          <MultiSelect
+            label="Membros"
+            values={formData.memberIds}
+            onChange={values => setFormData({ ...formData, memberIds: values })}
+            options={MOCK_PEOPLE.map(p => ({ label: p.name, value: p.id }))}
+            placeholder="Selecione os membros"
+          />
+
+          <Checkbox
+            label="Equipe Ativa"
+            checked={formData.isActive}
+            onChange={checked => setFormData({ ...formData, isActive: checked })}
           />
           <View style={styles.modalActions}>
             <Button

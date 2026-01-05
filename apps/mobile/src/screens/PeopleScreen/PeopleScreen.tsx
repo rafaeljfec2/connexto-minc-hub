@@ -10,6 +10,7 @@ import {
   FloatingActionButton,
   Button,
   Input,
+  Select,
 } from '@/components'
 import { Person, Ministry, Team } from '@minc-hub/shared/types'
 import { MOCK_PEOPLE, MOCK_MINISTRIES, MOCK_TEAMS } from '@/constants/mockData'
@@ -202,6 +203,26 @@ export default function PeopleScreen() {
             placeholder="(11) 99999-9999"
             keyboardType="phone-pad"
           />
+
+          <Select
+            label="Time"
+            value={formData.ministryId}
+            onChange={value => setFormData({ ...formData, ministryId: value, teamId: '' })}
+            options={ministries.filter(m => m.isActive).map(m => ({ label: m.name, value: m.id }))}
+            placeholder="Selecione um time"
+          />
+
+          <Select
+            label="Equipe"
+            value={formData.teamId}
+            onChange={value => setFormData({ ...formData, teamId: value })}
+            options={teams
+              .filter(t => t.ministryId === formData.ministryId && t.isActive)
+              .map(t => ({ label: t.name, value: t.id }))}
+            placeholder="Selecione uma equipe"
+            disabled={!formData.ministryId}
+          />
+
           <Input
             label="Data de Nascimento"
             value={formData.birthDate}
