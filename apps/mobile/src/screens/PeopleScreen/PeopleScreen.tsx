@@ -1,19 +1,48 @@
 import React, { useState, useMemo } from 'react'
-import { View, StyleSheet } from 'react-native'
-import { Header, SearchBar, ListContainer, EmptyState } from '@/components'
+import { View, StyleSheet, ScrollView } from 'react-native'
+import {
+  Header,
+  SearchBar,
+  ListContainer,
+  EmptyState,
+  Modal,
+  ConfirmDialog,
+  FloatingActionButton,
+  Button,
+  Input,
+} from '@/components'
 import { Person, Ministry, Team } from '@minc-hub/shared/types'
 import { MOCK_PEOPLE, MOCK_MINISTRIES, MOCK_TEAMS } from '@/constants/mockData'
 import { ServoCard } from './ServoCard'
 import { useListScreen } from '@/hooks/useListScreen'
+import { useCrud } from '@/hooks/useCrud'
+import { useModal } from '@/hooks/useModal'
 import { getMinistry, getTeam } from '@/utils/entityHelpers'
+import { themeSpacing } from '@/theme'
 
 export default function PeopleScreen() {
-  const [people] = useState<Person[]>(MOCK_PEOPLE)
+  const { items: people, create, update, remove } = useCrud<Person>({
+    initialItems: MOCK_PEOPLE,
+  })
   const [ministries] = useState<Ministry[]>(MOCK_MINISTRIES)
   const [teams] = useState<Team[]>(MOCK_TEAMS)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterMinistry, setFilterMinistry] = useState<string>('all')
   const [filterTeam, setFilterTeam] = useState<string>('all')
+  const modal = useModal()
+  const deleteModal = useModal()
+  const [editingPerson, setEditingPerson] = useState<Person | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    birthDate: '',
+    address: '',
+    notes: '',
+    ministryId: '',
+    teamId: '',
+  })
 
   const availableTeams = useMemo(() => {
     if (filterMinistry === 'all') {
@@ -40,12 +69,70 @@ export default function PeopleScreen() {
     },
   })
 
-  function handleEdit(person: Person) {
-    // TODO: Implementar edição
+  function handleOpenModal(person?: Person) {
+    if (person) {
+      setEditingPerson(person)
+      setFormData({
+        name: person.name,
+        email: person.email ?? '',
+        phone: person.phone ?? '',
+        birthDate: person.birthDate ?? '',
+        address: person.address ?? '',
+        notes: person.notes ?? '',
+        ministryId: person.ministryId ?? '',
+        teamId: person.teamId ?? '',
+      })
+    } else {
+      setEditingPerson(null)
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        birthDate: '',
+        address: '',
+        notes: '',
+        ministryId: '',
+        teamId: '',
+      })
+    }
+    modal.open()
   }
 
-  function handleDelete(id: string) {
-    // TODO: Implementar deleção
+  function handleCloseModal() {
+    modal.close()
+    setEditingPerson(null)
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      birthDate: '',
+      address: '',
+      notes: '',
+      ministryId: '',
+      teamId: '',
+    })
+  }
+
+  async function handleSubmit() {
+    if (editingPerson) {
+      await update(editingPerson.id, formData)
+    } else {
+      await create(formData)
+    }
+    handleCloseModal()
+  }
+
+  function handleDeleteClick(id: string) {
+    setDeletingId(id)
+    deleteModal.open()
+  }
+
+  async function handleDeleteConfirm() {
+    if (deletingId) {
+      await remove(deletingId)
+      setDeletingId(null)
+    }
+    deleteModal.close()
   }
 
   function renderItem({ item }: { item: Person }) {
@@ -57,8 +144,8 @@ export default function PeopleScreen() {
         person={item}
         ministry={ministry}
         team={team}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
+        onEdit={() => handleOpenModal(item)}
+        onDelete={() => handleDeleteClick(item.id)}
       />
     )
   }
@@ -88,6 +175,84 @@ export default function PeopleScreen() {
         onRefresh={handleRefresh}
         emptyComponent={emptyComponent}
       />
+      <FloatingActionButton onPress={() => handleOpenModal()} />
+
+      <Modal
+        visible={modal.visible}
+        onClose={handleCloseModal}
+        title={editingPerson ? 'Editar Servo' : 'Novo Servo'}
+      >
+        <ScrollView style={styles.form}>
+          <Input
+            label="Nome *"
+            value={formData.name}
+            onChangeText={text => setFormData({ ...formData, name: text })}
+            placeholder="Nome completo"
+          />
+          <Input
+            label="Email"
+            value={formData.email}
+            onChangeText={text => setFormData({ ...formData, email: text })}
+            placeholder="email@exemplo.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Input
+            label="Telefone"
+            value={formData.phone}
+            onChangeText={text => setFormData({ ...formData, phone: text })}
+            placeholder="(11) 99999-9999"
+            keyboardType="phone-pad"
+          />
+          <Input
+            label="Data de Nascimento"
+            value={formData.birthDate}
+            onChangeText={text => setFormData({ ...formData, birthDate: text })}
+            placeholder="DD/MM/AAAA"
+          />
+          <Input
+            label="Endereço"
+            value={formData.address}
+            onChangeText={text => setFormData({ ...formData, address: text })}
+            placeholder="Endereço completo"
+          />
+          <Input
+            label="Observações"
+            value={formData.notes}
+            onChangeText={text => setFormData({ ...formData, notes: text })}
+            placeholder="Observações sobre o servo"
+            multiline
+            numberOfLines={3}
+          />
+          <View style={styles.modalActions}>
+            <Button
+              title="Cancelar"
+              onPress={handleCloseModal}
+              variant="secondary"
+              style={styles.cancelButton}
+            />
+            <Button
+              title={editingPerson ? 'Salvar' : 'Criar'}
+              onPress={handleSubmit}
+              variant="primary"
+              style={styles.submitButton}
+            />
+          </View>
+        </ScrollView>
+      </Modal>
+
+      <ConfirmDialog
+        visible={deleteModal.visible}
+        onClose={() => {
+          deleteModal.close()
+          setDeletingId(null)
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar Exclusão"
+        message="Tem certeza que deseja excluir este servo? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+      />
     </View>
   )
 }
@@ -96,5 +261,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
+  },
+  form: {
+    flex: 1,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: themeSpacing.sm,
+    marginTop: themeSpacing.md,
+  },
+  cancelButton: {
+    flex: 1,
+  },
+  submitButton: {
+    flex: 1,
   },
 })
