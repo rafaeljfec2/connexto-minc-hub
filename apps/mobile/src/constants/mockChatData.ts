@@ -1,5 +1,3 @@
-import { themeColors } from '@/theme'
-
 export interface Message {
   id: string
   text: string

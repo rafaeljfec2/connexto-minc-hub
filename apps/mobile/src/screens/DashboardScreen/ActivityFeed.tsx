@@ -5,7 +5,7 @@ import { Card } from '@/components'
 import { themeSpacing, themeTypography } from '@/theme'
 import { useTheme } from '@/contexts/ThemeContext'
 
-interface ActivityItem {
+export interface ActivityItem {
   id: string
   title: string
   description: string

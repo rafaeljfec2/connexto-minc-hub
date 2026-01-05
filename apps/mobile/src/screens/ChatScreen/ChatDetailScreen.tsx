@@ -17,6 +17,8 @@ import { ChatBubble } from './components/ChatBubble'
 import { ChatInput } from './components/ChatInput'
 import { useTheme } from '@/contexts/ThemeContext'
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
 export default function ChatDetailScreen() {
   const route = useRoute()
   const navigation = useNavigation()
@@ -25,6 +27,7 @@ export default function ChatDetailScreen() {
     otherUserId: string
   }
   const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
 
   const otherUser = MOCK_USERS[otherUserId]
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES[conversationId] || [])
@@ -54,13 +57,14 @@ export default function ChatDetailScreen() {
   const headerStyle = {
     backgroundColor: colors.card.background,
     borderBottomColor: colors.card.border,
+    paddingTop: Math.max(insets.top, 20),
   }
 
   return (
     <KeyboardAvoidingView
       style={[styles.container, containerStyle]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      keyboardVerticalOffset={0}
     >
       <View style={[styles.header, headerStyle]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -111,7 +115,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: themeSpacing.md,
-    paddingTop: themeSpacing.xl, // For status bar
     borderBottomWidth: 1,
   },
   backButton: {

@@ -113,7 +113,7 @@ export function Select({
                   style={[
                     styles.optionItem,
                     { borderBottomColor: colors.card.border },
-                    item.value === value && { backgroundColor: colors.primary + '15' },
+                    item.value === value && { backgroundColor: `${colors.primary}15` },
                   ]}
                   onPress={() => handleSelect(item.value)}
                 >

@@ -2,7 +2,6 @@ import React from 'react'
 import { TouchableOpacity, Text, ActivityIndicator } from 'react-native'
 import type { ViewStyle, TextStyle } from 'react-native'
 import { useTheme } from '@/contexts/ThemeContext'
-import { themeColors, getThemeColors } from '@/theme'
 import { themeSpacing, themeTypography } from '@/theme'
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline'

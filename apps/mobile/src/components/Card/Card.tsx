@@ -2,7 +2,6 @@ import React, { type ReactNode } from 'react'
 import { View } from 'react-native'
 import type { ViewStyle } from 'react-native'
 import { useTheme } from '@/contexts/ThemeContext'
-import { getThemeColors } from '@/theme/colors'
 import { themeSpacing } from '@/theme'
 
 interface CardProps {

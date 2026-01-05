@@ -4,6 +4,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Ionicons } from '@expo/vector-icons'
 import type { RootStackParamList, MainTabParamList } from './navigator.types'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import LoginScreen from '@/screens/LoginScreen'
 import DashboardScreen from '@/screens/DashboardScreen'
@@ -24,8 +26,6 @@ import CommunicationScreen from '@/screens/CommunicationScreen'
 const Stack = createNativeStackNavigator<RootStackParamList>()
 const Tab = createBottomTabNavigator<MainTabParamList>()
 
-import { useTheme } from '@/contexts/ThemeContext'
-
 const DashboardIcon = ({ color, size }: { color: string; size: number }) => (
   <Ionicons name="home" size={size} color={color} />
 )
@@ -44,6 +44,7 @@ const ProfileIcon = ({ color, size }: { color: string; size: number }) => (
 
 function MainTabs() {
   const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
 
   return (
     <Tab.Navigator
@@ -55,9 +56,9 @@ function MainTabs() {
           backgroundColor: colors.background.default,
           borderTopWidth: 1,
           borderTopColor: colors.card.border,
-          paddingBottom: 8,
+          paddingBottom: 8 + insets.bottom,
           paddingTop: 8,
-          height: 60,
+          height: 60 + insets.bottom,
         },
       }}
     >

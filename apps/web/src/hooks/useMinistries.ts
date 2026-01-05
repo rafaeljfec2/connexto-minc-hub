@@ -3,6 +3,7 @@ import { Ministry } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
+import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
 import { ApiResponse } from '@minc-hub/shared/types'
 
@@ -37,12 +38,13 @@ export function useMinistries(): UseMinistriesReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
+  const { selectedChurch } = useChurch()
 
   const fetchMinistries = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const data = await apiServices.ministriesService.getAll()
+      const data = await apiServices.ministriesService.getAll(selectedChurch?.id)
       setMinistries(data)
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to fetch ministries')
@@ -51,7 +53,7 @@ export function useMinistries(): UseMinistriesReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [selectedChurch?.id])
 
   const getMinistryById = useCallback(async (id: string): Promise<Ministry | null> => {
     try {
@@ -137,12 +139,16 @@ export function useMinistries(): UseMinistriesReturn {
     await fetchMinistries()
   }, [fetchMinistries])
 
-  // Auto-fetch on mount
+  // Auto-fetch on mount and when church changes
   useEffect(() => {
-    fetchMinistries().catch(() => {
-      // Error already handled in fetchMinistries
-    })
-  }, [fetchMinistries])
+    if (selectedChurch) {
+      fetchMinistries().catch(() => {
+        // Error already handled in fetchMinistries
+      })
+    } else {
+      setMinistries([])
+    }
+  }, [fetchMinistries, selectedChurch])
 
   return {
     ministries,

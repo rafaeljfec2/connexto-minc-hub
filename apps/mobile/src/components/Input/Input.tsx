@@ -2,7 +2,6 @@ import React from 'react'
 import { TextInput, View, Text } from 'react-native'
 import type { TextInputProps, ViewStyle, TextStyle, StyleProp } from 'react-native'
 import { useTheme } from '@/contexts/ThemeContext'
-import { getThemeColors } from '@/theme/colors'
 import { themeSpacing, themeTypography } from '@/theme'
 
 interface InputProps extends TextInputProps {
@@ -12,7 +11,7 @@ interface InputProps extends TextInputProps {
 }
 
 export function Input({ label, error, containerStyle, style, ...props }: InputProps) {
-  const { theme, colors } = useTheme()
+  const { colors } = useTheme()
 
   const inputStyle: StyleProp<TextStyle> = [
     {

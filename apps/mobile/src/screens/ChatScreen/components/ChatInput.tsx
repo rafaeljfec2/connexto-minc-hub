@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { themeSpacing, themeTypography } from '@/theme'
 import { useTheme } from '@/contexts/ThemeContext'
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
 interface ChatInputProps {
   onSend: (text: string) => void
 }
@@ -11,6 +13,7 @@ interface ChatInputProps {
 export function ChatInput({ onSend }: Readonly<ChatInputProps>) {
   const [text, setText] = useState('')
   const { colors } = useTheme()
+  const insets = useSafeAreaInsets()
 
   function handleSend() {
     if (text.trim()) {
@@ -23,7 +26,11 @@ export function ChatInput({ onSend }: Readonly<ChatInputProps>) {
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.card.background, borderTopColor: colors.card.border },
+        {
+          backgroundColor: colors.card.background,
+          borderTopColor: colors.card.border,
+          paddingBottom: Math.max(insets.bottom, 16),
+        },
       ]}
     >
       <TouchableOpacity style={styles.attachButton}>

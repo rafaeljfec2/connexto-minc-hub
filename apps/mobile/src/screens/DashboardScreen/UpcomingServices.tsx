@@ -35,7 +35,7 @@ export function UpcomingServices({ services = [] }: UpcomingServicesProps) {
       >
         {services.map(service => (
           <Card key={service.id} style={styles.card}>
-            <View style={[styles.dateBadge, { backgroundColor: colors.primary + '15' }]}>
+            <View style={[styles.dateBadge, { backgroundColor: `${colors.primary}15` }]}>
               <Text style={[styles.dayText, { color: colors.primary }]}>{service.day}</Text>
               <Text style={[styles.monthText, { color: colors.primary }]}>{service.month}</Text>
             </View>

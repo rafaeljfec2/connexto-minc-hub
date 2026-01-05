@@ -233,5 +233,3 @@ export default function PeopleScreen() {
     />
   )
 }
-
-const styles = {}

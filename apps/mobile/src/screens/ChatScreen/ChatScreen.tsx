@@ -2,17 +2,23 @@ import React, { useState } from 'react'
 import { View, StyleSheet, FlatList } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Header } from '@/components'
-import { themeColors } from '@/theme'
 import { MOCK_CONVERSATIONS } from '@/constants/mockChatData'
 import { ConversationItem } from './components/ConversationItem'
+
+interface Participant {
+  id: string
+  name: string
+  avatar: string
+}
 
 export default function ChatScreen() {
   const navigation = useNavigation()
   const [conversations] = useState(MOCK_CONVERSATIONS)
 
-  function handleConversationPress(conversationId: string, participants: any[]) {
-    const otherUserId = participants.find(p => p.id !== 'me')?.id
+  function handleConversationPress(conversationId: string, participants: Participant[]) {
+    const otherUserId = participants.find(p => p.id !== 'me')?.id || ''
     // TypeScript will complain because we haven't updated params yet, we'll fix that next
+
     navigation.navigate('ChatDetail', {
       conversationId,
       otherUserId,

@@ -42,7 +42,7 @@ export function ServoCard({ person, ministry, team, onEdit, onDelete }: Readonly
         <View
           style={[
             styles.badge,
-            { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' },
+            { backgroundColor: `${colors.primary}15`, borderColor: `${colors.primary}30` },
           ]}
         >
           <Text style={[styles.badgeText, { color: colors.primary }]}>{ministry.name}</Text>

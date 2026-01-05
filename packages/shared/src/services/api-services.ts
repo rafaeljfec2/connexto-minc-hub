@@ -31,7 +31,10 @@ export function createApiServices(api: AxiosInstance) {
     },
 
     servicesService: {
-      getAll: () => api.get<Service[]>('/services'),
+      getAll: (churchId?: string) =>
+        api.get<Service[]>('/services', {
+          params: churchId ? { churchId } : undefined,
+        }),
       getById: (id: string) => api.get<Service>(`/services/${id}`),
       create: (data: CreateEntity<Service>) => api.post<Service>('/services', data),
       update: (id: string, data: Partial<Service>) => api.put<Service>(`/services/${id}`, data),
@@ -126,14 +129,18 @@ export function createApiServices(api: AxiosInstance) {
     },
 
     ministriesService: {
-      getAll: () =>
-        api.get<ApiResponse<Ministry[]>>('/ministries').then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Ministry[]>
-            return apiResponse.data ?? []
-          }
-          return (res.data as unknown as Ministry[]) ?? []
-        }),
+      getAll: (churchId?: string) =>
+        api
+          .get<ApiResponse<Ministry[]>>('/ministries', {
+            params: churchId ? { churchId } : undefined,
+          })
+          .then(res => {
+            if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+              const apiResponse = res.data as ApiResponse<Ministry[]>
+              return apiResponse.data ?? []
+            }
+            return (res.data as unknown as Ministry[]) ?? []
+          }),
       getById: (id: string) =>
         api.get<ApiResponse<Ministry>>(`/ministries/${id}`).then(res => {
           if (res.data && typeof res.data === 'object' && 'success' in res.data) {

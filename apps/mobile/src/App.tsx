@@ -34,12 +34,18 @@ function AppContent() {
   )
 }
 
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+
+// ... existing imports
+
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   )
 }

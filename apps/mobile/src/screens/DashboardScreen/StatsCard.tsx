@@ -18,7 +18,9 @@ export function StatsCard({ title, value, icon, trend }: StatsCardProps) {
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
+        <View
+          style={[styles.iconContainer, { backgroundColor: `${colors.primary || '#f97316'}15` }]}
+        >
           <Ionicons name={icon} size={20} color={colors.primary || '#f97316'} />
         </View>
         {trend && <Text style={[styles.trend, { color: colors.primary }]}>{trend}</Text>}
