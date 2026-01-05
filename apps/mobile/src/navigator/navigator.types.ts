@@ -11,6 +11,7 @@ export type RootStackParamList = {
   Services: undefined
   MonthlySchedule: undefined
   Communication: undefined
+  ChatDetail: { conversationId: string; otherUserId: string }
 }
 
 export type MainTabParamList = {
@@ -36,6 +37,6 @@ export type AuthStackParamList = {
 
 declare global {
   namespace ReactNavigation {
-    type RootParamList = RootStackParamList
+    interface RootParamList extends RootStackParamList {}
   }
 }

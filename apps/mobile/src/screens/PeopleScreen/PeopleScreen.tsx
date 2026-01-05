@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { View } from 'react-native'
-import { Button, Input, Select, CrudScreen } from '@/components'
+import { Input, Select, CrudScreen } from '@/components'
 import { Person, Ministry, Team } from '@minc-hub/shared/types'
 import { MOCK_PEOPLE, MOCK_MINISTRIES, MOCK_TEAMS } from '@/constants/mockData'
 import { ServoCard } from './ServoCard'
@@ -8,7 +7,6 @@ import { useListScreen } from '@/hooks/useListScreen'
 import { useCrud } from '@/hooks/useCrud'
 import { useModal } from '@/hooks/useModal'
 import { getMinistry, getTeam } from '@/utils/entityHelpers'
-import { themeSpacing } from '@/theme'
 
 export default function PeopleScreen() {
   const {

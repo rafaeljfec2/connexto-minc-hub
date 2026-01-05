@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { View } from 'react-native'
 import { Input, Select, Checkbox, MultiSelect, CrudScreen } from '@/components'
 import { Team, Ministry } from '@minc-hub/shared/types'
 import { MOCK_TEAMS, MOCK_MINISTRIES, MOCK_PEOPLE } from '@/constants/mockData'
@@ -7,7 +6,6 @@ import { TeamCard } from './TeamCard'
 import { useListScreen } from '@/hooks/useListScreen'
 import { useCrud } from '@/hooks/useCrud'
 import { useModal } from '@/hooks/useModal'
-import { themeSpacing } from '@/theme'
 
 export default function TeamsScreen() {
   const {

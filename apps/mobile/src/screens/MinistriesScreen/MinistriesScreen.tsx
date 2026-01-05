@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { View } from 'react-native'
-import { Button, Input, CrudScreen } from '@/components'
+import { Input, CrudScreen } from '@/components'
 import { Ministry, Church } from '@minc-hub/shared/types'
 import { MOCK_MINISTRIES, MOCK_CHURCHES } from '@/constants/mockData'
 import { MinistryCard } from './MinistryCard'
@@ -8,7 +7,6 @@ import { useListScreen } from '@/hooks/useListScreen'
 import { useCrud } from '@/hooks/useCrud'
 import { useModal } from '@/hooks/useModal'
 import { getChurchName } from '@/utils/entityHelpers'
-import { themeSpacing } from '@/theme'
 
 export default function MinistriesScreen() {
   const {

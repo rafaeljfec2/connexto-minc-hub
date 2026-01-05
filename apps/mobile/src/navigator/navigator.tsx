@@ -10,6 +10,7 @@ import DashboardScreen from '@/screens/DashboardScreen'
 import SchedulesScreen from '@/screens/SchedulesScreen'
 import { CheckinScreen } from '@/screens/QRCodeScannerScreen'
 import ChatScreen from '@/screens/ChatScreen'
+import ChatDetailScreen from '@/screens/ChatScreen/ChatDetailScreen'
 import ProfileScreen from '@/screens/ProfileScreen'
 import ChurchesScreen from '@/screens/ChurchesScreen'
 import MinistriesScreen from '@/screens/MinistriesScreen'
@@ -153,7 +154,10 @@ export function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
-        <Stack.Screen name="Main" component={MainTabs} />
+        <>
+          <Stack.Screen name="Main" component={MainTabs} />
+          <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
+        </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
       )}
