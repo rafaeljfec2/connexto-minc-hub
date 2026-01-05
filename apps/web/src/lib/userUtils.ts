@@ -1,7 +1,8 @@
-import { UserRole } from '@/types'
+import { UserRole } from '@minc-hub/shared/types'
 
 export const ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
-  { value: UserRole.PASTOR, label: 'PASTORr' },
+  { value: UserRole.ADMIN, label: 'Administrador' },
+  { value: UserRole.PASTOR, label: 'Pastor' },
   { value: UserRole.LIDER_DE_TIME, label: 'Líder de Time' },
   { value: UserRole.LIDER_DE_EQUIPE, label: 'Líder de Equipe' },
   { value: UserRole.SERVO, label: 'Servo' },
@@ -9,7 +10,8 @@ export const ROLE_OPTIONS: Array<{ value: UserRole; label: string }> = [
 
 export function getRoleLabel(role: UserRole): string {
   const labels: Record<UserRole, string> = {
-    [UserRole.PASTOR]: 'PASTORr',
+    [UserRole.ADMIN]: 'Administrador',
+    [UserRole.PASTOR]: 'Pastor',
     [UserRole.LIDER_DE_TIME]: 'Líder de Time',
     [UserRole.LIDER_DE_EQUIPE]: 'Líder de Equipe',
     [UserRole.SERVO]: 'Servo',
@@ -19,6 +21,8 @@ export function getRoleLabel(role: UserRole): string {
 
 export function getRoleColor(role: UserRole): string {
   const colors: Record<UserRole, string> = {
+    [UserRole.ADMIN]:
+      'bg-gray-500/10 text-gray-600 border-gray-500/20 dark:bg-gray-500/20 dark:text-gray-400 dark:border-gray-500/30',
     [UserRole.PASTOR]:
       'bg-red-500/10 text-red-600 border-red-500/20 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30',
     [UserRole.LIDER_DE_TIME]:
