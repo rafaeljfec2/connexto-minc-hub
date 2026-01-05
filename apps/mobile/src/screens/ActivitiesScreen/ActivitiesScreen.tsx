@@ -19,7 +19,7 @@ export default function ActivitiesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themeColors.background.default,
+    backgroundColor: 'transparent',
   },
   scrollView: {
     flex: 1,

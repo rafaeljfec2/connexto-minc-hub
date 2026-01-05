@@ -70,7 +70,7 @@ export default function CheckinScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themeColors.background.default,
+    backgroundColor: 'transparent',
   },
   camera: {
     flex: 1,

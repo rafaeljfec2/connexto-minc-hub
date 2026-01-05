@@ -104,7 +104,7 @@ export default function SchedulesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: themeColors.background.default,
+    backgroundColor: 'transparent',
   },
   filters: {
     paddingHorizontal: themeSpacing.md,
