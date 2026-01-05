@@ -1,12 +1,12 @@
-import type { RootStackParamList } from '@/navigator/navigator.types'
+import type { MainTabParamList } from '@/navigator/navigator.types'
 import type { MenuItem } from './menuItems'
 
-export function getScreenNameForMenuItem(item: MenuItem): keyof RootStackParamList | null {
+export function getScreenNameForMenuItem(item: MenuItem): keyof MainTabParamList | null {
   if (item.screen) {
     return null
   }
 
-  const screenMap: Record<string, keyof RootStackParamList> = {
+  const screenMap: Record<string, keyof MainTabParamList> = {
     churches: 'Churches',
     ministries: 'Ministries',
     teams: 'Teams',

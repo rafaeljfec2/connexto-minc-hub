@@ -1,8 +1,10 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import type { CompositeNavigationProp } from '@react-navigation/native'
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import type { RootStackParamList } from '@/navigator/navigator.types'
+import type { RootStackParamList, MainTabParamList } from '@/navigator/navigator.types'
 import { themeColors, themeSpacing } from '@/theme'
 import { MENU_ITEMS, type MenuItem } from './menuItems'
 import { getScreenNameForMenuItem } from './navigationHelpers'
@@ -14,7 +16,10 @@ interface DrawerMenuProps {
   onClose: () => void
 }
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>
 
 export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
   const navigation = useNavigation<NavigationProp>()
@@ -23,8 +28,10 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
     onClose()
 
     if (item.screen) {
-      navigation.navigate('Main', { screen: item.screen })
+      // Navigate to a tab screen
+      navigation.navigate(item.screen)
     } else {
+      // Navigate to a hidden tab screen
       const screenName = getScreenNameForMenuItem(item)
       if (screenName) {
         navigation.navigate(screenName)
