@@ -5,30 +5,27 @@ import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { CheckboxList } from '@/components/ui/CheckboxList'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
-import { useCrud } from '@/hooks/useCrud'
+import { useTeams } from '@/hooks/useTeams'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useChurches } from '@/hooks/useChurches'
 import { useMinistries } from '@/hooks/useMinistries'
+import { useChurch } from '@/contexts/ChurchContext'
 import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
 import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
-import { Team, Person } from '@minc-hub/shared/types'
+import { Team } from '@minc-hub/shared/types'
 import { TeamCard } from './teams/components/TeamCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
-import { MOCK_PEOPLE, MOCK_TEAMS } from '@/lib/mockData'
 
 export default function TeamsPage() {
-  const { items: teams, create, update, remove } = useCrud<Team>({
-    initialItems: MOCK_TEAMS,
-  })
-  const [people] = useState<Person[]>(MOCK_PEOPLE)
+  const { teams, isLoading, createTeam, updateTeam, deleteTeam } = useTeams()
   const { churches } = useChurches()
   const { ministries } = useMinistries()
+  const { selectedChurch } = useChurch()
   const modal = useModal()
   const deleteModal = useModal()
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
@@ -41,19 +38,25 @@ export default function TeamsPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    churchId: '',
+    churchId: selectedChurch?.id ?? '',
     ministryId: '',
-    memberIds: [] as string[],
     isActive: true,
   })
 
   // Filter ministries by selected church
   const filteredMinistries = useMemo(() => {
-    if (!formData.churchId) {
-      return ministries
+    if (!selectedChurch) {
+      return []
     }
-    return ministries.filter(ministry => ministry.churchId === formData.churchId)
-  }, [ministries, formData.churchId])
+    return ministries.filter(ministry => ministry.churchId === selectedChurch.id)
+  }, [ministries, selectedChurch])
+
+  // Update churchId when selectedChurch changes
+  useEffect(() => {
+    if (selectedChurch) {
+      setFormData(prev => ({ ...prev, churchId: selectedChurch.id }))
+    }
+  }, [selectedChurch])
 
   // Update ministryId when church changes or ministries are loaded
   useEffect(() => {
@@ -68,7 +71,7 @@ export default function TeamsPage() {
   }, [filteredMinistries, formData.ministryId])
 
   const filteredTeams = useMemo(() => {
-    return teams.filter((team) => {
+    return teams.filter(team => {
       const matchesSearch =
         searchTerm === '' ||
         team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -79,7 +82,7 @@ export default function TeamsPage() {
   }, [teams, searchTerm])
 
   function getMinistryName(ministryId: string) {
-    return ministries.find((m) => m.id === ministryId)?.name ?? 'Time não encontrado'
+    return ministries.find(m => m.id === ministryId)?.name ?? 'Time não encontrado'
   }
 
   function handleOpenModal(team?: Team) {
@@ -91,7 +94,6 @@ export default function TeamsPage() {
         description: team.description ?? '',
         churchId: teamMinistry?.churchId ?? '',
         ministryId: team.ministryId,
-        memberIds: team.memberIds,
         isActive: team.isActive,
       })
     } else {
@@ -99,9 +101,8 @@ export default function TeamsPage() {
       setFormData({
         name: '',
         description: '',
-        churchId: churches[0]?.id ?? '',
+        churchId: selectedChurch?.id ?? '',
         ministryId: '',
-        memberIds: [],
         isActive: true,
       })
     }
@@ -114,23 +115,28 @@ export default function TeamsPage() {
     setFormData({
       name: '',
       description: '',
-      churchId: churches[0]?.id ?? '',
+      churchId: selectedChurch?.id ?? '',
       ministryId: '',
-      memberIds: [],
       isActive: true,
     })
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (editingTeam) {
-      update(editingTeam.id, formData)
-    } else {
-      create(formData)
+    try {
+      // Remove churchId - backend doesn't accept this field
+      // memberIds is already removed from formData
+      const { churchId, ...teamData } = formData
+      if (editingTeam) {
+        await updateTeam(editingTeam.id, teamData)
+      } else {
+        await createTeam(teamData)
+      }
+      handleCloseModal()
+    } catch (error) {
+      // Error already handled in the hook with toast
     }
-
-    handleCloseModal()
   }
 
   function handleDeleteClick(id: string) {
@@ -138,76 +144,67 @@ export default function TeamsPage() {
     deleteModal.open()
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (deletingId) {
-      remove(deletingId)
-      setDeletingId(null)
+      try {
+        await deleteTeam(deletingId)
+        setDeletingId(null)
+      } catch (error) {
+        // Error already handled in the hook with toast
+      }
     }
-  }
-
-  function toggleMember(memberId: string) {
-    setFormData({
-      ...formData,
-      memberIds: formData.memberIds.includes(memberId)
-        ? formData.memberIds.filter((id) => id !== memberId)
-        : [...formData.memberIds, memberId],
-    })
   }
 
   const hasFilters = searchTerm !== ''
 
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {filteredTeams.map((team) => (
-        <TeamCard
-          key={team.id}
-          team={team}
-          ministryName={getMinistryName(team.ministryId)}
-          onEdit={handleOpenModal}
-          onDelete={handleDeleteClick}
-          isUpdating={false}
-          isDeleting={false}
-        />
-      ))}
+      {filteredTeams.map(team => {
+        if (!team?.id) return null
+        return (
+          <TeamCard
+            key={team.id}
+            team={team}
+            ministryName={getMinistryName(team.ministryId)}
+            onEdit={handleOpenModal}
+            onDelete={handleDeleteClick}
+            isUpdating={isLoading}
+            isDeleting={isLoading}
+          />
+        )
+      })}
     </div>
   )
 
-  const listViewRows = filteredTeams.map((team) => (
-    <TableRow key={team.id}>
-      <TableCell>
-        <span className="font-medium">{team.name}</span>
-      </TableCell>
-      <TableCell>{getMinistryName(team.ministryId)}</TableCell>
-      <TableCell>{team.description ?? '-'}</TableCell>
-      <TableCell>
-        {team.memberIds.length} membro{team.memberIds.length !== 1 ? 's' : ''}
-      </TableCell>
-      <TableCell>
-        <StatusBadge status={team.isActive ? 'active' : 'inactive'}>
-          {team.isActive ? 'Ativa' : 'Inativa'}
-        </StatusBadge>
-      </TableCell>
-      <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(team)}>
-            <EditIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => handleDeleteClick(team.id)}
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
-  ))
-
-  const checkboxItems = people.map((person) => ({
-    id: person.id,
-    label: person.name,
-  }))
+  const listViewRows = filteredTeams
+    .filter(team => team?.id)
+    .map(team => (
+      <TableRow key={team.id}>
+        <TableCell>
+          <span className="font-medium">{team.name}</span>
+        </TableCell>
+        <TableCell>{getMinistryName(team.ministryId)}</TableCell>
+        <TableCell>{team.description ?? '-'}</TableCell>
+        <TableCell>
+          {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) !== 1 ? 's' : ''}
+        </TableCell>
+        <TableCell>
+          <StatusBadge status={team.isActive ? 'active' : 'inactive'}>
+            {team.isActive ? 'Ativa' : 'Inativa'}
+          </StatusBadge>
+        </TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={() => handleOpenModal(team)}>
+              <EditIcon className="h-4 w-4" />
+            </Button>
+            <Button variant="danger" size="sm" onClick={() => handleDeleteClick(team.id)}>
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
 
   return (
     <>
@@ -217,10 +214,8 @@ export default function TeamsPage() {
         createButtonLabel="Nova Equipe"
         onCreateClick={() => handleOpenModal()}
         hasFilters={hasFilters}
-        isEmpty={filteredTeams.length === 0}
-        emptyTitle={
-          hasFilters ? 'Nenhuma equipe encontrada' : 'Nenhuma equipe cadastrada'
-        }
+        isEmpty={filteredTeams.length === 0 && !isLoading}
+        emptyTitle={hasFilters ? 'Nenhuma equipe encontrada' : 'Nenhuma equipe cadastrada'}
         emptyDescription={
           hasFilters
             ? 'Tente ajustar os filtros para encontrar equipes'
@@ -257,67 +252,48 @@ export default function TeamsPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Select
             label="Igreja *"
-            value={formData.churchId}
-            onChange={(e) =>
-              setFormData({ ...formData, churchId: e.target.value, ministryId: '' })
-            }
-            options={churches.map((church) => ({
+            value={selectedChurch?.id ?? ''}
+            onChange={() => {
+              // Church is controlled by header selector
+            }}
+            options={churches.map(church => ({
               value: church.id,
               label: church.name,
             }))}
             required
+            disabled
           />
           <Select
             label="Time *"
             value={formData.ministryId}
-            onChange={(e) =>
-              setFormData({ ...formData, ministryId: e.target.value })
-            }
-            options={filteredMinistries.map((ministry) => ({
+            onChange={e => setFormData({ ...formData, ministryId: e.target.value })}
+            options={filteredMinistries.map(ministry => ({
               value: ministry.id,
               label: ministry.name,
             }))}
             required
-            disabled={!formData.churchId || filteredMinistries.length === 0}
+            disabled={!selectedChurch || filteredMinistries.length === 0}
           />
           <Input
             label="Nome da Equipe *"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <Textarea
             label="Descrição"
             value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
             placeholder="Descrição da equipe..."
             rows={4}
           />
-          <div>
-            <label className="block text-sm font-medium text-dark-600 dark:text-dark-300 mb-2">
-              Membros da Equipe
-            </label>
-            <CheckboxList
-              items={checkboxItems}
-              selectedIds={formData.memberIds}
-              onToggle={toggleMember}
-            />
-          </div>
           <Checkbox
             label="Equipe ativa"
             checked={formData.isActive}
-            onChange={(e) =>
-              setFormData({ ...formData, isActive: e.target.checked })
-            }
+            onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
           />
           <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleCloseModal}
-            >
+            <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary">

@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { Team } from '@/types'
+import { Team } from '@minc-hub/shared/types'
 import { EditIcon, TrashIcon } from '@/components/icons'
 
 interface TeamCardProps {
@@ -40,7 +40,7 @@ export function TeamCard({
               </p>
             )}
             <p className="text-sm text-dark-500 dark:text-dark-500">
-              {team.memberIds.length} membro{team.memberIds.length !== 1 ? 's' : ''}
+              {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) !== 1 ? 's' : ''}
             </p>
           </div>
         </div>

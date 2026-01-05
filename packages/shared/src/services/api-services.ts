@@ -23,11 +23,65 @@ export function createApiServices(api: AxiosInstance) {
     },
 
     teamsService: {
-      getAll: () => api.get<Team[]>('/teams'),
-      getById: (id: string) => api.get<Team>(`/teams/${id}`),
-      create: (data: CreateEntity<Team>) => api.post<Team>('/teams', data),
-      update: (id: string, data: Partial<Team>) => api.put<Team>(`/teams/${id}`, data),
-      delete: (id: string) => api.delete(`/teams/${id}`),
+      getAll: (ministryId?: string) =>
+        api.get<ApiResponse<Team[]>>('/teams', {
+          params: ministryId ? { ministryId } : undefined,
+        }).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Team[]>
+            return apiResponse.data ?? []
+          }
+          return (res.data as unknown as Team[]) ?? []
+        }),
+      getById: (id: string) =>
+        api.get<ApiResponse<Team>>(`/teams/${id}`).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Team>
+            if (!apiResponse.data) {
+              throw new Error('Team not found')
+            }
+            return apiResponse.data
+          }
+          const team = res.data as unknown as Team
+          if (!team) {
+            throw new Error('Team not found')
+          }
+          return team
+        }),
+      create: (data: Omit<CreateEntity<Team>, 'memberIds'>) =>
+        api.post<ApiResponse<Team>>('/teams', data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Team>
+            if (!apiResponse.data) {
+              throw new Error('Failed to create team')
+            }
+            return apiResponse.data
+          }
+          const team = res.data as unknown as Team
+          if (!team) {
+            throw new Error('Failed to create team')
+          }
+          return team
+        }),
+      update: (id: string, data: Partial<Omit<Team, 'memberIds'>>) =>
+        api.put<ApiResponse<Team>>(`/teams/${id}`, data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Team>
+            if (!apiResponse.data) {
+              throw new Error('Failed to update team')
+            }
+            return apiResponse.data
+          }
+          const team = res.data as unknown as Team
+          if (!team) {
+            throw new Error('Failed to update team')
+          }
+          return team
+        }),
+      delete: (id: string) =>
+        api.delete<ApiResponse<void>>(`/teams/${id}`).then(() => {
+          // Delete doesn't return data
+        }),
     },
 
     servicesService: {

@@ -1,5 +1,14 @@
 import React from 'react'
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import {
+  View,
+  Text,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Image,
+} from 'react-native'
+import { useTheme } from '@/contexts/ThemeContext'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { Card } from '@/components/Card'
@@ -37,18 +46,36 @@ export default function LoginScreen() {
               onLogin={handleLogin}
             />
           </View>
+
+          <FooterLogo />
         </ScrollView>
       </KeyboardAvoidingView>
     </BackgroundGradient>
   )
 }
 
-function BrandHeader() {
+function FooterLogo() {
+  const { colors } = useTheme()
   return (
-    <>
-      <Text style={styles.title}>{BRAND_NAME}</Text>
-      <Text style={styles.subtitle}>{BRAND_SUBTITLE}</Text>
-    </>
+    <View style={styles.footerContainer}>
+      <View style={styles.footerTextContainer}>
+        <Text style={[styles.footerBrandText, { color: colors.text.default }]}>MINC</Text>
+        <Text style={[styles.footerBrandText, { color: themeColors.primary[500] }]}> TEAMS</Text>
+      </View>
+    </View>
+  )
+}
+
+function BrandHeader() {
+  const { theme } = useTheme()
+  return (
+    <View style={styles.logoContainer}>
+      <Image
+        source={require('../../../assets/logo-minc.png')}
+        style={[styles.headerLogo, { tintColor: theme === 'dark' ? undefined : '#000000' }]}
+        resizeMode="contain"
+      />
+    </View>
   )
 }
 
@@ -135,12 +162,28 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     alignSelf: 'center',
   },
-  title: {
-    fontSize: themeTypography.sizes['4xl'],
-    fontWeight: themeTypography.weights.bold,
-    color: themeColors.primary[500],
-    textAlign: 'center',
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: themeSpacing.md,
+  },
+  headerLogo: {
+    width: 200,
+    height: 80,
     marginBottom: themeSpacing.xs,
+  },
+  footerContainer: {
+    alignItems: 'center',
+    marginTop: themeSpacing.xl,
+    paddingBottom: themeSpacing.xl,
+  },
+  footerTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  footerBrandText: {
+    fontSize: themeTypography.sizes['2xl'],
+    fontWeight: themeTypography.weights.bold,
+    letterSpacing: 1,
   },
   subtitle: {
     fontSize: themeTypography.sizes.sm,

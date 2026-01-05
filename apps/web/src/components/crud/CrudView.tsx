@@ -18,7 +18,7 @@ export function CrudView({ viewMode, gridView, listView }: CrudViewProps) {
     <>
       {/* Mobile: sempre mostra cards (grid) */}
       <div className="block md:hidden">{gridView}</div>
-      
+
       {/* Web: respeita o viewMode escolhido */}
       <div className="hidden md:block">
         {viewMode === 'grid' ? (
