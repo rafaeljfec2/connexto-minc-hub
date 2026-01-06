@@ -14,6 +14,7 @@ import ProfilePage from '@/pages/ProfilePage'
 import SettingsPage from '@/pages/SettingsPage'
 import UsersPage from '@/pages/UsersPage'
 import SchedulePlanningConfigPage from '@/pages/SchedulePlanningConfigPage'
+import CheckinPage from '@/pages/CheckinPage'
 
 export const protectedRoutes: RouteConfig[] = [
   {
@@ -77,5 +78,9 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/schedule-planning-config',
     component: SchedulePlanningConfigPage,
     allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+  },
+  {
+    path: '/checkin',
+    component: CheckinPage,
   },
 ]

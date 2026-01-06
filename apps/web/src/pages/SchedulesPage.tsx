@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { CheckboxList } from '@/components/ui/CheckboxList'
+import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useViewMode } from '@/hooks/useViewMode'
@@ -319,11 +320,62 @@ export default function SchedulesPage() {
                 Sortear Automaticamente
               </Button>
             </div>
-            <CheckboxList
-              items={checkboxItems}
-              selectedIds={formData.teamIds}
-              onToggle={toggleTeam}
+            <ComboBox
+              options={filteredTeams
+                .filter(t => t.isActive)
+                .map(team => ({
+                  value: team.id,
+                  label: team.name,
+                }))}
+              value={formData.teamIds[0] || null}
+              onValueChange={teamId => {
+                if (teamId && !formData.teamIds.includes(teamId)) {
+                  setFormData({
+                    ...formData,
+                    teamIds: [...formData.teamIds, teamId],
+                  })
+                }
+              }}
+              placeholder="Selecione uma equipe"
+              searchable
+              searchPlaceholder="Buscar equipe..."
             />
+            {formData.teamIds.length > 0 && (
+              <div className="mt-3 space-y-2">
+                <p className="text-sm font-medium text-dark-600 dark:text-dark-300">
+                  Equipes selecionadas:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {formData.teamIds.map(teamId => {
+                    const team = filteredTeams.find(t => t.id === teamId)
+                    return (
+                      <div
+                        key={teamId}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 rounded-lg"
+                      >
+                        <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                          {team?.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleTeam(teamId)}
+                          className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+                        >
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button

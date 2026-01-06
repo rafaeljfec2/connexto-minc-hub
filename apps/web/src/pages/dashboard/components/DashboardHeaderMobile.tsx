@@ -1,5 +1,9 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
+import { useChurch } from '@/contexts/ChurchContext'
+import { useChurches } from '@/hooks/useChurches'
+import { useMemo } from 'react'
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -17,6 +21,26 @@ export function DashboardHeaderMobile({
 }: Readonly<DashboardHeaderMobileProps>) {
   const { user } = useAuth()
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário'
+  const { selectedChurch, setSelectedChurch } = useChurch()
+  const { churches } = useChurches()
+
+  const churchOptions: ComboBoxOption<string>[] = useMemo(
+    () =>
+      churches.map(church => ({
+        value: church.id,
+        label: church.name,
+      })),
+    [churches]
+  )
+
+  const handleChurchChange = (churchId: string | null) => {
+    if (!churchId) {
+      setSelectedChurch(null)
+      return
+    }
+    const selected = churches.find(church => church.id === churchId)
+    setSelectedChurch(selected ?? null)
+  }
 
   const handleMenuClick = () => {
     // Trigger the mobile menu button click from Sidebar
@@ -46,8 +70,8 @@ export function DashboardHeaderMobile({
           </svg>
         </button>
 
-        <div className="flex items-center gap-2 flex-1">
-          <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-sm font-medium text-white">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
             {user?.name?.charAt(0).toUpperCase() ?? 'U'}
           </div>
           <div className="flex flex-col flex-1 min-w-0">
@@ -60,7 +84,22 @@ export function DashboardHeaderMobile({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {churches.length > 0 && (
+            <div className="min-w-[120px] sm:min-w-[140px]">
+              <ComboBox
+                options={churchOptions}
+                value={selectedChurch?.id || null}
+                onValueChange={handleChurchChange}
+                placeholder="Igreja"
+                searchable
+                searchPlaceholder="Buscar..."
+                maxHeight="max-h-56"
+                className="h-9 px-2 sm:px-3 text-xs sm:text-sm bg-white dark:bg-dark-900 border border-dark-300 dark:border-dark-700 rounded-md"
+                contentClassName="rounded-md shadow-lg"
+              />
+            </div>
+          )}
           <ThemeToggle />
           <button
             onClick={onNotificationPress}

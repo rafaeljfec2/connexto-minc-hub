@@ -13,4 +13,5 @@ export const ROUTES = {
   SETTINGS: '/settings',
   USERS: '/users',
   SCHEDULE_PLANNING_CONFIG: '/schedule-planning-config',
+  CHECKIN: '/checkin',
 } as const;
