@@ -72,7 +72,7 @@ export function useCheckIn() {
           setErrorMessage(message)
           setQrCode(null)
           setQrCodeData(null)
-          showToast(message, 'error')
+          // Don't show toast - error is already displayed in the visual container
         } else if (message.includes('Already checked in')) {
           setErrorType('already-checked')
           setErrorMessage(message)
