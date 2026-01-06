@@ -7,7 +7,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { TeamPlanningConfig, Team } from '@minc-hub/shared/types'
+import { Team } from '@minc-hub/shared/types'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { useSchedulePlanningConfig } from '@/hooks/useSchedulePlanningConfig'
 import { useTeams } from '@/hooks/useTeams'
@@ -20,7 +20,6 @@ export default function SchedulePlanningConfigPage() {
   const { selectedChurch } = useChurch()
   const {
     config,
-    isLoading,
     createOrUpdateConfig,
     getTeamConfig,
     createOrUpdateTeamConfig,
@@ -81,7 +80,6 @@ export default function SchedulePlanningConfigPage() {
     try {
       const existingConfig = await getTeamConfig(team.id)
       if (existingConfig) {
-        setTeamConfig(existingConfig)
         setTeamFormData({
           maxTeamMembers: existingConfig.maxTeamMembers,
           teamsServeOncePerMonth: existingConfig.teamsServeOncePerMonth,
@@ -150,6 +148,10 @@ export default function SchedulePlanningConfigPage() {
       return
     }
 
+    if (!selectedChurch) {
+      return
+    }
+
     try {
       await createTemplate({
         name: templateFormData.name,
@@ -159,6 +161,7 @@ export default function SchedulePlanningConfigPage() {
         teamsServeOncePerMonth: config.teamsServeOncePerMonth,
         enableLotteryForExtraServices: config.enableLotteryForExtraServices,
         enableTimeRotation: config.enableTimeRotation,
+        churchId: selectedChurch.id,
       })
       setTemplateFormData({ name: '', description: '' })
       templateModal.close()
@@ -221,7 +224,7 @@ export default function SchedulePlanningConfigPage() {
                   'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
                   activeTab === tab.id
                     ? 'border-primary-500 text-primary-600 dark:text-primary-400'
-                    : 'border-transparent text-dark-500 hover:text-dark-700 hover:border-dark-300 dark:text-dark-400 dark:hover:text-dark-300',
+                    : 'border-transparent text-dark-500 hover:text-dark-700 hover:border-dark-300 dark:text-dark-400 dark:hover:text-dark-300'
                 )}
               >
                 {tab.label}
@@ -309,11 +312,7 @@ export default function SchedulePlanningConfigPage() {
                       <TableCell>{team.name}</TableCell>
                       <TableCell>{getTeamConfigDisplay()}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenTeamModal(team)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => handleOpenTeamModal(team)}>
                           <EditIcon className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -507,9 +506,7 @@ export default function SchedulePlanningConfigPage() {
             {teamFormData.teamsServeOncePerMonth !== null && (
               <button
                 type="button"
-                onClick={() =>
-                  setTeamFormData(prev => ({ ...prev, teamsServeOncePerMonth: null }))
-                }
+                onClick={() => setTeamFormData(prev => ({ ...prev, teamsServeOncePerMonth: null }))}
                 className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
               >
                 Usar configuração global
@@ -553,9 +550,7 @@ export default function SchedulePlanningConfigPage() {
             {teamFormData.enableTimeRotation !== null && (
               <button
                 type="button"
-                onClick={() =>
-                  setTeamFormData(prev => ({ ...prev, enableTimeRotation: null }))
-                }
+                onClick={() => setTeamFormData(prev => ({ ...prev, enableTimeRotation: null }))}
                 className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
               >
                 Usar configuração global
@@ -593,9 +588,7 @@ export default function SchedulePlanningConfigPage() {
           <Input
             label="Descrição"
             value={templateFormData.description}
-            onChange={e =>
-              setTemplateFormData(prev => ({ ...prev, description: e.target.value }))
-            }
+            onChange={e => setTemplateFormData(prev => ({ ...prev, description: e.target.value }))}
           />
           <p className="text-sm text-dark-600 dark:text-dark-400">
             O template será criado com base na configuração global atual.
@@ -628,8 +621,8 @@ export default function SchedulePlanningConfigPage() {
         onConfirm={handleApplyTemplate}
         title="Aplicar Template"
         message="Tem certeza que deseja aplicar este template? A configuração global atual será substituída."
-        confirmLabel="Aplicar"
-        cancelLabel="Cancelar"
+        confirmText="Aplicar"
+        cancelText="Cancelar"
       />
 
       {/* Delete Template Modal */}
@@ -642,8 +635,8 @@ export default function SchedulePlanningConfigPage() {
         onConfirm={handleDeleteTemplate}
         title="Excluir Template"
         message="Tem certeza que deseja excluir este template? Esta ação não pode ser desfeita."
-        confirmLabel="Excluir"
-        cancelLabel="Cancelar"
+        confirmText="Excluir"
+        cancelText="Cancelar"
       />
     </div>
   )

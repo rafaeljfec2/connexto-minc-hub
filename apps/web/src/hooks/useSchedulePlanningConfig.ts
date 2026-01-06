@@ -3,13 +3,13 @@ import {
   SchedulePlanningConfig,
   TeamPlanningConfig,
   SchedulePlanningTemplate,
+  ApiResponse,
 } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { ApiResponse } from '@minc-hub/shared/types'
 
 type CreateSchedulePlanningConfig = Omit<
   SchedulePlanningConfig,
@@ -31,11 +31,13 @@ interface UseSchedulePlanningConfigReturn {
   isLoading: boolean
   error: Error | null
   fetchConfig: () => Promise<void>
-  createOrUpdateConfig: (data: Partial<CreateSchedulePlanningConfig>) => Promise<SchedulePlanningConfig>
+  createOrUpdateConfig: (
+    data: Partial<CreateSchedulePlanningConfig>
+  ) => Promise<SchedulePlanningConfig>
   getTeamConfig: (teamId: string) => Promise<TeamPlanningConfig | null>
   createOrUpdateTeamConfig: (
     teamId: string,
-    data: Partial<CreateTeamPlanningConfig>,
+    data: Partial<CreateTeamPlanningConfig>
   ) => Promise<TeamPlanningConfig>
   templates: SchedulePlanningTemplate[]
   isLoadingTemplates: boolean
@@ -101,7 +103,7 @@ export function useSchedulePlanningConfig(): UseSchedulePlanningConfigReturn {
         setError(null)
         const newConfig = await apiServices.schedulePlanningService.createOrUpdateConfig(
           selectedChurch.id,
-          data,
+          data
         )
         setConfig(newConfig)
         showSuccess('Configuração salva com sucesso!')
@@ -116,42 +118,39 @@ export function useSchedulePlanningConfig(): UseSchedulePlanningConfigReturn {
         setIsLoading(false)
       }
     },
-    [selectedChurch, showSuccess, showError],
+    [selectedChurch, showSuccess, showError]
   )
 
-  const getTeamConfig = useCallback(
-    async (teamId: string): Promise<TeamPlanningConfig | null> => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        const data = await apiServices.schedulePlanningService.getTeamConfig(teamId)
-        return data
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to fetch team config')
-        setError(error)
-        // Don't throw for 404 - config might not exist yet
-        if (err instanceof AxiosError && err.response?.status !== 404) {
-          throw error
-        }
-        return null
-      } finally {
-        setIsLoading(false)
+  const getTeamConfig = useCallback(async (teamId: string): Promise<TeamPlanningConfig | null> => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const data = await apiServices.schedulePlanningService.getTeamConfig(teamId)
+      return data
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch team config')
+      setError(error)
+      // Don't throw for 404 - config might not exist yet
+      if (err instanceof AxiosError && err.response?.status !== 404) {
+        throw error
       }
-    },
-    [],
-  )
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   const createOrUpdateTeamConfig = useCallback(
     async (
       teamId: string,
-      data: Partial<CreateTeamPlanningConfig>,
+      data: Partial<CreateTeamPlanningConfig>
     ): Promise<TeamPlanningConfig> => {
       try {
         setIsLoading(true)
         setError(null)
         const newConfig = await apiServices.schedulePlanningService.createOrUpdateTeamConfig(
           teamId,
-          data,
+          data
         )
         showSuccess('Configuração do time salva com sucesso!')
         return newConfig
@@ -165,7 +164,7 @@ export function useSchedulePlanningConfig(): UseSchedulePlanningConfigReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError],
+    [showSuccess, showError]
   )
 
   const fetchTemplates = useCallback(async () => {
@@ -200,6 +199,7 @@ export function useSchedulePlanningConfig(): UseSchedulePlanningConfigReturn {
         const newTemplate = await apiServices.schedulePlanningService.createTemplate({
           ...data,
           churchId: selectedChurch.id,
+          isSystemTemplate: false,
         })
         setTemplates(prev => [...prev, newTemplate])
         showSuccess('Template criado com sucesso!')
@@ -214,7 +214,7 @@ export function useSchedulePlanningConfig(): UseSchedulePlanningConfigReturn {
         setIsLoadingTemplates(false)
       }
     },
-    [selectedChurch, showSuccess, showError],
+    [selectedChurch, showSuccess, showError]
   )
 
   const applyTemplate = useCallback(
@@ -228,7 +228,7 @@ export function useSchedulePlanningConfig(): UseSchedulePlanningConfigReturn {
         setError(null)
         const newConfig = await apiServices.schedulePlanningService.applyTemplate(
           templateId,
-          selectedChurch.id,
+          selectedChurch.id
         )
         setConfig(newConfig)
         showSuccess('Template aplicado com sucesso!')
@@ -243,7 +243,7 @@ export function useSchedulePlanningConfig(): UseSchedulePlanningConfigReturn {
         setIsLoading(false)
       }
     },
-    [selectedChurch, showSuccess, showError],
+    [selectedChurch, showSuccess, showError]
   )
 
   const deleteTemplate = useCallback(
@@ -268,7 +268,7 @@ export function useSchedulePlanningConfig(): UseSchedulePlanningConfigReturn {
         setIsLoadingTemplates(false)
       }
     },
-    [selectedChurch, showSuccess, showError],
+    [selectedChurch, showSuccess, showError]
   )
 
   const refresh = useCallback(async () => {

@@ -6,7 +6,6 @@ import { SidebarNavItem } from './SidebarNavItem'
 import { SidebarBranding } from './SidebarBranding'
 import { SidebarUserInfo } from './SidebarUserInfo'
 import { MobileMenuButton } from './MobileMenuButton'
-import { BrandText } from '@/components/ui/BrandText'
 
 interface NavItem {
   label: string

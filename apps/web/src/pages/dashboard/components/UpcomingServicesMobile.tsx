@@ -1,16 +1,15 @@
 import { Card } from '@/components/ui/Card'
 import { Schedule, Service } from '@minc-hub/shared/types'
-import { formatDate } from '@minc-hub/shared/utils'
 
 interface UpcomingServicesMobileProps {
-  schedules: Schedule[]
-  services: Service[]
+  readonly schedules: Schedule[]
+  readonly services: Service[]
 }
 
 export function UpcomingServicesMobile({
   schedules,
   services,
-}: UpcomingServicesMobileProps) {
+}: Readonly<UpcomingServicesMobileProps>) {
   const upcomingSchedules = schedules
     .filter(schedule => {
       const scheduleDate = new Date(schedule.date)
@@ -33,16 +32,23 @@ export function UpcomingServicesMobile({
           const service = services.find(s => s.id === schedule.serviceId)
           const scheduleDate = new Date(schedule.date)
           const day = scheduleDate.getDate().toString()
-          const month = scheduleDate.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+          const month = scheduleDate
+            .toLocaleDateString('pt-BR', { month: 'short' })
+            .replace('.', '')
           const time = scheduleDate.toLocaleTimeString('pt-BR', {
             hour: '2-digit',
             minute: '2-digit',
           })
 
           return (
-            <Card key={schedule.id} className="flex flex-row items-center p-4 w-[280px] gap-4 flex-shrink-0">
+            <Card
+              key={schedule.id}
+              className="flex flex-row items-center p-4 w-[280px] gap-4 flex-shrink-0"
+            >
               <div className="p-3 rounded-lg bg-primary-500/15 text-center min-w-[50px]">
-                <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{day}</div>
+                <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
+                  {day}
+                </div>
                 <div className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase">
                   {month}
                 </div>
