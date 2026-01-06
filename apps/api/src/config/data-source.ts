@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
-import * as path from 'path';
+import * as path from 'node:path';
 import {
   parseDatabaseUrl,
   shouldUseSsl,
@@ -17,22 +17,12 @@ const basePath = getBasePath();
 
 // Get database connection parameters
 const databaseUrl = process.env.DATABASE_URL;
-const requiresSsl = shouldUseSsl(
-  databaseUrl,
-  process.env.DATABASE_SSL,
-  process.env.NODE_ENV,
-);
+const requiresSsl = shouldUseSsl(databaseUrl, process.env.DATABASE_SSL, process.env.NODE_ENV);
 
-const connectionParams = databaseUrl
-  ? parseDatabaseUrl(databaseUrl)
-  : getDefaultDatabaseConfig();
+const connectionParams = databaseUrl ? parseDatabaseUrl(databaseUrl) : getDefaultDatabaseConfig();
 
 // Build DataSource options
-export const dataSourceOptions = buildDataSourceOptions(
-  connectionParams,
-  requiresSsl,
-  basePath,
-);
+export const dataSourceOptions = buildDataSourceOptions(connectionParams, requiresSsl, basePath);
 
 const dataSource = new DataSource(dataSourceOptions);
 export default dataSource;

@@ -1,5 +1,5 @@
 import { DataSourceOptions } from 'typeorm';
-import * as path from 'path';
+import * as path from 'node:path';
 
 /**
  * Parsed database connection parameters from a URL

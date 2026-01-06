@@ -6,7 +6,6 @@ import {
   shouldUseSsl,
   getSslConfig,
   getExtraConnectionOptions,
-  getDefaultDatabaseConfig,
 } from './database.utils';
 
 @Injectable()
