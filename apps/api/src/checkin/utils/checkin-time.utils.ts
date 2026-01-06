@@ -10,6 +10,7 @@ export interface CheckInTimeValidation {
 /**
  * Validates if check-in is allowed based on service time
  * Check-in opens 30 minutes before service time
+ * Check-in closes 1 hour after service start time (allows late arrivals)
  */
 export function validateCheckInTime(
   service: ServiceEntity,
@@ -32,7 +33,11 @@ export function validateCheckInTime(
     };
   }
 
-  if (currentTime > serviceTime) {
+  // Allow check-in up to 1 hour after service start time
+  const checkInCloseTime = new Date(serviceTime);
+  checkInCloseTime.setHours(checkInCloseTime.getHours() + 1);
+
+  if (currentTime > checkInCloseTime) {
     return {
       isValid: false,
       checkInOpenTime,

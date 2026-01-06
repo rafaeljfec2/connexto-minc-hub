@@ -16,6 +16,10 @@ export function useCheckIn() {
   const [history, setHistory] = useState<Attendance[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [hasNoSchedule, setHasNoSchedule] = useState(false)
+  const [errorType, setErrorType] = useState<
+    'closed' | 'no-schedule' | 'not-linked' | 'already-checked' | 'other' | null
+  >(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const generateQrCode = useCallback(
     async (date?: string) => {
@@ -27,22 +31,25 @@ export function useCheckIn() {
 
       setIsLoading(true)
       setHasNoSchedule(false)
+      setErrorType(null)
+      setErrorMessage(null)
       try {
         const data = await apiServices.checkinService.generateQrCode(date)
         setQrCode(data.qrCode)
         setQrCodeData(data)
         setHasNoSchedule(false)
+        setErrorType(null)
+        setErrorMessage(null)
         showToast('QR Code gerado com sucesso!', 'success')
         return data
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Erro ao gerar QR Code'
-        // Check if it's a "no schedule" error
-        if (
-          message.includes('No schedules found') ||
-          message.includes('Não há agenda') ||
-          message.includes('No schedule')
-        ) {
+
+        // Categorize errors based on message content
+        if (message.includes('No schedules found') || message.includes('Não há agenda')) {
           setHasNoSchedule(true)
+          setErrorType('no-schedule')
+          setErrorMessage(message)
           setQrCode(null)
           setQrCodeData(null)
           // Don't show error toast for "no schedule" - it's expected
@@ -50,10 +57,31 @@ export function useCheckIn() {
           message.includes('must be linked to a person') ||
           message.includes('vinculado')
         ) {
-          // This error should be handled by the component, not shown as toast here
+          setErrorType('not-linked')
+          setErrorMessage(message)
           setQrCode(null)
           setQrCodeData(null)
+          // This error should be handled by the component, not shown as toast here
+        } else if (
+          message.includes('Check-in is closed') ||
+          message.includes('has passed') ||
+          message.includes('not yet open') ||
+          message.includes('Service time')
+        ) {
+          setErrorType('closed')
+          setErrorMessage(message)
+          setQrCode(null)
+          setQrCodeData(null)
+          showToast(message, 'error')
+        } else if (message.includes('Already checked in')) {
+          setErrorType('already-checked')
+          setErrorMessage(message)
+          setQrCode(null)
+          setQrCodeData(null)
+          showToast('Você já fez check-in para esta escala', 'info')
         } else {
+          setErrorType('other')
+          setErrorMessage(message)
           showToast(message, 'error')
         }
         return null
@@ -110,5 +138,7 @@ export function useCheckIn() {
     isLoading,
     isLoadingHistory,
     hasNoSchedule,
+    errorType,
+    errorMessage,
   }
 }
