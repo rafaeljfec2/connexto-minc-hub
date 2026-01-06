@@ -13,7 +13,7 @@ interface ActivityFeedMobileProps {
   activities?: ActivityItem[]
 }
 
-export function ActivityFeedMobile({ activities = [] }: ActivityFeedMobileProps) {
+export function ActivityFeedMobile({ activities = [] }: Readonly<ActivityFeedMobileProps>) {
   if (activities.length === 0) {
     return (
       <div className="px-4 mb-6">
