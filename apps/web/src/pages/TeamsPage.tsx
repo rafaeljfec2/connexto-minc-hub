@@ -29,10 +29,7 @@ export default function TeamsPage() {
 
   // Debug: Log data to verify it's being loaded
   useEffect(() => {
-    console.log('TeamsPage - teams:', teams.length, teams)
-    console.log('TeamsPage - ministries:', ministries.length, ministries)
-    console.log('TeamsPage - selectedChurch:', selectedChurch)
-    console.log('TeamsPage - isLoading:', isLoading)
+    // Debug logging removed
   }, [teams, ministries, selectedChurch, isLoading])
   const modal = useModal()
   const deleteModal = useModal()
@@ -133,9 +130,13 @@ export default function TeamsPage() {
     e.preventDefault()
 
     try {
-      // Remove churchId - backend doesn't accept this field
       // memberIds is already removed from formData
-      const { churchId, ...teamData } = formData
+      const { ...teamData } = formData
+
+      // Ensure churchId is not sent to backend if it exists in teamData
+      if ('churchId' in teamData) {
+        delete (teamData as Record<string, unknown>).churchId
+      }
       if (editingTeam) {
         await updateTeam(editingTeam.id, teamData)
       } else {

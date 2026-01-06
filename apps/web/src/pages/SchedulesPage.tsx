@@ -20,6 +20,57 @@ import { useServices } from '@/hooks/useServices'
 import { useTeams } from '@/hooks/useTeams'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useChurch } from '@/contexts/ChurchContext'
+import { Skeleton } from '@/components/ui/Skeleton'
+
+function ScheduleCardSkeleton() {
+  return (
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-700 p-4 space-y-4">
+      <div className="flex justify-between items-start">
+        <div className="space-y-2">
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+        <Skeleton className="h-6 w-20 rounded-full" />
+      </div>
+      <div className="space-y-2 pt-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+      <div className="pt-2 flex justify-end gap-2">
+        <Skeleton className="h-8 w-8 rounded-md" />
+        <Skeleton className="h-8 w-8 rounded-md" />
+      </div>
+    </div>
+  )
+}
+
+function ScheduleRowSkeleton() {
+  return (
+    <>
+      <TableCell>
+        <Skeleton className="h-5 w-32" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-6 w-24 rounded-full" />
+      </TableCell>
+      <TableCell>
+        <div className="flex gap-2">
+          <Skeleton className="h-6 w-20 rounded-full" />
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex justify-end gap-2">
+          <Skeleton className="h-8 w-8 rounded-md" />
+          <Skeleton className="h-8 w-8 rounded-md" />
+        </div>
+      </TableCell>
+    </>
+  )
+}
 
 export default function SchedulesPage() {
   const { schedules, isLoading, createSchedule, updateSchedule, deleteSchedule } = useSchedules()
@@ -149,8 +200,6 @@ export default function SchedulesPage() {
         date: dateFormatted,
         teamIds: formData.teamIds,
       }
-
-      console.log('Submitting schedule:', { editingSchedule, scheduleData })
 
       if (editingSchedule) {
         await updateSchedule(editingSchedule.id, scheduleData)
@@ -288,6 +337,7 @@ export default function SchedulesPage() {
         onCreateClick={() => handleOpenModal()}
         hasFilters={hasFilters}
         isEmpty={filteredSchedules.length === 0}
+        isLoading={isLoading}
         emptyTitle={hasFilters ? 'Nenhuma escala encontrada' : 'Nenhuma escala cadastrada'}
         emptyDescription={
           hasFilters
@@ -307,6 +357,9 @@ export default function SchedulesPage() {
         content={
           <CrudView
             viewMode={viewMode}
+            isLoading={isLoading}
+            skeletonCard={<ScheduleCardSkeleton />}
+            skeletonRow={<ScheduleRowSkeleton />}
             gridView={gridView}
             listView={{
               headers: ['Culto', 'Data', 'Time', 'Equipes', 'Ações'],

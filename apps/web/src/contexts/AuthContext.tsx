@@ -149,7 +149,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authService]) // Removed user from deps to prevent loops
 
   useEffect(() => {

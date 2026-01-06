@@ -279,15 +279,12 @@ export function ComboBox<T extends string | number = string>({
             renderTrigger(selectedOption, displayValue)
           ) : (
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              {Icon && (
-                <Icon className="h-4 w-4 text-dark-500 dark:text-dark-400 flex-shrink-0" />
-              )}
+              {Icon && <Icon className="h-4 w-4 text-dark-500 dark:text-dark-400 flex-shrink-0" />}
               <span className="truncate text-dark-900 dark:text-dark-50">{displayValue}</span>
             </div>
           )}
           {hasValue && !disabled && !renderTrigger && (
             // Note: Using span instead of button to avoid nested button issue (SelectTrigger is already a button)
-            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
             <span
               onClick={handleClear}
               className="ml-2 p-0.5 rounded hover:bg-dark-200 dark:hover:bg-dark-700 transition-colors flex-shrink-0 cursor-pointer"

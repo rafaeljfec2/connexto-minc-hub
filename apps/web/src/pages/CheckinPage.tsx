@@ -128,7 +128,6 @@ export default function CheckinPage() {
           hasGeneratedQrRef.current = false
         })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, qrCode, isLoadingUser, user?.personId])
 
   // Fetch history on mount (only once)
@@ -142,7 +141,6 @@ export default function CheckinPage() {
         }, 1000)
       })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.personId, isLoadingUser])
 
   function handleModeChange(newMode: Mode) {

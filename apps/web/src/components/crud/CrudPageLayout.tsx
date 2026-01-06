@@ -16,6 +16,7 @@ interface CrudPageLayoutProps {
   readonly filters: ReactNode
   readonly content: ReactNode
   readonly createButtonIcon?: ReactNode
+  readonly isLoading?: boolean
 }
 
 export function CrudPageLayout({
@@ -31,6 +32,7 @@ export function CrudPageLayout({
   filters,
   content,
   createButtonIcon,
+  isLoading = false,
 }: CrudPageLayoutProps) {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 sm:pt-6 sm:pb-8 lg:py-8">
@@ -48,7 +50,7 @@ export function CrudPageLayout({
 
       {filters}
 
-      {isEmpty ? (
+      {!isLoading && isEmpty ? (
         <EmptyState
           title={emptyTitle}
           description={emptyDescription}

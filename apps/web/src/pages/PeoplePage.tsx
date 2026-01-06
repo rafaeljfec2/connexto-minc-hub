@@ -24,6 +24,62 @@ import { useUsers } from '@/hooks/useUsers'
 import { useServices } from '@/hooks/useServices'
 import { CheckboxList } from '@/components/ui/CheckboxList'
 import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/Skeleton'
+
+function PersonCardSkeleton() {
+  return (
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-sm border border-dark-200 dark:border-dark-700 p-4 space-y-4">
+      <div className="flex items-start justify-between">
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-40" />
+          </div>
+        </div>
+      </div>
+      <div className="space-y-2 pt-2">
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-2/3" />
+      </div>
+      <div className="pt-2 flex justify-end gap-2">
+        <Skeleton className="h-8 w-8 rounded-md" />
+        <Skeleton className="h-8 w-8 rounded-md" />
+      </div>
+    </div>
+  )
+}
+
+function PersonRowSkeleton() {
+  return (
+    <>
+      <TableCell>
+        <Skeleton className="h-5 w-32" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-40" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-28" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-6 w-20 rounded-full" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <div className="flex justify-end gap-2">
+          <Skeleton className="h-8 w-8 rounded-md" />
+          <Skeleton className="h-8 w-8 rounded-md" />
+        </div>
+      </TableCell>
+    </>
+  )
+}
 
 export default function PeoplePage() {
   const {
@@ -210,8 +266,7 @@ export default function PeoplePage() {
 
     try {
       // Remove preferredServiceIds from payload as backend doesn't support it yet
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
-      const { preferredServiceIds, ...rawPersonData } = personFormData
+      const { preferredServiceIds: _, ...rawPersonData } = personFormData
 
       // Create payload with proper typing - use Record for flexible structure
       const personData: Record<string, unknown> = { ...rawPersonData }
@@ -262,8 +317,7 @@ export default function PeoplePage() {
 
     try {
       // Remove preferredServiceIds from payload as backend doesn't support it yet
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
-      const { preferredServiceIds, ...rawPersonData } = personFormData
+      const { preferredServiceIds: _, ...rawPersonData } = personFormData
 
       // Create payload with proper typing - use Record for flexible structure
       const personData: Record<string, unknown> = { ...rawPersonData }
@@ -489,6 +543,7 @@ export default function PeoplePage() {
         onCreateClick={() => handleOpenPersonModal()}
         hasFilters={hasFilters}
         isEmpty={filteredPeople.length === 0}
+        isLoading={isLoadingPeople}
         emptyTitle={hasFilters ? 'Nenhum servo encontrado' : 'Nenhum servo cadastrado'}
         emptyDescription={
           hasFilters
@@ -530,6 +585,9 @@ export default function PeoplePage() {
         content={
           <CrudView
             viewMode={viewMode}
+            isLoading={isLoadingPeople}
+            skeletonCard={<PersonCardSkeleton />}
+            skeletonRow={<PersonRowSkeleton />}
             gridView={gridView}
             listView={{
               headers: [

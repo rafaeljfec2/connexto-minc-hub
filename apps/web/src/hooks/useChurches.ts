@@ -3,6 +3,7 @@ import { Church } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
+import { useAuth } from '@/contexts/AuthContext'
 import { getCachedFetch } from './utils/fetchCache'
 
 type CreateChurch = Omit<Church, 'id' | 'createdAt' | 'updatedAt'>
@@ -41,20 +42,20 @@ export function useChurches(): UseChurchesReturn {
 
   const fetchChurches = useCallback(async (): Promise<void> => {
     const cacheKey = 'churches-all'
-    
+
     try {
       setIsLoading(true)
       setError(null)
-      
+
       const data = await getCachedFetch(
         cacheKey,
         async () => {
-      const fetchedData = await apiServices.churchesService.getAll()
-      return fetchedData
+          const fetchedData = await apiServices.churchesService.getAll()
+          return fetchedData
         },
         5000 // 5 seconds cache for churches (they don't change often)
       )
-      
+
       // Always update state with the data, whether from cache or new fetch
       if (data && Array.isArray(data)) {
         setChurches(data)
@@ -154,20 +155,29 @@ export function useChurches(): UseChurchesReturn {
     await fetchChurches()
   }, [fetchChurches])
 
-  // Auto-fetch on mount (only once)
+  const { isAuthenticated } = useAuth()
+
+  // Auto-fetch on mount and when authentication status changes
   useEffect(() => {
-    // Prevent duplicate calls
+    // If not authenticated, clear churches and reset fetched flag
+    if (!isAuthenticated) {
+      setChurches([])
+      hasFetchedRef.current = false
+      return
+    }
+
+    // Prevent duplicate calls if already fetched during this session
+    // But allow if we are just becoming authenticated
     if (hasFetchedRef.current) {
       return
     }
 
     hasFetchedRef.current = true
-    fetchChurches().catch((err) => {
+    fetchChurches().catch(err => {
       // Log error for debugging but don't show toast to avoid spam
       console.error('Failed to fetch churches:', err)
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Empty deps - only fetch once on mount
+  }, [isAuthenticated, fetchChurches])
 
   return {
     churches,
