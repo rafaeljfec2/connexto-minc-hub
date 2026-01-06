@@ -179,21 +179,28 @@ export function useTeams(): UseTeamsReturn {
   useEffect(() => {
     const churchId = selectedChurch?.id
     const ministryIdsLength = ministryIds.length
+    
+    console.log('useTeams - Effect triggered:', { churchId, ministryIdsLength, hasFetched: hasFetchedRef.current, lastLength: lastMinistryIdsLengthRef.current })
+    
     // Prevent duplicate calls for the same church and ministry count
     if (
       hasFetchedRef.current === churchId &&
       lastMinistryIdsLengthRef.current === ministryIdsLength
     ) {
+      console.log('useTeams - Skipping fetch (already fetched for this church/ministry count)')
       return
     }
 
     if (selectedChurch) {
+      console.log('useTeams - Fetching teams for church:', selectedChurch.name)
       hasFetchedRef.current = churchId ?? null
       lastMinistryIdsLengthRef.current = ministryIdsLength
-      fetchTeams().catch(() => {
+      fetchTeams().catch((err) => {
+        console.error('useTeams - Fetch error:', err)
         // Error already handled in fetchTeams
       })
     } else {
+      console.log('useTeams - No church selected, clearing teams')
       hasFetchedRef.current = null
       lastMinistryIdsLengthRef.current = 0
       setTeams([])

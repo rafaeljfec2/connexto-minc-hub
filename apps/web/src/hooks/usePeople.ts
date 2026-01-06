@@ -170,21 +170,28 @@ export function usePeople(): UsePeopleReturn {
   useEffect(() => {
     const churchId = selectedChurch?.id
     const ministryIdsLength = ministryIds.length
+    
+    console.log('usePeople - Effect triggered:', { churchId, ministryIdsLength, hasFetched: hasFetchedRef.current, lastLength: lastMinistryIdsLengthRef.current })
+    
     // Prevent duplicate calls for the same church and ministry count
     if (
       hasFetchedRef.current === churchId &&
       lastMinistryIdsLengthRef.current === ministryIdsLength
     ) {
+      console.log('usePeople - Skipping fetch (already fetched for this church/ministry count)')
       return
     }
 
     if (selectedChurch) {
+      console.log('usePeople - Fetching people for church:', selectedChurch.name)
       hasFetchedRef.current = churchId ?? null
       lastMinistryIdsLengthRef.current = ministryIdsLength
-      fetchPeople().catch(() => {
+      fetchPeople().catch((err) => {
+        console.error('usePeople - Fetch error:', err)
         // Error already handled in fetchPeople
       })
     } else {
+      console.log('usePeople - No church selected, clearing people')
       hasFetchedRef.current = null
       lastMinistryIdsLengthRef.current = 0
       setPeople([])
