@@ -95,8 +95,11 @@ export interface Attendance {
   id: string
   scheduleId: string
   personId: string
-  isPresent: boolean
-  notes?: string
+  checkedInBy: string
+  checkedInAt: string
+  method: 'qr_code' | 'manual'
+  qrCodeData?: Record<string, unknown> | null
+  absenceReason?: string | null
   createdAt: string
   updatedAt: string
 }

@@ -94,6 +94,19 @@
       );
   }
 
+  /* QR Code Scanner Styles */
+  #qr-reader {
+    width: 100%;
+  }
+
+  #qr-reader__dashboard {
+    display: none;
+  }
+
+  #qr-reader__camera_selection {
+    display: none;
+  }
+
   .animate-on-scroll {
     opacity: 0;
     transform: translateY(20px);

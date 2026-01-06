@@ -321,5 +321,32 @@ export function createApiServices(api: AxiosInstance) {
             // Delete doesn't return data
           }),
     },
+
+    checkinService: {
+      generateQrCode: (date?: string) =>
+        api
+          .post<ApiResponse<{ qrCode: string; schedule: Schedule; expiresAt: string }>>(
+            '/checkin/generate-qr',
+            date ? { date } : {},
+          )
+          .then(res =>
+            extractEntityData<{ qrCode: string; schedule: Schedule; expiresAt: string }>(
+              res.data,
+              'Failed to generate QR code',
+            ),
+          ),
+      validateQrCode: (qrCodeData: string) =>
+        api
+          .post<ApiResponse<Attendance>>('/checkin/validate-qr', {
+            qrCodeData,
+          })
+          .then(res => extractEntityData<Attendance>(res.data, 'Failed to validate QR code')),
+      getHistory: (limit = 50) =>
+        api
+          .get<ApiResponse<Attendance[]>>('/checkin/history', {
+            params: { limit },
+          })
+          .then(res => extractArrayData<Attendance>(res.data)),
+    },
   }
 }
