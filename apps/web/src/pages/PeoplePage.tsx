@@ -23,6 +23,7 @@ import { useTeams } from '@/hooks/useTeams'
 import { useUsers } from '@/hooks/useUsers'
 import { useServices } from '@/hooks/useServices'
 import { CheckboxList } from '@/components/ui/CheckboxList'
+import { cn } from '@/lib/utils'
 
 export default function PeoplePage() {
   const {
@@ -212,8 +213,9 @@ export default function PeoplePage() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { preferredServiceIds, ...rawPersonData } = personFormData
 
-      // Create a clean copy of data
-      const personData = { ...rawPersonData }
+      // Create a clean copy of data - cast to any to allow delete operator
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const personData = { ...rawPersonData } as any
 
       // Clean empty strings
       if (!personData.ministryId) delete personData.ministryId
@@ -221,7 +223,9 @@ export default function PeoplePage() {
 
       // Set teamId to first fixed team member for compatibility (if exists)
       if (personData.teamMembers && personData.teamMembers.length > 0) {
-        const firstFixedTeam = personData.teamMembers.find(tm => tm.memberType === MemberType.FIXED)
+        const firstFixedTeam = personData.teamMembers.find(
+          (tm: any) => tm.memberType === MemberType.FIXED
+        )
         if (firstFixedTeam) {
           personData.teamId = firstFixedTeam.teamId
         } else {
@@ -233,6 +237,7 @@ export default function PeoplePage() {
       // Ensure teamId is cleaned if it's still empty string after logic
       if (!personData.teamId) delete personData.teamId
 
+      // Cast to any - API accepts simplified teamMembers structure
       if (editingPerson) {
         await updatePerson(editingPerson.id, personData)
       } else {
@@ -253,8 +258,9 @@ export default function PeoplePage() {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { preferredServiceIds, ...rawPersonData } = personFormData
 
-      // Create a clean copy of data
-      const personData = { ...rawPersonData }
+      // Create a clean copy of data - cast to any to allow delete operator
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const personData = { ...rawPersonData } as any
 
       // Clean empty strings
       if (!personData.ministryId) delete personData.ministryId
@@ -262,7 +268,10 @@ export default function PeoplePage() {
 
       // Set teamId to first fixed team member for compatibility (if exists)
       if (personData.teamMembers && personData.teamMembers.length > 0) {
-        const firstFixedTeam = personData.teamMembers.find(tm => tm.memberType === MemberType.FIXED)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const firstFixedTeam = personData.teamMembers.find(
+          (tm: any) => tm.memberType === MemberType.FIXED
+        )
         if (firstFixedTeam) {
           personData.teamId = firstFixedTeam.teamId
         } else {

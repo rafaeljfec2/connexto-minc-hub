@@ -49,25 +49,22 @@ export function useServices(): UseServicesReturn {
     }
 
     const cacheKey = `services-${selectedChurch.id}`
-    
-    return getCachedFetch(
-      cacheKey,
-      async () => {
-        try {
-          setIsLoading(true)
-          setError(null)
-          const data = await apiServices.servicesService.getAll(selectedChurch.id)
-          setServices(data)
-          return data
-        } catch (err) {
-          const error = err instanceof Error ? err : new Error('Failed to fetch services')
-          setError(error)
-          throw error
-        } finally {
-          setIsLoading(false)
-        }
+
+    await getCachedFetch(cacheKey, async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const data = await apiServices.servicesService.getAll(selectedChurch.id)
+        setServices(data)
+        return data
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch services')
+        setError(error)
+        throw error
+      } finally {
+        setIsLoading(false)
       }
-    )
+    })
   }, [selectedChurch?.id])
 
   const getServiceById = useCallback(async (id: string): Promise<Service | null> => {

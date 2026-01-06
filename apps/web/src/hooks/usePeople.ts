@@ -177,7 +177,7 @@ export function usePeople(): UsePeopleReturn {
 
     const churchId = selectedChurch.id
     const ministryIdsLength = ministryIds.length
-    
+
     // Prevent duplicate calls for the same church and ministry count
     if (
       hasFetchedRef.current === churchId &&
@@ -189,8 +189,8 @@ export function usePeople(): UsePeopleReturn {
     // Always fetch when church changes or ministries change
     hasFetchedRef.current = churchId
     lastMinistryIdsLengthRef.current = ministryIdsLength
-    
-    fetchPeople().catch((err) => {
+
+    fetchPeople().catch(_err => {
       // Reset ref on error so it can retry
       hasFetchedRef.current = null
       // Error already handled in fetchPeople

@@ -49,19 +49,16 @@ export function useMinistries(): UseMinistriesReturn {
     }
 
     const cacheKey = `ministries-${selectedChurch.id}`
-    
+
     try {
       setIsLoading(true)
       setError(null)
-      
-      const data = await getCachedFetch(
-        cacheKey,
-        async () => {
-          const fetchedData = await apiServices.ministriesService.getAll(selectedChurch.id)
-          return fetchedData
-        }
-      )
-      
+
+      const data = await getCachedFetch(cacheKey, async () => {
+        const fetchedData = await apiServices.ministriesService.getAll(selectedChurch.id)
+        return fetchedData
+      })
+
       // Always update state with the data, whether from cache or new fetch
       if (data && Array.isArray(data)) {
         setMinistries(data)
@@ -119,7 +116,9 @@ export function useMinistries(): UseMinistriesReturn {
         setIsLoading(true)
         setError(null)
         const updatedMinistry = await apiServices.ministriesService.update(id, data)
-        setMinistries(prev => prev.map(ministry => (ministry.id === id ? updatedMinistry : ministry)))
+        setMinistries(prev =>
+          prev.map(ministry => (ministry.id === id ? updatedMinistry : ministry))
+        )
         showSuccess('Ministério atualizado com sucesso!')
         return updatedMinistry
       } catch (err) {
@@ -175,7 +174,7 @@ export function useMinistries(): UseMinistriesReturn {
     }
 
     hasFetchedRef.current = churchId
-    fetchMinistries().catch((err) => {
+    fetchMinistries().catch(_err => {
       // Reset ref on error so it can retry
       hasFetchedRef.current = null
       // Error already handled in fetchMinistries

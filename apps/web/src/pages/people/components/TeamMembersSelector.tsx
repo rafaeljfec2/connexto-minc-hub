@@ -100,7 +100,7 @@ export function TeamMembersSelector({
           <ComboBox
             options={teamOptions}
             value={selectedTeamId || null}
-            onValueChange={setSelectedTeamId}
+            onValueChange={val => setSelectedTeamId(val || '')}
             placeholder="Selecione uma equipe"
             searchable
             searchPlaceholder="Buscar equipe..."

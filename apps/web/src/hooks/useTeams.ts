@@ -58,33 +58,28 @@ export function useTeams(): UseTeamsReturn {
     }
 
     const cacheKey = `teams-${selectedChurch.id}-${ministryIds.length}`
-    
-    return getCachedFetch(
-      cacheKey,
-      async () => {
-        try {
-          setIsLoading(true)
-          setError(null)
-          
-          // Fetch all teams (without filter) and filter by ministryIds on frontend
-          const allTeams = await apiServices.teamsService.getAll()
-          
-          // Filter teams by ministries of the selected church
-          const filteredTeams = allTeams.filter(team => 
-            ministryIds.includes(team.ministryId)
-          )
-          
-          setTeams(filteredTeams)
-          return filteredTeams
-        } catch (err) {
-          const error = err instanceof Error ? err : new Error('Failed to fetch teams')
-          setError(error)
-          throw error
-        } finally {
-          setIsLoading(false)
-        }
+
+    await getCachedFetch(cacheKey, async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        // Fetch all teams (without filter) and filter by ministryIds on frontend
+        const allTeams = await apiServices.teamsService.getAll()
+
+        // Filter teams by ministries of the selected church
+        const filteredTeams = allTeams.filter(team => ministryIds.includes(team.ministryId))
+
+        setTeams(filteredTeams)
+        return filteredTeams
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch teams')
+        setError(error)
+        throw error
+      } finally {
+        setIsLoading(false)
       }
-    )
+    })
   }, [selectedChurch?.id, ministryIds.length])
 
   const getTeamById = useCallback(async (id: string): Promise<Team | null> => {
@@ -108,7 +103,10 @@ export function useTeams(): UseTeamsReturn {
         setIsLoading(true)
         setError(null)
         // Remove memberIds and churchId if present - backend doesn't accept these
-        const { memberIds, churchId, ...cleanData } = data as CreateTeam & { memberIds?: string[]; churchId?: string }
+        const { memberIds, churchId, ...cleanData } = data as CreateTeam & {
+          memberIds?: string[]
+          churchId?: string
+        }
         const newTeam = await apiServices.teamsService.create(cleanData)
         setTeams(prev => [...prev, newTeam])
         showSuccess('Equipe criada com sucesso!')
@@ -132,7 +130,10 @@ export function useTeams(): UseTeamsReturn {
         setIsLoading(true)
         setError(null)
         // Remove memberIds and churchId if present - backend doesn't accept these
-        const { memberIds, churchId, ...cleanData } = data as Partial<Team> & { memberIds?: string[]; churchId?: string }
+        const { memberIds, churchId, ...cleanData } = data as Partial<Team> & {
+          memberIds?: string[]
+          churchId?: string
+        }
         const updatedTeam = await apiServices.teamsService.update(id, cleanData)
         setTeams(prev => prev.map(team => (team.id === id ? updatedTeam : team)))
         showSuccess('Equipe atualizada com sucesso!')
@@ -186,7 +187,7 @@ export function useTeams(): UseTeamsReturn {
 
     const churchId = selectedChurch.id
     const ministryIdsLength = ministryIds.length
-    
+
     // Prevent duplicate calls for the same church and ministry count
     if (
       hasFetchedRef.current === churchId &&
@@ -198,8 +199,8 @@ export function useTeams(): UseTeamsReturn {
     // Always fetch when church changes or ministries change
     hasFetchedRef.current = churchId
     lastMinistryIdsLengthRef.current = ministryIdsLength
-    
-    fetchTeams().catch((err) => {
+
+    fetchTeams().catch(_err => {
       // Reset ref on error so it can retry
       hasFetchedRef.current = null
       // Error already handled in fetchTeams

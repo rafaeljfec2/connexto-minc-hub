@@ -50,35 +50,32 @@ export function useSchedules(): UseSchedulesReturn {
       }
 
       const cacheKey = `schedules-${selectedChurch.id}-${serviceId ?? 'all'}-${startDate ?? ''}-${endDate ?? ''}`
-      
-      return getCachedFetch(
-        cacheKey,
-        async () => {
-          try {
-            setIsLoading(true)
-            setError(null)
-            const data = await apiServices.schedulesService.getAll(serviceId, startDate, endDate)
-            // Filter schedules by selected church (via service.churchId)
-            const filteredData = data.filter(schedule => {
-              // If schedule has service relationship, filter by churchId
-              if ('service' in schedule && (schedule as any).service) {
-                return (schedule as any).service.churchId === selectedChurch.id
-              }
-              // Otherwise, we need to fetch service to check churchId
-              // For now, include all schedules and let the backend filter
-              return true
-            })
-            setSchedules(filteredData)
-            return filteredData
-          } catch (err) {
-            const error = err instanceof Error ? err : new Error('Failed to fetch schedules')
-            setError(error)
-            throw error
-          } finally {
-            setIsLoading(false)
-          }
+
+      await getCachedFetch(cacheKey, async () => {
+        try {
+          setIsLoading(true)
+          setError(null)
+          const data = await apiServices.schedulesService.getAll(serviceId, startDate, endDate)
+          // Filter schedules by selected church (via service.churchId)
+          const filteredData = data.filter(schedule => {
+            // If schedule has service relationship, filter by churchId
+            if ('service' in schedule && (schedule as any).service) {
+              return (schedule as any).service.churchId === selectedChurch.id
+            }
+            // Otherwise, we need to fetch service to check churchId
+            // For now, include all schedules and let the backend filter
+            return true
+          })
+          setSchedules(filteredData)
+          return filteredData
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error('Failed to fetch schedules')
+          setError(error)
+          throw error
+        } finally {
+          setIsLoading(false)
         }
-      )
+      })
     },
     [selectedChurch?.id]
   )
@@ -126,7 +123,9 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(true)
         setError(null)
         const updatedSchedule = await apiServices.schedulesService.update(id, data)
-        setSchedules(prev => prev.map(schedule => (schedule.id === id ? updatedSchedule : schedule)))
+        setSchedules(prev =>
+          prev.map(schedule => (schedule.id === id ? updatedSchedule : schedule))
+        )
         showSuccess('Escala atualizada com sucesso!')
         return updatedSchedule
       } catch (err) {
