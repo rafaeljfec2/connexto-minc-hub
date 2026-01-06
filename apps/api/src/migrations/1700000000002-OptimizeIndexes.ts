@@ -92,24 +92,33 @@ export class OptimizeIndexes1700000000002 implements MigrationInterface {
       WHERE deleted_at IS NULL;
     `);
 
-    // Indexes for schedule planning tables
-    await queryRunner.query(`
-      CREATE INDEX IF NOT EXISTS idx_schedule_planning_configs_church_deleted 
-      ON schedule_planning_configs(church_id, deleted_at) 
-      WHERE deleted_at IS NULL;
-    `);
+    // Indexes for schedule planning tables (only if tables exist)
+    const hasSchedulePlanningConfigs = await queryRunner.hasTable('schedule_planning_configs');
+    if (hasSchedulePlanningConfigs) {
+      await queryRunner.query(`
+        CREATE INDEX IF NOT EXISTS idx_schedule_planning_configs_church_deleted 
+        ON schedule_planning_configs(church_id, deleted_at) 
+        WHERE deleted_at IS NULL;
+      `);
+    }
 
-    await queryRunner.query(`
-      CREATE INDEX IF NOT EXISTS idx_team_planning_configs_team_deleted 
-      ON team_planning_configs(team_id, deleted_at) 
-      WHERE deleted_at IS NULL;
-    `);
+    const hasTeamPlanningConfigs = await queryRunner.hasTable('team_planning_configs');
+    if (hasTeamPlanningConfigs) {
+      await queryRunner.query(`
+        CREATE INDEX IF NOT EXISTS idx_team_planning_configs_team_deleted 
+        ON team_planning_configs(team_id, deleted_at) 
+        WHERE deleted_at IS NULL;
+      `);
+    }
 
-    await queryRunner.query(`
-      CREATE INDEX IF NOT EXISTS idx_schedule_planning_templates_church_system_deleted 
-      ON schedule_planning_templates(created_by_church_id, is_system_template, deleted_at) 
-      WHERE deleted_at IS NULL;
-    `);
+    const hasSchedulePlanningTemplates = await queryRunner.hasTable('schedule_planning_templates');
+    if (hasSchedulePlanningTemplates) {
+      await queryRunner.query(`
+        CREATE INDEX IF NOT EXISTS idx_schedule_planning_templates_church_system_deleted 
+        ON schedule_planning_templates(created_by_church_id, is_system_template, deleted_at) 
+        WHERE deleted_at IS NULL;
+      `);
+    }
 
     // Composite index for users - optimize email lookups with soft delete
     await queryRunner.query(`
@@ -152,12 +161,23 @@ export class OptimizeIndexes1700000000002 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX IF EXISTS idx_services_deleted_at;`);
     await queryRunner.query(`DROP INDEX IF EXISTS idx_schedules_deleted_at;`);
 
-    // Drop schedule planning indexes
-    await queryRunner.query(`DROP INDEX IF EXISTS idx_schedule_planning_configs_church_deleted;`);
-    await queryRunner.query(`DROP INDEX IF EXISTS idx_team_planning_configs_team_deleted;`);
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS idx_schedule_planning_templates_church_system_deleted;`,
-    );
+    // Drop schedule planning indexes (only if tables exist)
+    const hasSchedulePlanningConfigs = await queryRunner.hasTable('schedule_planning_configs');
+    if (hasSchedulePlanningConfigs) {
+      await queryRunner.query(`DROP INDEX IF EXISTS idx_schedule_planning_configs_church_deleted;`);
+    }
+
+    const hasTeamPlanningConfigs = await queryRunner.hasTable('team_planning_configs');
+    if (hasTeamPlanningConfigs) {
+      await queryRunner.query(`DROP INDEX IF EXISTS idx_team_planning_configs_team_deleted;`);
+    }
+
+    const hasSchedulePlanningTemplates = await queryRunner.hasTable('schedule_planning_templates');
+    if (hasSchedulePlanningTemplates) {
+      await queryRunner.query(
+        `DROP INDEX IF EXISTS idx_schedule_planning_templates_church_system_deleted;`,
+      );
+    }
 
     // Drop other composite indexes
     await queryRunner.query(`DROP INDEX IF EXISTS idx_users_email_deleted;`);

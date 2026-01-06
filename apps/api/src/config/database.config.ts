@@ -19,8 +19,9 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
       const url = new URL(databaseUrl);
       const hostname = url.hostname;
       const port = Number.parseInt(url.port || '5432', 10);
-      const username = url.username || 'postgres';
-      const password = url.password || '';
+      // Decode username and password (they may be URL-encoded)
+      const username = url.username ? decodeURIComponent(url.username) : 'postgres';
+      const password = url.password ? decodeURIComponent(url.password) : '';
       const database = url.pathname.slice(1) || 'postgres';
 
       // Use host/port instead of URL to have better control over IPv4/IPv6

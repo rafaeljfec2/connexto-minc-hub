@@ -20,27 +20,42 @@ const urlRequiresSsl = databaseUrl?.includes('sslmode=require') ?? false;
 const shouldUseSsl = isProduction || requireSsl || urlRequiresSsl;
 
 export const dataSourceOptions: DataSourceOptions = databaseUrl
-  ? {
-      type: 'postgres',
-      url: databaseUrl,
-      entities: [path.join(basePath, '**/*.entity{.ts,.js}')],
-      migrations: [path.join(basePath, 'migrations/*{.ts,.js}')],
-      migrationsTableName: 'migrations',
-      synchronize: false,
-      logging: process.env.NODE_ENV === 'development',
-      ssl: shouldUseSsl ? { rejectUnauthorized: false } : false,
-      extra: {
-        ...(shouldUseSsl
-          ? {
-              ssl: {
-                rejectUnauthorized: false,
-              },
-            }
-          : {}),
-        // Force IPv4 to avoid ENETUNREACH errors with IPv6
-        family: 4,
-      },
-    }
+  ? (() => {
+      // Parse URL to extract connection parameters (for better control)
+      const url = new URL(databaseUrl);
+      const hostname = url.hostname;
+      const port = Number.parseInt(url.port || '5432', 10);
+      // Decode username and password (they may be URL-encoded)
+      const username = url.username ? decodeURIComponent(url.username) : 'postgres';
+      const password = url.password ? decodeURIComponent(url.password) : '';
+      const database = url.pathname.slice(1) || 'postgres';
+
+      return {
+        type: 'postgres',
+        host: hostname,
+        port,
+        username,
+        password,
+        database,
+        entities: [path.join(basePath, '**/*.entity{.ts,.js}')],
+        migrations: [path.join(basePath, 'migrations/*{.ts,.js}')],
+        migrationsTableName: 'migrations',
+        synchronize: false,
+        logging: process.env.NODE_ENV === 'development',
+        ssl: shouldUseSsl ? { rejectUnauthorized: false } : false,
+        extra: {
+          ...(shouldUseSsl
+            ? {
+                ssl: {
+                  rejectUnauthorized: false,
+                },
+              }
+            : {}),
+          // Force IPv4 to avoid ENETUNREACH errors with IPv6
+          family: 4,
+        },
+      };
+    })()
   : {
       type: 'postgres',
       host: process.env.DATABASE_HOST ?? 'localhost',

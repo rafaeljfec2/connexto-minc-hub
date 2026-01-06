@@ -6,12 +6,43 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import * as cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import dataSource from './config/data-source';
 
 async function bootstrap() {
   const logger = new NestLogger('Bootstrap');
 
   try {
     logger.log('🚀 Starting application bootstrap...');
+
+    // Run migrations before starting the app
+    if (!dataSource.isInitialized) {
+      logger.log('📦 Initializing database connection...');
+      await dataSource.initialize();
+      logger.log('✅ Database connection initialized');
+    }
+
+    logger.log('🔄 Running database migrations...');
+    try {
+      const hasPendingMigrations = await dataSource.showMigrations();
+      if (hasPendingMigrations) {
+        logger.log('Found pending migrations, executing...');
+        const executedMigrations = await dataSource.runMigrations();
+        if (executedMigrations.length > 0) {
+          logger.log(`✅ Executed ${executedMigrations.length} migration(s):`);
+          executedMigrations.forEach((migration) => {
+            logger.log(`   - ${migration.name}`);
+          });
+        } else {
+          logger.log('✅ No migrations to execute');
+        }
+      } else {
+        logger.log('✅ Database is up to date (no pending migrations)');
+      }
+    } catch (migrationError) {
+      logger.error('❌ Error running migrations:', migrationError);
+      throw migrationError;
+    }
+
     const app = await NestFactory.create(AppModule, { bufferLogs: true });
     logger.log('✅ App module created successfully');
 
