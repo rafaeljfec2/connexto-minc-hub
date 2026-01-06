@@ -29,7 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="hidden lg:block">
             <Header />
           </div>
-          <main className="min-h-[calc(100vh-4rem)] animate-fade-in-up lg:min-h-[calc(100vh-4rem)] pt-16 lg:pt-0">
+          <main className="min-h-[calc(100vh-4rem)] animate-fade-in-up lg:min-h-[calc(100vh-4rem)] pt-[calc(4rem+env(safe-area-inset-top,0px))] lg:pt-0">
             {children}
           </main>
         </div>

@@ -29,7 +29,7 @@ export function DashboardHeaderMobile({
   }
 
   return (
-    <div className="sticky top-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 transition-all duration-300">
+    <div className="sticky top-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 transition-all duration-300 safe-area-top">
       <div className="flex items-center justify-between px-4 py-3 gap-2">
         <button
           onClick={handleMenuClick}
