@@ -153,11 +153,7 @@ export default function PeoplePage() {
 
   function handleFilterMinistryChange(value: string) {
     setFilterMinistry(value)
-    if (value === 'all') {
-      setFilterTeam('all')
-    } else {
-      setFilterTeam('all')
-    }
+    setFilterTeam('all')
   }
 
   async function handlePersonSubmit(e: React.FormEvent) {
@@ -172,6 +168,7 @@ export default function PeoplePage() {
       handleClosePersonModal()
     } catch (error) {
       // Error already handled in the hook with toast
+      console.error('Error submitting person form:', error)
     }
   }
 
@@ -191,11 +188,12 @@ export default function PeoplePage() {
 
       if (savedPerson) {
         setTimeout(() => {
-          handleOpenCreateUserModal(savedPerson!)
+          handleOpenCreateUserModal(savedPerson)
         }, 200)
       }
     } catch (error) {
       // Error already handled in the hook with toast
+      console.error('Error saving person and creating user:', error)
     }
   }
 
@@ -212,6 +210,7 @@ export default function PeoplePage() {
         deleteModal.close()
       } catch (error) {
         // Error already handled in the hook with toast
+        console.error('Error deleting person:', error)
       }
     }
   }
@@ -254,6 +253,7 @@ export default function PeoplePage() {
       handleCloseCreateUserModal()
     } catch (error) {
       // Error already handled in the hook with toast
+      console.error('Error creating user for person:', error)
     }
   }
 
