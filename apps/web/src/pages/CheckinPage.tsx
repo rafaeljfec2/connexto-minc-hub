@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Card } from '@/components/ui/Card'
-import { QRCodeSVG } from 'qrcode.react'
 import { useCheckIn } from '@/hooks/useCheckIn'
 import { useCheckInWebSocket } from '@/hooks/useCheckInWebSocket'
 import { useQrScanner } from './checkin/hooks/useQrScanner'
+import { QrCodeDisplay } from './checkin/components/QrCodeDisplay'
+import { CheckInHistory } from './checkin/components/CheckInHistory'
+import { QrScannerView } from './checkin/components/QrScannerView'
 
 type Mode = 'scan' | 'generate'
 
@@ -128,7 +129,7 @@ export default function CheckinPage() {
         })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, qrCode, isLoadingUser, user?.personId]) // Removed generateQrCode from deps to prevent loops
+  }, [mode, qrCode, isLoadingUser, user?.personId])
 
   // Fetch history on mount (only once)
   useEffect(() => {
@@ -142,55 +143,7 @@ export default function CheckinPage() {
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.personId, isLoadingUser]) // Removed fetchHistory from deps to prevent loops
-
-  // Render error message based on error type
-  function renderErrorMessage() {
-    if (!errorType) return null
-
-    const errorMessages = {
-      closed: {
-        title: 'Check-in fechado',
-        description: errorMessage || 'O horário de check-in já passou ou ainda não está disponível',
-        icon: '🕐',
-      },
-      'no-schedule': {
-        title: 'Não há agenda para hoje',
-        description: 'Você não possui escalas agendadas para esta data',
-        icon: '📅',
-      },
-      'not-linked': {
-        title: 'Usuário não vinculado',
-        description: 'Você precisa estar vinculado a uma pessoa para gerar QR Code',
-        icon: '⚠️',
-      },
-      'already-checked': {
-        title: 'Check-in já realizado',
-        description: 'Você já fez check-in para esta escala',
-        icon: '✅',
-      },
-      other: {
-        title: 'Erro',
-        description: errorMessage || 'Ocorreu um erro ao gerar o QR Code',
-        icon: '❌',
-      },
-    }
-
-    const error = errorMessages[errorType as keyof typeof errorMessages]
-    if (!error) return null
-
-    return (
-      <div className="bg-dark-100 dark:bg-dark-800 p-6 rounded-2xl mb-8">
-        <div className="text-center">
-          <div className="text-4xl mb-3">{error.icon}</div>
-          <p className="text-base font-medium text-dark-900 dark:text-dark-50 mb-2">
-            {error.title}
-          </p>
-          <p className="text-sm text-dark-600 dark:text-dark-400">{error.description}</p>
-        </div>
-      </div>
-    )
-  }
+  }, [user?.personId, isLoadingUser])
 
   function handleModeChange(newMode: Mode) {
     setMode(newMode)
@@ -243,126 +196,28 @@ export default function CheckinPage() {
             {mode === 'generate' ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-center min-h-[400px]">
-                  <Card className="w-full max-w-sm p-8">
-                    <div className="text-center">
-                      <h2 className="text-xl font-bold text-dark-900 dark:text-dark-50 mb-1">
-                        Meu Código de Check-in
-                      </h2>
-                      <p className="text-sm text-dark-600 dark:text-dark-400 mb-8">
-                        Apresente este código para leitura
-                      </p>
-
-                      {isLoadingUser || isLoading ? (
-                        <div className="flex items-center justify-center h-[200px]">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
-                        </div>
-                      ) : !user?.personId ? (
-                        <div className="bg-dark-100 dark:bg-dark-800 p-6 rounded-2xl mb-8">
-                          <div className="text-center">
-                            <p className="text-base font-medium text-dark-900 dark:text-dark-50 mb-2">
-                              Usuário não vinculado
-                            </p>
-                            <p className="text-sm text-dark-600 dark:text-dark-400">
-                              Você precisa estar vinculado a uma pessoa para gerar QR Code
-                            </p>
-                          </div>
-                        </div>
-                      ) : qrCode ? (
-                        <>
-                          <div className="bg-white p-6 rounded-2xl border border-dark-200 dark:border-dark-800 mb-8 flex justify-center">
-                            <QRCodeSVG value={qrCode} size={200} />
-                          </div>
-                          {qrCodeData?.expiresAt && (
-                            <p className="text-xs text-dark-500 dark:text-dark-400 mb-4">
-                              Expira em:{' '}
-                              {new Date(qrCodeData.expiresAt).toLocaleTimeString('pt-BR', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        renderErrorMessage()
-                      )}
-
-                      <div className="text-center">
-                        <p className="text-lg font-bold text-dark-900 dark:text-dark-50 mb-1">
-                          {user?.name || 'Usuário'}
-                        </p>
-                        <p className="text-sm font-medium text-primary-500 dark:text-primary-400">
-                          Membro
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
+                  <QrCodeDisplay
+                    isLoading={isLoading}
+                    isLoadingUser={isLoadingUser}
+                    hasPersonId={!!user?.personId}
+                    qrCode={qrCode}
+                    qrCodeData={qrCodeData}
+                    errorType={errorType}
+                    errorMessage={errorMessage}
+                    userName={user?.name}
+                  />
                 </div>
 
                 {/* History */}
-                {history.length > 0 && (
-                  <Card className="p-4">
-                    <h3 className="text-lg font-bold text-dark-900 dark:text-dark-50 mb-4">
-                      Histórico Recente
-                    </h3>
-                    <div className="space-y-2">
-                      {history.slice(0, 5).map(attendance => (
-                        <div
-                          key={attendance.id}
-                          className="flex items-center justify-between p-3 bg-dark-50 dark:bg-dark-900 rounded-lg"
-                        >
-                          <div>
-                            <p className="text-sm font-medium text-dark-900 dark:text-dark-50">
-                              {new Date(attendance.checkedInAt).toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric',
-                              })}
-                            </p>
-                            <p className="text-xs text-dark-600 dark:text-dark-400">
-                              {new Date(attendance.checkedInAt).toLocaleTimeString('pt-BR', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </p>
-                          </div>
-                          <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-full">
-                            <p className="text-xs font-medium text-green-700 dark:text-green-400">
-                              Presente
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                )}
+                <CheckInHistory history={history} compact />
               </div>
             ) : (
               <div className="flex items-center justify-center min-h-[400px]">
-                <Card className="w-full max-w-sm p-8">
-                  <div className="text-center">
-                    <div ref={scannerRef} className="relative mb-6">
-                      <div id="qr-reader" className="w-full" />
-                      {scanError && (
-                        <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                          <p className="text-sm text-red-700 dark:text-red-400">{scanError}</p>
-                        </div>
-                      )}
-                      {!isScanning && !scanError && (
-                        <div className="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-                          <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                            Iniciando câmera...
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-base text-dark-900 dark:text-dark-50 mb-2">
-                      Posicione o QR code dentro da área
-                    </p>
-                    <p className="text-sm text-dark-600 dark:text-dark-400">
-                      A câmera será ativada quando você permitir o acesso
-                    </p>
-                  </div>
-                </Card>
+                <QrScannerView
+                  scannerRef={scannerRef}
+                  isScanning={isScanning}
+                  scanError={scanError}
+                />
               </div>
             )}
           </div>
@@ -374,116 +229,22 @@ export default function CheckinPage() {
         <PageHeader title="Check-in" description="Gere ou escaneie QR codes para check-in" />
         <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Generate QR Code */}
-          <Card className="p-8">
-            <div className="text-center">
-              <h2 className="text-xl font-bold text-dark-900 dark:text-dark-50 mb-1">
-                Meu Código de Check-in
-              </h2>
-              <p className="text-sm text-dark-600 dark:text-dark-400 mb-8">
-                Apresente este código para leitura
-              </p>
-
-              {isLoadingUser || isLoading ? (
-                <div className="flex items-center justify-center h-[200px]">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
-                </div>
-              ) : !user?.personId ? (
-                <div className="bg-dark-100 dark:bg-dark-800 p-6 rounded-2xl mb-8">
-                  <div className="text-center">
-                    <p className="text-base font-medium text-dark-900 dark:text-dark-50 mb-2">
-                      Usuário não vinculado
-                    </p>
-                    <p className="text-sm text-dark-600 dark:text-dark-400">
-                      Você precisa estar vinculado a uma pessoa para gerar QR Code
-                    </p>
-                  </div>
-                </div>
-              ) : qrCode ? (
-                <>
-                  <div className="bg-white p-6 rounded-2xl border border-dark-200 dark:border-dark-800 mb-8 flex justify-center">
-                    <QRCodeSVG value={qrCode} size={200} />
-                  </div>
-                  {qrCodeData?.expiresAt && (
-                    <p className="text-xs text-dark-500 dark:text-dark-400 mb-4">
-                      Expira em:{' '}
-                      {new Date(qrCodeData.expiresAt).toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  )}
-                </>
-              ) : (
-                renderErrorMessage()
-              )}
-
-              <div className="text-center">
-                <p className="text-lg font-bold text-dark-900 dark:text-dark-50 mb-1">
-                  {user?.name || 'Usuário'}
-                </p>
-                <p className="text-sm font-medium text-primary-500 dark:text-primary-400">Membro</p>
-              </div>
-            </div>
-          </Card>
+          <QrCodeDisplay
+            isLoading={isLoading}
+            isLoadingUser={isLoadingUser}
+            hasPersonId={!!user?.personId}
+            qrCode={qrCode}
+            qrCodeData={qrCodeData}
+            errorType={errorType}
+            errorMessage={errorMessage}
+            userName={user?.name}
+          />
 
           {/* Scan QR Code */}
-          <Card className="p-8">
-            <div className="text-center">
-              <h2 className="text-xl font-bold text-dark-900 dark:text-dark-50 mb-1">
-                Ler QR Code
-              </h2>
-              <p className="text-sm text-dark-600 dark:text-dark-400 mb-8">
-                Escaneie o QR code para registrar check-in
-              </p>
-
-              <div ref={scannerRef}>
-                <div id="qr-reader" className="w-full" />
-                {scanError && (
-                  <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                    <p className="text-sm text-red-700 dark:text-red-400">{scanError}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
+          <QrScannerView scannerRef={scannerRef} isScanning={isScanning} scanError={scanError} />
 
           {/* History */}
-          {history.length > 0 && (
-            <Card className="p-6 lg:col-span-2">
-              <h3 className="text-lg font-bold text-dark-900 dark:text-dark-50 mb-4">
-                Histórico de Check-ins
-              </h3>
-              <div className="space-y-2">
-                {history.map(attendance => (
-                  <div
-                    key={attendance.id}
-                    className="flex items-center justify-between p-3 bg-dark-50 dark:bg-dark-900 rounded-lg"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-dark-900 dark:text-dark-50">
-                        {new Date(attendance.checkedInAt).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                        })}
-                      </p>
-                      <p className="text-xs text-dark-600 dark:text-dark-400">
-                        {new Date(attendance.checkedInAt).toLocaleTimeString('pt-BR', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
-                    <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 rounded-full">
-                      <p className="text-xs font-medium text-green-700 dark:text-green-400">
-                        Presente
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
+          <CheckInHistory history={history} />
         </div>
       </main>
     </>
