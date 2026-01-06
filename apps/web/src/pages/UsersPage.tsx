@@ -6,23 +6,21 @@ import { Select } from '@/components/ui/Select'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
-import { useCrud } from '@/hooks/useCrud'
 import { useViewMode } from '@/hooks/useViewMode'
 import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
 import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
-import { User, UserRole, Person } from '@/types'
+import { User, UserRole } from '@minc-hub/shared/types'
 import { UserCard } from './users/components/UserCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { MOCK_USERS, MOCK_PEOPLE } from '@/lib/mockData'
 import { ROLE_OPTIONS, getRoleLabel } from '@/lib/userUtils'
+import { useUsers } from '@/hooks/useUsers'
+import { usePeople } from '@/hooks/usePeople'
 
 export default function UsersPage() {
-  const { items: users, create, update, remove } = useCrud<User>({
-    initialItems: MOCK_USERS,
-  })
-  const [people] = useState<Person[]>(MOCK_PEOPLE)
+  const { users, isLoading, createUser, updateUser, deleteUser } = useUsers()
+  const { people } = usePeople()
   const modal = useModal()
   const deleteModal = useModal()
   const [editingUser, setEditingUser] = useState<User | null>(null)
@@ -92,26 +90,30 @@ export default function UsersPage() {
     })
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (editingUser) {
-      update(editingUser.id, {
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        personId: formData.personId || undefined,
-      })
-    } else {
-      create({
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        personId: formData.personId || undefined,
-      })
+    try {
+      if (editingUser) {
+        await updateUser(editingUser.id, {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          personId: formData.personId || undefined,
+        })
+      } else {
+        await createUser({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+          personId: formData.personId || undefined,
+        })
+      }
+      handleCloseModal()
+    } catch (error) {
+      // Error already handled in the hook with toast
     }
-
-    handleCloseModal()
   }
 
   function handleDeleteClick(id: string) {
@@ -119,10 +121,15 @@ export default function UsersPage() {
     deleteModal.open()
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (deletingId) {
-      remove(deletingId)
-      setDeletingId(null)
+      try {
+        await deleteUser(deletingId)
+        setDeletingId(null)
+        deleteModal.close()
+      } catch (error) {
+        // Error already handled in the hook with toast
+      }
     }
   }
 
@@ -136,8 +143,8 @@ export default function UsersPage() {
           user={user}
           onEdit={handleOpenModal}
           onDelete={handleDeleteClick}
-          isUpdating={false}
-          isDeleting={false}
+          isUpdating={isLoading}
+          isDeleting={isLoading}
         />
       ))}
     </div>
@@ -227,22 +234,24 @@ export default function UsersPage() {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
           />
-          <Input
-            label="Email *"
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            required
-          />
-          {!editingUser && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Senha *"
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required={!editingUser}
+              label="Email *"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
             />
-          )}
+            {!editingUser && (
+              <Input
+                label="Senha *"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required={!editingUser}
+              />
+            )}
+          </div>
           <Select
             label="Papel *"
             value={formData.role}
@@ -260,6 +269,7 @@ export default function UsersPage() {
                 label: person.name,
               })),
             ]}
+            disabled={people.length === 0}
           />
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleCloseModal}>

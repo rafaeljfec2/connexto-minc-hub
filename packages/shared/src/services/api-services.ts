@@ -7,6 +7,7 @@ import type {
   Attendance,
   Church,
   Ministry,
+  User,
   ApiResponse,
 } from '../types'
 
@@ -296,6 +297,66 @@ export function createApiServices(api: AxiosInstance) {
         }),
       delete: (id: string) =>
         api.delete<ApiResponse<void>>(`/ministries/${id}`).then(() => {
+          // Delete doesn't return data
+        }),
+    },
+
+    usersService: {
+      getAll: () =>
+        api.get<ApiResponse<User[]>>('/users').then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<User[]>
+            return apiResponse.data ?? []
+          }
+          return (res.data as unknown as User[]) ?? []
+        }),
+      getById: (id: string) =>
+        api.get<ApiResponse<User>>(`/users/${id}`).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<User>
+            if (!apiResponse.data) {
+              throw new Error('User not found')
+            }
+            return apiResponse.data
+          }
+          const user = res.data as unknown as User
+          if (!user) {
+            throw new Error('User not found')
+          }
+          return user
+        }),
+      create: (data: CreateEntity<User> & { password: string }) =>
+        api.post<ApiResponse<User>>('/users', data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<User>
+            if (!apiResponse.data) {
+              throw new Error('Failed to create user')
+            }
+            return apiResponse.data
+          }
+          const user = res.data as unknown as User
+          if (!user) {
+            throw new Error('Failed to create user')
+          }
+          return user
+        }),
+      update: (id: string, data: Partial<User>) =>
+        api.patch<ApiResponse<User>>(`/users/${id}`, data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<User>
+            if (!apiResponse.data) {
+              throw new Error('Failed to update user')
+            }
+            return apiResponse.data
+          }
+          const user = res.data as unknown as User
+          if (!user) {
+            throw new Error('Failed to update user')
+          }
+          return user
+        }),
+      delete: (id: string) =>
+        api.delete<ApiResponse<void>>(`/users/${id}`).then(() => {
           // Delete doesn't return data
         }),
     },
