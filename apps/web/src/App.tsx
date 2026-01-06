@@ -9,12 +9,15 @@ import LoginPage from '@/pages/LoginPage'
 import { protectedRoutes } from './navigator/routes'
 import { ROUTES } from './navigator/routes.constants'
 
+import { ScrollToTop } from '@/components/routing/ScrollToTop'
+
 function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
           <ChurchProvider>
+            <ScrollToTop />
             <Routes>
               <Route path={ROUTES.LOGIN} element={<LoginPage />} />
               {protectedRoutes.map(route => (

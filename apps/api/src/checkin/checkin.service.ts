@@ -92,102 +92,16 @@ export class CheckinService {
     }
 
     // Collect all active team IDs the person belongs to
-    // This considers both relationships:
-    // 1. N:N relationship via team_members table (all teams person serves in)
-    // 2. 1:N relationship via persons.team_id (person's primary/fixed team)
-    const teamIds: string[] = [];
+    const uniqueTeamIds = await this.getActiveTeamIds(person, user);
 
-    // 1. Get teams from team_members table (N:N relationship) - active teams only
-    const personTeamsFromMembers = await this.teamMembersRepository
-      .createQueryBuilder('teamMember')
-      .select(['teamMember.teamId'])
-      .innerJoin('teamMember.team', 'team')
-      .where('teamMember.personId = :personId', { personId: person.id })
-      .andWhere('team.isActive = :isActive', { isActive: true })
-      .andWhere('team.deletedAt IS NULL')
-      .getMany();
-
-    teamIds.push(...personTeamsFromMembers.map((tm) => tm.teamId));
-
-    // 2. Check if person has a direct team_id (1:N relationship - primary/fixed team)
-    if (person.teamId) {
-      // Verify if the direct team is active and not deleted
-      const directTeam = await this.teamsRepository.findOne({
-        where: {
-          id: person.teamId,
-          isActive: true,
-          deletedAt: IsNull(),
-        },
-        select: ['id'],
-      });
-
-      if (directTeam) {
-        teamIds.push(directTeam.id);
-      }
-    }
-
-    // Remove duplicates (in case the primary team is also in team_members)
-    const uniqueTeamIds = [...new Set(teamIds)];
-
-    if (uniqueTeamIds.length === 0) {
-      // Check if person belongs to any team (including inactive) for better error message
-      const allPersonTeamsFromMembers = await this.teamMembersRepository
-        .createQueryBuilder('teamMember')
-        .where('teamMember.personId = :personId', { personId: person.id })
-        .getCount();
-
-      const directTeamExists = person.teamId
-        ? (await this.teamsRepository.count({ where: { id: person.teamId } })) > 0
-        : false;
-
-      if (allPersonTeamsFromMembers === 0 && !directTeamExists) {
-        throw new BadRequestException(
-          `Person ${person.name} (ID: ${person.id}) linked to user ${user.email} is not a member of any team. Please add this person to at least one team.`,
-        );
-      } else {
-        const totalTeams = allPersonTeamsFromMembers + (directTeamExists ? 1 : 0);
-        throw new BadRequestException(
-          `Person ${person.name} (ID: ${person.id}) linked to user ${user.email} is associated with ${totalTeams} team(s), but none of them are active. Please activate at least one team.`,
-        );
-      }
-    }
-
-    // Find schedules for the date where person's teams are assigned (optimized: single query)
-    const validSchedules = await this.schedulesRepository
-      .createQueryBuilder('schedule')
-      .select([
-        'schedule.id',
-        'schedule.serviceId',
-        'schedule.date',
-        'service.id',
-        'service.churchId',
-        'service.type',
-        'service.name',
-        'service.time',
-        'service.dayOfWeek',
-      ])
-      .leftJoinAndSelect('schedule.service', 'service')
-      .innerJoin('schedule.scheduleTeams', 'scheduleTeam')
-      .where('CAST(schedule.date AS DATE) = :date', {
-        date: targetDate.toISOString().split('T')[0],
-      })
-      .andWhere('schedule.deletedAt IS NULL')
-      .andWhere('service.isActive = true')
-      .andWhere('service.deletedAt IS NULL')
-      .andWhere('scheduleTeam.teamId IN (:...teamIds)', { teamIds: uniqueTeamIds })
-      .getMany();
-
-    if (validSchedules.length === 0) {
-      throw new NotFoundException(
-        `No schedules found for person ${person.name} (ID: ${person.id}) on date ${targetDate.toISOString().split('T')[0]}`,
-      );
-    }
+    // Find schedules for the date where person's teams are assigned
+    const validSchedules = await this.findValidSchedules(uniqueTeamIds, targetDate, person);
 
     // Get the first valid schedule (or the one for today's service)
     const schedule = validSchedules[0];
 
     // Service is already loaded from the query above
-    const service = (schedule as any).service as ServiceEntity;
+    const service = schedule.service;
 
     if (!service) {
       throw new NotFoundException('Service not found');
@@ -240,30 +154,7 @@ export class CheckinService {
     qrCodeDto: ValidateQrCodeDto,
     checkedInBy: UserEntity,
   ): Promise<AttendanceEntity> {
-    let qrCodeData: QrCodeDataDto;
-
-    try {
-      const parsed = JSON.parse(qrCodeDto.qrCodeData);
-      qrCodeData = parsed as QrCodeDataDto;
-    } catch (error) {
-      throw new BadRequestException('Invalid QR Code format');
-    }
-
-    // Validate QR Code structure
-    if (
-      !qrCodeData.scheduleId ||
-      !qrCodeData.personId ||
-      !qrCodeData.serviceId ||
-      !qrCodeData.date ||
-      !qrCodeData.timestamp
-    ) {
-      throw new BadRequestException('Invalid QR Code data structure');
-    }
-
-    // Validate timestamp (QR Code expires after 1 hour)
-    if (isQrCodeExpired(qrCodeData.timestamp)) {
-      throw new BadRequestException('QR Code has expired');
-    }
+    const qrCodeData = this.validateQrCodeData(qrCodeDto);
 
     // Validate schedule exists
     const schedule = await this.schedulesRepository
@@ -287,19 +178,10 @@ export class CheckinService {
       throw new NotFoundException('Schedule not found');
     }
 
+    this.validateScheduleAndService(schedule, qrCodeData);
+
     // Service is already loaded from the query above
-    const service = (schedule as any).service as ServiceEntity;
-
-    // Validate service matches
-    if (schedule.serviceId !== qrCodeData.serviceId) {
-      throw new BadRequestException('QR Code service does not match schedule service');
-    }
-
-    // Validate date matches
-    const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
-    if (scheduleDate !== qrCodeData.date) {
-      throw new BadRequestException('QR Code date does not match schedule date');
-    }
+    const service = schedule.service;
 
     // Validate person exists
     const person = await this.personsRepository.findOne({
@@ -371,5 +253,148 @@ export class CheckinService {
       .orderBy('attendance.checkedInAt', 'DESC')
       .limit(limit)
       .getMany();
+  }
+
+  /* Private Helper Methods */
+
+  private async getActiveTeamIds(person: PersonEntity, user: UserEntity): Promise<string[]> {
+    const teamIds: string[] = [];
+
+    // 1. Get teams from team_members table (N:N relationship) - active teams only
+    const personTeamsFromMembers = await this.teamMembersRepository
+      .createQueryBuilder('teamMember')
+      .select(['teamMember.teamId'])
+      .innerJoin('teamMember.team', 'team')
+      .where('teamMember.personId = :personId', { personId: person.id })
+      .andWhere('team.isActive = :isActive', { isActive: true })
+      .andWhere('team.deletedAt IS NULL')
+      .getMany();
+
+    teamIds.push(...personTeamsFromMembers.map((tm) => tm.teamId));
+
+    // 2. Check if person has a direct team_id (1:N relationship - primary/fixed team)
+    if (person.teamId) {
+      // Verify if the direct team is active and not deleted
+      const directTeam = await this.teamsRepository.findOne({
+        where: {
+          id: person.teamId,
+          isActive: true,
+          deletedAt: IsNull(),
+        },
+        select: ['id'],
+      });
+
+      if (directTeam) {
+        teamIds.push(directTeam.id);
+      }
+    }
+
+    // Remove duplicates
+    const uniqueTeamIds = [...new Set(teamIds)];
+
+    if (uniqueTeamIds.length === 0) {
+      // Logic for meaningful error message
+      const allPersonTeamsFromMembers = await this.teamMembersRepository
+        .createQueryBuilder('teamMember')
+        .where('teamMember.personId = :personId', { personId: person.id })
+        .getCount();
+
+      const directTeamExists = person.teamId
+        ? (await this.teamsRepository.count({ where: { id: person.teamId } })) > 0
+        : false;
+
+      if (allPersonTeamsFromMembers === 0 && !directTeamExists) {
+        throw new BadRequestException(
+          `Person ${person.name} (ID: ${person.id}) linked to user ${user.email} is not a member of any team. Please add this person to at least one team.`,
+        );
+      } else {
+        const totalTeams = allPersonTeamsFromMembers + (directTeamExists ? 1 : 0);
+        throw new BadRequestException(
+          `Person ${person.name} (ID: ${person.id}) linked to user ${user.email} is associated with ${totalTeams} team(s), but none of them are active. Please activate at least one team.`,
+        );
+      }
+    }
+
+    return uniqueTeamIds;
+  }
+
+  private async findValidSchedules(
+    teamIds: string[],
+    date: Date,
+    person: PersonEntity,
+  ): Promise<ScheduleEntity[]> {
+    const validSchedules = await this.schedulesRepository
+      .createQueryBuilder('schedule')
+      .select([
+        'schedule.id',
+        'schedule.serviceId',
+        'schedule.date',
+        'service.id',
+        'service.churchId',
+        'service.type',
+        'service.name',
+        'service.time',
+        'service.dayOfWeek',
+      ])
+      .leftJoinAndSelect('schedule.service', 'service')
+      .innerJoin('schedule.scheduleTeams', 'scheduleTeam')
+      .where('CAST(schedule.date AS DATE) = :date', {
+        date: date.toISOString().split('T')[0],
+      })
+      .andWhere('schedule.deletedAt IS NULL')
+      .andWhere('service.isActive = true')
+      .andWhere('service.deletedAt IS NULL')
+      .andWhere('scheduleTeam.teamId IN (:...teamIds)', { teamIds })
+      .getMany();
+
+    if (validSchedules.length === 0) {
+      throw new NotFoundException(
+        `No schedules found for person ${person.name} (ID: ${person.id}) on date ${date.toISOString().split('T')[0]}`,
+      );
+    }
+
+    return validSchedules;
+  }
+
+  private validateQrCodeData(qrCodeDto: ValidateQrCodeDto): QrCodeDataDto {
+    let qrCodeData: QrCodeDataDto;
+
+    try {
+      const parsed = JSON.parse(qrCodeDto.qrCodeData);
+      qrCodeData = parsed as QrCodeDataDto;
+    } catch (error) {
+      throw new BadRequestException('Invalid QR Code format');
+    }
+
+    // Validate QR Code structure
+    if (
+      !qrCodeData.scheduleId ||
+      !qrCodeData.personId ||
+      !qrCodeData.serviceId ||
+      !qrCodeData.date ||
+      !qrCodeData.timestamp
+    ) {
+      throw new BadRequestException('Invalid QR Code data structure');
+    }
+
+    // Validate timestamp (QR Code expires after 1 hour)
+    if (isQrCodeExpired(qrCodeData.timestamp)) {
+      throw new BadRequestException('QR Code has expired');
+    }
+
+    return qrCodeData;
+  }
+
+  private validateScheduleAndService(schedule: ScheduleEntity, qrCodeData: QrCodeDataDto): void {
+    // Validate service matches
+    if (schedule.serviceId !== qrCodeData.serviceId) {
+      throw new BadRequestException('QR Code service does not match schedule service');
+    }
+
+    // Validate date matches
+    const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
+    if (scheduleDate !== qrCodeData.date) {
+      throw new BadRequestException('QR Code date does not match schedule date');
+    }
   }
 }
