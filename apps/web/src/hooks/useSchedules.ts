@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Schedule } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -6,6 +6,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
 import { ApiResponse } from '@minc-hub/shared/types'
+import { getCachedFetch } from './utils/fetchCache'
 
 type CreateSchedule = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -39,6 +40,7 @@ export function useSchedules(): UseSchedulesReturn {
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
+  const hasFetchedRef = useRef<string | null>(null)
 
   const fetchSchedules = useCallback(
     async (serviceId?: string, startDate?: string, endDate?: string) => {
@@ -47,30 +49,38 @@ export function useSchedules(): UseSchedulesReturn {
         return
       }
 
-      try {
-        setIsLoading(true)
-        setError(null)
-        const data = await apiServices.schedulesService.getAll(serviceId, startDate, endDate)
-        // Filter schedules by selected church (via service.churchId)
-        const filteredData = data.filter(schedule => {
-          // If schedule has service relationship, filter by churchId
-          if ('service' in schedule && (schedule as any).service) {
-            return (schedule as any).service.churchId === selectedChurch.id
+      const cacheKey = `schedules-${selectedChurch.id}-${serviceId ?? 'all'}-${startDate ?? ''}-${endDate ?? ''}`
+      
+      return getCachedFetch(
+        cacheKey,
+        async () => {
+          try {
+            setIsLoading(true)
+            setError(null)
+            const data = await apiServices.schedulesService.getAll(serviceId, startDate, endDate)
+            // Filter schedules by selected church (via service.churchId)
+            const filteredData = data.filter(schedule => {
+              // If schedule has service relationship, filter by churchId
+              if ('service' in schedule && (schedule as any).service) {
+                return (schedule as any).service.churchId === selectedChurch.id
+              }
+              // Otherwise, we need to fetch service to check churchId
+              // For now, include all schedules and let the backend filter
+              return true
+            })
+            setSchedules(filteredData)
+            return filteredData
+          } catch (err) {
+            const error = err instanceof Error ? err : new Error('Failed to fetch schedules')
+            setError(error)
+            throw error
+          } finally {
+            setIsLoading(false)
           }
-          // Otherwise, we need to fetch service to check churchId
-          // For now, include all schedules and let the backend filter
-          return true
-        })
-        setSchedules(filteredData)
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to fetch schedules')
-        setError(error)
-        throw error
-      } finally {
-        setIsLoading(false)
-      }
+        }
+      )
     },
-    [selectedChurch]
+    [selectedChurch?.id]
   )
 
   const getScheduleById = useCallback(async (id: string): Promise<Schedule | null> => {
@@ -159,14 +169,23 @@ export function useSchedules(): UseSchedulesReturn {
 
   // Auto-fetch on mount and when church changes
   useEffect(() => {
+    const churchId = selectedChurch?.id
+    // Prevent duplicate calls for the same church
+    if (hasFetchedRef.current === churchId) {
+      return
+    }
+
     if (selectedChurch) {
+      hasFetchedRef.current = churchId ?? null
       fetchSchedules().catch(() => {
         // Error already handled in fetchSchedules
       })
     } else {
+      hasFetchedRef.current = null
       setSchedules([])
     }
-  }, [fetchSchedules, selectedChurch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChurch?.id]) // Only depend on selectedChurch.id to prevent loops
 
   return {
     schedules,

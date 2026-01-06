@@ -44,7 +44,8 @@ export function ChurchProvider({ children }: ChurchProviderProps) {
         localStorage.setItem(SELECTED_CHURCH_STORAGE_KEY, churches[0].id)
       }
     }
-  }, [churches, selectedChurch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [churches.length, selectedChurch?.id]) // Only depend on length and id to prevent loops
 
   const setSelectedChurch = useCallback((church: Church | null) => {
     setSelectedChurchState(church)

@@ -11,6 +11,7 @@ import { ServiceEntity } from '../services/entities/service.entity';
 import { AttendanceEntity } from '../attendances/entities/attendance.entity';
 import { PersonEntity } from '../persons/entities/person.entity';
 import { TeamMemberEntity } from '../teams/entities/team-member.entity';
+import { TeamEntity } from '../teams/entities/team.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
 import { UsersService } from '../users/users.service';
@@ -24,6 +25,7 @@ import { UsersService } from '../users/users.service';
       AttendanceEntity,
       PersonEntity,
       TeamMemberEntity,
+      TeamEntity,
       UserEntity,
     ]),
     JwtModule,

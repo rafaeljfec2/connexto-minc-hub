@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useCallback,
+  useRef,
   type ReactNode,
 } from 'react'
 import { User, UserRole } from '@minc-hub/shared/types'
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Restaura o usuário do localStorage na inicialização
   const [user, setUser] = useState<User | null>(() => getUserFromStorage())
   const [isLoading, setIsLoading] = useState(true)
+  const hasCheckedAuthRef = useRef<boolean>(false)
 
   const authService = useMemo(() => {
     try {
@@ -109,7 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const checkAuth = useCallback(async () => {
     // Primeiro, garante que o usuário do storage está no estado
     const storedUser = getUserFromStorage()
-    if (storedUser && !user) {
+    if (storedUser) {
       setUser(storedUser)
     }
 
@@ -147,12 +149,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [authService, user])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authService]) // Removed user from deps to prevent loops
 
   useEffect(() => {
+    // Prevent duplicate calls
+    if (hasCheckedAuthRef.current) {
+      return
+    }
+
     // Sempre verifica autenticação na inicialização
     // Quando usa cookies, não precisa verificar localStorage
     // A API vai retornar o usuário se estiver autenticado via cookies
+    hasCheckedAuthRef.current = true
     checkAuth()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Executa apenas uma vez na montagem

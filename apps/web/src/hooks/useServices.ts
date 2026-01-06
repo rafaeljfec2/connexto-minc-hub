@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Service } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -6,6 +6,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
 import { ApiResponse } from '@minc-hub/shared/types'
+import { getCachedFetch } from './utils/fetchCache'
 
 type CreateService = Omit<Service, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -39,6 +40,7 @@ export function useServices(): UseServicesReturn {
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
+  const hasFetchedRef = useRef<string | null>(null)
 
   const fetchServices = useCallback(async () => {
     if (!selectedChurch) {
@@ -46,19 +48,27 @@ export function useServices(): UseServicesReturn {
       return
     }
 
-    try {
-      setIsLoading(true)
-      setError(null)
-      const data = await apiServices.servicesService.getAll(selectedChurch.id)
-      setServices(data)
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch services')
-      setError(error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [selectedChurch])
+    const cacheKey = `services-${selectedChurch.id}`
+    
+    return getCachedFetch(
+      cacheKey,
+      async () => {
+        try {
+          setIsLoading(true)
+          setError(null)
+          const data = await apiServices.servicesService.getAll(selectedChurch.id)
+          setServices(data)
+          return data
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error('Failed to fetch services')
+          setError(error)
+          throw error
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    )
+  }, [selectedChurch?.id])
 
   const getServiceById = useCallback(async (id: string): Promise<Service | null> => {
     try {
@@ -146,14 +156,23 @@ export function useServices(): UseServicesReturn {
 
   // Auto-fetch on mount and when church changes
   useEffect(() => {
+    const churchId = selectedChurch?.id
+    // Prevent duplicate calls for the same church
+    if (hasFetchedRef.current === churchId) {
+      return
+    }
+
     if (selectedChurch) {
+      hasFetchedRef.current = churchId ?? null
       fetchServices().catch(() => {
         // Error already handled in fetchServices
       })
     } else {
+      hasFetchedRef.current = null
       setServices([])
     }
-  }, [fetchServices, selectedChurch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChurch?.id]) // Only depend on selectedChurch.id to prevent loops
 
   return {
     services,

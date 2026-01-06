@@ -5,13 +5,14 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull } from 'typeorm';
 import { ScheduleEntity } from '../schedules/entities/schedule.entity';
 import { ScheduleTeamEntity } from '../schedules/entities/schedule-team.entity';
 import { ServiceEntity } from '../services/entities/service.entity';
 import { AttendanceEntity, AttendanceMethod } from '../attendances/entities/attendance.entity';
 import { PersonEntity } from '../persons/entities/person.entity';
 import { TeamMemberEntity } from '../teams/entities/team-member.entity';
+import { TeamEntity } from '../teams/entities/team.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { GenerateQrCodeDto } from './dto/generate-qr-code.dto';
 import { ValidateQrCodeDto } from './dto/validate-qr-code.dto';
@@ -22,31 +23,48 @@ import { validateCheckInTime, isQrCodeExpired } from './utils/checkin-time.utils
 export class CheckinService {
   constructor(
     @InjectRepository(ScheduleEntity)
-    private schedulesRepository: Repository<ScheduleEntity>,
+    private readonly schedulesRepository: Repository<ScheduleEntity>,
     @InjectRepository(ScheduleTeamEntity)
-    private scheduleTeamsRepository: Repository<ScheduleTeamEntity>,
+    private readonly scheduleTeamsRepository: Repository<ScheduleTeamEntity>,
     @InjectRepository(ServiceEntity)
-    private servicesRepository: Repository<ServiceEntity>,
+    private readonly servicesRepository: Repository<ServiceEntity>,
     @InjectRepository(AttendanceEntity)
-    private attendancesRepository: Repository<AttendanceEntity>,
+    private readonly attendancesRepository: Repository<AttendanceEntity>,
     @InjectRepository(PersonEntity)
-    private personsRepository: Repository<PersonEntity>,
+    private readonly personsRepository: Repository<PersonEntity>,
     @InjectRepository(TeamMemberEntity)
-    private teamMembersRepository: Repository<TeamMemberEntity>,
+    private readonly teamMembersRepository: Repository<TeamMemberEntity>,
+    @InjectRepository(TeamEntity)
+    private readonly teamsRepository: Repository<TeamEntity>,
   ) {}
 
   /**
    * Generate QR Code for check-in
+   *
+   * This method considers two types of team relationships:
+   * 1. Direct relationship (1:N): persons.team_id - the person's primary/fixed team
+   * 2. Many-to-many relationship (N:N): team_members table - all teams the person serves in
+   *
+   * A person can:
+   * - Serve in multiple teams from the same ministry
+   * - Serve in teams from different ministries
+   * - Have a fixed team (persons.team_id) and also help in other teams occasionally (team_members)
+   *
    * Validates:
-   * 1. Person has a schedule for the date
-   * 2. Check-in is allowed 30 minutes before service time
+   * - User is linked to a person
+   * - Person belongs to at least one active team (from either relationship)
+   * - There is an active schedule for the person's teams on the target date
+   * - Check-in time is within the allowed window (30 minutes before service)
+   * - Person has not already checked in for this schedule
    */
   async generateQrCode(
     user: UserEntity,
     generateQrCodeDto: GenerateQrCodeDto,
   ): Promise<{ qrCode: string; schedule: ScheduleEntity; expiresAt: Date }> {
     if (!user.personId) {
-      throw new BadRequestException('User must be linked to a person to generate QR code');
+      throw new BadRequestException(
+        `User ${user.email} (${user.name}) must be linked to a person to generate QR code`,
+      );
     }
 
     const person = await this.personsRepository.findOne({
@@ -54,23 +72,74 @@ export class CheckinService {
     });
 
     if (!person) {
-      throw new NotFoundException('Person not found');
+      throw new NotFoundException(
+        `Person with ID ${user.personId} not found for user ${user.email}`,
+      );
     }
 
     // Get date (default to today)
     const targetDate = generateQrCodeDto.date ? new Date(generateQrCodeDto.date) : new Date();
     targetDate.setHours(0, 0, 0, 0);
 
-    // Find teams the person belongs to (optimized: single query)
-    const personTeams = await this.teamMembersRepository.find({
-      where: { personId: person.id },
-      select: ['teamId'],
-    });
+    // Collect all active team IDs the person belongs to
+    // This considers both relationships:
+    // 1. N:N relationship via team_members table (all teams person serves in)
+    // 2. 1:N relationship via persons.team_id (person's primary/fixed team)
+    const teamIds: string[] = [];
 
-    const teamIds = personTeams.map((tm) => tm.teamId);
+    // 1. Get teams from team_members table (N:N relationship) - active teams only
+    const personTeamsFromMembers = await this.teamMembersRepository
+      .createQueryBuilder('teamMember')
+      .select(['teamMember.teamId'])
+      .innerJoin('teamMember.team', 'team')
+      .where('teamMember.personId = :personId', { personId: person.id })
+      .andWhere('team.isActive = :isActive', { isActive: true })
+      .andWhere('team.deletedAt IS NULL')
+      .getMany();
 
-    if (teamIds.length === 0) {
-      throw new BadRequestException('Person must belong to at least one team');
+    teamIds.push(...personTeamsFromMembers.map((tm) => tm.teamId));
+
+    // 2. Check if person has a direct team_id (1:N relationship - primary/fixed team)
+    if (person.teamId) {
+      // Verify if the direct team is active and not deleted
+      const directTeam = await this.teamsRepository.findOne({
+        where: {
+          id: person.teamId,
+          isActive: true,
+          deletedAt: IsNull(),
+        },
+        select: ['id'],
+      });
+
+      if (directTeam) {
+        teamIds.push(directTeam.id);
+      }
+    }
+
+    // Remove duplicates (in case the primary team is also in team_members)
+    const uniqueTeamIds = [...new Set(teamIds)];
+
+    if (uniqueTeamIds.length === 0) {
+      // Check if person belongs to any team (including inactive) for better error message
+      const allPersonTeamsFromMembers = await this.teamMembersRepository
+        .createQueryBuilder('teamMember')
+        .where('teamMember.personId = :personId', { personId: person.id })
+        .getCount();
+
+      const directTeamExists = person.teamId
+        ? (await this.teamsRepository.count({ where: { id: person.teamId } })) > 0
+        : false;
+
+      if (allPersonTeamsFromMembers === 0 && !directTeamExists) {
+        throw new BadRequestException(
+          `Person ${person.name} (ID: ${person.id}) linked to user ${user.email} is not a member of any team. Please add this person to at least one team.`,
+        );
+      } else {
+        const totalTeams = allPersonTeamsFromMembers + (directTeamExists ? 1 : 0);
+        throw new BadRequestException(
+          `Person ${person.name} (ID: ${person.id}) linked to user ${user.email} is associated with ${totalTeams} team(s), but none of them are active. Please activate at least one team.`,
+        );
+      }
     }
 
     // Find schedules for the date where person's teams are assigned (optimized: single query)
@@ -92,19 +161,22 @@ export class CheckinService {
       .where('schedule.date = :date', { date: targetDate })
       .andWhere('schedule.deletedAt IS NULL')
       .andWhere('service.isActive = true')
-      .andWhere('scheduleTeam.teamId IN (:...teamIds)', { teamIds })
+      .andWhere('service.deletedAt IS NULL')
+      .andWhere('scheduleTeam.teamId IN (:...teamIds)', { teamIds: uniqueTeamIds })
       .getMany();
 
     if (validSchedules.length === 0) {
-      throw new NotFoundException('No schedules found for this person on this date');
+      throw new NotFoundException(
+        `No schedules found for person ${person.name} (ID: ${person.id}) on date ${targetDate.toISOString().split('T')[0]}`,
+      );
     }
 
     // Get the first valid schedule (or the one for today's service)
     const schedule = validSchedules[0];
-    
+
     // Service is already loaded from the query above
     const service = (schedule as any).service as ServiceEntity;
-    
+
     if (!service) {
       throw new NotFoundException('Service not found');
     }

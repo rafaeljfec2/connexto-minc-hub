@@ -4,7 +4,7 @@ import { BrandText } from '@/components/ui/BrandText'
 import { ComboBox, ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useChurches } from '@/hooks/useChurches'
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 
 const HEADER_CLASSES = {
   container:
@@ -17,15 +17,23 @@ const HEADER_CLASSES = {
 
 export function Header() {
   const { selectedChurch, setSelectedChurch } = useChurch()
-  const { churches } = useChurches()
+  const { churches, isLoading } = useChurches()
+
+  // Debug log
+  useEffect(() => {
+    console.log('Header - churches:', churches, 'isLoading:', isLoading)
+  }, [churches, isLoading])
 
   // Convert churches to ComboBox options
   const churchOptions: ComboBoxOption<string>[] = useMemo(
-    () =>
-      churches.map(church => ({
+    () => {
+      const options = churches.map(church => ({
         value: church.id,
         label: church.name,
-      })),
+      }))
+      console.log('Header - churchOptions:', options)
+      return options
+    },
     [churches]
   )
 
@@ -103,23 +111,21 @@ export function Header() {
             <BrandText size="sm" />
           </div>
           <div className={HEADER_CLASSES.profile}>
-            {churches.length > 0 && (
-              <div className="min-w-[242px]">
-                <ComboBox
-                  options={churchOptions}
-                  value={selectedChurch?.id || null}
-                  onValueChange={handleChurchChange}
-                  placeholder="Selecione uma igreja"
-                  searchable
-                  searchPlaceholder="Buscar igreja..."
-                  renderItem={renderChurchItem}
-                  renderTrigger={renderChurchTrigger}
-                  maxHeight="max-h-56"
-                  className="h-[52px] px-4 bg-white dark:bg-dark-900 border border-dark-300 dark:border-dark-700 rounded-md shadow-sm"
-                  contentClassName="rounded-md shadow-lg"
-                />
-              </div>
-            )}
+            <div className="min-w-[242px]">
+              <ComboBox
+                options={churchOptions}
+                value={selectedChurch?.id || null}
+                onValueChange={handleChurchChange}
+                placeholder={isLoading ? "Carregando..." : churches.length === 0 ? "Nenhuma igreja" : "Selecione uma igreja"}
+                searchable
+                searchPlaceholder="Buscar igreja..."
+                renderItem={renderChurchItem}
+                renderTrigger={renderChurchTrigger}
+                maxHeight="max-h-56"
+                className="h-[52px] px-4 bg-white dark:bg-dark-900 border border-dark-300 dark:border-dark-700 rounded-md shadow-sm"
+                contentClassName="rounded-md shadow-lg"
+              />
+            </div>
             <ThemeToggle />
             <HeaderProfile />
           </div>

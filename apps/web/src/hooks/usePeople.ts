@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Person, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -6,6 +6,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useMinistries } from '@/hooks/useMinistries'
 import { AxiosError } from 'axios'
+import { getCachedFetch } from './utils/fetchCache'
 
 function extractErrorMessage(err: unknown, defaultMessage: string): string {
   if (err instanceof AxiosError && err.response) {
@@ -40,6 +41,8 @@ export function usePeople(): UsePeopleReturn {
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
   const { ministries } = useMinistries()
+  const hasFetchedRef = useRef<string | null>(null)
+  const lastMinistryIdsLengthRef = useRef<number>(0)
 
   // Get ministry IDs for the selected church
   const ministryIds = useMemo(() => {
@@ -47,32 +50,37 @@ export function usePeople(): UsePeopleReturn {
     return ministries.filter(m => m.churchId === selectedChurch.id).map(m => m.id)
   }, [selectedChurch, ministries])
 
-  const fetchPeople = useCallback(async () => {
+  const fetchPeople = useCallback(async (): Promise<void> => {
     if (!selectedChurch) {
       setPeople([])
       return
     }
 
-    try {
-      setIsLoading(true)
-      setError(null)
-      // Backend doesn't support churchId filter, so fetch all and filter by ministryIds on frontend
-      const allPeople = await apiServices.peopleService.getAll()
-      
-      // Filter people by ministries of the selected church
-      const filteredPeople = allPeople.filter(person => 
-        person.ministryId && ministryIds.includes(person.ministryId)
-      )
-      
-      setPeople(filteredPeople)
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch people')
-      setError(error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [selectedChurch, ministryIds])
+    const cacheKey = `people-${selectedChurch.id}-${ministryIds.length}`
+
+    await getCachedFetch(cacheKey, async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        // Backend doesn't support churchId filter, so fetch all and filter by ministryIds on frontend
+        const allPeople = await apiServices.peopleService.getAll()
+
+        // Filter people by ministries of the selected church
+        const filteredPeople = allPeople.filter(
+          person => person.ministryId && ministryIds.includes(person.ministryId)
+        )
+
+        setPeople(filteredPeople)
+        return filteredPeople
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch people')
+        setError(error)
+        throw error
+      } finally {
+        setIsLoading(false)
+      }
+    })
+  }, [selectedChurch?.id, ministryIds.length])
 
   const getPersonById = useCallback(async (id: string): Promise<Person | null> => {
     try {
@@ -160,14 +168,29 @@ export function usePeople(): UsePeopleReturn {
 
   // Auto-fetch on mount and when church or ministries change
   useEffect(() => {
+    const churchId = selectedChurch?.id
+    const ministryIdsLength = ministryIds.length
+    // Prevent duplicate calls for the same church and ministry count
+    if (
+      hasFetchedRef.current === churchId &&
+      lastMinistryIdsLengthRef.current === ministryIdsLength
+    ) {
+      return
+    }
+
     if (selectedChurch) {
+      hasFetchedRef.current = churchId ?? null
+      lastMinistryIdsLengthRef.current = ministryIdsLength
       fetchPeople().catch(() => {
         // Error already handled in fetchPeople
       })
     } else {
+      hasFetchedRef.current = null
+      lastMinistryIdsLengthRef.current = 0
       setPeople([])
     }
-  }, [fetchPeople, selectedChurch, ministryIds])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChurch?.id, ministryIds.length]) // Only depend on primitive values to prevent loops
 
   return {
     people,

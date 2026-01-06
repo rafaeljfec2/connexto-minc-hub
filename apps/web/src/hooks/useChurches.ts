@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Church } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
+import { getCachedFetch } from './utils/fetchCache'
 
 type CreateChurch = Omit<Church, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -36,17 +37,37 @@ export function useChurches(): UseChurchesReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
+  const hasFetchedRef = useRef<boolean>(false)
 
-  const fetchChurches = useCallback(async () => {
+  const fetchChurches = useCallback(async (): Promise<void> => {
+    const cacheKey = 'churches-all'
+    
     try {
       setIsLoading(true)
       setError(null)
-      const data = await apiServices.churchesService.getAll()
-      setChurches(data)
+      
+      const data = await getCachedFetch(
+        cacheKey,
+        async () => {
+          const fetchedData = await apiServices.churchesService.getAll()
+          console.log('Fetched churches from API:', fetchedData)
+          return fetchedData
+        },
+        5000 // 5 seconds cache for churches (they don't change often)
+      )
+      
+      // Always update state with the data, whether from cache or new fetch
+      if (data && Array.isArray(data)) {
+        console.log('Setting churches state:', data)
+        setChurches(data)
+      } else {
+        console.warn('Invalid churches data:', data)
+        setChurches([])
+      }
     } catch (err) {
+      console.error('Error in fetchChurches:', err)
       const error = err instanceof Error ? err : new Error('Failed to fetch churches')
       setError(error)
-      throw error
     } finally {
       setIsLoading(false)
     }
@@ -136,10 +157,20 @@ export function useChurches(): UseChurchesReturn {
     await fetchChurches()
   }, [fetchChurches])
 
-  // Auto-fetch on mount
+  // Auto-fetch on mount (only once)
   useEffect(() => {
-    fetchChurches().catch(() => {})
-  }, [fetchChurches])
+    // Prevent duplicate calls
+    if (hasFetchedRef.current) {
+      return
+    }
+
+    hasFetchedRef.current = true
+    fetchChurches().catch((err) => {
+      // Log error for debugging but don't show toast to avoid spam
+      console.error('Failed to fetch churches:', err)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty deps - only fetch once on mount
 
   return {
     churches,

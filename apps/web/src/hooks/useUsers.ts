@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { User } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -37,20 +37,29 @@ export function useUsers(): UseUsersReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
+  const hasFetchedRef = useRef<boolean>(false)
 
   const fetchUsers = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      const data = await apiServices.usersService.getAll()
-      setUsers(data)
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch users')
-      setError(error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
+    const cacheKey = 'users-all'
+    
+    return getCachedFetch(
+      cacheKey,
+      async () => {
+        try {
+          setIsLoading(true)
+          setError(null)
+          const data = await apiServices.usersService.getAll()
+          setUsers(data)
+          return data
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error('Failed to fetch users')
+          setError(error)
+          throw error
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    )
   }, [])
 
   const getUserById = useCallback(async (id: string): Promise<User | null> => {
@@ -137,12 +146,19 @@ export function useUsers(): UseUsersReturn {
     await fetchUsers()
   }, [fetchUsers])
 
-  // Auto-fetch on mount
+  // Auto-fetch on mount (only once)
   useEffect(() => {
+    // Prevent duplicate calls
+    if (hasFetchedRef.current) {
+      return
+    }
+
+    hasFetchedRef.current = true
     fetchUsers().catch(() => {
       // Error already handled in fetchUsers
     })
-  }, [fetchUsers])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty deps - only fetch once on mount
 
   return {
     users,

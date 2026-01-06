@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Team } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -7,6 +7,7 @@ import { useChurch } from '@/contexts/ChurchContext'
 import { useMinistries } from '@/hooks/useMinistries'
 import { AxiosError } from 'axios'
 import { ApiResponse } from '@minc-hub/shared/types'
+import { getCachedFetch } from './utils/fetchCache'
 
 type CreateTeam = Omit<Team, 'id' | 'createdAt' | 'updatedAt' | 'memberIds'>
 
@@ -41,6 +42,8 @@ export function useTeams(): UseTeamsReturn {
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
   const { ministries } = useMinistries()
+  const hasFetchedRef = useRef<string | null>(null)
+  const lastMinistryIdsLengthRef = useRef<number>(0)
 
   // Get ministry IDs for the selected church
   const ministryIds = useMemo(() => {
@@ -54,27 +57,35 @@ export function useTeams(): UseTeamsReturn {
       return
     }
 
-    try {
-      setIsLoading(true)
-      setError(null)
-      
-      // Fetch all teams (without filter) and filter by ministryIds on frontend
-      const allTeams = await apiServices.teamsService.getAll()
-      
-      // Filter teams by ministries of the selected church
-      const filteredTeams = allTeams.filter(team => 
-        ministryIds.includes(team.ministryId)
-      )
-      
-      setTeams(filteredTeams)
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch teams')
-      setError(error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [selectedChurch, ministryIds])
+    const cacheKey = `teams-${selectedChurch.id}-${ministryIds.length}`
+    
+    return getCachedFetch(
+      cacheKey,
+      async () => {
+        try {
+          setIsLoading(true)
+          setError(null)
+          
+          // Fetch all teams (without filter) and filter by ministryIds on frontend
+          const allTeams = await apiServices.teamsService.getAll()
+          
+          // Filter teams by ministries of the selected church
+          const filteredTeams = allTeams.filter(team => 
+            ministryIds.includes(team.ministryId)
+          )
+          
+          setTeams(filteredTeams)
+          return filteredTeams
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error('Failed to fetch teams')
+          setError(error)
+          throw error
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    )
+  }, [selectedChurch?.id, ministryIds.length])
 
   const getTeamById = useCallback(async (id: string): Promise<Team | null> => {
     try {
@@ -166,14 +177,29 @@ export function useTeams(): UseTeamsReturn {
 
   // Auto-fetch on mount and when church or ministries change
   useEffect(() => {
+    const churchId = selectedChurch?.id
+    const ministryIdsLength = ministryIds.length
+    // Prevent duplicate calls for the same church and ministry count
+    if (
+      hasFetchedRef.current === churchId &&
+      lastMinistryIdsLengthRef.current === ministryIdsLength
+    ) {
+      return
+    }
+
     if (selectedChurch) {
+      hasFetchedRef.current = churchId ?? null
+      lastMinistryIdsLengthRef.current = ministryIdsLength
       fetchTeams().catch(() => {
         // Error already handled in fetchTeams
       })
     } else {
+      hasFetchedRef.current = null
+      lastMinistryIdsLengthRef.current = 0
       setTeams([])
     }
-  }, [fetchTeams, selectedChurch, ministryIds])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChurch?.id, ministryIds.length]) // Only depend on primitive values to prevent loops
 
   return {
     teams,

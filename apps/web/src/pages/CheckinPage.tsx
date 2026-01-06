@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
@@ -6,26 +6,62 @@ import { QRCodeSVG } from 'qrcode.react'
 import { useCheckIn } from '@/hooks/useCheckIn'
 import { useCheckInWebSocket } from '@/hooks/useCheckInWebSocket'
 import { useQrScanner } from './checkin/hooks/useQrScanner'
-import type { Attendance } from '@minc-hub/shared/types'
 
 type Mode = 'scan' | 'generate'
 
 export default function CheckinPage() {
-  const { user } = useAuth()
+  const { user, isLoading: isLoadingUser } = useAuth()
   const [mode, setMode] = useState<Mode>('generate')
-  const { generateQrCode, validateQrCode, fetchHistory, qrCode, qrCodeData, history, isLoading } =
-    useCheckIn()
+
+  const {
+    generateQrCode,
+    validateQrCode,
+    fetchHistory,
+    qrCode,
+    qrCodeData,
+    history,
+    isLoading,
+    hasNoSchedule,
+  } = useCheckIn()
+
+  // Refs to prevent duplicate calls
+  const hasFetchedHistoryRef = useRef(false)
+  const hasGeneratedQrRef = useRef(false)
+  const fetchHistoryRef = useRef(fetchHistory)
+  const generateQrCodeRef = useRef(generateQrCode)
+
+  // Keep refs updated - must run before other useEffects
+  useEffect(() => {
+    fetchHistoryRef.current = fetchHistory
+    generateQrCodeRef.current = generateQrCode
+  }, [fetchHistory, generateQrCode])
 
   // WebSocket for real-time updates
   const { validateQrCode: validateQrCodeWS, isConnected: isWsConnected } = useCheckInWebSocket(
-    (attendance) => {
-      // On check-in success via WebSocket
-      fetchHistory(20)
+    _attendance => {
+      // On check-in success via WebSocket - refresh history
+      if (!hasFetchedHistoryRef.current) {
+        hasFetchedHistoryRef.current = true
+        fetchHistoryRef.current(20).finally(() => {
+          // Reset after a delay to allow for future calls
+          setTimeout(() => {
+            hasFetchedHistoryRef.current = false
+          }, 1000)
+        })
+      }
     },
-    (attendance) => {
-      // On check-in notification (when someone checks you in)
-      fetchHistory(20)
-    },
+    _attendance => {
+      // On check-in notification (when someone checks you in) - refresh history
+      if (!hasFetchedHistoryRef.current) {
+        hasFetchedHistoryRef.current = true
+        fetchHistoryRef.current(20).finally(() => {
+          // Reset after a delay to allow for future calls
+          setTimeout(() => {
+            hasFetchedHistoryRef.current = false
+          }, 1000)
+        })
+      }
+    }
   )
 
   // Handle QR code validation
@@ -35,15 +71,20 @@ export default function CheckinPage() {
       try {
         validateQrCodeWS(decodedText)
         return
-      } catch (wsError) {
+      } catch {
         // Fallback to REST if WebSocket fails
       }
     }
 
     // Validate QR Code via REST
     const attendance = await validateQrCode(decodedText)
-    if (attendance) {
-      await fetchHistory(20)
+    if (attendance && !hasFetchedHistoryRef.current) {
+      hasFetchedHistoryRef.current = true
+      await fetchHistoryRef.current(20)
+      // Reset after a delay to allow for future calls
+      setTimeout(() => {
+        hasFetchedHistoryRef.current = false
+      }, 1000)
     }
   }
 
@@ -54,16 +95,53 @@ export default function CheckinPage() {
   })
 
   // Generate QR Code on mount and when mode changes to generate
+  // Wait for user to be loaded before attempting to generate
   useEffect(() => {
-    if (mode === 'generate' && !qrCode) {
-      generateQrCode()
+    // Reset flag when mode changes away from generate
+    if (mode !== 'generate') {
+      hasGeneratedQrRef.current = false
+      return
     }
-  }, [mode, qrCode, generateQrCode])
 
-  // Fetch history on mount
+    // If QR code already exists, don't generate again
+    if (qrCode) {
+      hasGeneratedQrRef.current = false
+      return
+    }
+
+    // Only generate if all conditions are met
+    if (
+      !isLoadingUser &&
+      user?.personId &&
+      !hasGeneratedQrRef.current &&
+      generateQrCodeRef.current
+    ) {
+      hasGeneratedQrRef.current = true
+      generateQrCodeRef
+        .current()
+        .then(() => {
+          hasGeneratedQrRef.current = false
+        })
+        .catch(() => {
+          hasGeneratedQrRef.current = false
+        })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, qrCode, isLoadingUser, user?.personId]) // Removed generateQrCode from deps to prevent loops
+
+  // Fetch history on mount (only once)
   useEffect(() => {
-    fetchHistory(20)
-  }, [fetchHistory])
+    if (!hasFetchedHistoryRef.current && user?.personId && !isLoadingUser) {
+      hasFetchedHistoryRef.current = true
+      fetchHistoryRef.current(20).finally(() => {
+        // Reset after a delay to allow for future calls
+        setTimeout(() => {
+          hasFetchedHistoryRef.current = false
+        }, 1000)
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.personId, isLoadingUser]) // Removed fetchHistory from deps to prevent loops
 
   function handleModeChange(newMode: Mode) {
     setMode(newMode)
@@ -125,9 +203,20 @@ export default function CheckinPage() {
                         Apresente este código para leitura
                       </p>
 
-                      {isLoading ? (
+                      {isLoadingUser || isLoading ? (
                         <div className="flex items-center justify-center h-[200px]">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
+                        </div>
+                      ) : !user?.personId ? (
+                        <div className="bg-dark-100 dark:bg-dark-800 p-6 rounded-2xl mb-8">
+                          <div className="text-center">
+                            <p className="text-base font-medium text-dark-900 dark:text-dark-50 mb-2">
+                              Usuário não vinculado
+                            </p>
+                            <p className="text-sm text-dark-600 dark:text-dark-400">
+                              Você precisa estar vinculado a uma pessoa para gerar QR Code
+                            </p>
+                          </div>
                         </div>
                       ) : qrCode ? (
                         <>
@@ -144,13 +233,18 @@ export default function CheckinPage() {
                             </p>
                           )}
                         </>
-                      ) : (
+                      ) : hasNoSchedule ? (
                         <div className="bg-dark-100 dark:bg-dark-800 p-6 rounded-2xl mb-8">
-                          <p className="text-sm text-dark-600 dark:text-dark-400">
-                            Não há agenda para hoje
-                          </p>
+                          <div className="text-center">
+                            <p className="text-base font-medium text-dark-900 dark:text-dark-50 mb-2">
+                              Não há agenda para hoje
+                            </p>
+                            <p className="text-sm text-dark-600 dark:text-dark-400">
+                              Você não possui escalas agendadas para esta data
+                            </p>
+                          </div>
                         </div>
-                      )}
+                      ) : null}
 
                       <div className="text-center">
                         <p className="text-lg font-bold text-dark-900 dark:text-dark-50 mb-1">
@@ -249,9 +343,20 @@ export default function CheckinPage() {
                 Apresente este código para leitura
               </p>
 
-              {isLoading ? (
+              {isLoadingUser || isLoading ? (
                 <div className="flex items-center justify-center h-[200px]">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500" />
+                </div>
+              ) : !user?.personId ? (
+                <div className="bg-dark-100 dark:bg-dark-800 p-6 rounded-2xl mb-8">
+                  <div className="text-center">
+                    <p className="text-base font-medium text-dark-900 dark:text-dark-50 mb-2">
+                      Usuário não vinculado
+                    </p>
+                    <p className="text-sm text-dark-600 dark:text-dark-400">
+                      Você precisa estar vinculado a uma pessoa para gerar QR Code
+                    </p>
+                  </div>
                 </div>
               ) : qrCode ? (
                 <>
@@ -268,13 +373,18 @@ export default function CheckinPage() {
                     </p>
                   )}
                 </>
-              ) : (
+              ) : hasNoSchedule ? (
                 <div className="bg-dark-100 dark:bg-dark-800 p-6 rounded-2xl mb-8">
-                  <p className="text-sm text-dark-600 dark:text-dark-400">
-                    Não há agenda para hoje
-                  </p>
+                  <div className="text-center">
+                    <p className="text-base font-medium text-dark-900 dark:text-dark-50 mb-2">
+                      Não há agenda para hoje
+                    </p>
+                    <p className="text-sm text-dark-600 dark:text-dark-400">
+                      Você não possui escalas agendadas para esta data
+                    </p>
+                  </div>
                 </div>
-              )}
+              ) : null}
 
               <div className="text-center">
                 <p className="text-lg font-bold text-dark-900 dark:text-dark-50 mb-1">

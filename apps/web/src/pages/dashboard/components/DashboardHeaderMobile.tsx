@@ -67,21 +67,19 @@ export function DashboardHeaderMobile({
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          {churches.length > 0 && (
-            <div className="min-w-[120px] sm:min-w-[140px]">
-              <ComboBox
-                options={churchOptions}
-                value={selectedChurch?.id || null}
-                onValueChange={handleChurchChange}
-                placeholder="Igreja"
-                searchable
-                searchPlaceholder="Buscar..."
-                maxHeight="max-h-56"
-                className="h-9 px-2 sm:px-3 text-xs sm:text-sm bg-white dark:bg-dark-900 border border-dark-300 dark:border-dark-700 rounded-md"
-                contentClassName="rounded-md shadow-lg"
-              />
-            </div>
-          )}
+          <div className="min-w-[120px] sm:min-w-[140px]">
+            <ComboBox
+              options={churchOptions}
+              value={selectedChurch?.id || null}
+              onValueChange={handleChurchChange}
+              placeholder="Igreja"
+              searchable
+              searchPlaceholder="Buscar..."
+              maxHeight="max-h-56"
+              className="h-9 px-2 sm:px-3 text-xs sm:text-sm bg-white dark:bg-dark-900 border border-dark-300 dark:border-dark-700 rounded-md"
+              contentClassName="rounded-md shadow-lg"
+            />
+          </div>
           <ThemeToggle />
           <button
             onClick={onNotificationPress}

@@ -15,30 +15,53 @@ export function useCheckIn() {
   const [qrCodeData, setQrCodeData] = useState<GenerateQrCodeResponse | null>(null)
   const [history, setHistory] = useState<Attendance[]>([])
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const [hasNoSchedule, setHasNoSchedule] = useState(false)
 
   const generateQrCode = useCallback(
     async (date?: string) => {
       if (!user?.personId) {
-        showToast('Você precisa estar vinculado a uma pessoa para gerar QR Code', 'error')
+        // Don't show toast here - let the component handle it
+        // The component should check user state before calling this
         return null
       }
 
       setIsLoading(true)
+      setHasNoSchedule(false)
       try {
         const data = await apiServices.checkinService.generateQrCode(date)
         setQrCode(data.qrCode)
         setQrCodeData(data)
+        setHasNoSchedule(false)
         showToast('QR Code gerado com sucesso!', 'success')
         return data
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Erro ao gerar QR Code'
-        showToast(message, 'error')
+        // Check if it's a "no schedule" error
+        if (
+          message.includes('No schedules found') ||
+          message.includes('Não há agenda') ||
+          message.includes('No schedule')
+        ) {
+          setHasNoSchedule(true)
+          setQrCode(null)
+          setQrCodeData(null)
+          // Don't show error toast for "no schedule" - it's expected
+        } else if (
+          message.includes('must be linked to a person') ||
+          message.includes('vinculado')
+        ) {
+          // This error should be handled by the component, not shown as toast here
+          setQrCode(null)
+          setQrCodeData(null)
+        } else {
+          showToast(message, 'error')
+        }
         return null
       } finally {
         setIsLoading(false)
       }
     },
-    [apiServices, user, showToast]
+    [user, showToast]
   )
 
   const validateQrCode = useCallback(
@@ -56,7 +79,7 @@ export function useCheckIn() {
         setIsLoading(false)
       }
     },
-    [apiServices, showToast]
+    [showToast]
   )
 
   const fetchHistory = useCallback(
@@ -74,7 +97,7 @@ export function useCheckIn() {
         setIsLoadingHistory(false)
       }
     },
-    [apiServices, showToast]
+    [showToast]
   )
 
   return {
@@ -86,5 +109,6 @@ export function useCheckIn() {
     history,
     isLoading,
     isLoadingHistory,
+    hasNoSchedule,
   }
 }

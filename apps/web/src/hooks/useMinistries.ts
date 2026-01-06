@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Ministry } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -39,20 +39,29 @@ export function useMinistries(): UseMinistriesReturn {
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
+  const hasFetchedRef = useRef<string | null>(null)
 
   const fetchMinistries = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      const data = await apiServices.ministriesService.getAll(selectedChurch?.id)
-      setMinistries(data)
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to fetch ministries')
-      setError(error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
+    const cacheKey = `ministries-${selectedChurch?.id ?? 'all'}`
+    
+    return getCachedFetch(
+      cacheKey,
+      async () => {
+        try {
+          setIsLoading(true)
+          setError(null)
+          const data = await apiServices.ministriesService.getAll(selectedChurch?.id)
+          setMinistries(data)
+          return data
+        } catch (err) {
+          const error = err instanceof Error ? err : new Error('Failed to fetch ministries')
+          setError(error)
+          throw error
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    )
   }, [selectedChurch?.id])
 
   const getMinistryById = useCallback(async (id: string): Promise<Ministry | null> => {
@@ -141,14 +150,23 @@ export function useMinistries(): UseMinistriesReturn {
 
   // Auto-fetch on mount and when church changes
   useEffect(() => {
+    const churchId = selectedChurch?.id
+    // Prevent duplicate calls for the same church
+    if (hasFetchedRef.current === churchId) {
+      return
+    }
+
     if (selectedChurch) {
+      hasFetchedRef.current = churchId ?? null
       fetchMinistries().catch(() => {
         // Error already handled in fetchMinistries
       })
     } else {
+      hasFetchedRef.current = null
       setMinistries([])
     }
-  }, [fetchMinistries, selectedChurch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedChurch?.id]) // Only depend on selectedChurch.id to prevent loops
 
   return {
     ministries,
