@@ -19,6 +19,7 @@ import { PersonsModule } from './persons/persons.module';
 import { ServicesModule } from './services/services.module';
 import { SchedulesModule } from './schedules/schedules.module';
 import { AttendancesModule } from './attendances/attendances.module';
+import { SchedulePlanningModule } from './schedule-planning/schedule-planning.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AttendancesModule } from './attendances/attendances.module';
     ServicesModule,
     SchedulesModule,
     AttendancesModule,
+    SchedulePlanningModule,
   ],
   controllers: [AppController],
   providers: [

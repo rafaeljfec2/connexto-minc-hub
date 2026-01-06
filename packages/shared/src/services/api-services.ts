@@ -9,6 +9,9 @@ import type {
   Ministry,
   User,
   ApiResponse,
+  SchedulePlanningConfig,
+  TeamPlanningConfig,
+  SchedulePlanningTemplate,
 } from '../types'
 
 type CreateEntity<T> = Omit<T, 'id' | 'createdAt' | 'updatedAt'>
@@ -262,6 +265,61 @@ export function createApiServices(api: AxiosInstance) {
         api.delete<ApiResponse<void>>(`/users/${id}`).then(() => {
           // Delete doesn't return data
         }),
+    },
+
+    schedulePlanningService: {
+      getConfig: (churchId: string) =>
+        api
+          .get<ApiResponse<SchedulePlanningConfig | null>>(`/schedule-planning/config/${churchId}`)
+          .then(res => {
+            if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+              const apiResponse = res.data as ApiResponse<SchedulePlanningConfig | null>
+              return apiResponse.data ?? null
+            }
+            return (res.data as SchedulePlanningConfig | null) ?? null
+          }),
+      createOrUpdateConfig: (churchId: string, data: Partial<CreateEntity<SchedulePlanningConfig>>) =>
+        api
+          .post<ApiResponse<SchedulePlanningConfig>>(`/schedule-planning/config/${churchId}`, data)
+          .then(res => extractEntityData<SchedulePlanningConfig>(res.data, 'Failed to save config')),
+      getTeamConfig: (teamId: string) =>
+        api
+          .get<ApiResponse<TeamPlanningConfig | null>>(`/schedule-planning/team/${teamId}/config`)
+          .then(res => {
+            if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+              const apiResponse = res.data as ApiResponse<TeamPlanningConfig | null>
+              return apiResponse.data ?? null
+            }
+            return (res.data as TeamPlanningConfig | null) ?? null
+          }),
+      createOrUpdateTeamConfig: (teamId: string, data: Partial<CreateEntity<TeamPlanningConfig>>) =>
+        api
+          .post<ApiResponse<TeamPlanningConfig>>(`/schedule-planning/team/${teamId}/config`, data)
+          .then(res => extractEntityData<TeamPlanningConfig>(res.data, 'Failed to save team config')),
+      getTemplates: (churchId?: string) =>
+        api
+          .get<ApiResponse<SchedulePlanningTemplate[]>>('/schedule-planning/templates', {
+            params: churchId ? { churchId } : undefined,
+          })
+          .then(res => extractArrayData<SchedulePlanningTemplate>(res.data)),
+      createTemplate: (data: CreateEntity<SchedulePlanningTemplate> & { churchId: string }) =>
+        api
+          .post<ApiResponse<SchedulePlanningTemplate>>('/schedule-planning/templates', data)
+          .then(res => extractEntityData<SchedulePlanningTemplate>(res.data, 'Failed to create template')),
+      applyTemplate: (templateId: string, churchId: string) =>
+        api
+          .post<ApiResponse<SchedulePlanningConfig>>(`/schedule-planning/templates/${templateId}/apply`, {
+            churchId,
+          })
+          .then(res => extractEntityData<SchedulePlanningConfig>(res.data, 'Failed to apply template')),
+      deleteTemplate: (templateId: string, churchId: string) =>
+        api
+          .delete<ApiResponse<void>>(`/schedule-planning/templates/${templateId}`, {
+            data: { churchId },
+          })
+          .then(() => {
+            // Delete doesn't return data
+          }),
     },
   }
 }

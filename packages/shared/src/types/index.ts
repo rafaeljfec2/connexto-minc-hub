@@ -112,4 +112,42 @@ export interface ScheduleReassignment {
   createdAt: string
 }
 
+export interface SchedulePlanningConfig {
+  id: string
+  churchId: string
+  maxTeamMembers: number
+  servicesPerSunday: number
+  teamsServeOncePerMonth: boolean
+  enableLotteryForExtraServices: boolean
+  enableTimeRotation: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TeamPlanningConfig {
+  id: string
+  teamId: string
+  maxTeamMembers: number | null
+  teamsServeOncePerMonth: boolean | null
+  enableLotteryForExtraServices: boolean | null
+  enableTimeRotation: boolean | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SchedulePlanningTemplate {
+  id: string
+  name: string
+  description?: string | null
+  isSystemTemplate: boolean
+  createdByChurchId?: string | null
+  maxTeamMembers: number
+  servicesPerSunday: number
+  teamsServeOncePerMonth: boolean
+  enableLotteryForExtraServices: boolean
+  enableTimeRotation: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 export * from './api-response'

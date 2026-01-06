@@ -13,6 +13,7 @@ import MinistriesPage from '@/pages/MinistriesPage'
 import ProfilePage from '@/pages/ProfilePage'
 import SettingsPage from '@/pages/SettingsPage'
 import UsersPage from '@/pages/UsersPage'
+import SchedulePlanningConfigPage from '@/pages/SchedulePlanningConfigPage'
 
 export const protectedRoutes: RouteConfig[] = [
   {
@@ -71,5 +72,10 @@ export const protectedRoutes: RouteConfig[] = [
     path: '/monthly-schedules',
     component: MonthlySchedulePage,
     allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+  },
+  {
+    path: '/schedule-planning-config',
+    component: SchedulePlanningConfigPage,
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
   },
 ]

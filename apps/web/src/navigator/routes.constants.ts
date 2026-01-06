@@ -12,4 +12,5 @@ export const ROUTES = {
   PROFILE: '/profile',
   SETTINGS: '/settings',
   USERS: '/users',
+  SCHEDULE_PLANNING_CONFIG: '/schedule-planning-config',
 } as const;

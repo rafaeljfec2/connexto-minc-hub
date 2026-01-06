@@ -152,6 +152,27 @@ const navItems: NavItem[] = [
     roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
+    label: 'Config. Planejamento',
+    href: '/schedule-planning-config',
+    icon: (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+        />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+        />
+      </svg>
+    ),
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+  },
+  {
     label: 'Comunicação',
     href: '/communication',
     icon: (
@@ -218,10 +239,12 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="flex flex-col w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 fixed left-0 top-0 h-screen z-40">
+      {/* Desktop Sidebar - Hidden on mobile */}
+      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 fixed left-0 top-0 h-screen z-40">
         {sidebarContent}
       </aside>
 
+      {/* Mobile Menu */}
       <div className="lg:hidden">
         <MobileMenuButton isOpen={isMobileOpen} onClick={() => setIsMobileOpen(!isMobileOpen)} />
 
@@ -238,9 +261,7 @@ export function Sidebar() {
               <nav className="flex-1 overflow-y-auto p-4">
                 {renderNavItems(() => setIsMobileOpen(false))}
               </nav>
-              <div className="p-4 border-t border-dark-200 dark:border-dark-800 flex items-center justify-center">
-                <BrandText size="sm" />
-              </div>
+              {user && <SidebarUserInfo user={user} />}
             </aside>
           </>
         )}

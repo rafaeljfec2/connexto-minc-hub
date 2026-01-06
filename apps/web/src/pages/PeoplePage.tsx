@@ -20,6 +20,8 @@ import { usePeople } from '@/hooks/usePeople'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useTeams } from '@/hooks/useTeams'
 import { useUsers } from '@/hooks/useUsers'
+import { useServices } from '@/hooks/useServices'
+import { CheckboxList } from '@/components/ui/CheckboxList'
 
 export default function PeoplePage() {
   const {
@@ -32,6 +34,7 @@ export default function PeoplePage() {
   const { ministries } = useMinistries()
   const { teams } = useTeams()
   const { users, createUser, isLoading: isLoadingUsers } = useUsers()
+  const { services } = useServices()
   // Modals
   const personModal = useModal()
   const deleteModal = useModal()
@@ -48,6 +51,7 @@ export default function PeoplePage() {
     notes: '',
     ministryId: '',
     teamId: '',
+    preferredServiceIds: [] as string[],
   })
 
   // User creation state
@@ -96,6 +100,20 @@ export default function PeoplePage() {
     })
   }, [people, searchTerm, filterMinistry, filterTeam])
 
+  const activeServices = useMemo(() => {
+    return services.filter(service => service.isActive)
+  }, [services])
+
+  function handleTogglePreferredService(serviceId: string) {
+    setPersonFormData(prev => {
+      const currentIds = prev.preferredServiceIds
+      const newIds = currentIds.includes(serviceId)
+        ? currentIds.filter(id => id !== serviceId)
+        : [...currentIds, serviceId]
+      return { ...prev, preferredServiceIds: newIds }
+    })
+  }
+
   function getMinistry(ministryId?: string) {
     if (!ministryId) return undefined
     return ministries.find(m => m.id === ministryId)
@@ -115,11 +133,15 @@ export default function PeoplePage() {
     notes: '',
     ministryId: '',
     teamId: '',
+    preferredServiceIds: [] as string[],
   }
 
   function handleOpenPersonModal(person?: Person) {
     if (person) {
       setEditingPerson(person)
+      // Extract preferred service IDs from person (assuming it's stored in notes or a custom field)
+      // For now, we'll initialize as empty array - this would need backend support
+      const preferredServiceIds: string[] = []
       setPersonFormData({
         name: person.name,
         email: person.email ?? '',
@@ -129,6 +151,7 @@ export default function PeoplePage() {
         notes: person.notes ?? '',
         ministryId: person.ministryId ?? '',
         teamId: person.teamId ?? '',
+        preferredServiceIds,
       })
     } else {
       setEditingPerson(null)
@@ -160,10 +183,13 @@ export default function PeoplePage() {
     e.preventDefault()
 
     try {
+      // Remove preferredServiceIds from payload as backend doesn't support it yet
+      const { preferredServiceIds, ...personData } = personFormData
+      
       if (editingPerson) {
-        await updatePerson(editingPerson.id, personFormData)
+        await updatePerson(editingPerson.id, personData)
       } else {
-        await createPerson(personFormData)
+        await createPerson(personData)
       }
       handleClosePersonModal()
     } catch (error) {
@@ -176,12 +202,15 @@ export default function PeoplePage() {
     e.preventDefault()
 
     try {
+      // Remove preferredServiceIds from payload as backend doesn't support it yet
+      const { preferredServiceIds, ...personData } = personFormData
+      
       let savedPerson: Person | null = null
 
       if (editingPerson) {
-        savedPerson = await updatePerson(editingPerson.id, personFormData)
+        savedPerson = await updatePerson(editingPerson.id, personData)
       } else {
-        savedPerson = await createPerson(personFormData)
+        savedPerson = await createPerson(personData)
       }
 
       handleClosePersonModal()
@@ -466,6 +495,29 @@ export default function PeoplePage() {
             placeholder="Observações sobre o servo..."
             rows={4}
           />
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300">
+              Preferências de Cultos para Servir
+            </label>
+            <p className="text-xs text-dark-500 dark:text-dark-400 mb-2">
+              Selecione os cultos em que este servo prefere servir
+            </p>
+            {activeServices.length > 0 ? (
+              <CheckboxList
+                items={activeServices.map(service => ({
+                  id: service.id,
+                  label: `${service.name} (${service.time})`,
+                }))}
+                selectedIds={personFormData.preferredServiceIds}
+                onToggle={handleTogglePreferredService}
+                maxHeight="max-h-48"
+              />
+            ) : (
+              <p className="text-sm text-dark-500 dark:text-dark-400 py-4 text-center">
+                Nenhum culto ativo disponível
+              </p>
+            )}
+          </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="secondary" onClick={handleClosePersonModal}>
               Cancelar
