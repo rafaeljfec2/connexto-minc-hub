@@ -664,8 +664,13 @@ export default function PeoplePage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
-            <Button type="button" variant="secondary" onClick={handleClosePersonModal}>
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleClosePersonModal}
+              className="w-full sm:w-auto order-3 sm:order-1"
+            >
               Cancelar
             </Button>
             {!editingPerson && (
@@ -673,13 +678,14 @@ export default function PeoplePage() {
                 type="button"
                 variant="outline"
                 onClick={handleSavePersonAndCreateUser}
-                className="flex items-center gap-2"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 order-2"
               >
                 <UserIcon className="h-4 w-4" />
-                Salvar e Criar Usuário
+                <span className="hidden sm:inline">Salvar e Criar Usuário</span>
+                <span className="sm:hidden">Criar Usuário</span>
               </Button>
             )}
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="primary" className="w-full sm:w-auto order-1 sm:order-3">
               {editingPerson ? 'Salvar Alterações' : 'Adicionar Servo'}
             </Button>
           </div>
