@@ -4,6 +4,7 @@ import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useChurches } from '@/hooks/useChurches'
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function getGreeting() {
   const hour = new Date().getHours()
@@ -23,6 +24,7 @@ export function DashboardHeaderMobile({
   const firstName = user?.name?.split(' ')[0] ?? 'Usuário'
   const { selectedChurch, setSelectedChurch } = useChurch()
   const { churches } = useChurches()
+  const navigate = useNavigate()
 
   const churchOptions: ComboBoxOption<string>[] = useMemo(
     () =>
@@ -71,9 +73,6 @@ export function DashboardHeaderMobile({
         </button>
 
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
-            {user?.name?.charAt(0).toUpperCase() ?? 'U'}
-          </div>
           <div className="flex flex-col flex-1 min-w-0">
             <span className="text-xs text-dark-600 dark:text-dark-400 leading-tight">
               {getGreeting()},
@@ -115,6 +114,20 @@ export function DashboardHeaderMobile({
               />
             </svg>
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full border-2 border-white dark:border-dark-900" />
+          </button>
+          <button
+            onClick={() => navigate('/profile')}
+            className="p-2 rounded-xl bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+            aria-label="Perfil"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
           </button>
         </div>
       </div>
