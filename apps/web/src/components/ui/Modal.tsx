@@ -32,7 +32,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -41,14 +41,14 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       />
       <div
         className={cn(
-          'relative z-50 w-full rounded-xl bg-white border border-dark-200 shadow-xl',
+          'relative z-50 w-full max-h-[90vh] rounded-xl bg-white border border-dark-200 shadow-xl',
           'dark:bg-dark-900 dark:border-dark-800',
-          'animate-scale-in',
+          'animate-scale-in flex flex-col',
           sizeClasses[size]
         )}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between p-6 border-b border-dark-200 dark:border-dark-800">
+        <div className="flex items-center justify-between p-4 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
           <h2 className="text-xl font-semibold text-dark-900 dark:text-dark-50">{title}</h2>
           <button
             onClick={onClose}
@@ -68,7 +68,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             </svg>
           </button>
         </div>
-        <div className="p-6">{children}</div>
+        <div className="p-4 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   )

@@ -428,14 +428,14 @@ export default function PeoplePage() {
         title={editingPerson ? 'Editar Servo' : 'Novo Servo'}
         size="lg"
       >
-        <form onSubmit={handlePersonSubmit} className="space-y-4">
+        <form onSubmit={handlePersonSubmit} className="space-y-3">
           <Input
             label="Nome *"
             value={personFormData.name}
             onChange={e => setPersonFormData({ ...personFormData, name: e.target.value })}
             required
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Email"
               type="email"
@@ -449,7 +449,7 @@ export default function PeoplePage() {
               placeholder="(11) 99999-9999"
             />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Select
               label="Time"
               value={personFormData.ministryId}
@@ -493,13 +493,13 @@ export default function PeoplePage() {
             value={personFormData.notes}
             onChange={e => setPersonFormData({ ...personFormData, notes: e.target.value })}
             placeholder="Observações sobre o servo..."
-            rows={4}
+            rows={2}
           />
           <div className="space-y-2">
             <label className="block text-sm font-medium text-dark-700 dark:text-dark-300">
               Preferências de Cultos para Servir
             </label>
-            <p className="text-xs text-dark-500 dark:text-dark-400 mb-2">
+            <p className="text-xs text-dark-500 dark:text-dark-400 mb-1">
               Selecione os cultos em que este servo prefere servir
             </p>
             {activeServices.length > 0 ? (
@@ -510,15 +510,15 @@ export default function PeoplePage() {
                 }))}
                 selectedIds={personFormData.preferredServiceIds}
                 onToggle={handleTogglePreferredService}
-                maxHeight="max-h-48"
+                maxHeight="max-h-40"
               />
             ) : (
-              <p className="text-sm text-dark-500 dark:text-dark-400 py-4 text-center">
+              <p className="text-sm text-dark-500 dark:text-dark-400 py-2 text-center">
                 Nenhum culto ativo disponível
               </p>
             )}
           </div>
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-3">
             <Button type="button" variant="secondary" onClick={handleClosePersonModal}>
               Cancelar
             </Button>
