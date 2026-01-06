@@ -16,20 +16,20 @@ interface ActivityFeedMobileProps {
 export function ActivityFeedMobile({ activities = [] }: ActivityFeedMobileProps) {
   if (activities.length === 0) {
     return (
-      <Card className="p-4">
-        <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 mb-4">
-          Atividades Recentes
-        </h2>
-        <div className="text-sm text-dark-600 dark:text-dark-400">
-          Nenhuma atividade recente
-        </div>
-      </Card>
+      <div className="px-4 mb-6">
+        <Card className="p-4">
+          <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 mb-4">
+            Atividades Recentes
+          </h2>
+          <div className="text-sm text-dark-600 dark:text-dark-400">Nenhuma atividade recente</div>
+        </Card>
+      </div>
     )
   }
 
   return (
-    <div className="mb-6">
-      <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 mb-4 px-4">
+    <div className="mb-6 px-4">
+      <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 mb-4">
         Atividades Recentes
       </h2>
       <Card className="p-4">
