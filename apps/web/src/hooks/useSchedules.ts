@@ -1,11 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Schedule } from '@minc-hub/shared/types'
+import { Schedule, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { ApiResponse } from '@minc-hub/shared/types'
 import { getCachedFetch } from './utils/fetchCache'
 
 type CreateSchedule = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt'>
@@ -27,7 +26,7 @@ const apiServices = createApiServices(api)
 function extractErrorMessage(err: unknown, defaultMessage: string): string {
   if (err instanceof AxiosError && err.response) {
     const apiResponse = err.response.data as ApiResponse<unknown>
-    if (apiResponse && apiResponse.message) {
+    if (apiResponse?.message) {
       return apiResponse.message
     }
   }
@@ -59,7 +58,9 @@ export function useSchedules(): UseSchedulesReturn {
           // Filter schedules by selected church (via service.churchId)
           const filteredData = data.filter(schedule => {
             // If schedule has service relationship, filter by churchId
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ('service' in schedule && (schedule as any).service) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               return (schedule as any).service.churchId === selectedChurch.id
             }
             // Otherwise, we need to fetch service to check churchId
@@ -77,6 +78,7 @@ export function useSchedules(): UseSchedulesReturn {
         }
       })
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedChurch?.id]
   )
 

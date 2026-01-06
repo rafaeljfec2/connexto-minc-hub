@@ -1,12 +1,11 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
-import { Team } from '@minc-hub/shared/types'
+import { Team, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useMinistries } from '@/hooks/useMinistries'
 import { AxiosError } from 'axios'
-import { ApiResponse } from '@minc-hub/shared/types'
 import { getCachedFetch } from './utils/fetchCache'
 
 type CreateTeam = Omit<Team, 'id' | 'createdAt' | 'updatedAt' | 'memberIds'>
@@ -28,7 +27,7 @@ const apiServices = createApiServices(api)
 function extractErrorMessage(err: unknown, defaultMessage: string): string {
   if (err instanceof AxiosError && err.response) {
     const apiResponse = err.response.data as ApiResponse<unknown>
-    if (apiResponse && apiResponse.message) {
+    if (apiResponse?.message) {
       return apiResponse.message
     }
   }
@@ -80,6 +79,7 @@ export function useTeams(): UseTeamsReturn {
         setIsLoading(false)
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChurch?.id, ministryIds.length])
 
   const getTeamById = useCallback(async (id: string): Promise<Team | null> => {
@@ -103,7 +103,11 @@ export function useTeams(): UseTeamsReturn {
         setIsLoading(true)
         setError(null)
         // Remove memberIds and churchId if present - backend doesn't accept these
-        const { memberIds, churchId, ...cleanData } = data as CreateTeam & {
+        const {
+          memberIds: _memberIds,
+          churchId: _churchId,
+          ...cleanData
+        } = data as CreateTeam & {
           memberIds?: string[]
           churchId?: string
         }
@@ -130,7 +134,11 @@ export function useTeams(): UseTeamsReturn {
         setIsLoading(true)
         setError(null)
         // Remove memberIds and churchId if present - backend doesn't accept these
-        const { memberIds, churchId, ...cleanData } = data as Partial<Team> & {
+        const {
+          memberIds: _memberIds,
+          churchId: _churchId,
+          ...cleanData
+        } = data as Partial<Team> & {
           memberIds?: string[]
           churchId?: string
         }
@@ -200,7 +208,7 @@ export function useTeams(): UseTeamsReturn {
     hasFetchedRef.current = churchId
     lastMinistryIdsLengthRef.current = ministryIdsLength
 
-    fetchTeams().catch(_err => {
+    fetchTeams().catch(_error => {
       // Reset ref on error so it can retry
       hasFetchedRef.current = null
       // Error already handled in fetchTeams

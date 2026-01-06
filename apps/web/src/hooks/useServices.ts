@@ -1,11 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Service } from '@minc-hub/shared/types'
+import { Service, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { ApiResponse } from '@minc-hub/shared/types'
 import { getCachedFetch } from './utils/fetchCache'
 
 type CreateService = Omit<Service, 'id' | 'createdAt' | 'updatedAt'>
@@ -27,7 +26,7 @@ const apiServices = createApiServices(api)
 function extractErrorMessage(err: unknown, defaultMessage: string): string {
   if (err instanceof AxiosError && err.response) {
     const apiResponse = err.response.data as ApiResponse<unknown>
-    if (apiResponse && apiResponse.message) {
+    if (apiResponse?.message) {
       return apiResponse.message
     }
   }
@@ -65,6 +64,7 @@ export function useServices(): UseServicesReturn {
         setIsLoading(false)
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChurch?.id])
 
   const getServiceById = useCallback(async (id: string): Promise<Service | null> => {

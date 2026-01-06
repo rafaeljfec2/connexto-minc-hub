@@ -1,11 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { Ministry } from '@minc-hub/shared/types'
+import { Ministry, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { ApiResponse } from '@minc-hub/shared/types'
 import { getCachedFetch } from './utils/fetchCache'
 
 type CreateMinistry = Omit<Ministry, 'id' | 'createdAt' | 'updatedAt'>
@@ -27,7 +26,7 @@ const apiServices = createApiServices(api)
 function extractErrorMessage(err: unknown, defaultMessage: string): string {
   if (err instanceof AxiosError && err.response) {
     const apiResponse = err.response.data as ApiResponse<unknown>
-    if (apiResponse && apiResponse.message) {
+    if (apiResponse?.message) {
       return apiResponse.message
     }
   }
@@ -71,6 +70,7 @@ export function useMinistries(): UseMinistriesReturn {
     } finally {
       setIsLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChurch?.id])
 
   const getMinistryById = useCallback(async (id: string): Promise<Ministry | null> => {
@@ -174,7 +174,7 @@ export function useMinistries(): UseMinistriesReturn {
     }
 
     hasFetchedRef.current = churchId
-    fetchMinistries().catch(_err => {
+    fetchMinistries().catch(_error => {
       // Reset ref on error so it can retry
       hasFetchedRef.current = null
       // Error already handled in fetchMinistries

@@ -224,7 +224,7 @@ export default function PeoplePage() {
       // Set teamId to first fixed team member for compatibility (if exists)
       if (personData.teamMembers && personData.teamMembers.length > 0) {
         const firstFixedTeam = personData.teamMembers.find(
-          (tm: any) => tm.memberType === MemberType.FIXED
+          (tm: { memberType: MemberType }) => tm.memberType === MemberType.FIXED
         )
         if (firstFixedTeam) {
           personData.teamId = firstFixedTeam.teamId

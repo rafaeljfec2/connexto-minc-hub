@@ -11,7 +11,7 @@ import { getCachedFetch } from './utils/fetchCache'
 function extractErrorMessage(err: unknown, defaultMessage: string): string {
   if (err instanceof AxiosError && err.response) {
     const apiResponse = err.response.data as ApiResponse<unknown>
-    if (apiResponse && apiResponse.message) {
+    if (apiResponse?.message) {
       return apiResponse.message
     }
   }
@@ -80,6 +80,7 @@ export function usePeople(): UsePeopleReturn {
         setIsLoading(false)
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChurch?.id, ministryIds.length])
 
   const getPersonById = useCallback(async (id: string): Promise<Person | null> => {
@@ -190,7 +191,7 @@ export function usePeople(): UsePeopleReturn {
     hasFetchedRef.current = churchId
     lastMinistryIdsLengthRef.current = ministryIdsLength
 
-    fetchPeople().catch(_err => {
+    fetchPeople().catch(_error => {
       // Reset ref on error so it can retry
       hasFetchedRef.current = null
       // Error already handled in fetchPeople
