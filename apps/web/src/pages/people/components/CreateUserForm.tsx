@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { Person, UserRole } from '@/types'
+import { Person, UserRole } from '@minc-hub/shared/types'
 import { ROLE_OPTIONS } from '@/lib/userUtils'
 
 interface CreateUserFormProps {

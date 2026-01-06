@@ -13,9 +13,10 @@ import { PersonEntity } from '../../persons/entities/person.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
-  COORDINATOR = 'coordinator',
-  LEADER = 'leader',
-  MEMBER = 'member',
+  PASTOR = 'pastor',
+  LIDER_DE_TIME = 'lider_de_time',
+  LIDER_DE_EQUIPE = 'lider_de_equipe',
+  SERVO = 'servo',
 }
 
 @Entity('users')
@@ -46,7 +47,7 @@ export class UserEntity {
     type: 'varchar',
     length: 20,
     enum: UserRole,
-    default: UserRole.MEMBER,
+    default: UserRole.SERVO,
   })
   role: UserRole;
 

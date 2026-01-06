@@ -37,7 +37,7 @@ export class UsersService {
   }): Promise<UserEntity> {
     const user = this.usersRepository.create({
       ...userData,
-      role: userData.role ?? UserRole.MEMBER,
+      role: userData.role ?? UserRole.SERVO,
       isActive: true,
     });
     return this.usersRepository.save(user);

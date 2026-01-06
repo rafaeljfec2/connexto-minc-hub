@@ -27,11 +27,11 @@ export class CreateUserDto {
   password: string;
 
   @ApiProperty({
-    example: UserRole.MEMBER,
+    example: UserRole.SERVO,
     description: 'Papel do usuário no sistema',
     enum: UserRole,
     required: false,
-    default: UserRole.MEMBER,
+    default: UserRole.SERVO,
   })
   @IsEnum(UserRole, { message: 'Papel deve ser um valor válido' })
   @IsOptional()
