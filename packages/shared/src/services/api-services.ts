@@ -15,24 +15,78 @@ type CreateEntity<T> = Omit<T, 'id' | 'createdAt' | 'updatedAt'>
 export function createApiServices(api: AxiosInstance) {
   return {
     peopleService: {
-      getAll: () => api.get<Person[]>('/people'),
-      getById: (id: string) => api.get<Person>(`/people/${id}`),
-      create: (data: CreateEntity<Person>) => api.post<Person>('/people', data),
-      update: (id: string, data: Partial<Person>) => api.put<Person>(`/people/${id}`, data),
-      delete: (id: string) => api.delete(`/people/${id}`),
+      getAll: () =>
+        api.get<ApiResponse<Person[]>>('/persons').then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Person[]>
+            return apiResponse.data ?? []
+          }
+          return (res.data as unknown as Person[]) ?? []
+        }),
+      getById: (id: string) =>
+        api.get<ApiResponse<Person>>(`/persons/${id}`).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Person>
+            if (!apiResponse.data) {
+              throw new Error('Person not found')
+            }
+            return apiResponse.data
+          }
+          const person = res.data as unknown as Person
+          if (!person) {
+            throw new Error('Person not found')
+          }
+          return person
+        }),
+      create: (data: CreateEntity<Person>) =>
+        api.post<ApiResponse<Person>>('/persons', data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Person>
+            if (!apiResponse.data) {
+              throw new Error('Failed to create person')
+            }
+            return apiResponse.data
+          }
+          const person = res.data as unknown as Person
+          if (!person) {
+            throw new Error('Failed to create person')
+          }
+          return person
+        }),
+      update: (id: string, data: Partial<Person>) =>
+        api.patch<ApiResponse<Person>>(`/persons/${id}`, data).then(res => {
+          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+            const apiResponse = res.data as ApiResponse<Person>
+            if (!apiResponse.data) {
+              throw new Error('Failed to update person')
+            }
+            return apiResponse.data
+          }
+          const person = res.data as unknown as Person
+          if (!person) {
+            throw new Error('Failed to update person')
+          }
+          return person
+        }),
+      delete: (id: string) =>
+        api.delete<ApiResponse<void>>(`/persons/${id}`).then(() => {
+          // Delete doesn't return data
+        }),
     },
 
     teamsService: {
       getAll: (ministryId?: string) =>
-        api.get<ApiResponse<Team[]>>('/teams', {
-          params: ministryId ? { ministryId } : undefined,
-        }).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Team[]>
-            return apiResponse.data ?? []
-          }
-          return (res.data as unknown as Team[]) ?? []
-        }),
+        api
+          .get<ApiResponse<Team[]>>('/teams', {
+            params: ministryId ? { ministryId } : undefined,
+          })
+          .then(res => {
+            if (res.data && typeof res.data === 'object' && 'success' in res.data) {
+              const apiResponse = res.data as ApiResponse<Team[]>
+              return apiResponse.data ?? []
+            }
+            return (res.data as unknown as Team[]) ?? []
+          }),
       getById: (id: string) =>
         api.get<ApiResponse<Team>>(`/teams/${id}`).then(res => {
           if (res.data && typeof res.data === 'object' && 'success' in res.data) {

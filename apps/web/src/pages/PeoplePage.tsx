@@ -7,29 +7,25 @@ import { Select } from "@/components/ui/Select";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { TableRow, TableCell } from "@/components/ui/Table";
 import { useModal } from "@/hooks/useModal";
-import { useCrud } from "@/hooks/useCrud";
 import { useViewMode } from "@/hooks/useViewMode";
 import { CrudPageLayout } from "@/components/crud/CrudPageLayout";
 import { CrudFilters } from "@/components/crud/CrudFilters";
 import { CrudView } from "@/components/crud/CrudView";
-import { Person, Ministry, Team, User, UserRole } from "@minc-hub/shared/types";
+import { Person, User, UserRole } from "@minc-hub/shared/types";
 import { ServoCard } from "./people/components/ServoCard";
 import { CreateUserForm } from "./people/components/CreateUserForm";
 import { UserIcon, EditIcon, TrashIcon, PlusIcon } from "@/components/icons";
 import { formatDate } from "@minc-hub/shared/utils";
-import { MOCK_MINISTRIES, MOCK_TEAMS, MOCK_PEOPLE, MOCK_USERS } from "@/lib/mockData";
+import { usePeople } from "@/hooks/usePeople";
+import { useMinistries } from "@/hooks/useMinistries";
+import { useTeams } from "@/hooks/useTeams";
+import { useCrud } from "@/hooks/useCrud";
+import { MOCK_USERS } from "@/lib/mockData";
 
 export default function PeoplePage() {
-  const {
-    items: people,
-    create,
-    update,
-    remove,
-  } = useCrud<Person>({
-    initialItems: MOCK_PEOPLE,
-  });
-  const [ministries] = useState<Ministry[]>(MOCK_MINISTRIES);
-  const [teams] = useState<Team[]>(MOCK_TEAMS);
+  const { people, isLoading, createPerson, updatePerson, deletePerson } = usePeople();
+  const { ministries } = useMinistries();
+  const { teams } = useTeams();
   const {
     items: users,
     create: createUser,
@@ -78,6 +74,11 @@ export default function PeoplePage() {
     }
     return teams.filter((t) => t.ministryId === filterMinistry && t.isActive);
   }, [filterMinistry, teams]);
+
+  // Filter ministries by selected church (already filtered in useMinistries)
+  const filteredMinistries = useMemo(() => {
+    return ministries.filter((m) => m.isActive);
+  }, [ministries]);
 
   const filteredPeople = useMemo(() => {
     return people.filter((person) => {
@@ -160,43 +161,42 @@ export default function PeoplePage() {
     }
   }
 
-  function handlePersonSubmit(e: React.FormEvent) {
+  async function handlePersonSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (editingPerson) {
-      update(editingPerson.id, personFormData);
-    } else {
-      create(personFormData);
+    try {
+      if (editingPerson) {
+        await updatePerson(editingPerson.id, personFormData);
+      } else {
+        await createPerson(personFormData);
+      }
+      handleClosePersonModal();
+    } catch (error) {
+      // Error already handled in the hook with toast
     }
-
-    handleClosePersonModal();
   }
 
   async function handleSavePersonAndCreateUser(e: React.FormEvent) {
     e.preventDefault();
 
-    let savedPerson: Person | null = null;
+    try {
+      let savedPerson: Person | null = null;
 
-    if (editingPerson) {
-      await update(editingPerson.id, personFormData);
-      savedPerson = { ...editingPerson, ...personFormData };
-    } else {
-      const newId = `person-${Date.now()}`;
-      savedPerson = {
-        ...personFormData,
-        id: newId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await create(savedPerson);
-    }
+      if (editingPerson) {
+        savedPerson = await updatePerson(editingPerson.id, personFormData);
+      } else {
+        savedPerson = await createPerson(personFormData);
+      }
 
-    handleClosePersonModal();
+      handleClosePersonModal();
 
-    if (savedPerson) {
-      setTimeout(() => {
-        handleOpenCreateUserModal(savedPerson!);
-      }, 200);
+      if (savedPerson) {
+        setTimeout(() => {
+          handleOpenCreateUserModal(savedPerson!);
+        }, 200);
+      }
+    } catch (error) {
+      // Error already handled in the hook with toast
     }
   }
 
@@ -205,10 +205,15 @@ export default function PeoplePage() {
     deleteModal.open();
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (deletingId) {
-      remove(deletingId);
-      setDeletingId(null);
+      try {
+        await deletePerson(deletingId);
+        setDeletingId(null);
+        deleteModal.close();
+      } catch (error) {
+        // Error already handled in the hook with toast
+      }
     }
   }
 
@@ -267,8 +272,8 @@ export default function PeoplePage() {
           onDelete={handleDeleteClick}
           onCreateUser={handleOpenCreateUserModal}
           hasUser={hasUser(person.id)}
-          isUpdating={false}
-          isDeleting={false}
+          isUpdating={isLoading}
+          isDeleting={isLoading}
         />
       ))}
     </div>
@@ -351,9 +356,7 @@ export default function PeoplePage() {
                 onChange: handleFilterMinistryChange,
                 options: [
                   { value: "all", label: "Todos os times" },
-                  ...ministries
-                    .filter((m) => m.isActive)
-                    .map((m) => ({ value: m.id, label: m.name })),
+                  ...filteredMinistries.map((m) => ({ value: m.id, label: m.name })),
                 ],
               },
               {
@@ -429,9 +432,7 @@ export default function PeoplePage() {
               onChange={(e) => handlePersonMinistryChange(e.target.value)}
               options={[
                 { value: "", label: "Selecione um time" },
-                ...ministries
-                  .filter((m) => m.isActive)
-                  .map((m) => ({ value: m.id, label: m.name })),
+                ...filteredMinistries.map((m) => ({ value: m.id, label: m.name })),
               ]}
             />
             <Select
