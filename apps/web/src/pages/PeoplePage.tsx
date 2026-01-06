@@ -210,8 +210,8 @@ export default function PeoplePage() {
 
     try {
       // Remove preferredServiceIds from payload as backend doesn't support it yet
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { ...rawPersonData } = personFormData
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
+      const { preferredServiceIds, ...rawPersonData } = personFormData
 
       // Create payload with proper typing - use Record for flexible structure
       const personData: Record<string, unknown> = { ...rawPersonData }
@@ -553,90 +553,118 @@ export default function PeoplePage() {
         title={editingPerson ? 'Editar Servo' : 'Novo Servo'}
         size="lg"
       >
-        <form onSubmit={handlePersonSubmit} className="space-y-3">
-          <Input
-            label="Nome *"
-            value={personFormData.name}
-            onChange={e => setPersonFormData({ ...personFormData, name: e.target.value })}
-            required
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <form onSubmit={handlePersonSubmit} className="space-y-4">
+          {/* Basic Information Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-dark-800 dark:text-dark-200 pb-2 border-b border-dark-200 dark:border-dark-700">
+              Informações Básicas
+            </h3>
             <Input
-              label="Email"
-              type="email"
-              value={personFormData.email}
-              onChange={e => setPersonFormData({ ...personFormData, email: e.target.value })}
+              label="Nome *"
+              value={personFormData.name}
+              onChange={e => setPersonFormData({ ...personFormData, name: e.target.value })}
+              required
             />
-            <Input
-              label="Telefone"
-              value={personFormData.phone}
-              onChange={e => setPersonFormData({ ...personFormData, phone: e.target.value })}
-              placeholder="(11) 99999-9999"
-            />
-          </div>
-          <Select
-            label="Time"
-            value={personFormData.ministryId}
-            onChange={e => handlePersonMinistryChange(e.target.value)}
-            options={[
-              { value: '', label: 'Selecione um time' },
-              ...filteredMinistries.map(m => ({ value: m.id, label: m.name })),
-            ]}
-          />
-          <div>
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2">
-              Equipes
-            </label>
-            <TeamMembersSelector
-              teams={teams}
-              ministries={ministries}
-              selectedMinistryId={personFormData.ministryId || undefined}
-              value={personFormData.teamMembers}
-              onChange={teamMembers => setPersonFormData({ ...personFormData, teamMembers })}
-            />
-          </div>
-          <Input
-            label="Data de Nascimento"
-            type="date"
-            value={personFormData.birthDate}
-            onChange={e => setPersonFormData({ ...personFormData, birthDate: e.target.value })}
-          />
-          <Input
-            label="Endereço"
-            value={personFormData.address}
-            onChange={e => setPersonFormData({ ...personFormData, address: e.target.value })}
-          />
-          <Textarea
-            label="Observações"
-            value={personFormData.notes}
-            onChange={e => setPersonFormData({ ...personFormData, notes: e.target.value })}
-            placeholder="Observações sobre o servo..."
-            rows={2}
-          />
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300">
-              Preferências de Cultos para Servir
-            </label>
-            <p className="text-xs text-dark-500 dark:text-dark-400 mb-1">
-              Selecione os cultos em que este servo prefere servir
-            </p>
-            {activeServices.length > 0 ? (
-              <CheckboxList
-                items={activeServices.map(service => ({
-                  id: service.id,
-                  label: `${service.name} (${service.time})`,
-                }))}
-                selectedIds={personFormData.preferredServiceIds}
-                onToggle={handleTogglePreferredService}
-                maxHeight="max-h-40"
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                label="Email"
+                type="email"
+                value={personFormData.email}
+                onChange={e => setPersonFormData({ ...personFormData, email: e.target.value })}
               />
-            ) : (
-              <p className="text-sm text-dark-500 dark:text-dark-400 py-2 text-center">
-                Nenhum culto ativo disponível
-              </p>
-            )}
+              <Input
+                label="Telefone"
+                value={personFormData.phone}
+                onChange={e => setPersonFormData({ ...personFormData, phone: e.target.value })}
+                placeholder="(11) 99999-9999"
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                label="Data de Nascimento"
+                type="date"
+                value={personFormData.birthDate}
+                onChange={e => setPersonFormData({ ...personFormData, birthDate: e.target.value })}
+              />
+              <Input
+                label="Endereço"
+                value={personFormData.address}
+                onChange={e => setPersonFormData({ ...personFormData, address: e.target.value })}
+              />
+            </div>
           </div>
-          <div className="flex justify-end gap-3 pt-3">
+
+          {/* Ministry and Teams Section */}
+          <div className="space-y-3 pt-2">
+            <h3 className="text-sm font-semibold text-dark-800 dark:text-dark-200 pb-2 border-b border-dark-200 dark:border-dark-700">
+              Time e Equipes
+            </h3>
+            <Select
+              label="Time"
+              value={personFormData.ministryId}
+              onChange={e => handlePersonMinistryChange(e.target.value)}
+              options={[
+                { value: '', label: 'Selecione um time' },
+                ...filteredMinistries.map(m => ({ value: m.id, label: m.name })),
+              ]}
+            />
+            <div className="bg-dark-50 dark:bg-dark-900/30 p-4 rounded-lg border border-dark-200 dark:border-dark-700">
+              <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-3">
+                Equipes
+              </label>
+              <TeamMembersSelector
+                teams={teams}
+                ministries={ministries}
+                selectedMinistryId={personFormData.ministryId || undefined}
+                value={personFormData.teamMembers}
+                onChange={teamMembers => setPersonFormData({ ...personFormData, teamMembers })}
+              />
+            </div>
+          </div>
+
+          {/* Service Preferences Section */}
+          <div className="space-y-3 pt-2">
+            <h3 className="text-sm font-semibold text-dark-800 dark:text-dark-200 pb-2 border-b border-dark-200 dark:border-dark-700">
+              Preferências de Cultos
+            </h3>
+            <div className="space-y-2">
+              <p className="text-xs text-dark-600 dark:text-dark-400">
+                Selecione os cultos em que este servo prefere servir
+              </p>
+              {activeServices.length > 0 ? (
+                <CheckboxList
+                  items={activeServices.map(service => ({
+                    id: service.id,
+                    label: `${service.name} (${service.time})`,
+                  }))}
+                  selectedIds={personFormData.preferredServiceIds}
+                  onToggle={handleTogglePreferredService}
+                  maxHeight="max-h-40"
+                />
+              ) : (
+                <p className="text-sm text-dark-500 dark:text-dark-400 py-2 text-center">
+                  Nenhum culto ativo disponível
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Additional Notes Section */}
+          <div className="space-y-3 pt-2">
+            <h3 className="text-sm font-semibold text-dark-800 dark:text-dark-200 pb-2 border-b border-dark-200 dark:border-dark-700">
+              Observações
+            </h3>
+            <Textarea
+              label="Notas adicionais"
+              value={personFormData.notes}
+              onChange={e => setPersonFormData({ ...personFormData, notes: e.target.value })}
+              placeholder="Observações sobre o servo..."
+              rows={3}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-dark-200 dark:border-dark-700">
             <Button type="button" variant="secondary" onClick={handleClosePersonModal}>
               Cancelar
             </Button>
