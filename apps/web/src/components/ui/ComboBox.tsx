@@ -267,34 +267,38 @@ export function ComboBox<T extends string | number = string>({
         disabled={disabled}
         onOpenChange={setIsOpen}
       >
-        <SelectTrigger
-          className={cn(
-            'bg-white dark:bg-dark-900 text-dark-900 dark:text-dark-50 border-dark-300 dark:border-dark-700 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all',
-            error && 'border-red-500 focus:ring-red-500',
-            disabled && 'opacity-50 cursor-not-allowed',
-            className
-          )}
-        >
-          {renderTrigger ? (
-            renderTrigger(selectedOption, displayValue)
-          ) : (
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              {Icon && <Icon className="h-4 w-4 text-dark-500 dark:text-dark-400 flex-shrink-0" />}
-              <span className="truncate text-dark-900 dark:text-dark-50">{displayValue}</span>
-            </div>
-          )}
+        <div className="relative">
+          <SelectTrigger
+            className={cn(
+              'bg-white dark:bg-dark-900 text-dark-900 dark:text-dark-50 border-dark-300 dark:border-dark-700 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all',
+              error && 'border-red-500 focus:ring-red-500',
+              disabled && 'opacity-50 cursor-not-allowed',
+              hasValue && !disabled && !renderTrigger && 'pr-8',
+              className
+            )}
+          >
+            {renderTrigger ? (
+              renderTrigger(selectedOption, displayValue)
+            ) : (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {Icon && (
+                  <Icon className="h-4 w-4 text-dark-500 dark:text-dark-400 flex-shrink-0" />
+                )}
+                <span className="truncate text-dark-900 dark:text-dark-50">{displayValue}</span>
+              </div>
+            )}
+          </SelectTrigger>
           {hasValue && !disabled && !renderTrigger && (
-            // Note: Using span instead of button to avoid nested button issue (SelectTrigger is already a button)
             <button
               type="button"
               onClick={handleClear}
-              className="ml-2 p-0.5 rounded hover:bg-dark-200 dark:hover:bg-dark-700 transition-colors flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 bg-transparent border-none appearance-none"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-dark-200 dark:hover:bg-dark-700 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 bg-transparent border-none appearance-none z-10"
               aria-label="Limpar seleção"
             >
               <X className="h-3 w-3 text-dark-500 dark:text-dark-400" />
             </button>
           )}
-        </SelectTrigger>
+        </div>
 
         <SelectContent
           className={cn(
