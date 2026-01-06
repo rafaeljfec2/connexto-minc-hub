@@ -14,4 +14,6 @@ export const ROUTES = {
   USERS: '/users',
   SCHEDULE_PLANNING_CONFIG: '/schedule-planning-config',
   CHECKIN: '/checkin',
-} as const;
+  CHAT: '/chat',
+  CHAT_DETAIL: '/chat/:conversationId',
+} as const

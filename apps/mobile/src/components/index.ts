@@ -1,6 +1,8 @@
 export { Button } from './Button'
 export { Input } from './Input'
 export { Header } from './Header'
+
+export * from './Animations'
 export { Card } from './Card'
 export { DrawerMenu } from './DrawerMenu'
 export { BackgroundGradient } from './BackgroundGradient'

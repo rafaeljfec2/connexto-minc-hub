@@ -15,6 +15,8 @@ import SettingsPage from '@/pages/SettingsPage'
 import UsersPage from '@/pages/UsersPage'
 import SchedulePlanningConfigPage from '@/pages/SchedulePlanningConfigPage'
 import CheckinPage from '@/pages/CheckinPage'
+import ChatPage from '@/pages/ChatPage'
+import ChatDetailPage from '@/pages/ChatDetailPage'
 
 export const protectedRoutes: RouteConfig[] = [
   {
@@ -82,5 +84,25 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/checkin',
     component: CheckinPage,
+  },
+  {
+    path: '/chat',
+    component: ChatPage,
+    allowedRoles: [
+      UserRole.PASTOR,
+      UserRole.LIDER_DE_TIME,
+      UserRole.LIDER_DE_EQUIPE,
+      UserRole.SERVO,
+    ],
+  },
+  {
+    path: '/chat/:conversationId',
+    component: ChatDetailPage,
+    allowedRoles: [
+      UserRole.PASTOR,
+      UserRole.LIDER_DE_TIME,
+      UserRole.LIDER_DE_EQUIPE,
+      UserRole.SERVO,
+    ],
   },
 ]

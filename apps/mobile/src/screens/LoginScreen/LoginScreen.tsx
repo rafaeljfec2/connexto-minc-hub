@@ -13,6 +13,7 @@ import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
 import { Card } from '@/components/Card'
 import { BackgroundGradient } from '@/components/BackgroundGradient'
+import { FadeInView } from '@/components/Animations'
 import { useLoginForm } from './useLoginForm'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 import { API_CONFIG } from '@/constants/config'
@@ -34,7 +35,7 @@ export default function LoginScreen() {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.content}>
+          <FadeInView style={styles.content}>
             <BrandHeader />
             <LoginForm
               email={email}
@@ -45,7 +46,7 @@ export default function LoginScreen() {
               onPasswordChange={setPassword}
               onLogin={handleLogin}
             />
-          </View>
+          </FadeInView>
 
           <FooterLogo />
         </ScrollView>

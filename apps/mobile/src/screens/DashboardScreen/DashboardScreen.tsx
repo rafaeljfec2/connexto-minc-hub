@@ -8,6 +8,7 @@ import { ActivityFeed } from './ActivityFeed'
 import { UpcomingServices } from './UpcomingServices'
 import type { ActivityItem } from './ActivityFeed'
 import { DrawerMenu } from '@/components/DrawerMenu'
+import { FadeInView } from '@/components/Animations'
 import { UserMenu } from '@/components/Header/UserMenu'
 import { themeSpacing } from '@/theme'
 import { API_CONFIG } from '@/constants/config'
@@ -98,31 +99,33 @@ export default function DashboardScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <QuickActions onActionPress={handleActionPress} />
+        <FadeInView>
+          <QuickActions onActionPress={handleActionPress} />
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statsRow}>
-            <StatsCard
-              title="Total Servos"
-              value={isMockMode ? MOCK_PEOPLE.length.toString() : '0'}
-              icon="people"
-              trend="+2 novos"
-            />
-            <StatsCard
-              title="Equipes"
-              value={isMockMode ? MOCK_TEAMS.filter(t => t.isActive).length.toString() : '0'}
-              icon="layers"
-            />
+          <View style={styles.statsContainer}>
+            <View style={styles.statsRow}>
+              <StatsCard
+                title="Total Servos"
+                value={isMockMode ? MOCK_PEOPLE.length.toString() : '0'}
+                icon="people"
+                trend="+2 novos"
+              />
+              <StatsCard
+                title="Equipes"
+                value={isMockMode ? MOCK_TEAMS.filter(t => t.isActive).length.toString() : '0'}
+                icon="layers"
+              />
+            </View>
+            <View style={styles.statsRow}>
+              <StatsCard title="Próx. Culto" value="Dom 9h" icon="calendar" />
+              <StatsCard title="Presença" value="85%" icon="stats-chart" trend="+5%" />
+            </View>
           </View>
-          <View style={styles.statsRow}>
-            <StatsCard title="Próx. Culto" value="Dom 9h" icon="calendar" />
-            <StatsCard title="Presença" value="85%" icon="stats-chart" trend="+5%" />
-          </View>
-        </View>
 
-        <UpcomingServices services={upcomingServices} />
+          <UpcomingServices services={upcomingServices} />
 
-        <ActivityFeed activities={recentActivities} />
+          <ActivityFeed activities={recentActivities} />
+        </FadeInView>
       </ScrollView>
 
       <DrawerMenu visible={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />

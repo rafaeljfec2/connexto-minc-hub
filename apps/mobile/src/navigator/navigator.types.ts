@@ -21,14 +21,7 @@ export type MainTabParamList = {
   Chat: undefined
   Profile: undefined
   QRCodeScanner: undefined
-  Churches: undefined
-  Ministries: undefined
-  Teams: undefined
-  People: undefined
-  Users: undefined
-  Services: undefined
-  MonthlySchedule: undefined
-  Communication: undefined
+  QRCodeScanner: undefined
 }
 
 export type AuthStackParamList = {

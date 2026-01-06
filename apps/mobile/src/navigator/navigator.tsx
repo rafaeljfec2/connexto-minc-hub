@@ -102,63 +102,7 @@ function MainTabs() {
           tabBarIcon: ProfileIcon,
         }}
       />
-      {/* Hidden tabs - these screens are accessible but don't show in the tab bar */}
-      <Tab.Screen
-        name="Churches"
-        component={ChurchesScreen}
-        options={{
-          tabBarButton: () => null,
-        }}
-      />
-      <Tab.Screen
-        name="Ministries"
-        component={MinistriesScreen}
-        options={{
-          tabBarButton: () => null,
-        }}
-      />
-      <Tab.Screen
-        name="Teams"
-        component={TeamsScreen}
-        options={{
-          tabBarButton: () => null,
-        }}
-      />
-      <Tab.Screen
-        name="People"
-        component={PeopleScreen}
-        options={{
-          tabBarButton: () => null,
-        }}
-      />
-      <Tab.Screen
-        name="Users"
-        component={UsersScreen}
-        options={{
-          tabBarButton: () => null,
-        }}
-      />
-      <Tab.Screen
-        name="Services"
-        component={ServicesScreen}
-        options={{
-          tabBarButton: () => null,
-        }}
-      />
-      <Tab.Screen
-        name="MonthlySchedule"
-        component={MonthlyScheduleScreen}
-        options={{
-          tabBarButton: () => null,
-        }}
-      />
-      <Tab.Screen
-        name="Communication"
-        component={CommunicationScreen}
-        options={{
-          tabBarButton: () => null,
-        }}
-      />
+      {/* Hidden tabs removed from here and moved to Stack for proper transition animations */}
     </Tab.Navigator>
   )
 }
@@ -171,11 +115,19 @@ export function RootNavigator() {
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
       {isAuthenticated ? (
         <>
           <Stack.Screen name="Main" component={MainTabs} />
           <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
+          <Stack.Screen name="Churches" component={ChurchesScreen} />
+          <Stack.Screen name="Ministries" component={MinistriesScreen} />
+          <Stack.Screen name="Teams" component={TeamsScreen} />
+          <Stack.Screen name="People" component={PeopleScreen} />
+          <Stack.Screen name="Users" component={UsersScreen} />
+          <Stack.Screen name="Services" component={ServicesScreen} />
+          <Stack.Screen name="MonthlySchedule" component={MonthlyScheduleScreen} />
+          <Stack.Screen name="Communication" component={CommunicationScreen} />
         </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
