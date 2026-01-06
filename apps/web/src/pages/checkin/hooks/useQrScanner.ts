@@ -19,57 +19,116 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
         setIsScanning(true)
         setScanError(null)
 
-        await html5QrCode.start(
-          { facingMode: 'environment' },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-          },
-          async (decodedText: string) => {
-            if (isProcessingRef.current) return
+        const devices = await Html5Qrcode.getCameras()
+        if (!devices || devices.length === 0) {
+          throw new Error('Nenhuma câmera encontrada')
+        }
 
-            try {
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        }
+
+        try {
+          await html5QrCode.start(
+            { facingMode: 'environment' },
+            config,
+            async (decodedText: string) => {
+              if (isProcessingRef.current) return
+
+              // Prevent double processing
               isProcessingRef.current = true
-              await html5QrCode.stop()
-              setIsScanning(false)
-              await onScanSuccess(decodedText)
-            } catch (error) {
-              console.error('Error processing QR code:', error)
-            } finally {
-              isProcessingRef.current = false
-              // Resume scanning after processing
-              if (enabled && html5QrCode) {
-                setTimeout(() => {
-                  startScanning(html5QrCode)
-                }, 2000)
+
+              // 1. Try to stop scanning, but don't let failure block success
+              try {
+                await html5QrCode.stop()
+              } catch (e) {
+                // Ignore "Cannot stop, scanner is not running or paused" errors
+                const errorMessage = e instanceof Error ? e.message : String(e)
+                if (!errorMessage.includes('not running') && !errorMessage.includes('not paused')) {
+                  console.warn('Scanner stop warning:', e)
+                }
               }
+
+              setIsScanning(false)
+
+              // 2. Proceed with success handling
+              try {
+                await onScanSuccess(decodedText)
+              } catch (error) {
+                console.error('Error processing QR code:', error)
+              } finally {
+                isProcessingRef.current = false
+              }
+            },
+            errorMessage => {
+              // Ignore frame errors
             }
-          },
-          (errorMessage: string) => {
-            // Ignore most errors, only show critical ones
-            if (errorMessage.includes('No MultiFormat Readers')) {
-              setScanError('Câmera não disponível')
-            }
-          }
-        )
+          )
+        } catch (envError) {
+          console.warn('Environment camera failed, trying fallback', envError)
+          // Fallback to first available camera
+          const cameraId = devices[0].id
+          await html5QrCode.start(
+            cameraId,
+            config,
+            async (decodedText: string) => {
+              if (isProcessingRef.current) return
+              isProcessingRef.current = true
+
+              try {
+                await html5QrCode.stop()
+              } catch (e) {
+                // Ignore "Cannot stop, scanner is not running or paused" errors
+                const errorMessage = e instanceof Error ? e.message : String(e)
+                if (!errorMessage.includes('not running') && !errorMessage.includes('not paused')) {
+                  console.warn('Scanner stop warning:', e)
+                }
+              }
+
+              setIsScanning(false)
+
+              try {
+                await onScanSuccess(decodedText)
+              } catch {
+                // ignore
+              } finally {
+                isProcessingRef.current = false
+              }
+            },
+            () => {}
+          )
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Erro ao iniciar câmera'
+        console.error('Scanner start error:', error)
         setScanError(message)
         setIsScanning(false)
       }
     },
-    [onScanSuccess, enabled]
+    [onScanSuccess]
   )
 
   const stopScanning = useCallback(async () => {
     if (!scanner) return
 
     try {
+      // Check if scanner is actually running before trying to stop
+      // Html5Qrcode doesn't expose a direct way to check, so we wrap in try-catch
       await scanner.stop()
-      scanner.clear()
-      setIsScanning(false)
     } catch (error) {
-      // Ignore errors on stop
+      // Ignore "Cannot stop, scanner is not running or paused" errors
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      if (!errorMessage.includes('not running') && !errorMessage.includes('not paused')) {
+        console.warn('Error stopping scanner:', error)
+      }
+    } finally {
+      try {
+        scanner.clear()
+      } catch (error) {
+        // Ignore errors during clear
+      }
+      setIsScanning(false)
     }
   }, [scanner])
 
@@ -77,54 +136,105 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
   useEffect(() => {
     let currentScanner: Html5Qrcode | null = null
     let mounted = true
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null
 
     if (enabled) {
       const initScanner = async () => {
-        // Wait for element to be available in DOM
-        await new Promise(resolve => setTimeout(resolve, 300))
-
-        if (!mounted) return
-
-        const element = document.getElementById('qr-reader')
-        if (!element) {
-          if (mounted) setScanError('Elemento da câmera não encontrado')
-          return
+        // Wait for element to be available and laid out in DOM
+        // Use a more robust check with retries
+        const checkElement = (): HTMLElement | null => {
+          // First try to get element from ref
+          if (scannerRef.current) {
+            const element = scannerRef.current.querySelector('#qr-reader') as HTMLElement | null
+            if (element && element.clientWidth > 0 && element.clientHeight > 0) {
+              return element
+            }
+          }
+          // Fallback to getElementById
+          const element = document.getElementById('qr-reader')
+          if (element && element.clientWidth > 0 && element.clientHeight > 0) {
+            return element
+          }
+          return null
         }
 
-        try {
-          // Cleanup existing instance if any
+        // Retry logic with exponential backoff
+        let retries = 0
+        const maxRetries = 5
+        const baseDelay = 200
+
+        const tryInit = async (): Promise<void> => {
+          if (!mounted) return
+
+          const element = checkElement()
+          
+          if (!element) {
+            if (retries < maxRetries) {
+              retries++
+              const delay = baseDelay * Math.pow(2, retries - 1)
+              retryTimeout = setTimeout(() => {
+                if (mounted) {
+                  tryInit()
+                }
+              }, delay)
+              return
+            } else {
+              if (mounted) {
+                setScanError('Câmera não pode ser inicializada. Verifique se o elemento está visível.')
+              }
+              return
+            }
+          }
+
+          // Element found and has dimensions
           try {
-            const existingScanner = new Html5Qrcode('qr-reader')
-            await existingScanner.clear()
-          } catch {
-            // Must catch if instance didn't exist
-          }
+            const html5QrCode = new Html5Qrcode(element.id)
+            currentScanner = html5QrCode
 
-          const html5QrCode = new Html5Qrcode('qr-reader')
-          currentScanner = html5QrCode
-
-          if (mounted) {
-            setScanner(html5QrCode)
-            await startScanning(html5QrCode)
-          }
-        } catch (error) {
-          console.error('Error initializing scanner:', error)
-          if (mounted) {
-            setScanError('Erro ao inicializar scanner')
+            if (mounted) {
+              setScanner(html5QrCode)
+              await startScanning(html5QrCode)
+            }
+          } catch (error) {
+            console.error('Error initializing scanner:', error)
+            if (mounted) {
+              const message = error instanceof Error ? error.message : 'Erro ao inicializar scanner'
+              setScanError(message)
+            }
           }
         }
+
+        // Start initialization
+        tryInit()
       }
 
-      initScanner()
+      // Small delay to ensure DOM is ready
+      const initTimeout = setTimeout(() => {
+        if (mounted) {
+          initScanner()
+        }
+      }, 100)
+
+      return () => {
+        if (initTimeout) clearTimeout(initTimeout)
+        if (retryTimeout) clearTimeout(retryTimeout)
+      }
     }
 
     return () => {
       mounted = false
+      if (retryTimeout) {
+        clearTimeout(retryTimeout)
+      }
       if (currentScanner) {
         // Cleanup - safely handle both Promise and void returns from stop()
         Promise.resolve(currentScanner.stop())
-          .catch(() => {
-            // Ignore errors during stop
+          .catch((error) => {
+            // Ignore "Cannot stop, scanner is not running or paused" errors
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            if (!errorMessage.includes('not running') && !errorMessage.includes('not paused')) {
+              console.warn('Error stopping scanner during cleanup:', error)
+            }
           })
           .finally(() => {
             try {
@@ -135,7 +245,7 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
           })
       }
     }
-  }, [enabled, startScanning])
+  }, [enabled, startScanning, scannerRef])
 
   return {
     scanner,

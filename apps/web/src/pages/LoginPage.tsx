@@ -1,57 +1,57 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { BrandText } from "@/components/ui/BrandText";
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
+import { BrandText } from '@/components/ui/BrandText'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
 
     try {
-      await login(email, password);
+      await login(email, password)
       // Pequeno delay para garantir que o estado seja atualizado
       setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 100);
+        navigate('/dashboard', { replace: true })
+      }, 100)
     } catch (err: unknown) {
-      let errorMessage = "Email ou senha inválidos";
-      
+      let errorMessage = 'Email ou senha inválidos'
+
       if (err && typeof err === 'object' && 'response' in err) {
-        const axiosError = err as { response?: { status?: number; data?: { message?: string } } };
+        const axiosError = err as { response?: { status?: number; data?: { message?: string } } }
         if (axiosError.response?.status === 401) {
-          errorMessage = "Credenciais inválidas";
+          errorMessage = 'Credenciais inválidas'
         } else if (axiosError.response?.data?.message) {
-          errorMessage = axiosError.response.data.message;
+          errorMessage = axiosError.response.data.message
         } else if (axiosError.response?.status === 429) {
-          errorMessage = "Muitas tentativas. Tente novamente mais tarde.";
+          errorMessage = 'Muitas tentativas. Tente novamente mais tarde.'
         } else if (axiosError.response?.status === 500) {
-          errorMessage = "Erro no servidor. Tente novamente mais tarde.";
+          errorMessage = 'Erro no servidor. Tente novamente mais tarde.'
         } else if (axiosError.response?.status === 0 || axiosError.response?.status === undefined) {
-          errorMessage = "Não foi possível conectar ao servidor. Verifique sua conexão.";
+          errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão.'
         }
       } else if (err && typeof err === 'object' && 'message' in err) {
-        const error = err as { message?: string };
+        const error = err as { message?: string }
         if (error.message) {
-          errorMessage = error.message;
+          errorMessage = error.message
         }
       }
-      
-      setError(errorMessage);
-      console.error("Login error:", err);
+
+      setError(errorMessage)
+      console.error('Login error:', err)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
@@ -65,12 +65,12 @@ export default function LoginPage() {
               <img
                 src="/minc-teams-logo.png"
                 alt="MINC Teams"
-                className="h-20 w-auto object-contain"
-                onError={(e) => {
+                className="h-20 w-auto object-contain invert dark:invert-0"
+                onError={e => {
                   // Fallback para a logo antiga se a nova não existir
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/Logo-minc.png";
-                  target.className = "h-16 w-auto object-contain";
+                  const target = e.target as HTMLImageElement
+                  target.src = '/Logo-minc.png'
+                  target.className = 'h-16 w-auto object-contain invert dark:invert-0'
                 }}
               />
             </div>
@@ -92,7 +92,7 @@ export default function LoginPage() {
                 label="Email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="seu@email.com"
                 required
                 autoComplete="email"
@@ -101,7 +101,7 @@ export default function LoginPage() {
                 label="Senha"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
@@ -121,7 +121,7 @@ export default function LoginPage() {
       </div>
       <footer className="mb-6 text-center relative z-10 px-4 w-full">
         <p className="text-sm text-dark-400 dark:text-dark-500">
-          Created by{" "}
+          Created by{' '}
           <a
             href="https://www.connexto.com.br/"
             target="_blank"
@@ -133,5 +133,5 @@ export default function LoginPage() {
         </p>
       </footer>
     </div>
-  );
+  )
 }
