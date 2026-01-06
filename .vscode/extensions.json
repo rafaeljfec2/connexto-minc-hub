@@ -1,0 +1,29 @@
+{
+  "recommendations": [
+    // Debug
+    "msjsdiag.debugger-for-chrome",
+    "msjsdiag.vscode-react-native",
+
+    // TypeScript & JavaScript
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+
+    // React & Frontend
+    "dsznajder.es7-react-js-snippets",
+    "bradlc.vscode-tailwindcss",
+
+    // Node.js & NestJS
+    "firsttris.vscode-jest-runner",
+
+    // Database
+    "ckolkman.vscode-postgres",
+
+    // Git
+    "eamodio.gitlens",
+
+    // Utilities
+    "christian-kohler.path-intellisense",
+    "usernamehw.errorlens",
+    "gruntfuggly.todo-tree"
+  ]
+}

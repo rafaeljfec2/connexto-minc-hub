@@ -234,7 +234,7 @@ export class SchedulesService {
     console.log('Update DTO:', updateScheduleDto);
 
     // Build update object with only the fields we want to update
-    const updateData: { serviceId?: string; date?: Date } = {};
+    const updateData: { serviceId?: string; date?: string } = {};
 
     if (updateScheduleDto.serviceId) {
       updateData.serviceId = updateScheduleDto.serviceId;
@@ -242,7 +242,8 @@ export class SchedulesService {
     }
 
     if (updateScheduleDto.date) {
-      updateData.date = new Date(updateScheduleDto.date);
+      // Keep date as string in YYYY-MM-DD format to avoid timezone issues
+      updateData.date = updateScheduleDto.date;
       console.log('Will update date to:', updateData.date);
     }
 

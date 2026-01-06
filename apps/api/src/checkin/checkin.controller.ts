@@ -1,17 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  Query,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Controller, Get, Post, Body, UseGuards, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CheckinService } from './checkin.service';
 import { GenerateQrCodeDto } from './dto/generate-qr-code.dto';
 import { ValidateQrCodeDto } from './dto/validate-qr-code.dto';
@@ -34,7 +22,8 @@ export class CheckinController {
     description: 'QR Code generated successfully',
     schema: {
       example: {
-        qrCode: '{"scheduleId":"uuid","personId":"uuid","serviceId":"uuid","date":"2024-03-10","timestamp":1234567890}',
+        qrCode:
+          '{"scheduleId":"uuid","personId":"uuid","serviceId":"uuid","date":"2024-03-10","timestamp":1234567890}',
         schedule: {
           id: 'uuid',
           serviceId: 'uuid',
@@ -46,10 +35,7 @@ export class CheckinController {
   })
   @ApiResponse({ status: 404, description: 'No schedules found for this person on this date' })
   @ApiResponse({ status: 403, description: 'Check-in not yet open or already closed' })
-  generateQrCode(
-    @Body() generateQrCodeDto: GenerateQrCodeDto,
-    @GetUser() user: UserEntity,
-  ) {
+  generateQrCode(@Body() generateQrCodeDto: GenerateQrCodeDto, @GetUser() user: UserEntity) {
     return this.checkinService.generateQrCode(user, generateQrCodeDto);
   }
 
@@ -62,10 +48,7 @@ export class CheckinController {
   })
   @ApiResponse({ status: 400, description: 'Invalid QR Code or already checked in' })
   @ApiResponse({ status: 403, description: 'Check-in not yet open or already closed' })
-  validateQrCode(
-    @Body() validateQrCodeDto: ValidateQrCodeDto,
-    @GetUser() user: UserEntity,
-  ) {
+  validateQrCode(@Body() validateQrCodeDto: ValidateQrCodeDto, @GetUser() user: UserEntity) {
     return this.checkinService.validateQrCode(validateQrCodeDto, user);
   }
 
@@ -76,10 +59,7 @@ export class CheckinController {
     description: 'Check-in history',
     type: [AttendanceEntity],
   })
-  getCheckInHistory(
-    @GetUser() user: UserEntity,
-    @Query('limit') limit?: string,
-  ) {
+  getCheckInHistory(@GetUser() user: UserEntity, @Query('limit') limit?: string) {
     if (!user.personId) {
       return [];
     }
