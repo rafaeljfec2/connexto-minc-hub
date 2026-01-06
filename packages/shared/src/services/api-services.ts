@@ -118,7 +118,7 @@ export function createApiServices(api: AxiosInstance) {
           return team
         }),
       update: (id: string, data: Partial<Omit<Team, 'memberIds'>>) =>
-        api.put<ApiResponse<Team>>(`/teams/${id}`, data).then(res => {
+        api.patch<ApiResponse<Team>>(`/teams/${id}`, data).then(res => {
           if (res.data && typeof res.data === 'object' && 'success' in res.data) {
             const apiResponse = res.data as ApiResponse<Team>
             if (!apiResponse.data) {
