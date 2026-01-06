@@ -403,76 +403,81 @@ export default function PeoplePage() {
     </div>
   )
 
-  const listViewRows = filteredPeople.map(person => (
-    <TableRow key={person.id}>
-      <TableCell>
-        <span className="font-medium">{person.name}</span>
-      </TableCell>
-      <TableCell>{person.email ?? '-'}</TableCell>
-      <TableCell>{person.phone ?? '-'}</TableCell>
-      <TableCell>{getMinistry(person.ministryId)?.name ?? '-'}</TableCell>
-      <TableCell>
-        {person.teamMembers && person.teamMembers.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
-            {person.teamMembers.map(teamMember => {
-              const team = teams.find(t => t.id === teamMember.teamId)
-              const isFixed = teamMember.memberType === MemberType.FIXED
-              return (
-                <span
-                  key={teamMember.id}
-                  className={cn(
-                    'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                    isFixed
-                      ? 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
-                      : 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400'
-                  )}
-                  title={isFixed ? 'Membro fixo' : 'Ajuda eventual'}
-                >
-                  {team?.name ?? 'Equipe desconhecida'}
-                  {!isFixed && <span className="ml-1 text-[10px] opacity-75">(E)</span>}
-                </span>
-              )
-            })}
-          </div>
-        ) : getTeam(person.teamId) ? (
-          <span className="text-sm">{getTeam(person.teamId)?.name}</span>
-        ) : (
-          '-'
-        )}
-      </TableCell>
-      <TableCell>{person.birthDate ? formatDate(person.birthDate) : '-'}</TableCell>
-      <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenPersonModal(person)}
-            title="Editar"
-          >
-            <EditIcon className="h-4 w-4" />
-          </Button>
-          {!hasUser(person.id) && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleOpenCreateUserModal(person)}
-              title="Criar usuário para este servo"
-            >
-              <UserIcon className="h-4 w-4" />
-            </Button>
-          )}
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => handleDeleteClick(person.id)}
-            title="Excluir"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
+  const listViewRows = filteredPeople.map(person => {
+    // Compute team display to avoid nested ternary
+    let teamDisplay: React.ReactNode
+    if (person.teamMembers && person.teamMembers.length > 0) {
+      teamDisplay = (
+        <div className="flex flex-wrap gap-1">
+          {person.teamMembers.map(teamMember => {
+            const team = teams.find(t => t.id === teamMember.teamId)
+            const isFixed = teamMember.memberType === MemberType.FIXED
+            return (
+              <span
+                key={teamMember.id}
+                className={cn(
+                  'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
+                  isFixed
+                    ? 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
+                    : 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400'
+                )}
+                title={isFixed ? 'Membro fixo' : 'Ajuda eventual'}
+              >
+                {team?.name ?? 'Equipe desconhecida'}
+                {!isFixed && <span className="ml-1 text-[10px] opacity-75">(E)</span>}
+              </span>
+            )
+          })}
         </div>
-      </TableCell>
-    </TableRow>
-  ))
+      )
+    } else {
+      const legacyTeam = getTeam(person.teamId)
+      teamDisplay = legacyTeam ? <span className="text-sm">{legacyTeam.name}</span> : '-'
+    }
+
+    return (
+      <TableRow key={person.id}>
+        <TableCell>
+          <span className="font-medium">{person.name}</span>
+        </TableCell>
+        <TableCell>{person.email ?? '-'}</TableCell>
+        <TableCell>{person.phone ?? '-'}</TableCell>
+        <TableCell>{getMinistry(person.ministryId)?.name ?? '-'}</TableCell>
+        <TableCell>{teamDisplay}</TableCell>
+        <TableCell>{person.birthDate ? formatDate(person.birthDate) : '-'}</TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleOpenPersonModal(person)}
+              title="Editar"
+            >
+              <EditIcon className="h-4 w-4" />
+            </Button>
+            {!hasUser(person.id) && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => handleOpenCreateUserModal(person)}
+                title="Criar usuário para este servo"
+              >
+                <UserIcon className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => handleDeleteClick(person.id)}
+              title="Excluir"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    )
+  })
 
   return (
     <>
