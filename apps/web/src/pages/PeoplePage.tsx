@@ -211,37 +211,44 @@ export default function PeoplePage() {
     try {
       // Remove preferredServiceIds from payload as backend doesn't support it yet
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { preferredServiceIds, ...rawPersonData } = personFormData
+      const { ...rawPersonData } = personFormData
 
-      // Create a clean copy of data - cast to any to allow delete operator
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const personData = { ...rawPersonData } as any
+      // Create payload with proper typing - use Record for flexible structure
+      const personData: Record<string, unknown> = { ...rawPersonData }
 
-      // Clean empty strings
-      if (!personData.ministryId) delete personData.ministryId
-      if (!personData.teamId) delete personData.teamId
+      // Clean empty strings by removing them from the object
+      if (!personData.ministryId) {
+        delete personData.ministryId
+      }
+      if (!personData.teamId) {
+        delete personData.teamId
+      }
 
       // Set teamId to first fixed team member for compatibility (if exists)
-      if (personData.teamMembers && personData.teamMembers.length > 0) {
-        const firstFixedTeam = personData.teamMembers.find(
-          (tm: { memberType: MemberType }) => tm.memberType === MemberType.FIXED
-        )
+      if (Array.isArray(personData.teamMembers) && personData.teamMembers.length > 0) {
+        const teamMembers = personData.teamMembers as Array<{
+          teamId: string
+          memberType: MemberType
+        }>
+        const firstFixedTeam = teamMembers.find(tm => tm.memberType === MemberType.FIXED)
         if (firstFixedTeam) {
           personData.teamId = firstFixedTeam.teamId
         } else {
           // If no fixed team, use first team
-          personData.teamId = personData.teamMembers[0].teamId
+          personData.teamId = teamMembers[0].teamId
         }
       }
 
       // Ensure teamId is cleaned if it's still empty string after logic
-      if (!personData.teamId) delete personData.teamId
+      if (!personData.teamId) {
+        delete personData.teamId
+      }
 
-      // Cast to any - API accepts simplified teamMembers structure
+      // API accepts simplified teamMembers structure
       if (editingPerson) {
-        await updatePerson(editingPerson.id, personData)
+        await updatePerson(editingPerson.id, personData as unknown as Partial<Person>)
       } else {
-        await createPerson(personData)
+        await createPerson(personData as unknown as Person)
       }
       handleClosePersonModal()
     } catch (error) {
@@ -255,40 +262,47 @@ export default function PeoplePage() {
 
     try {
       // Remove preferredServiceIds from payload as backend doesn't support it yet
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, unused-imports/no-unused-vars
       const { preferredServiceIds, ...rawPersonData } = personFormData
 
-      // Create a clean copy of data - cast to any to allow delete operator
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const personData = { ...rawPersonData } as any
+      // Create payload with proper typing - use Record for flexible structure
+      const personData: Record<string, unknown> = { ...rawPersonData }
 
-      // Clean empty strings
-      if (!personData.ministryId) delete personData.ministryId
-      if (!personData.teamId) delete personData.teamId
+      // Clean empty strings by removing them from the object
+      if (!personData.ministryId) {
+        delete personData.ministryId
+      }
+      if (!personData.teamId) {
+        delete personData.teamId
+      }
 
       // Set teamId to first fixed team member for compatibility (if exists)
-      if (personData.teamMembers && personData.teamMembers.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const firstFixedTeam = personData.teamMembers.find(
-          (tm: any) => tm.memberType === MemberType.FIXED
-        )
+      if (Array.isArray(personData.teamMembers) && personData.teamMembers.length > 0) {
+        const teamMembers = personData.teamMembers as Array<{
+          teamId: string
+          memberType: MemberType
+        }>
+        const firstFixedTeam = teamMembers.find(tm => tm.memberType === MemberType.FIXED)
         if (firstFixedTeam) {
           personData.teamId = firstFixedTeam.teamId
         } else {
           // If no fixed team, use first team
-          personData.teamId = personData.teamMembers[0].teamId
+          personData.teamId = teamMembers[0].teamId
         }
       }
 
       // Ensure teamId is cleaned if it's still empty string after logic
-      if (!personData.teamId) delete personData.teamId
+      if (!personData.teamId) {
+        delete personData.teamId
+      }
 
       let savedPerson: Person | null = null
 
+      // API accepts simplified teamMembers structure
       if (editingPerson) {
-        savedPerson = await updatePerson(editingPerson.id, personData)
+        savedPerson = await updatePerson(editingPerson.id, personData as unknown as Partial<Person>)
       } else {
-        savedPerson = await createPerson(personData)
+        savedPerson = await createPerson(personData as unknown as Person)
       }
 
       handleClosePersonModal()
