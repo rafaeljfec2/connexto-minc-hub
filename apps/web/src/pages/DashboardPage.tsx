@@ -1,11 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePeople } from '@/hooks/usePeople'
 import { useTeams } from '@/hooks/useTeams'
 import { useSchedules } from '@/hooks/useSchedules'
 import { useServices } from '@/hooks/useServices'
-import { DashboardHeaderMobile } from './dashboard/components/DashboardHeaderMobile'
 import { QuickActionsMobile } from './dashboard/components/QuickActionsMobile'
 import { StatsCardMobile } from './dashboard/components/StatsCardMobile'
 import { UpcomingServicesMobile } from './dashboard/components/UpcomingServicesMobile'
@@ -42,15 +41,8 @@ export default function DashboardPage() {
   return (
     <>
       {/* Mobile View */}
-      <div className="lg:hidden flex flex-col min-h-screen bg-grain relative">
-        <div className="absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
-        <div className="relative z-10 flex flex-col min-h-screen">
-          <DashboardHeaderMobile
-            onNotificationPress={() => {
-              // Handle notifications
-            }}
-          />
-          <div className="flex-1 overflow-y-auto pb-20">
+      <div className="lg:hidden flex flex-col min-h-screen">
+        <div className="flex-1 overflow-y-auto pb-16">
           <QuickActionsMobile />
           <div className="px-4 space-y-4 mb-6">
             <div className="flex gap-4">
@@ -126,10 +118,9 @@ export default function DashboardPage() {
           </div>
           <UpcomingServicesMobile schedules={schedules} services={services} />
           <ActivityFeedMobile activities={activities} />
-          </div>
-          <div className="mt-auto">
-            <FooterMobile />
-          </div>
+        </div>
+        <div className="mt-auto">
+          <FooterMobile />
         </div>
       </div>
 
