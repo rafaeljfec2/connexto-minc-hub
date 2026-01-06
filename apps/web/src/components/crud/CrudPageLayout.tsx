@@ -33,7 +33,7 @@ export function CrudPageLayout({
   createButtonIcon,
 }: CrudPageLayoutProps) {
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6 lg:py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 sm:pt-6 sm:pb-8 lg:py-8">
       <PageHeader
         title={title}
         description={description}

@@ -168,7 +168,7 @@ export default function CommunicationPage() {
         }))
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8 sm:pt-6 sm:pb-8 lg:py-8">
       <PageHeader
         title="Comunicação"
         description="Envie mensagens para membros e equipes"

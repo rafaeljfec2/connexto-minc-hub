@@ -207,7 +207,7 @@ export default function SchedulePlanningConfigPage() {
   ]
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 sm:pt-6 sm:pb-8 lg:py-8">
       <PageHeader
         title="Configuração do Planejamento Mensal"
         description="Configure as regras do planejamento mensal de escalas"

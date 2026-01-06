@@ -42,7 +42,7 @@ export default function DashboardPage() {
     <>
       {/* Mobile View */}
       <div className="lg:hidden flex flex-col min-h-screen">
-        <div className="flex-1 overflow-y-auto pb-16">
+        <div className="flex-1 overflow-y-auto pb-16 pt-4">
           <QuickActionsMobile />
           <div className="px-4 space-y-4 mb-6">
             <div className="flex gap-4">
