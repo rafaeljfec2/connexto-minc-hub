@@ -11,8 +11,8 @@ export interface ApiClientConfig {
 }
 
 export class ApiClient {
-  private client: AxiosInstance
-  private config: ApiClientConfig
+  private readonly client: AxiosInstance
+  private readonly config: ApiClientConfig
 
   constructor(config: ApiClientConfig) {
     this.config = config
@@ -59,7 +59,7 @@ export class ApiClient {
             const currentPath = globalThis.window.location.pathname
             const requestUrl = error.config?.url ?? ''
             const isAuthCheck = requestUrl.includes('/auth/me')
-            
+
             // Não chama onUnauthorized durante verificação inicial
             // Deixa o AuthContext decidir se deve limpar o usuário
             if (!currentPath.includes('/login') && !isAuthCheck) {

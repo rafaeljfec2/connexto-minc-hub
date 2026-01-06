@@ -13,62 +13,52 @@ import type {
 
 type CreateEntity<T> = Omit<T, 'id' | 'createdAt' | 'updatedAt'>
 
+/**
+ * Helper function to extract array data from ApiResponse
+ */
+function extractArrayData<T>(response: unknown): T[] {
+  if (response && typeof response === 'object' && 'success' in response) {
+    const apiResponse = response as ApiResponse<T[]>
+    return apiResponse.data ?? []
+  }
+  return (response as T[]) ?? []
+}
+
+/**
+ * Helper function to extract single entity data from ApiResponse
+ */
+function extractEntityData<T>(response: unknown, errorMessage: string): T {
+  if (response && typeof response === 'object' && 'success' in response) {
+    const apiResponse = response as ApiResponse<T>
+    if (!apiResponse.data) {
+      throw new Error(errorMessage)
+    }
+    return apiResponse.data
+  }
+  const entity = response as T
+  if (!entity) {
+    throw new Error(errorMessage)
+  }
+  return entity
+}
+
 export function createApiServices(api: AxiosInstance) {
   return {
     peopleService: {
       getAll: () =>
-        api.get<ApiResponse<Person[]>>('/persons').then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Person[]>
-            return apiResponse.data ?? []
-          }
-          return (res.data as unknown as Person[]) ?? []
-        }),
+        api.get<ApiResponse<Person[]>>('/persons').then(res => extractArrayData<Person>(res.data)),
       getById: (id: string) =>
-        api.get<ApiResponse<Person>>(`/persons/${id}`).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Person>
-            if (!apiResponse.data) {
-              throw new Error('Person not found')
-            }
-            return apiResponse.data
-          }
-          const person = res.data as unknown as Person
-          if (!person) {
-            throw new Error('Person not found')
-          }
-          return person
-        }),
+        api
+          .get<ApiResponse<Person>>(`/persons/${id}`)
+          .then(res => extractEntityData<Person>(res.data, 'Person not found')),
       create: (data: CreateEntity<Person>) =>
-        api.post<ApiResponse<Person>>('/persons', data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Person>
-            if (!apiResponse.data) {
-              throw new Error('Failed to create person')
-            }
-            return apiResponse.data
-          }
-          const person = res.data as unknown as Person
-          if (!person) {
-            throw new Error('Failed to create person')
-          }
-          return person
-        }),
+        api
+          .post<ApiResponse<Person>>('/persons', data)
+          .then(res => extractEntityData<Person>(res.data, 'Failed to create person')),
       update: (id: string, data: Partial<Person>) =>
-        api.patch<ApiResponse<Person>>(`/persons/${id}`, data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Person>
-            if (!apiResponse.data) {
-              throw new Error('Failed to update person')
-            }
-            return apiResponse.data
-          }
-          const person = res.data as unknown as Person
-          if (!person) {
-            throw new Error('Failed to update person')
-          }
-          return person
-        }),
+        api
+          .patch<ApiResponse<Person>>(`/persons/${id}`, data)
+          .then(res => extractEntityData<Person>(res.data, 'Failed to update person')),
       delete: (id: string) =>
         api.delete<ApiResponse<void>>(`/persons/${id}`).then(() => {
           // Delete doesn't return data
@@ -81,58 +71,19 @@ export function createApiServices(api: AxiosInstance) {
           .get<ApiResponse<Team[]>>('/teams', {
             params: ministryId ? { ministryId } : undefined,
           })
-          .then(res => {
-            if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-              const apiResponse = res.data as ApiResponse<Team[]>
-              return apiResponse.data ?? []
-            }
-            return (res.data as unknown as Team[]) ?? []
-          }),
+          .then(res => extractArrayData<Team>(res.data)),
       getById: (id: string) =>
-        api.get<ApiResponse<Team>>(`/teams/${id}`).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Team>
-            if (!apiResponse.data) {
-              throw new Error('Team not found')
-            }
-            return apiResponse.data
-          }
-          const team = res.data as unknown as Team
-          if (!team) {
-            throw new Error('Team not found')
-          }
-          return team
-        }),
+        api
+          .get<ApiResponse<Team>>(`/teams/${id}`)
+          .then(res => extractEntityData<Team>(res.data, 'Team not found')),
       create: (data: Omit<CreateEntity<Team>, 'memberIds'>) =>
-        api.post<ApiResponse<Team>>('/teams', data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Team>
-            if (!apiResponse.data) {
-              throw new Error('Failed to create team')
-            }
-            return apiResponse.data
-          }
-          const team = res.data as unknown as Team
-          if (!team) {
-            throw new Error('Failed to create team')
-          }
-          return team
-        }),
+        api
+          .post<ApiResponse<Team>>('/teams', data)
+          .then(res => extractEntityData<Team>(res.data, 'Failed to create team')),
       update: (id: string, data: Partial<Omit<Team, 'memberIds'>>) =>
-        api.patch<ApiResponse<Team>>(`/teams/${id}`, data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Team>
-            if (!apiResponse.data) {
-              throw new Error('Failed to update team')
-            }
-            return apiResponse.data
-          }
-          const team = res.data as unknown as Team
-          if (!team) {
-            throw new Error('Failed to update team')
-          }
-          return team
-        }),
+        api
+          .patch<ApiResponse<Team>>(`/teams/${id}`, data)
+          .then(res => extractEntityData<Team>(res.data, 'Failed to update team')),
       delete: (id: string) =>
         api.delete<ApiResponse<void>>(`/teams/${id}`).then(() => {
           // Delete doesn't return data
@@ -179,58 +130,19 @@ export function createApiServices(api: AxiosInstance) {
 
     churchesService: {
       getAll: () =>
-        api.get<ApiResponse<Church[]>>('/churches').then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Church[]>
-            return apiResponse.data ?? []
-          }
-          return (res.data as unknown as Church[]) ?? []
-        }),
+        api.get<ApiResponse<Church[]>>('/churches').then(res => extractArrayData<Church>(res.data)),
       getById: (id: string) =>
-        api.get<ApiResponse<Church>>(`/churches/${id}`).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Church>
-            if (!apiResponse.data) {
-              throw new Error('Church not found')
-            }
-            return apiResponse.data
-          }
-          const church = res.data as unknown as Church
-          if (!church) {
-            throw new Error('Church not found')
-          }
-          return church
-        }),
+        api
+          .get<ApiResponse<Church>>(`/churches/${id}`)
+          .then(res => extractEntityData<Church>(res.data, 'Church not found')),
       create: (data: CreateEntity<Church>) =>
-        api.post<ApiResponse<Church>>('/churches', data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Church>
-            if (!apiResponse.data) {
-              throw new Error('Failed to create church')
-            }
-            return apiResponse.data
-          }
-          const church = res.data as unknown as Church
-          if (!church) {
-            throw new Error('Failed to create church')
-          }
-          return church
-        }),
+        api
+          .post<ApiResponse<Church>>('/churches', data)
+          .then(res => extractEntityData<Church>(res.data, 'Failed to create church')),
       update: (id: string, data: Partial<Church>) =>
-        api.patch<ApiResponse<Church>>(`/churches/${id}`, data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Church>
-            if (!apiResponse.data) {
-              throw new Error('Church not found')
-            }
-            return apiResponse.data
-          }
-          const church = res.data as unknown as Church
-          if (!church) {
-            throw new Error('Church not found')
-          }
-          return church
-        }),
+        api
+          .patch<ApiResponse<Church>>(`/churches/${id}`, data)
+          .then(res => extractEntityData<Church>(res.data, 'Church not found')),
       delete: (id: string) =>
         api.delete<ApiResponse<void>>(`/churches/${id}`).then(() => {
           // Delete doesn't return data
@@ -243,58 +155,19 @@ export function createApiServices(api: AxiosInstance) {
           .get<ApiResponse<Ministry[]>>('/ministries', {
             params: churchId ? { churchId } : undefined,
           })
-          .then(res => {
-            if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-              const apiResponse = res.data as ApiResponse<Ministry[]>
-              return apiResponse.data ?? []
-            }
-            return (res.data as unknown as Ministry[]) ?? []
-          }),
+          .then(res => extractArrayData<Ministry>(res.data)),
       getById: (id: string) =>
-        api.get<ApiResponse<Ministry>>(`/ministries/${id}`).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Ministry>
-            if (!apiResponse.data) {
-              throw new Error('Ministry not found')
-            }
-            return apiResponse.data
-          }
-          const ministry = res.data as unknown as Ministry
-          if (!ministry) {
-            throw new Error('Ministry not found')
-          }
-          return ministry
-        }),
+        api
+          .get<ApiResponse<Ministry>>(`/ministries/${id}`)
+          .then(res => extractEntityData<Ministry>(res.data, 'Ministry not found')),
       create: (data: CreateEntity<Ministry>) =>
-        api.post<ApiResponse<Ministry>>('/ministries', data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Ministry>
-            if (!apiResponse.data) {
-              throw new Error('Failed to create ministry')
-            }
-            return apiResponse.data
-          }
-          const ministry = res.data as unknown as Ministry
-          if (!ministry) {
-            throw new Error('Failed to create ministry')
-          }
-          return ministry
-        }),
+        api
+          .post<ApiResponse<Ministry>>('/ministries', data)
+          .then(res => extractEntityData<Ministry>(res.data, 'Failed to create ministry')),
       update: (id: string, data: Partial<Ministry>) =>
-        api.patch<ApiResponse<Ministry>>(`/ministries/${id}`, data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<Ministry>
-            if (!apiResponse.data) {
-              throw new Error('Ministry not found')
-            }
-            return apiResponse.data
-          }
-          const ministry = res.data as unknown as Ministry
-          if (!ministry) {
-            throw new Error('Ministry not found')
-          }
-          return ministry
-        }),
+        api
+          .patch<ApiResponse<Ministry>>(`/ministries/${id}`, data)
+          .then(res => extractEntityData<Ministry>(res.data, 'Ministry not found')),
       delete: (id: string) =>
         api.delete<ApiResponse<void>>(`/ministries/${id}`).then(() => {
           // Delete doesn't return data
@@ -303,58 +176,19 @@ export function createApiServices(api: AxiosInstance) {
 
     usersService: {
       getAll: () =>
-        api.get<ApiResponse<User[]>>('/users').then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<User[]>
-            return apiResponse.data ?? []
-          }
-          return (res.data as unknown as User[]) ?? []
-        }),
+        api.get<ApiResponse<User[]>>('/users').then(res => extractArrayData<User>(res.data)),
       getById: (id: string) =>
-        api.get<ApiResponse<User>>(`/users/${id}`).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<User>
-            if (!apiResponse.data) {
-              throw new Error('User not found')
-            }
-            return apiResponse.data
-          }
-          const user = res.data as unknown as User
-          if (!user) {
-            throw new Error('User not found')
-          }
-          return user
-        }),
+        api
+          .get<ApiResponse<User>>(`/users/${id}`)
+          .then(res => extractEntityData<User>(res.data, 'User not found')),
       create: (data: CreateEntity<User> & { password: string }) =>
-        api.post<ApiResponse<User>>('/users', data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<User>
-            if (!apiResponse.data) {
-              throw new Error('Failed to create user')
-            }
-            return apiResponse.data
-          }
-          const user = res.data as unknown as User
-          if (!user) {
-            throw new Error('Failed to create user')
-          }
-          return user
-        }),
+        api
+          .post<ApiResponse<User>>('/users', data)
+          .then(res => extractEntityData<User>(res.data, 'Failed to create user')),
       update: (id: string, data: Partial<User>) =>
-        api.patch<ApiResponse<User>>(`/users/${id}`, data).then(res => {
-          if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-            const apiResponse = res.data as ApiResponse<User>
-            if (!apiResponse.data) {
-              throw new Error('Failed to update user')
-            }
-            return apiResponse.data
-          }
-          const user = res.data as unknown as User
-          if (!user) {
-            throw new Error('Failed to update user')
-          }
-          return user
-        }),
+        api
+          .patch<ApiResponse<User>>(`/users/${id}`, data)
+          .then(res => extractEntityData<User>(res.data, 'Failed to update user')),
       delete: (id: string) =>
         api.delete<ApiResponse<void>>(`/users/${id}`).then(() => {
           // Delete doesn't return data
