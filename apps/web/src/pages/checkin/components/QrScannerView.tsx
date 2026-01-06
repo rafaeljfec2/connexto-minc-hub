@@ -21,7 +21,10 @@ export function QrScannerView({ scannerRef, isScanning, scanError }: QrScannerVi
         </p>
 
         <div ref={scannerRef} className="relative mb-6">
-          <div id="qr-reader" className="w-full" />
+          <div
+            id="qr-reader"
+            className="w-full min-h-[300px] bg-black rounded-lg overflow-hidden"
+          />
           {scanError && (
             <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
               <p className="text-sm text-red-700 dark:text-red-400">{scanError}</p>

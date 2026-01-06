@@ -24,7 +24,7 @@ export function QuickActionsMobile({ onActionPress }: QuickActionsMobileProps) {
       ),
       onPress: () => {
         onActionPress?.('check-in')
-        // Navigate to check-in if route exists
+        navigate(ROUTES.CHECKIN)
       },
     },
     {

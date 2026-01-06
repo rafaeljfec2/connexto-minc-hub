@@ -50,7 +50,7 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
             if (errorMessage.includes('No MultiFormat Readers')) {
               setScanError('Câmera não disponível')
             }
-          },
+          }
         )
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Erro ao iniciar câmera'
@@ -58,7 +58,7 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
         setIsScanning(false)
       }
     },
-    [onScanSuccess, enabled],
+    [onScanSuccess, enabled]
   )
 
   const stopScanning = useCallback(async () => {
@@ -80,9 +80,29 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
 
     if (enabled) {
       const initScanner = async () => {
+        // Wait for element to be available in DOM
+        await new Promise(resolve => setTimeout(resolve, 300))
+
+        if (!mounted) return
+
+        const element = document.getElementById('qr-reader')
+        if (!element) {
+          if (mounted) setScanError('Elemento da câmera não encontrado')
+          return
+        }
+
         try {
+          // Cleanup existing instance if any
+          try {
+            const existingScanner = new Html5Qrcode('qr-reader')
+            await existingScanner.clear()
+          } catch {
+            // Must catch if instance didn't exist
+          }
+
           const html5QrCode = new Html5Qrcode('qr-reader')
           currentScanner = html5QrCode
+
           if (mounted) {
             setScanner(html5QrCode)
             await startScanning(html5QrCode)
@@ -101,13 +121,17 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
     return () => {
       mounted = false
       if (currentScanner) {
-        currentScanner
-          .stop()
-          .then(() => {
-            currentScanner?.clear()
-          })
+        // Cleanup - safely handle both Promise and void returns from stop()
+        Promise.resolve(currentScanner.stop())
           .catch(() => {
-            // Ignore errors on cleanup
+            // Ignore errors during stop
+          })
+          .finally(() => {
+            try {
+              currentScanner?.clear()
+            } catch {
+              // Ignore errors during clear
+            }
           })
       }
     }
