@@ -223,8 +223,8 @@ export class CheckinService {
 
     const qrCode = JSON.stringify(qrCodeData);
 
-    // QR Code expires at service time
-    const expiresAt = timeValidation.serviceTime;
+    // QR Code expires at check-in close time (1h after service start)
+    const expiresAt = timeValidation.checkInCloseTime;
 
     return {
       qrCode,

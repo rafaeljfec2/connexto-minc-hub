@@ -3,7 +3,7 @@ import { ServiceEntity } from '../../services/entities/service.entity';
 // Constants for check-in time windows
 export const CHECKIN_OPEN_MINUTES_BEFORE = 30;
 export const CHECKIN_TOLERANCE_MINUTES_AFTER = 60; // 1 hour tolerance
-export const QR_CODE_EXPIRATION_MS = 60 * 60 * 1000; // 1 hour
+export const QR_CODE_EXPIRATION_MS = 3 * 60 * 60 * 1000; // 3 hours (covers 30m before + 1h after window)
 
 export interface CheckInTimeValidation {
   isValid: boolean;
