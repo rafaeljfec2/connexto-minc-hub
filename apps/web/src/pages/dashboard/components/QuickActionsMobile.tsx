@@ -5,7 +5,7 @@ interface QuickActionsMobileProps {
   onActionPress?: (actionId: string) => void
 }
 
-export function QuickActionsMobile({ onActionPress }: QuickActionsMobileProps) {
+export function QuickActionsMobile({ onActionPress }: Readonly<QuickActionsMobileProps>) {
   const navigate = useNavigate()
 
   const actions = [

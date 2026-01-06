@@ -55,12 +55,12 @@ export function CrudPageLayout({
           title={emptyTitle}
           description={emptyDescription}
           action={
-            !hasFilters ? (
+            hasFilters ? undefined : (
               <Button onClick={onCreateClick} variant="primary">
                 {createButtonIcon}
                 {createButtonLabel}
               </Button>
-            ) : undefined
+            )
           }
         />
       ) : (

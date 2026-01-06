@@ -362,7 +362,7 @@ export class CheckinService {
     try {
       const parsed = JSON.parse(qrCodeDto.qrCodeData);
       qrCodeData = parsed as QrCodeDataDto;
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Invalid QR Code format');
     }
 

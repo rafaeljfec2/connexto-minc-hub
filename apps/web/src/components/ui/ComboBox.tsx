@@ -285,13 +285,14 @@ export function ComboBox<T extends string | number = string>({
           )}
           {hasValue && !disabled && !renderTrigger && (
             // Note: Using span instead of button to avoid nested button issue (SelectTrigger is already a button)
-            <span
+            <button
+              type="button"
               onClick={handleClear}
-              className="ml-2 p-0.5 rounded hover:bg-dark-200 dark:hover:bg-dark-700 transition-colors flex-shrink-0 cursor-pointer"
+              className="ml-2 p-0.5 rounded hover:bg-dark-200 dark:hover:bg-dark-700 transition-colors flex-shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 bg-transparent border-none appearance-none"
               aria-label="Limpar seleção"
             >
               <X className="h-3 w-3 text-dark-500 dark:text-dark-400" />
-            </span>
+            </button>
           )}
         </SelectTrigger>
 

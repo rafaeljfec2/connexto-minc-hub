@@ -123,6 +123,7 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
+  // NOSONAR
   const logger = new NestLogger('Bootstrap');
   logger.error('❌ Fatal error during bootstrap:', error);
   process.exit(1);

@@ -31,7 +31,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         )}
 
         {/* Mobile Footer - Fixed for all mobile screens, except chat detail pages */}
-        {!location.pathname.match(/^\/chat\/[^/]+$/) && (
+        {!/^\/chat\/[^/]+$/.test(location.pathname) && (
           <div className="lg:hidden">
             <FooterMobile />
           </div>
