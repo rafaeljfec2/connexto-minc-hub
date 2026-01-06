@@ -128,6 +128,13 @@ export function useSchedules(): UseSchedulesReturn {
         setSchedules(prev =>
           prev.map(schedule => (schedule.id === id ? updatedSchedule : schedule))
         )
+
+        // Invalidate cache to ensure fresh data on next fetch
+        if (selectedChurch) {
+          const cacheKey = `schedules-${selectedChurch.id}-all--`
+          sessionStorage.removeItem(cacheKey)
+        }
+
         showSuccess('Escala atualizada com sucesso!')
         return updatedSchedule
       } catch (err) {
@@ -140,7 +147,7 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError]
+    [showSuccess, showError, selectedChurch]
   )
 
   const deleteSchedule = useCallback(

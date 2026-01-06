@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { ScheduleTeamEntity } from './entities/schedule-team.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
@@ -11,9 +11,9 @@ import { AddTeamToScheduleDto } from './dto/add-team-to-schedule.dto';
 export class SchedulesService {
   constructor(
     @InjectRepository(ScheduleEntity)
-    private schedulesRepository: Repository<ScheduleEntity>,
+    private readonly schedulesRepository: Repository<ScheduleEntity>,
     @InjectRepository(ScheduleTeamEntity)
-    private scheduleTeamsRepository: Repository<ScheduleTeamEntity>,
+    private readonly scheduleTeamsRepository: Repository<ScheduleTeamEntity>,
   ) {}
 
   async create(createScheduleDto: CreateScheduleDto): Promise<ScheduleEntity> {
@@ -226,21 +226,40 @@ export class SchedulesService {
   }
 
   async update(id: string, updateScheduleDto: UpdateScheduleDto): Promise<ScheduleEntity> {
-    const schedule = await this.findOne(id);
+    // First verify the schedule exists
+    await this.findOne(id);
 
-    if (updateScheduleDto.date) {
-      schedule.date = new Date(updateScheduleDto.date);
-    }
+    console.log('=== UPDATE SCHEDULE DEBUG ===');
+    console.log('Schedule ID:', id);
+    console.log('Update DTO:', updateScheduleDto);
+
+    // Build update object with only the fields we want to update
+    const updateData: { serviceId?: string; date?: Date } = {};
 
     if (updateScheduleDto.serviceId) {
-      schedule.serviceId = updateScheduleDto.serviceId;
+      updateData.serviceId = updateScheduleDto.serviceId;
+      console.log('Will update serviceId to:', updateScheduleDto.serviceId);
     }
 
-    await this.schedulesRepository.save(schedule);
+    if (updateScheduleDto.date) {
+      updateData.date = new Date(updateScheduleDto.date);
+      console.log('Will update date to:', updateData.date);
+    }
 
-    if (updateScheduleDto.teamIds) {
+    // Use update method to ensure DB update
+    if (Object.keys(updateData).length > 0) {
+      console.log('Executing update with data:', updateData);
+      await this.schedulesRepository.update(id, updateData);
+      console.log('Update executed successfully');
+    }
+
+    // Handle team updates
+    if (updateScheduleDto.teamIds !== undefined) {
+      console.log('Updating teams to:', updateScheduleDto.teamIds);
+      // Delete existing team assignments
       await this.scheduleTeamsRepository.delete({ scheduleId: id });
 
+      // Add new team assignments if any
       if (updateScheduleDto.teamIds.length > 0) {
         const scheduleTeams = updateScheduleDto.teamIds.map((teamId) =>
           this.scheduleTeamsRepository.create({
@@ -252,7 +271,67 @@ export class SchedulesService {
       }
     }
 
-    return this.findOne(id);
+    // Reload from database to get fresh data
+    const finalSchedule = await this.schedulesRepository
+      .createQueryBuilder('schedule')
+      .select([
+        'schedule.id',
+        'schedule.serviceId',
+        'schedule.date',
+        'schedule.createdAt',
+        'schedule.updatedAt',
+        'service.id',
+        'service.churchId',
+        'service.type',
+        'service.dayOfWeek',
+        'service.time',
+        'service.name',
+        'service.isActive',
+        'church.id',
+        'church.name',
+        'church.address',
+        'church.phone',
+        'church.email',
+        'scheduleTeams.id',
+        'scheduleTeams.scheduleId',
+        'scheduleTeams.teamId',
+        'team.id',
+        'team.ministryId',
+        'team.name',
+        'team.description',
+        'team.isActive',
+        'attendances.id',
+        'attendances.scheduleId',
+        'attendances.personId',
+        'attendances.checkedInBy',
+        'attendances.checkedInAt',
+        'attendances.method',
+        'attendances.absenceReason',
+        'person.id',
+        'person.ministryId',
+        'person.teamId',
+        'person.name',
+        'person.email',
+        'person.phone',
+      ])
+      .leftJoin('schedule.service', 'service')
+      .leftJoin('service.church', 'church')
+      .leftJoin('schedule.scheduleTeams', 'scheduleTeams')
+      .leftJoin('scheduleTeams.team', 'team')
+      .leftJoin('schedule.attendances', 'attendances')
+      .leftJoin('attendances.person', 'person')
+      .where('schedule.id = :id', { id })
+      .andWhere('schedule.deletedAt IS NULL')
+      .getOne();
+
+    console.log('Final schedule date after reload:', finalSchedule?.date);
+    console.log('=== END UPDATE DEBUG ===');
+
+    if (!finalSchedule) {
+      throw new NotFoundException(`Schedule with ID ${id} not found`);
+    }
+
+    return finalSchedule;
   }
 
   async remove(id: string): Promise<void> {

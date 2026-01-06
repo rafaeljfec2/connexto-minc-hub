@@ -150,6 +150,8 @@ export default function SchedulesPage() {
         teamIds: formData.teamIds,
       }
 
+      console.log('Submitting schedule:', { editingSchedule, scheduleData })
+
       if (editingSchedule) {
         await updateSchedule(editingSchedule.id, scheduleData)
       } else {
@@ -264,24 +266,16 @@ export default function SchedulesPage() {
           )}
         </TableCell>
         <TableCell className="text-right">
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenModal(schedule)}
-          >
-            <EditIcon className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => handleDeleteClick(schedule.id)}
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={() => handleOpenModal(schedule)}>
+              <EditIcon className="h-4 w-4" />
+            </Button>
+            <Button variant="danger" size="sm" onClick={() => handleDeleteClick(schedule.id)}>
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
     )
   })
 
@@ -294,9 +288,7 @@ export default function SchedulesPage() {
         onCreateClick={() => handleOpenModal()}
         hasFilters={hasFilters}
         isEmpty={filteredSchedules.length === 0}
-        emptyTitle={
-          hasFilters ? 'Nenhuma escala encontrada' : 'Nenhuma escala cadastrada'
-        }
+        emptyTitle={hasFilters ? 'Nenhuma escala encontrada' : 'Nenhuma escala cadastrada'}
         emptyDescription={
           hasFilters
             ? 'Tente ajustar os filtros para encontrar escalas'
@@ -379,12 +371,7 @@ export default function SchedulesPage() {
                 <label className="block text-sm font-medium text-dark-600 dark:text-dark-300">
                   Equipes *
                 </label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleAutoAssign}
-                >
+                <Button type="button" variant="ghost" size="sm" onClick={handleAutoAssign}>
                   Sortear Automaticamente
                 </Button>
               </div>
@@ -429,7 +416,12 @@ export default function SchedulesPage() {
                             onClick={() => toggleTeam(teamId)}
                             className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
                           >
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg
+                              className="h-4 w-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -447,11 +439,7 @@ export default function SchedulesPage() {
             </div>
           )}
           <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleCloseModal}
-            >
+            <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary" disabled={isLoading}>
