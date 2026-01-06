@@ -1,17 +1,9 @@
-import { useAuth } from '@/contexts/AuthContext'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useChurches } from '@/hooks/useChurches'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-
-function getGreeting() {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'Bom dia'
-  if (hour < 18) return 'Boa tarde'
-  return 'Boa noite'
-}
 
 interface DashboardHeaderMobileProps {
   readonly onNotificationPress?: () => void
@@ -20,8 +12,6 @@ interface DashboardHeaderMobileProps {
 export function DashboardHeaderMobile({
   onNotificationPress,
 }: Readonly<DashboardHeaderMobileProps>) {
-  const { user } = useAuth()
-  const firstName = user?.name?.split(' ')[0] ?? 'Usuário'
   const { selectedChurch, setSelectedChurch } = useChurch()
   const { churches } = useChurches()
   const navigate = useNavigate()
@@ -73,14 +63,7 @@ export function DashboardHeaderMobile({
         </button>
 
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-xs text-dark-600 dark:text-dark-400 leading-tight">
-              {getGreeting()},
-            </span>
-            <span className="text-lg font-bold text-dark-900 dark:text-dark-50 truncate">
-              {firstName}
-            </span>
-          </div>
+          <div className="flex flex-col flex-1 min-w-0"></div>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">

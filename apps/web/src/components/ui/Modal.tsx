@@ -32,7 +32,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -41,7 +41,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       />
       <div
         className={cn(
-          'relative z-50 w-full max-h-[90vh] rounded-xl bg-white border border-dark-200 shadow-xl',
+          'relative z-[101] w-full max-h-[90vh] rounded-xl bg-white border border-dark-200 shadow-xl',
           'dark:bg-dark-900 dark:border-dark-800',
           'animate-scale-in flex flex-col',
           sizeClasses[size]

@@ -4,8 +4,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { CheckboxList } from '@/components/ui/CheckboxList'
-import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
+import { ComboBox } from '@/components/ui/ComboBox'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useViewMode } from '@/hooks/useViewMode'
@@ -19,12 +18,14 @@ import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { useSchedules } from '@/hooks/useSchedules'
 import { useServices } from '@/hooks/useServices'
 import { useTeams } from '@/hooks/useTeams'
+import { useMinistries } from '@/hooks/useMinistries'
 import { useChurch } from '@/contexts/ChurchContext'
 
 export default function SchedulesPage() {
   const { schedules, isLoading, createSchedule, updateSchedule, deleteSchedule } = useSchedules()
   const { services } = useServices()
   const { teams } = useTeams()
+  const { ministries } = useMinistries()
   const { selectedChurch } = useChurch()
   const modal = useModal()
   const deleteModal = useModal()
@@ -38,12 +39,14 @@ export default function SchedulesPage() {
   const getInitialFormData = () => ({
     serviceId: filteredServices[0]?.id ?? '',
     date: '',
+    ministryId: '',
     teamIds: [] as string[],
   })
 
   const [formData, setFormData] = useState({
     serviceId: '',
     date: '',
+    ministryId: '',
     teamIds: [] as string[],
   })
 
@@ -53,12 +56,20 @@ export default function SchedulesPage() {
     return services.filter(service => service.churchId === selectedChurch.id)
   }, [services, selectedChurch])
 
+  const filteredMinistries = useMemo(() => {
+    if (!selectedChurch) return []
+    return ministries.filter(ministry => ministry.isActive)
+  }, [ministries, selectedChurch])
+
   const filteredTeams = useMemo(() => {
     if (!selectedChurch) return []
-    // Teams are already filtered by church via useTeams hook
-    // We just need to show active teams
-    return teams.filter(team => team.isActive)
-  }, [teams, selectedChurch])
+    // Filter teams by selected ministry if one is selected
+    let filtered = teams.filter(team => team.isActive)
+    if (formData.ministryId) {
+      filtered = filtered.filter(team => team.ministryId === formData.ministryId)
+    }
+    return filtered
+  }, [teams, selectedChurch, formData.ministryId])
 
   const filteredSchedules = useMemo(() => {
     if (!searchTerm) return schedules
@@ -91,9 +102,12 @@ export default function SchedulesPage() {
         ? schedule.date.split('T')[0]
         : schedule.date.split(' ')[0]
 
+      // Find the ministry from the first team's ministryId
+      const firstTeam = filteredTeams.find(t => schedule.teamIds?.includes(t.id))
       setFormData({
         serviceId: schedule.serviceId,
         date: dateStr,
+        ministryId: firstTeam?.ministryId ?? '',
         teamIds: schedule.teamIds ?? [],
       })
     } else {
@@ -170,7 +184,7 @@ export default function SchedulesPage() {
   }
 
   function handleAutoAssign() {
-    if (!formData.serviceId || !formData.date) {
+    if (!formData.serviceId || !formData.date || !formData.ministryId) {
       return
     }
 
@@ -232,13 +246,6 @@ export default function SchedulesPage() {
       </TableCell>
     </TableRow>
   ))
-
-  const checkboxItems = filteredTeams
-    .filter(t => t.isActive)
-    .map(team => ({
-      id: team.id,
-      label: team.name,
-    }))
 
   return (
     <>
@@ -306,6 +313,28 @@ export default function SchedulesPage() {
             onChange={e => setFormData({ ...formData, date: e.target.value })}
             required
           />
+          <div>
+            <label className="block text-sm font-medium text-dark-600 dark:text-dark-300 mb-2">
+              Time *
+            </label>
+            <ComboBox
+              options={filteredMinistries.map(ministry => ({
+                value: ministry.id,
+                label: ministry.name,
+              }))}
+              value={formData.ministryId || null}
+              onValueChange={ministryId => {
+                setFormData({
+                  ...formData,
+                  ministryId: ministryId ?? '',
+                  teamIds: [], // Clear teams when ministry changes
+                })
+              }}
+              placeholder="Selecione um time"
+              searchable
+              searchPlaceholder="Buscar time..."
+            />
+          </div>
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-dark-600 dark:text-dark-300">
