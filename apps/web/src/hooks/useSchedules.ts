@@ -187,6 +187,8 @@ export function useSchedules(): UseSchedulesReturn {
       hasFetchedRef.current = churchId ?? null
       fetchSchedules().catch(() => {
         // Error already handled in fetchSchedules
+        // Reset Ref so we can retry on next effect run or manual retry
+        hasFetchedRef.current = null
       })
     } else {
       hasFetchedRef.current = null

@@ -176,6 +176,8 @@ export function useChurches(): UseChurchesReturn {
     fetchChurches().catch(err => {
       // Log error for debugging but don't show toast to avoid spam
       console.error('Failed to fetch churches:', err)
+      // Reset fetched flag so it can try again
+      hasFetchedRef.current = false
     })
   }, [isAuthenticated, fetchChurches])
 
