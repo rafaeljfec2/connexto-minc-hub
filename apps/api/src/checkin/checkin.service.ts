@@ -77,9 +77,19 @@ export class CheckinService {
       );
     }
 
-    // Get date (default to today)
-    const targetDate = generateQrCodeDto.date ? new Date(generateQrCodeDto.date) : new Date();
-    targetDate.setHours(0, 0, 0, 0);
+    // Get date (default to today) - use UTC to avoid timezone issues
+    let targetDate: Date;
+    if (generateQrCodeDto.date) {
+      // If date is provided as string (YYYY-MM-DD), parse it in UTC
+      const dateParts = generateQrCodeDto.date.split('-').map(Number);
+      targetDate = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2], 0, 0, 0, 0));
+    } else {
+      // Get today's date in UTC
+      const now = new Date();
+      targetDate = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0),
+      );
+    }
 
     // Collect all active team IDs the person belongs to
     // This considers both relationships:
@@ -158,7 +168,9 @@ export class CheckinService {
       ])
       .leftJoinAndSelect('schedule.service', 'service')
       .innerJoin('schedule.scheduleTeams', 'scheduleTeam')
-      .where('schedule.date = :date', { date: targetDate })
+      .where('CAST(schedule.date AS DATE) = :date', {
+        date: targetDate.toISOString().split('T')[0],
+      })
       .andWhere('schedule.deletedAt IS NULL')
       .andWhere('service.isActive = true')
       .andWhere('service.deletedAt IS NULL')
@@ -182,7 +194,8 @@ export class CheckinService {
     }
 
     // Validate check-in time (30 minutes before service)
-    const timeValidation = validateCheckInTime(service, targetDate);
+    // Use schedule.date from DB (it's already a Date object)
+    const timeValidation = validateCheckInTime(service, schedule.date);
     if (!timeValidation.isValid) {
       throw new ForbiddenException(timeValidation.errorMessage);
     }
