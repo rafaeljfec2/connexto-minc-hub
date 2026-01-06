@@ -16,6 +16,12 @@ import { cn } from '@/lib/utils'
 
 type TabType = 'global' | 'teams' | 'templates'
 
+function getTeamConfigDisplay(): string {
+  // This would ideally fetch and show if team has custom config
+  // For now, we'll show "Padrão" (Default)
+  return 'Padrão'
+}
+
 export default function SchedulePlanningConfigPage() {
   const { selectedChurch } = useChurch()
   const {
@@ -194,12 +200,6 @@ export default function SchedulePlanningConfigPage() {
     }
   }
 
-  function getTeamConfigDisplay(): string {
-    // This would ideally fetch and show if team has custom config
-    // For now, we'll show "Padrão" (Default)
-    return 'Padrão'
-  }
-
   const tabs = [
     { id: 'global' as TabType, label: 'Configuração Global' },
     { id: 'teams' as TabType, label: 'Configurações por Time' },
@@ -247,37 +247,37 @@ export default function SchedulePlanningConfigPage() {
               <div className="bg-white dark:bg-dark-900 rounded-lg border border-dark-200 dark:border-dark-800 p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+                    <div className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
                       Máximo de pessoas por equipe
-                    </label>
+                    </div>
                     <p className="text-dark-900 dark:text-dark-50">{config.maxTeamMembers}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+                    <div className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
                       Cultos por domingo
-                    </label>
+                    </div>
                     <p className="text-dark-900 dark:text-dark-50">{config.servicesPerSunday}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+                    <div className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
                       Cada equipe serve uma vez ao mês
-                    </label>
+                    </div>
                     <p className="text-dark-900 dark:text-dark-50">
                       {config.teamsServeOncePerMonth ? 'Sim' : 'Não'}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+                    <div className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
                       Sortear equipes para servir mais de uma vez
-                    </label>
+                    </div>
                     <p className="text-dark-900 dark:text-dark-50">
                       {config.enableLotteryForExtraServices ? 'Sim' : 'Não'}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+                    <div className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
                       Rotação de horários mensalmente
-                    </label>
+                    </div>
                     <p className="text-dark-900 dark:text-dark-50">
                       {config.enableTimeRotation ? 'Sim' : 'Não'}
                     </p>
@@ -416,7 +416,7 @@ export default function SchedulePlanningConfigPage() {
             onChange={e =>
               setGlobalFormData(prev => ({
                 ...prev,
-                maxTeamMembers: parseInt(e.target.value, 10) || 1,
+                maxTeamMembers: Number.parseInt(e.target.value, 10) || 1,
               }))
             }
             required
@@ -429,7 +429,7 @@ export default function SchedulePlanningConfigPage() {
             onChange={e =>
               setGlobalFormData(prev => ({
                 ...prev,
-                servicesPerSunday: parseInt(e.target.value, 10) || 1,
+                servicesPerSunday: Number.parseInt(e.target.value, 10) || 1,
               }))
             }
             required
@@ -488,7 +488,7 @@ export default function SchedulePlanningConfigPage() {
             onChange={e =>
               setTeamFormData(prev => ({
                 ...prev,
-                maxTeamMembers: e.target.value ? parseInt(e.target.value, 10) : null,
+                maxTeamMembers: e.target.value ? Number.parseInt(e.target.value, 10) : null,
               }))
             }
           />
