@@ -61,7 +61,7 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
                 isProcessingRef.current = false
               }
             },
-            errorMessage => {
+            () => {
               // Ignore frame errors
             }
           )
