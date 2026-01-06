@@ -20,17 +20,16 @@ export interface CheckInTimeValidation {
 function getServiceDateTime(scheduleDate: Date | string, timeString: string): Date {
   const dateObj = typeof scheduleDate === 'string' ? new Date(scheduleDate) : scheduleDate;
 
-  // Get date components in UTC to avoid timezone issues
+  // Create date in America/Sao_Paulo (UTC-3) to ensure correct validation regardless of server timezone
   const year = dateObj.getUTCFullYear();
-  const month = dateObj.getUTCMonth();
-  const day = dateObj.getUTCDate();
+  const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getUTCDate()).padStart(2, '0');
 
-  const [hours, minutes] = timeString.split(':').map(Number);
+  const [hours, minutes] = timeString.split(':').map((str) => String(str).padStart(2, '0'));
 
-  // Create date in Local Time (assuming server is running in target timezone)
-  // This constructs the date as: Year, Month, Day, Hours, Minutes in local time
-  const serviceTime = new Date(year, month, day, hours, minutes, 0, 0);
-  return serviceTime;
+  // Construct ISO string with fixed -03:00 offset (Brasilia Standard Time)
+  const isoString = `${year}-${month}-${day}T${hours}:${minutes}:00-03:00`;
+  return new Date(isoString);
 }
 
 /**
