@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardHeaderMobile } from '@/pages/dashboard/components/DashboardHeaderMobile'
+import { FooterMobile } from '@/components/layout/FooterMobile'
 
 interface AppLayoutProps {
   readonly children: ReactNode
@@ -23,13 +24,18 @@ export function AppLayout({ children }: AppLayoutProps) {
           />
         </div>
 
+        {/* Mobile Footer - Fixed for all mobile screens */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20">
+          <FooterMobile />
+        </div>
+
         {/* Desktop Layout */}
         <div className="lg:ml-64 relative">
           {/* Desktop Header - Only shown on desktop */}
           <div className="hidden lg:block">
             <Header />
           </div>
-          <main className="min-h-[calc(100vh-4rem)] animate-fade-in-up lg:min-h-[calc(100vh-4rem)] pt-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:pt-0">
+          <main className="min-h-[calc(100vh-4rem)] animate-fade-in-up lg:min-h-[calc(100vh-4rem)] pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pt-0 lg:pb-0">
             {children}
           </main>
         </div>

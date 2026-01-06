@@ -9,7 +9,6 @@ import { QuickActionsMobile } from './dashboard/components/QuickActionsMobile'
 import { StatsCardMobile } from './dashboard/components/StatsCardMobile'
 import { UpcomingServicesMobile } from './dashboard/components/UpcomingServicesMobile'
 import { ActivityFeedMobile, type ActivityItem } from './dashboard/components/ActivityFeedMobile'
-import { FooterMobile } from '@/components/layout/FooterMobile'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -42,7 +41,7 @@ export default function DashboardPage() {
     <>
       {/* Mobile View */}
       <div className="lg:hidden flex flex-col min-h-screen">
-        <div className="flex-1 overflow-y-auto pb-16 pt-4">
+        <div className="flex-1 overflow-y-auto pb-20 pt-4">
           <QuickActionsMobile />
           <div className="px-4 space-y-4 mb-6">
             <div className="flex gap-4">
@@ -118,9 +117,6 @@ export default function DashboardPage() {
           </div>
           <UpcomingServicesMobile schedules={schedules} services={services} />
           <ActivityFeedMobile activities={activities} />
-        </div>
-        <div className="mt-auto">
-          <FooterMobile />
         </div>
       </div>
 
