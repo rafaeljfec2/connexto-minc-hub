@@ -49,7 +49,7 @@ export function DashboardHeaderMobile({
       <div className="flex items-center justify-between px-4 py-3 gap-2">
         <button
           onClick={handleMenuClick}
-          className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+          className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors flex-shrink-0"
           aria-label="Abrir menu"
         >
           <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,12 +62,8 @@ export function DashboardHeaderMobile({
           </svg>
         </button>
 
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="flex flex-col flex-1 min-w-0"></div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="min-w-[120px] sm:min-w-[140px]">
+        <div className="flex items-center justify-center flex-1 min-w-0 px-2">
+          <div className="w-full max-w-[200px]">
             <ComboBox
               options={churchOptions}
               value={selectedChurch?.id || null}
@@ -76,14 +72,23 @@ export function DashboardHeaderMobile({
               searchable
               searchPlaceholder="Buscar..."
               maxHeight="max-h-56"
-              className="h-9 px-2 sm:px-3 text-xs sm:text-sm bg-white dark:bg-dark-900 border border-dark-300 dark:border-dark-700 rounded-md"
+              className="h-9 px-0 sm:px-3 text-sm font-semibold justify-center bg-transparent border-none hover:bg-dark-100 dark:hover:bg-dark-800 focus:ring-0 text-dark-900 dark:text-dark-50"
               contentClassName="rounded-md shadow-lg"
+              showEmptyMessage={false}
+              renderTrigger={(_option, displayValue) => (
+                <div className="flex items-center gap-1.5 mx-auto max-w-full">
+                  <span className="truncate">{displayValue}</span>
+                </div>
+              )}
             />
           </div>
+        </div>
+
+        <div className="flex items-center gap-1 flex-shrink-0">
           <ThemeToggle />
           <button
             onClick={onNotificationPress}
-            className="relative p-2 rounded-xl bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+            className="relative p-2 rounded-xl text-dark-700 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"
             aria-label="Notificações"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +103,7 @@ export function DashboardHeaderMobile({
           </button>
           <button
             onClick={() => navigate('/profile')}
-            className="p-2 rounded-xl bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+            className="p-2 rounded-xl text-dark-700 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"
             aria-label="Perfil"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
