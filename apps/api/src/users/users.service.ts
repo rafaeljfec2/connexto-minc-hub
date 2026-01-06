@@ -11,17 +11,52 @@ export class UsersService {
   ) {}
 
   async findOne(id: string): Promise<UserEntity | null> {
-    return this.usersRepository.findOne({
-      where: { id, deletedAt: IsNull() },
-      relations: ['person'],
-    });
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.name',
+        'user.role',
+        'user.isActive',
+        'user.personId',
+        'user.lastLoginAt',
+        'user.createdAt',
+        'user.updatedAt',
+        'person.id',
+        'person.name',
+        'person.email',
+        'person.phone',
+      ])
+      .leftJoin('user.person', 'person')
+      .where('user.id = :id', { id })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
   }
 
   async findAuthUser(email: string): Promise<UserEntity | null> {
-    return this.usersRepository.findOne({
-      where: { email, deletedAt: IsNull() },
-      relations: ['person'],
-    });
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.passwordHash',
+        'user.name',
+        'user.role',
+        'user.isActive',
+        'user.personId',
+        'user.lastLoginAt',
+        'user.createdAt',
+        'user.updatedAt',
+        'person.id',
+        'person.name',
+        'person.email',
+        'person.phone',
+      ])
+      .leftJoin('user.person', 'person')
+      .where('user.email = :email', { email })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
@@ -54,10 +89,27 @@ export class UsersService {
   }
 
   async findAll(): Promise<UserEntity[]> {
-    return this.usersRepository.find({
-      where: { deletedAt: IsNull() },
-      relations: ['person'],
-    });
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.email',
+        'user.name',
+        'user.role',
+        'user.isActive',
+        'user.personId',
+        'user.lastLoginAt',
+        'user.createdAt',
+        'user.updatedAt',
+        'person.id',
+        'person.name',
+        'person.email',
+        'person.phone',
+      ])
+      .leftJoin('user.person', 'person')
+      .where('user.deletedAt IS NULL')
+      .orderBy('user.name', 'ASC')
+      .getMany();
   }
 
   async update(id: string, updateData: Partial<UserEntity>): Promise<UserEntity> {

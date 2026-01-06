@@ -21,19 +21,56 @@ export class ServicesService {
   }
 
   async findAll(): Promise<ServiceEntity[]> {
-    return this.servicesRepository.find({
-      where: { deletedAt: IsNull() },
-      relations: ['church'],
-      order: { dayOfWeek: 'ASC', time: 'ASC' },
-    });
+    return this.servicesRepository
+      .createQueryBuilder('service')
+      .select([
+        'service.id',
+        'service.churchId',
+        'service.type',
+        'service.dayOfWeek',
+        'service.time',
+        'service.name',
+        'service.isActive',
+        'service.createdAt',
+        'service.updatedAt',
+        'church.id',
+        'church.name',
+        'church.address',
+        'church.phone',
+        'church.email',
+      ])
+      .leftJoin('service.church', 'church')
+      .where('service.deletedAt IS NULL')
+      .orderBy('service.dayOfWeek', 'ASC')
+      .addOrderBy('service.time', 'ASC')
+      .getMany();
   }
 
   async findByChurch(churchId: string): Promise<ServiceEntity[]> {
-    return this.servicesRepository.find({
-      where: { churchId, deletedAt: IsNull() },
-      relations: ['church'],
-      order: { dayOfWeek: 'ASC', time: 'ASC' },
-    });
+    return this.servicesRepository
+      .createQueryBuilder('service')
+      .select([
+        'service.id',
+        'service.churchId',
+        'service.type',
+        'service.dayOfWeek',
+        'service.time',
+        'service.name',
+        'service.isActive',
+        'service.createdAt',
+        'service.updatedAt',
+        'church.id',
+        'church.name',
+        'church.address',
+        'church.phone',
+        'church.email',
+      ])
+      .leftJoin('service.church', 'church')
+      .where('service.churchId = :churchId', { churchId })
+      .andWhere('service.deletedAt IS NULL')
+      .orderBy('service.dayOfWeek', 'ASC')
+      .addOrderBy('service.time', 'ASC')
+      .getMany();
   }
 
   async findOne(id: string): Promise<ServiceEntity> {

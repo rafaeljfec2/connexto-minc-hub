@@ -21,19 +21,50 @@ export class MinistriesService {
   }
 
   async findAll(): Promise<MinistryEntity[]> {
-    return this.ministriesRepository.find({
-      where: { deletedAt: IsNull() },
-      relations: ['church'],
-      order: { name: 'ASC' },
-    });
+    return this.ministriesRepository
+      .createQueryBuilder('ministry')
+      .select([
+        'ministry.id',
+        'ministry.churchId',
+        'ministry.name',
+        'ministry.description',
+        'ministry.isActive',
+        'ministry.createdAt',
+        'ministry.updatedAt',
+        'church.id',
+        'church.name',
+        'church.address',
+        'church.phone',
+        'church.email',
+      ])
+      .leftJoin('ministry.church', 'church')
+      .where('ministry.deletedAt IS NULL')
+      .orderBy('ministry.name', 'ASC')
+      .getMany();
   }
 
   async findByChurch(churchId: string): Promise<MinistryEntity[]> {
-    return this.ministriesRepository.find({
-      where: { churchId, deletedAt: IsNull() },
-      relations: ['church'],
-      order: { name: 'ASC' },
-    });
+    return this.ministriesRepository
+      .createQueryBuilder('ministry')
+      .select([
+        'ministry.id',
+        'ministry.churchId',
+        'ministry.name',
+        'ministry.description',
+        'ministry.isActive',
+        'ministry.createdAt',
+        'ministry.updatedAt',
+        'church.id',
+        'church.name',
+        'church.address',
+        'church.phone',
+        'church.email',
+      ])
+      .leftJoin('ministry.church', 'church')
+      .where('ministry.churchId = :churchId', { churchId })
+      .andWhere('ministry.deletedAt IS NULL')
+      .orderBy('ministry.name', 'ASC')
+      .getMany();
   }
 
   async findOne(id: string): Promise<MinistryEntity> {

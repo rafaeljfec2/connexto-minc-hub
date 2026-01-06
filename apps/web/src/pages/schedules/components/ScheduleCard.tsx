@@ -7,6 +7,7 @@ import { EditIcon, TrashIcon } from '@/components/icons'
 interface ScheduleCardProps {
   readonly schedule: Schedule
   readonly serviceName?: string
+  readonly ministryName?: string | null
   readonly teamNames?: string
   readonly onEdit: (schedule: Schedule) => void
   readonly onDelete: (id: string) => void
@@ -17,6 +18,7 @@ interface ScheduleCardProps {
 export function ScheduleCard({
   schedule,
   serviceName,
+  ministryName,
   teamNames,
   onEdit,
   onDelete,
@@ -31,16 +33,37 @@ export function ScheduleCard({
             <h3 className="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2 truncate">
               {serviceName ?? 'Culto não encontrado'}
             </h3>
-            <div className="space-y-1 text-sm text-dark-600 dark:text-dark-400">
-              <p>
+            <div className="space-y-2 text-sm">
+              <p className="text-dark-600 dark:text-dark-400">
                 <span className="font-semibold text-dark-700 dark:text-dark-200">Data:</span>{' '}
                 {formatDate(schedule.date)}
               </p>
+              {ministryName && (
+                <div>
+                  <span className="text-xs font-medium text-dark-600 dark:text-dark-400 mb-1.5 block">
+                    Time:
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+                    {ministryName}
+                  </span>
+                </div>
+              )}
               {teamNames && (
-                <p>
-                  <span className="font-semibold text-dark-700 dark:text-dark-200">Equipes:</span>{' '}
-                  {teamNames}
-                </p>
+                <div>
+                  <span className="text-xs font-medium text-dark-600 dark:text-dark-400 mb-1.5 block">
+                    Equipes:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {teamNames.split(', ').map((teamName, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                      >
+                        {teamName}
+                      </span>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </div>

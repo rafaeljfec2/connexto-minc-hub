@@ -39,40 +39,36 @@ export class PasswordResetService {
   }
 
   async validateResetToken(token: string): Promise<boolean> {
-    const resetToken = await this.passwordResetTokenRepository.findOne({
-      where: { token },
-    });
+    const resetToken = await this.passwordResetTokenRepository
+      .createQueryBuilder('resetToken')
+      .select(['resetToken.id', 'resetToken.usedAt', 'resetToken.expiresAt'])
+      .where('resetToken.token = :token', { token })
+      .andWhere('resetToken.usedAt IS NULL')
+      .andWhere('resetToken.expiresAt > :now', { now: new Date() })
+      .getOne();
 
-    if (!resetToken) {
-      return false;
-    }
-
-    if (resetToken.usedAt !== null) {
-      return false;
-    }
-
-    if (resetToken.expiresAt < new Date()) {
-      return false;
-    }
-
-    return true;
+    return resetToken !== null;
   }
 
   async resetPassword(token: string, newPassword: string): Promise<boolean> {
-    const resetToken = await this.passwordResetTokenRepository.findOne({
-      where: { token },
-      relations: ['user'],
-    });
+    const resetToken = await this.passwordResetTokenRepository
+      .createQueryBuilder('resetToken')
+      .select([
+        'resetToken.id',
+        'resetToken.userId',
+        'resetToken.token',
+        'resetToken.usedAt',
+        'resetToken.expiresAt',
+        'user.id',
+        'user.email',
+      ])
+      .leftJoin('resetToken.user', 'user')
+      .where('resetToken.token = :token', { token })
+      .andWhere('resetToken.usedAt IS NULL')
+      .andWhere('resetToken.expiresAt > :now', { now: new Date() })
+      .getOne();
 
     if (!resetToken) {
-      return false;
-    }
-
-    if (resetToken.usedAt !== null) {
-      return false;
-    }
-
-    if (resetToken.expiresAt < new Date()) {
       return false;
     }
 

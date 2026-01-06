@@ -28,29 +28,36 @@ export class RefreshTokenService {
   }
 
   async validateRefreshToken(token: string): Promise<boolean> {
-    const refreshToken = await this.refreshTokenRepository.findOne({
-      where: {
-        token,
-        isRevoked: false,
-      },
-    });
+    const refreshToken = await this.refreshTokenRepository
+      .createQueryBuilder('refreshToken')
+      .select(['refreshToken.id', 'refreshToken.expiresAt', 'refreshToken.isRevoked'])
+      .where('refreshToken.token = :token', { token })
+      .andWhere('refreshToken.isRevoked = :isRevoked', { isRevoked: false })
+      .andWhere('refreshToken.expiresAt > :now', { now: new Date() })
+      .getOne();
 
-    if (!refreshToken) {
-      return false;
-    }
-
-    if (refreshToken.expiresAt < new Date()) {
-      return false;
-    }
-
-    return true;
+    return refreshToken !== null;
   }
 
   async getRefreshToken(token: string): Promise<RefreshTokenEntity | null> {
-    return this.refreshTokenRepository.findOne({
-      where: { token },
-      relations: ['user'],
-    });
+    return this.refreshTokenRepository
+      .createQueryBuilder('refreshToken')
+      .select([
+        'refreshToken.id',
+        'refreshToken.userId',
+        'refreshToken.token',
+        'refreshToken.expiresAt',
+        'refreshToken.isRevoked',
+        'refreshToken.createdAt',
+        'user.id',
+        'user.email',
+        'user.name',
+        'user.role',
+        'user.isActive',
+      ])
+      .leftJoin('refreshToken.user', 'user')
+      .where('refreshToken.token = :token', { token })
+      .getOne();
   }
 
   async revokeRefreshToken(token: string): Promise<void> {

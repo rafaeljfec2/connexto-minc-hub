@@ -19,9 +19,13 @@ export class SchedulesService {
   async create(createScheduleDto: CreateScheduleDto): Promise<ScheduleEntity> {
     const date = new Date(createScheduleDto.date);
 
-    const existing = await this.schedulesRepository.findOne({
-      where: { serviceId: createScheduleDto.serviceId, date, deletedAt: IsNull() },
-    });
+    const existing = await this.schedulesRepository
+      .createQueryBuilder('schedule')
+      .select(['schedule.id'])
+      .where('schedule.serviceId = :serviceId', { serviceId: createScheduleDto.serviceId })
+      .andWhere('schedule.date = :date', { date })
+      .andWhere('schedule.deletedAt IS NULL')
+      .getOne();
 
     if (existing) {
       throw new ConflictException('A schedule already exists for this service on this date');
@@ -48,47 +52,171 @@ export class SchedulesService {
   }
 
   async findAll(): Promise<ScheduleEntity[]> {
-    return this.schedulesRepository.find({
-      where: { deletedAt: IsNull() },
-      relations: ['service', 'service.church', 'scheduleTeams', 'scheduleTeams.team'],
-      order: { date: 'DESC' },
-    });
+    return this.schedulesRepository
+      .createQueryBuilder('schedule')
+      .select([
+        'schedule.id',
+        'schedule.serviceId',
+        'schedule.date',
+        'schedule.createdAt',
+        'schedule.updatedAt',
+        'service.id',
+        'service.churchId',
+        'service.type',
+        'service.dayOfWeek',
+        'service.time',
+        'service.name',
+        'service.isActive',
+        'church.id',
+        'church.name',
+        'church.address',
+        'church.phone',
+        'church.email',
+        'scheduleTeams.id',
+        'scheduleTeams.scheduleId',
+        'scheduleTeams.teamId',
+        'team.id',
+        'team.ministryId',
+        'team.name',
+        'team.description',
+        'team.isActive',
+      ])
+      .leftJoin('schedule.service', 'service')
+      .leftJoin('service.church', 'church')
+      .leftJoin('schedule.scheduleTeams', 'scheduleTeams')
+      .leftJoin('scheduleTeams.team', 'team')
+      .where('schedule.deletedAt IS NULL')
+      .orderBy('schedule.date', 'DESC')
+      .getMany();
   }
 
   async findByService(serviceId: string): Promise<ScheduleEntity[]> {
-    return this.schedulesRepository.find({
-      where: { serviceId, deletedAt: IsNull() },
-      relations: ['service', 'scheduleTeams', 'scheduleTeams.team'],
-      order: { date: 'DESC' },
-    });
+    return this.schedulesRepository
+      .createQueryBuilder('schedule')
+      .select([
+        'schedule.id',
+        'schedule.serviceId',
+        'schedule.date',
+        'schedule.createdAt',
+        'schedule.updatedAt',
+        'service.id',
+        'service.churchId',
+        'service.type',
+        'service.dayOfWeek',
+        'service.time',
+        'service.name',
+        'service.isActive',
+        'scheduleTeams.id',
+        'scheduleTeams.scheduleId',
+        'scheduleTeams.teamId',
+        'team.id',
+        'team.ministryId',
+        'team.name',
+        'team.description',
+        'team.isActive',
+      ])
+      .leftJoin('schedule.service', 'service')
+      .leftJoin('schedule.scheduleTeams', 'scheduleTeams')
+      .leftJoin('scheduleTeams.team', 'team')
+      .where('schedule.serviceId = :serviceId', { serviceId })
+      .andWhere('schedule.deletedAt IS NULL')
+      .orderBy('schedule.date', 'DESC')
+      .getMany();
   }
 
   async findByDateRange(startDate: string, endDate: string): Promise<ScheduleEntity[]> {
     return this.schedulesRepository
       .createQueryBuilder('schedule')
+      .select([
+        'schedule.id',
+        'schedule.serviceId',
+        'schedule.date',
+        'schedule.createdAt',
+        'schedule.updatedAt',
+        'service.id',
+        'service.churchId',
+        'service.type',
+        'service.dayOfWeek',
+        'service.time',
+        'service.name',
+        'service.isActive',
+        'church.id',
+        'church.name',
+        'church.address',
+        'church.phone',
+        'church.email',
+        'scheduleTeams.id',
+        'scheduleTeams.scheduleId',
+        'scheduleTeams.teamId',
+        'team.id',
+        'team.ministryId',
+        'team.name',
+        'team.description',
+        'team.isActive',
+      ])
+      .leftJoin('schedule.service', 'service')
+      .leftJoin('service.church', 'church')
+      .leftJoin('schedule.scheduleTeams', 'scheduleTeams')
+      .leftJoin('scheduleTeams.team', 'team')
       .where('schedule.deletedAt IS NULL')
       .andWhere('schedule.date >= :startDate', { startDate })
       .andWhere('schedule.date <= :endDate', { endDate })
-      .leftJoinAndSelect('schedule.service', 'service')
-      .leftJoinAndSelect('service.church', 'church')
-      .leftJoinAndSelect('schedule.scheduleTeams', 'scheduleTeams')
-      .leftJoinAndSelect('scheduleTeams.team', 'team')
       .orderBy('schedule.date', 'DESC')
       .getMany();
   }
 
   async findOne(id: string): Promise<ScheduleEntity> {
-    const schedule = await this.schedulesRepository.findOne({
-      where: { id, deletedAt: IsNull() },
-      relations: [
-        'service',
-        'service.church',
-        'scheduleTeams',
-        'scheduleTeams.team',
-        'attendances',
-        'attendances.person',
-      ],
-    });
+    const schedule = await this.schedulesRepository
+      .createQueryBuilder('schedule')
+      .select([
+        'schedule.id',
+        'schedule.serviceId',
+        'schedule.date',
+        'schedule.createdAt',
+        'schedule.updatedAt',
+        'service.id',
+        'service.churchId',
+        'service.type',
+        'service.dayOfWeek',
+        'service.time',
+        'service.name',
+        'service.isActive',
+        'church.id',
+        'church.name',
+        'church.address',
+        'church.phone',
+        'church.email',
+        'scheduleTeams.id',
+        'scheduleTeams.scheduleId',
+        'scheduleTeams.teamId',
+        'team.id',
+        'team.ministryId',
+        'team.name',
+        'team.description',
+        'team.isActive',
+        'attendances.id',
+        'attendances.scheduleId',
+        'attendances.personId',
+        'attendances.checkedInBy',
+        'attendances.checkedInAt',
+        'attendances.method',
+        'attendances.absenceReason',
+        'person.id',
+        'person.ministryId',
+        'person.teamId',
+        'person.name',
+        'person.email',
+        'person.phone',
+      ])
+      .leftJoin('schedule.service', 'service')
+      .leftJoin('service.church', 'church')
+      .leftJoin('schedule.scheduleTeams', 'scheduleTeams')
+      .leftJoin('scheduleTeams.team', 'team')
+      .leftJoin('schedule.attendances', 'attendances')
+      .leftJoin('attendances.person', 'person')
+      .where('schedule.id = :id', { id })
+      .andWhere('schedule.deletedAt IS NULL')
+      .getOne();
 
     if (!schedule) {
       throw new NotFoundException(`Schedule with ID ${id} not found`);

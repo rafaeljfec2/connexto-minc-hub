@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
+import { Repository } from 'typeorm';
 import { TeamEntity } from './entities/team.entity';
 import { TeamMemberEntity } from './entities/team-member.entity';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -11,9 +11,9 @@ import { AddTeamMemberDto } from './dto/add-team-member.dto';
 export class TeamsService {
   constructor(
     @InjectRepository(TeamEntity)
-    private teamsRepository: Repository<TeamEntity>,
+    private readonly teamsRepository: Repository<TeamEntity>,
     @InjectRepository(TeamMemberEntity)
-    private teamMembersRepository: Repository<TeamMemberEntity>,
+    private readonly teamMembersRepository: Repository<TeamMemberEntity>,
   ) {}
 
   async create(createTeamDto: CreateTeamDto): Promise<TeamEntity> {
@@ -25,26 +25,102 @@ export class TeamsService {
   }
 
   async findAll(): Promise<TeamEntity[]> {
-    return this.teamsRepository.find({
-      where: { deletedAt: IsNull() },
-      relations: ['ministry', 'leader'],
-      order: { name: 'ASC' },
-    });
+    return this.teamsRepository
+      .createQueryBuilder('team')
+      .select([
+        'team.id',
+        'team.ministryId',
+        'team.leaderId',
+        'team.name',
+        'team.description',
+        'team.isActive',
+        'team.createdAt',
+        'team.updatedAt',
+        'ministry.id',
+        'ministry.churchId',
+        'ministry.name',
+        'ministry.description',
+        'ministry.isActive',
+        'leader.id',
+        'leader.name',
+        'leader.email',
+        'leader.role',
+      ])
+      .leftJoin('team.ministry', 'ministry')
+      .leftJoin('team.leader', 'leader')
+      .where('team.deletedAt IS NULL')
+      .orderBy('team.name', 'ASC')
+      .getMany();
   }
 
   async findByMinistry(ministryId: string): Promise<TeamEntity[]> {
-    return this.teamsRepository.find({
-      where: { ministryId, deletedAt: IsNull() },
-      relations: ['ministry', 'leader'],
-      order: { name: 'ASC' },
-    });
+    return this.teamsRepository
+      .createQueryBuilder('team')
+      .select([
+        'team.id',
+        'team.ministryId',
+        'team.leaderId',
+        'team.name',
+        'team.description',
+        'team.isActive',
+        'team.createdAt',
+        'team.updatedAt',
+        'ministry.id',
+        'ministry.churchId',
+        'ministry.name',
+        'ministry.description',
+        'ministry.isActive',
+        'leader.id',
+        'leader.name',
+        'leader.email',
+        'leader.role',
+      ])
+      .leftJoin('team.ministry', 'ministry')
+      .leftJoin('team.leader', 'leader')
+      .where('team.ministryId = :ministryId', { ministryId })
+      .andWhere('team.deletedAt IS NULL')
+      .orderBy('team.name', 'ASC')
+      .getMany();
   }
 
   async findOne(id: string): Promise<TeamEntity> {
-    const team = await this.teamsRepository.findOne({
-      where: { id, deletedAt: IsNull() },
-      relations: ['ministry', 'leader', 'teamMembers', 'teamMembers.person'],
-    });
+    const team = await this.teamsRepository
+      .createQueryBuilder('team')
+      .select([
+        'team.id',
+        'team.ministryId',
+        'team.leaderId',
+        'team.name',
+        'team.description',
+        'team.isActive',
+        'team.createdAt',
+        'team.updatedAt',
+        'ministry.id',
+        'ministry.churchId',
+        'ministry.name',
+        'ministry.description',
+        'ministry.isActive',
+        'leader.id',
+        'leader.name',
+        'leader.email',
+        'leader.role',
+        'teamMembers.id',
+        'teamMembers.teamId',
+        'teamMembers.personId',
+        'person.id',
+        'person.ministryId',
+        'person.teamId',
+        'person.name',
+        'person.email',
+        'person.phone',
+      ])
+      .leftJoin('team.ministry', 'ministry')
+      .leftJoin('team.leader', 'leader')
+      .leftJoin('team.teamMembers', 'teamMembers')
+      .leftJoin('teamMembers.person', 'person')
+      .where('team.id = :id', { id })
+      .andWhere('team.deletedAt IS NULL')
+      .getOne();
 
     if (!team) {
       throw new NotFoundException(`Team with ID ${id} not found`);

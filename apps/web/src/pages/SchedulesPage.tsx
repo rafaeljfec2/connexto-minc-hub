@@ -94,6 +94,13 @@ export default function SchedulesPage() {
       .join(', ')
   }
 
+  function getMinistryName(teamIds: string[]) {
+    if (teamIds.length === 0) return null
+    const firstTeam = filteredTeams.find(t => teamIds.includes(t.id))
+    if (!firstTeam) return null
+    return filteredMinistries.find(m => m.id === firstTeam.ministryId)?.name ?? null
+  }
+
   function handleOpenModal(schedule?: Schedule) {
     if (schedule) {
       setEditingSchedule(schedule)
@@ -209,6 +216,7 @@ export default function SchedulesPage() {
           key={schedule.id}
           schedule={schedule}
           serviceName={getServiceName(schedule.serviceId)}
+          ministryName={getMinistryName(schedule.teamIds ?? [])}
           teamNames={getTeamNames(schedule.teamIds ?? [])}
           onEdit={handleOpenModal}
           onDelete={handleDeleteClick}
@@ -219,14 +227,43 @@ export default function SchedulesPage() {
     </div>
   )
 
-  const listViewRows = filteredSchedules.map(schedule => (
-    <TableRow key={schedule.id}>
-      <TableCell>
-        <span className="font-medium">{getServiceName(schedule.serviceId)}</span>
-      </TableCell>
-      <TableCell>{formatDate(schedule.date)}</TableCell>
-      <TableCell>{getTeamNames(schedule.teamIds ?? []) || '-'}</TableCell>
-      <TableCell className="text-right">
+  const listViewRows = filteredSchedules.map(schedule => {
+    const ministryName = getMinistryName(schedule.teamIds ?? [])
+    const teamNames = getTeamNames(schedule.teamIds ?? [])
+    const teamNamesArray = teamNames ? teamNames.split(', ') : []
+
+    return (
+      <TableRow key={schedule.id}>
+        <TableCell>
+          <span className="font-medium">{getServiceName(schedule.serviceId)}</span>
+        </TableCell>
+        <TableCell>{formatDate(schedule.date)}</TableCell>
+        <TableCell>
+          {ministryName ? (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
+              {ministryName}
+            </span>
+          ) : (
+            <span className="text-dark-400 dark:text-dark-500">-</span>
+          )}
+        </TableCell>
+        <TableCell>
+          {teamNamesArray.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {teamNamesArray.map((teamName, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                >
+                  {teamName}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="text-dark-400 dark:text-dark-500">-</span>
+          )}
+        </TableCell>
+        <TableCell className="text-right">
         <div className="flex justify-end gap-2">
           <Button
             variant="ghost"
@@ -245,7 +282,8 @@ export default function SchedulesPage() {
         </div>
       </TableCell>
     </TableRow>
-  ))
+    )
+  })
 
   return (
     <>
@@ -279,7 +317,7 @@ export default function SchedulesPage() {
             viewMode={viewMode}
             gridView={gridView}
             listView={{
-              headers: ['Culto', 'Data', 'Equipes', 'Ações'],
+              headers: ['Culto', 'Data', 'Time', 'Equipes', 'Ações'],
               rows: listViewRows,
             }}
           />
@@ -335,77 +373,79 @@ export default function SchedulesPage() {
               searchPlaceholder="Buscar time..."
             />
           </div>
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-dark-600 dark:text-dark-300">
-                Equipes *
-              </label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleAutoAssign}
-              >
-                Sortear Automaticamente
-              </Button>
-            </div>
-            <ComboBox
-              options={filteredTeams
-                .filter(t => t.isActive)
-                .map(team => ({
-                  value: team.id,
-                  label: team.name,
-                }))}
-              value={formData.teamIds[0] || null}
-              onValueChange={teamId => {
-                if (teamId && !formData.teamIds.includes(teamId)) {
-                  setFormData({
-                    ...formData,
-                    teamIds: [...formData.teamIds, teamId],
-                  })
-                }
-              }}
-              placeholder="Selecione uma equipe"
-              searchable
-              searchPlaceholder="Buscar equipe..."
-            />
-            {formData.teamIds.length > 0 && (
-              <div className="mt-3 space-y-2">
-                <p className="text-sm font-medium text-dark-600 dark:text-dark-300">
-                  Equipes selecionadas:
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {formData.teamIds.map(teamId => {
-                    const team = filteredTeams.find(t => t.id === teamId)
-                    return (
-                      <div
-                        key={teamId}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 rounded-lg"
-                      >
-                        <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
-                          {team?.name}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => toggleTeam(teamId)}
-                          className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-                        >
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    )
-                  })}
-                </div>
+          {formData.ministryId && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-dark-600 dark:text-dark-300">
+                  Equipes *
+                </label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleAutoAssign}
+                >
+                  Sortear Automaticamente
+                </Button>
               </div>
-            )}
-          </div>
+              <ComboBox
+                options={filteredTeams
+                  .filter(t => t.isActive)
+                  .map(team => ({
+                    value: team.id,
+                    label: team.name,
+                  }))}
+                value={formData.teamIds[0] || null}
+                onValueChange={teamId => {
+                  if (teamId && !formData.teamIds.includes(teamId)) {
+                    setFormData({
+                      ...formData,
+                      teamIds: [...formData.teamIds, teamId],
+                    })
+                  }
+                }}
+                placeholder="Selecione uma equipe"
+                searchable
+                searchPlaceholder="Buscar equipe..."
+              />
+              {formData.teamIds.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-sm font-medium text-dark-600 dark:text-dark-300">
+                    Equipes selecionadas:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.teamIds.map(teamId => {
+                      const team = filteredTeams.find(t => t.id === teamId)
+                      return (
+                        <div
+                          key={teamId}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 rounded-lg"
+                        >
+                          <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+                            {team?.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => toggleTeam(teamId)}
+                            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
+                          >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"
