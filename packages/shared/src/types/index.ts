@@ -104,6 +104,24 @@ export interface Attendance {
   updatedAt: string
 }
 
+export interface QrCodeData {
+  scheduleId: string
+  personId: string
+  serviceId: string
+  date: string
+  timestamp: number
+}
+
+export interface GenerateQrCodeResponse {
+  qrCode: string
+  schedule: {
+    id: string
+    serviceId: string
+    date: string
+  }
+  expiresAt: string
+}
+
 export interface ScheduleReassignment {
   id: string
   scheduleId: string

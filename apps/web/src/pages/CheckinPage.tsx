@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { QRCodeSVG } from 'qrcode.react'
 import { useCheckIn } from '@/hooks/useCheckIn'
-import { Html5Qrcode } from 'html5-qrcode'
+import { useCheckInWebSocket } from '@/hooks/useCheckInWebSocket'
+import { useQrScanner } from './checkin/hooks/useQrScanner'
 import type { Attendance } from '@minc-hub/shared/types'
 
 type Mode = 'scan' | 'generate'
@@ -12,12 +13,45 @@ type Mode = 'scan' | 'generate'
 export default function CheckinPage() {
   const { user } = useAuth()
   const [mode, setMode] = useState<Mode>('generate')
-  const [scanner, setScanner] = useState<Html5Qrcode | null>(null)
-  const [isScanning, setIsScanning] = useState(false)
-  const [scanError, setScanError] = useState<string | null>(null)
-  const scannerRef = useRef<HTMLDivElement>(null)
   const { generateQrCode, validateQrCode, fetchHistory, qrCode, qrCodeData, history, isLoading } =
     useCheckIn()
+
+  // WebSocket for real-time updates
+  const { validateQrCode: validateQrCodeWS, isConnected: isWsConnected } = useCheckInWebSocket(
+    (attendance) => {
+      // On check-in success via WebSocket
+      fetchHistory(20)
+    },
+    (attendance) => {
+      // On check-in notification (when someone checks you in)
+      fetchHistory(20)
+    },
+  )
+
+  // Handle QR code validation
+  const handleQrCodeScanned = async (decodedText: string) => {
+    // Try WebSocket first if connected, fallback to REST
+    if (isWsConnected) {
+      try {
+        validateQrCodeWS(decodedText)
+        return
+      } catch (wsError) {
+        // Fallback to REST if WebSocket fails
+      }
+    }
+
+    // Validate QR Code via REST
+    const attendance = await validateQrCode(decodedText)
+    if (attendance) {
+      await fetchHistory(20)
+    }
+  }
+
+  // QR Scanner hook
+  const { scannerRef, isScanning, scanError } = useQrScanner({
+    onScanSuccess: handleQrCodeScanned,
+    enabled: mode === 'scan',
+  })
 
   // Generate QR Code on mount and when mode changes to generate
   useEffect(() => {
@@ -31,131 +65,7 @@ export default function CheckinPage() {
     fetchHistory(20)
   }, [fetchHistory])
 
-  // Initialize and start scanner when mode changes to scan
-  useEffect(() => {
-    let currentScanner: Html5Qrcode | null = null
-    let mounted = true
-
-    if (mode === 'scan') {
-      const initScanner = async () => {
-        try {
-          const html5QrCode = new Html5Qrcode('qr-reader')
-          currentScanner = html5QrCode
-          if (mounted) {
-            setScanner(html5QrCode)
-            await startScanningWithScanner(html5QrCode)
-          }
-        } catch (error) {
-          console.error('Error initializing scanner:', error)
-        }
-      }
-
-      initScanner()
-    }
-
-    return () => {
-      mounted = false
-      if (currentScanner) {
-        currentScanner
-          .stop()
-          .then(() => {
-            currentScanner?.clear()
-          })
-          .catch(() => {
-            // Ignore errors on cleanup
-          })
-      }
-    }
-  }, [mode])
-
-  async function startScanningWithScanner(html5QrCode: Html5Qrcode) {
-    try {
-      setIsScanning(true)
-      setScanError(null)
-
-      await html5QrCode.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        onScanSuccess,
-        onScanError,
-      )
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro ao iniciar câmera'
-      setScanError(message)
-      setIsScanning(false)
-    }
-  }
-
-
-  async function stopScanning() {
-    if (!scanner) return
-
-    try {
-      await scanner.stop()
-      scanner.clear()
-      setIsScanning(false)
-    } catch (error) {
-      // Ignore errors on stop
-    }
-  }
-
-  async function onScanSuccess(decodedText: string) {
-    if (!decodedText || !scanner) return
-
-    try {
-      // Stop scanning temporarily
-      await scanner.stop()
-      setIsScanning(false)
-
-      // Validate QR Code
-      const attendance = await validateQrCode(decodedText)
-
-      if (attendance) {
-        // Refresh history
-        await fetchHistory(20)
-
-        // Resume scanning after 2 seconds
-        if (mode === 'scan' && scanner) {
-          setTimeout(() => {
-            startScanningWithScanner(scanner!)
-          }, 2000)
-        }
-      } else {
-        // Resume scanning if validation failed
-        if (mode === 'scan' && scanner) {
-          setTimeout(() => {
-            startScanningWithScanner(scanner!)
-          }, 1000)
-        }
-      }
-    } catch (error) {
-      // Resume scanning on error
-      if (mode === 'scan' && scanner) {
-        setTimeout(() => {
-          startScanningWithScanner(scanner!)
-        }, 1000)
-      }
-    }
-  }
-
-  function onScanError(errorMessage: string) {
-    // Ignore most errors, only show critical ones
-    if (errorMessage.includes('No MultiFormat Readers')) {
-      setScanError('Câmera não disponível')
-    }
-  }
-
-  async function handleModeChange(newMode: Mode) {
-    if (newMode === 'generate' && mode === 'scan') {
-      // Stop scanning
-      if (scanner) {
-        await stopScanning()
-        setScanner(null)
-      }
-    }
+  function handleModeChange(newMode: Mode) {
     setMode(newMode)
   }
 

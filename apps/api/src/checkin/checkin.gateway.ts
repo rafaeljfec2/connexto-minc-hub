@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 import { CheckinService } from './checkin.service';
 import { ValidateQrCodeDto } from './dto/validate-qr-code.dto';
 import { UserEntity } from '../users/entities/user.entity';
+import { UsersService } from '../users/users.service';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -38,6 +39,7 @@ export class CheckinGateway implements OnGatewayConnection, OnGatewayDisconnect 
     private readonly checkinService: CheckinService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly usersService: UsersService,
   ) {}
 
   async handleConnection(client: AuthenticatedSocket) {
@@ -100,12 +102,19 @@ export class CheckinGateway implements OnGatewayConnection, OnGatewayDisconnect 
       }
 
       // Get user from database
-      // Note: In production, inject UsersService to get full user entity
-      // For now, create a minimal user object with the required fields
-      const user = {
-        id: client.userId,
-        personId: client.personId,
-      } as UserEntity;
+      let user: UserEntity | null;
+      try {
+        user = await this.usersService.findOne(client.userId);
+        if (!user) {
+          this.logger.error(`User not found: ${client.userId}`);
+          client.emit('checkin:error', { message: 'User not found' });
+          return;
+        }
+      } catch (error) {
+        this.logger.error(`Error fetching user ${client.userId}: ${error.message}`);
+        client.emit('checkin:error', { message: 'Error validating user' });
+        return;
+      }
 
       const validateDto: ValidateQrCodeDto = {
         qrCodeData: data.qrCodeData,

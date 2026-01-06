@@ -11,6 +11,9 @@ import { ServiceEntity } from '../services/entities/service.entity';
 import { AttendanceEntity } from '../attendances/entities/attendance.entity';
 import { PersonEntity } from '../persons/entities/person.entity';
 import { TeamMemberEntity } from '../teams/entities/team-member.entity';
+import { UserEntity } from '../users/entities/user.entity';
+import { UsersModule } from '../users/users.module';
+import { UsersService } from '../users/users.service';
 
 @Module({
   imports: [
@@ -21,9 +24,11 @@ import { TeamMemberEntity } from '../teams/entities/team-member.entity';
       AttendanceEntity,
       PersonEntity,
       TeamMemberEntity,
+      UserEntity,
     ]),
     JwtModule,
     ConfigModule,
+    UsersModule,
   ],
   controllers: [CheckinController],
   providers: [CheckinService, CheckinGateway],

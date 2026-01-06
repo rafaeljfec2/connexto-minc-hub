@@ -3,17 +3,7 @@ import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Attendance } from '@minc-hub/shared/types'
-
-interface GenerateQrCodeResponse {
-  qrCode: string
-  schedule: {
-    id: string
-    serviceId: string
-    date: string
-  }
-  expiresAt: string
-}
+import type { Attendance, GenerateQrCodeResponse } from '@minc-hub/shared/types'
 
 const apiServices = createApiServices(api)
 

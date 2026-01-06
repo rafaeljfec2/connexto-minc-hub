@@ -15,14 +15,8 @@ import { TeamMemberEntity } from '../teams/entities/team-member.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { GenerateQrCodeDto } from './dto/generate-qr-code.dto';
 import { ValidateQrCodeDto } from './dto/validate-qr-code.dto';
-
-interface QrCodeData {
-  scheduleId: string;
-  personId: string;
-  serviceId: string;
-  date: string;
-  timestamp: number;
-}
+import { QrCodeDataDto } from './dto/qr-code-data.dto';
+import { validateCheckInTime, isQrCodeExpired } from './utils/checkin-time.utils';
 
 @Injectable()
 export class CheckinService {
@@ -67,8 +61,20 @@ export class CheckinService {
     const targetDate = generateQrCodeDto.date ? new Date(generateQrCodeDto.date) : new Date();
     targetDate.setHours(0, 0, 0, 0);
 
-    // Find schedules for the date
-    const schedules = await this.schedulesRepository
+    // Find teams the person belongs to (optimized: single query)
+    const personTeams = await this.teamMembersRepository.find({
+      where: { personId: person.id },
+      select: ['teamId'],
+    });
+
+    const teamIds = personTeams.map((tm) => tm.teamId);
+
+    if (teamIds.length === 0) {
+      throw new BadRequestException('Person must belong to at least one team');
+    }
+
+    // Find schedules for the date where person's teams are assigned (optimized: single query)
+    const validSchedules = await this.schedulesRepository
       .createQueryBuilder('schedule')
       .select([
         'schedule.id',
@@ -81,41 +87,13 @@ export class CheckinService {
         'service.time',
         'service.dayOfWeek',
       ])
-      .leftJoin('schedule.service', 'service')
+      .leftJoinAndSelect('schedule.service', 'service')
+      .innerJoin('schedule.scheduleTeams', 'scheduleTeam')
       .where('schedule.date = :date', { date: targetDate })
       .andWhere('schedule.deletedAt IS NULL')
       .andWhere('service.isActive = true')
+      .andWhere('scheduleTeam.teamId IN (:...teamIds)', { teamIds })
       .getMany();
-
-    if (schedules.length === 0) {
-      throw new NotFoundException('No schedules found for this date');
-    }
-
-    // Find teams the person belongs to
-    const personTeams = await this.teamMembersRepository
-      .createQueryBuilder('teamMember')
-      .select(['teamMember.teamId'])
-      .where('teamMember.personId = :personId', { personId: person.id })
-      .getMany();
-
-    const teamIds = personTeams.map((tm) => tm.teamId);
-
-    if (teamIds.length === 0) {
-      throw new BadRequestException('Person must belong to at least one team');
-    }
-
-    // Find schedules where person's teams are assigned
-    const scheduleTeams = await this.scheduleTeamsRepository
-      .createQueryBuilder('scheduleTeam')
-      .select(['scheduleTeam.scheduleId', 'scheduleTeam.teamId'])
-      .where('scheduleTeam.teamId IN (:...teamIds)', { teamIds })
-      .andWhere('scheduleTeam.scheduleId IN (:...scheduleIds)', {
-        scheduleIds: schedules.map((s) => s.id),
-      })
-      .getMany();
-
-    const validScheduleIds = scheduleTeams.map((st) => st.scheduleId);
-    const validSchedules = schedules.filter((s) => validScheduleIds.includes(s.id));
 
     if (validSchedules.length === 0) {
       throw new NotFoundException('No schedules found for this person on this date');
@@ -123,31 +101,18 @@ export class CheckinService {
 
     // Get the first valid schedule (or the one for today's service)
     const schedule = validSchedules[0];
-    const service = await this.servicesRepository.findOne({
-      where: { id: schedule.serviceId },
-    });
-
+    
+    // Service is already loaded from the query above
+    const service = (schedule as any).service as ServiceEntity;
+    
     if (!service) {
       throw new NotFoundException('Service not found');
     }
 
     // Validate check-in time (30 minutes before service)
-    const now = new Date();
-    const serviceTime = new Date(targetDate);
-    const [hours, minutes] = service.time.split(':').map(Number);
-    serviceTime.setHours(hours, minutes, 0, 0);
-
-    const checkInOpenTime = new Date(serviceTime);
-    checkInOpenTime.setMinutes(checkInOpenTime.getMinutes() - 30);
-
-    if (now < checkInOpenTime) {
-      throw new ForbiddenException(
-        `Check-in opens 30 minutes before service. Opens at ${checkInOpenTime.toLocaleTimeString('pt-BR')}`,
-      );
-    }
-
-    if (now > serviceTime) {
-      throw new ForbiddenException('Check-in is closed. Service time has passed.');
+    const timeValidation = validateCheckInTime(service, targetDate);
+    if (!timeValidation.isValid) {
+      throw new ForbiddenException(timeValidation.errorMessage);
     }
 
     // Check if already checked in
@@ -163,7 +128,7 @@ export class CheckinService {
     }
 
     // Generate QR Code data
-    const qrCodeData: QrCodeData = {
+    const qrCodeData: QrCodeDataDto = {
       scheduleId: schedule.id,
       personId: person.id,
       serviceId: service.id,
@@ -174,7 +139,7 @@ export class CheckinService {
     const qrCode = JSON.stringify(qrCodeData);
 
     // QR Code expires at service time
-    const expiresAt = new Date(serviceTime);
+    const expiresAt = timeValidation.serviceTime;
 
     return {
       qrCode,
@@ -190,10 +155,11 @@ export class CheckinService {
     qrCodeDto: ValidateQrCodeDto,
     checkedInBy: UserEntity,
   ): Promise<AttendanceEntity> {
-    let qrCodeData: QrCodeData;
+    let qrCodeData: QrCodeDataDto;
 
     try {
-      qrCodeData = JSON.parse(qrCodeDto.qrCodeData) as QrCodeData;
+      const parsed = JSON.parse(qrCodeDto.qrCodeData);
+      qrCodeData = parsed as QrCodeDataDto;
     } catch (error) {
       throw new BadRequestException('Invalid QR Code format');
     }
@@ -210,9 +176,7 @@ export class CheckinService {
     }
 
     // Validate timestamp (QR Code expires after 1 hour)
-    const qrCodeAge = Date.now() - qrCodeData.timestamp;
-    const oneHour = 60 * 60 * 1000;
-    if (qrCodeAge > oneHour) {
+    if (isQrCodeExpired(qrCodeData.timestamp)) {
       throw new BadRequestException('QR Code has expired');
     }
 
@@ -229,7 +193,7 @@ export class CheckinService {
         'service.name',
         'service.time',
       ])
-      .leftJoin('schedule.service', 'service')
+      .leftJoinAndSelect('schedule.service', 'service')
       .where('schedule.id = :scheduleId', { scheduleId: qrCodeData.scheduleId })
       .andWhere('schedule.deletedAt IS NULL')
       .getOne();
@@ -237,6 +201,9 @@ export class CheckinService {
     if (!schedule) {
       throw new NotFoundException('Schedule not found');
     }
+
+    // Service is already loaded from the query above
+    const service = (schedule as any).service as ServiceEntity;
 
     // Validate service matches
     if (schedule.serviceId !== qrCodeData.serviceId) {
@@ -271,30 +238,9 @@ export class CheckinService {
     }
 
     // Validate check-in time (30 minutes before service)
-    const service = await this.servicesRepository.findOne({
-      where: { id: schedule.serviceId },
-    });
-
-    if (!service) {
-      throw new NotFoundException('Service not found');
-    }
-
-    const now = new Date();
-    const serviceTime = new Date(schedule.date);
-    const [hours, minutes] = service.time.split(':').map(Number);
-    serviceTime.setHours(hours, minutes, 0, 0);
-
-    const checkInOpenTime = new Date(serviceTime);
-    checkInOpenTime.setMinutes(checkInOpenTime.getMinutes() - 30);
-
-    if (now < checkInOpenTime) {
-      throw new ForbiddenException(
-        `Check-in opens 30 minutes before service. Opens at ${checkInOpenTime.toLocaleTimeString('pt-BR')}`,
-      );
-    }
-
-    if (now > serviceTime) {
-      throw new ForbiddenException('Check-in is closed. Service time has passed.');
+    const timeValidation = validateCheckInTime(service, schedule.date);
+    if (!timeValidation.isValid) {
+      throw new ForbiddenException(timeValidation.errorMessage);
     }
 
     // Create attendance record

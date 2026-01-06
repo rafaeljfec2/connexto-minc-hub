@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull, QueryFailedError } from 'typeorm';
+import { Repository, QueryFailedError } from 'typeorm';
 import { UserEntity, UserRole } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
-    private usersRepository: Repository<UserEntity>,
+    private readonly usersRepository: Repository<UserEntity>,
   ) {}
 
   async findOne(id: string): Promise<UserEntity | null> {
@@ -139,9 +139,7 @@ export class UsersService {
           error.message.includes('unique constraint') ||
           error.message.includes('users_email_key'))
       ) {
-        throw new ConflictException(
-          `User with email ${updateData.email} already exists`,
-        );
+        throw new ConflictException(`User with email ${updateData.email} already exists`);
       }
       throw error;
     }
