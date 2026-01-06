@@ -35,14 +35,12 @@ export function ChurchProvider({ children }: ChurchProviderProps) {
       if (savedChurchId) {
         const church = churches.find(c => c.id === savedChurchId)
         if (church) {
-          console.log('Restoring saved church:', church.name)
           setSelectedChurchState(church)
           return
         }
       }
       // If no saved church or saved church not found, select first church
       if (churches[0]) {
-        console.log('Auto-selecting first church:', churches[0].name)
         setSelectedChurchState(churches[0])
         localStorage.setItem(SELECTED_CHURCH_STORAGE_KEY, churches[0].id)
       }

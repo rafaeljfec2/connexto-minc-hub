@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -33,6 +33,13 @@ export default function PeoplePage() {
   } = usePeople()
   const { ministries } = useMinistries()
   const { teams } = useTeams()
+
+  // Debug: Log data to verify it's being loaded
+  useEffect(() => {
+    console.log('PeoplePage - people:', people.length, people)
+    console.log('PeoplePage - ministries:', ministries.length, ministries)
+    console.log('PeoplePage - teams:', teams.length, teams)
+  }, [people, ministries, teams])
   const { users, createUser, isLoading: isLoadingUsers } = useUsers()
   const { services } = useServices()
   // Modals

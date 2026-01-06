@@ -6,6 +6,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
 import { ApiResponse } from '@minc-hub/shared/types'
+import { getCachedFetch } from './utils/fetchCache'
 
 type CreateMinistry = Omit<Ministry, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -41,27 +42,38 @@ export function useMinistries(): UseMinistriesReturn {
   const { selectedChurch } = useChurch()
   const hasFetchedRef = useRef<string | null>(null)
 
-  const fetchMinistries = useCallback(async () => {
-    const cacheKey = `ministries-${selectedChurch?.id ?? 'all'}`
+  const fetchMinistries = useCallback(async (): Promise<void> => {
+    if (!selectedChurch) {
+      setMinistries([])
+      return
+    }
+
+    const cacheKey = `ministries-${selectedChurch.id}`
     
-    return getCachedFetch(
-      cacheKey,
-      async () => {
-        try {
-          setIsLoading(true)
-          setError(null)
-          const data = await apiServices.ministriesService.getAll(selectedChurch?.id)
-          setMinistries(data)
-          return data
-        } catch (err) {
-          const error = err instanceof Error ? err : new Error('Failed to fetch ministries')
-          setError(error)
-          throw error
-        } finally {
-          setIsLoading(false)
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      const data = await getCachedFetch(
+        cacheKey,
+        async () => {
+          const fetchedData = await apiServices.ministriesService.getAll(selectedChurch.id)
+          return fetchedData
         }
+      )
+      
+      // Always update state with the data, whether from cache or new fetch
+      if (data && Array.isArray(data)) {
+        setMinistries(data)
+      } else {
+        setMinistries([])
       }
-    )
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch ministries')
+      setError(error)
+    } finally {
+      setIsLoading(false)
+    }
   }, [selectedChurch?.id])
 
   const getMinistryById = useCallback(async (id: string): Promise<Ministry | null> => {
@@ -150,21 +162,24 @@ export function useMinistries(): UseMinistriesReturn {
 
   // Auto-fetch on mount and when church changes
   useEffect(() => {
-    const churchId = selectedChurch?.id
+    if (!selectedChurch) {
+      setMinistries([])
+      hasFetchedRef.current = null
+      return
+    }
+
+    const churchId = selectedChurch.id
     // Prevent duplicate calls for the same church
     if (hasFetchedRef.current === churchId) {
       return
     }
 
-    if (selectedChurch) {
-      hasFetchedRef.current = churchId ?? null
-      fetchMinistries().catch(() => {
-        // Error already handled in fetchMinistries
-      })
-    } else {
+    hasFetchedRef.current = churchId
+    fetchMinistries().catch((err) => {
+      // Reset ref on error so it can retry
       hasFetchedRef.current = null
-      setMinistries([])
-    }
+      // Error already handled in fetchMinistries
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChurch?.id]) // Only depend on selectedChurch.id to prevent loops
 

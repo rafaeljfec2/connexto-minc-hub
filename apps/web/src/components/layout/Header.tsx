@@ -4,7 +4,7 @@ import { BrandText } from '@/components/ui/BrandText'
 import { ComboBox, ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useChurches } from '@/hooks/useChurches'
-import { useMemo, useEffect } from 'react'
+import { useMemo } from 'react'
 
 const HEADER_CLASSES = {
   container:
@@ -19,21 +19,13 @@ export function Header() {
   const { selectedChurch, setSelectedChurch } = useChurch()
   const { churches, isLoading } = useChurches()
 
-  // Debug log
-  useEffect(() => {
-    console.log('Header - churches:', churches, 'isLoading:', isLoading)
-  }, [churches, isLoading])
-
   // Convert churches to ComboBox options
   const churchOptions: ComboBoxOption<string>[] = useMemo(
-    () => {
-      const options = churches.map(church => ({
+    () =>
+      churches.map(church => ({
         value: church.id,
         label: church.name,
-      }))
-      console.log('Header - churchOptions:', options)
-      return options
-    },
+      })),
     [churches]
   )
 

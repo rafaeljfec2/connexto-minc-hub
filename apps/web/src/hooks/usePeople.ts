@@ -168,34 +168,33 @@ export function usePeople(): UsePeopleReturn {
 
   // Auto-fetch on mount and when church or ministries change
   useEffect(() => {
-    const churchId = selectedChurch?.id
+    if (!selectedChurch) {
+      setPeople([])
+      hasFetchedRef.current = null
+      lastMinistryIdsLengthRef.current = 0
+      return
+    }
+
+    const churchId = selectedChurch.id
     const ministryIdsLength = ministryIds.length
-    
-    console.log('usePeople - Effect triggered:', { churchId, ministryIdsLength, hasFetched: hasFetchedRef.current, lastLength: lastMinistryIdsLengthRef.current })
     
     // Prevent duplicate calls for the same church and ministry count
     if (
       hasFetchedRef.current === churchId &&
       lastMinistryIdsLengthRef.current === ministryIdsLength
     ) {
-      console.log('usePeople - Skipping fetch (already fetched for this church/ministry count)')
       return
     }
 
-    if (selectedChurch) {
-      console.log('usePeople - Fetching people for church:', selectedChurch.name)
-      hasFetchedRef.current = churchId ?? null
-      lastMinistryIdsLengthRef.current = ministryIdsLength
-      fetchPeople().catch((err) => {
-        console.error('usePeople - Fetch error:', err)
-        // Error already handled in fetchPeople
-      })
-    } else {
-      console.log('usePeople - No church selected, clearing people')
+    // Always fetch when church changes or ministries change
+    hasFetchedRef.current = churchId
+    lastMinistryIdsLengthRef.current = ministryIdsLength
+    
+    fetchPeople().catch((err) => {
+      // Reset ref on error so it can retry
       hasFetchedRef.current = null
-      lastMinistryIdsLengthRef.current = 0
-      setPeople([])
-    }
+      // Error already handled in fetchPeople
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChurch?.id, ministryIds.length]) // Only depend on primitive values to prevent loops
 

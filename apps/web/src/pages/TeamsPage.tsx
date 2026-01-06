@@ -26,6 +26,14 @@ export default function TeamsPage() {
   const { churches } = useChurches()
   const { ministries } = useMinistries()
   const { selectedChurch } = useChurch()
+
+  // Debug: Log data to verify it's being loaded
+  useEffect(() => {
+    console.log('TeamsPage - teams:', teams.length, teams)
+    console.log('TeamsPage - ministries:', ministries.length, ministries)
+    console.log('TeamsPage - selectedChurch:', selectedChurch)
+    console.log('TeamsPage - isLoading:', isLoading)
+  }, [teams, ministries, selectedChurch, isLoading])
   const modal = useModal()
   const deleteModal = useModal()
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)

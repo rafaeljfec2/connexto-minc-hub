@@ -5,6 +5,7 @@ import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { AxiosError } from 'axios'
 import { ApiResponse } from '@minc-hub/shared/types'
+import { getCachedFetch } from './utils/fetchCache'
 
 type CreateUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password: string }
 
@@ -39,27 +40,33 @@ export function useUsers(): UseUsersReturn {
   const { showSuccess, showError } = useToast()
   const hasFetchedRef = useRef<boolean>(false)
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (): Promise<void> => {
     const cacheKey = 'users-all'
     
-    return getCachedFetch(
-      cacheKey,
-      async () => {
-        try {
-          setIsLoading(true)
-          setError(null)
-          const data = await apiServices.usersService.getAll()
-          setUsers(data)
-          return data
-        } catch (err) {
-          const error = err instanceof Error ? err : new Error('Failed to fetch users')
-          setError(error)
-          throw error
-        } finally {
-          setIsLoading(false)
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      const data = await getCachedFetch(
+        cacheKey,
+        async () => {
+          const fetchedData = await apiServices.usersService.getAll()
+          return fetchedData
         }
+      )
+      
+      // Always update state with the data, whether from cache or new fetch
+      if (data && Array.isArray(data)) {
+        setUsers(data)
+      } else {
+        setUsers([])
       }
-    )
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch users')
+      setError(error)
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   const getUserById = useCallback(async (id: string): Promise<User | null> => {

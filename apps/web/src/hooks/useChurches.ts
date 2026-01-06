@@ -49,19 +49,16 @@ export function useChurches(): UseChurchesReturn {
       const data = await getCachedFetch(
         cacheKey,
         async () => {
-          const fetchedData = await apiServices.churchesService.getAll()
-          console.log('Fetched churches from API:', fetchedData)
-          return fetchedData
+      const fetchedData = await apiServices.churchesService.getAll()
+      return fetchedData
         },
         5000 // 5 seconds cache for churches (they don't change often)
       )
       
       // Always update state with the data, whether from cache or new fetch
       if (data && Array.isArray(data)) {
-        console.log('Setting churches state:', data)
         setChurches(data)
       } else {
-        console.warn('Invalid churches data:', data)
         setChurches([])
       }
     } catch (err) {
