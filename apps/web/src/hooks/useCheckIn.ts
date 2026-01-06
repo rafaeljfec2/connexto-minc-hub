@@ -82,7 +82,7 @@ export function useCheckIn() {
         } else {
           setErrorType('other')
           setErrorMessage(message)
-          showToast(message, 'error')
+          // Don't show toast - error is already displayed in the visual container
         }
         return null
       } finally {

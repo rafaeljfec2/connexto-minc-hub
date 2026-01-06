@@ -18,7 +18,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
       <div className="relative z-10">
         <Sidebar />
-        
+
         {/* Mobile Header - Fixed for all mobile screens, except chat pages */}
         {!isChatPage && (
           <div className="lg:hidden">
@@ -43,7 +43,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="hidden lg:block">
             <Header />
           </div>
-          <main className="min-h-[calc(100vh-4rem)] animate-fade-in-up lg:min-h-[calc(100vh-4rem)] pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] lg:pt-0 lg:pb-0">
+          <main className="min-h-[calc(100vh-4rem)] animate-fade-in-up lg:min-h-[calc(100vh-4rem)] pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pt-0 lg:pb-0">
             {children}
           </main>
         </div>

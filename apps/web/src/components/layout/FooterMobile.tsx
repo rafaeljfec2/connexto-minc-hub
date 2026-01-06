@@ -117,7 +117,7 @@ export function FooterMobile() {
   const location = useLocation()
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-20 w-full border-t border-dark-800 bg-dark-950 safe-area-bottom">
+    <footer className="fixed bottom-0 left-0 right-0 z-20 w-full border-t border-dark-800 bg-dark-950 safe-area-bottom pb-[env(safe-area-inset-bottom)]">
       <nav className="flex items-center justify-around px-2 py-2">
         {TABS.map(tab => {
           const isActive = location.pathname === tab.href
