@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Person, Ministry, Team } from '@/types'
+import { Person, Ministry, Team, TeamMember, MemberType } from '@minc-hub/shared/types'
 import { EditIcon, TrashIcon, MailIcon, PhoneIcon, UserIcon } from '@/components/icons'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { cn } from '@/lib/utils'
@@ -63,7 +63,31 @@ export function ServoCard({
               {ministry.name}
             </span>
           )}
-          {team && (
+          {/* Display all teams from teamMembers */}
+          {person.teamMembers && person.teamMembers.length > 0 ? (
+            person.teamMembers.map((teamMember: TeamMember) => {
+              const teamName = teamMember.team?.name ?? 'Equipe desconhecida'
+              const isFixed = teamMember.memberType === MemberType.FIXED
+              return (
+                <span
+                  key={teamMember.id}
+                  className={cn(
+                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',
+                    isFixed
+                      ? 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30'
+                      : 'bg-purple-500/10 text-purple-600 border-purple-500/20 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30',
+                  )}
+                  title={isFixed ? 'Membro fixo' : 'Ajuda eventual'}
+                >
+                  {teamName}
+                  {!isFixed && (
+                    <span className="ml-1 text-[10px] opacity-75">(eventual)</span>
+                  )}
+                </span>
+              )
+            })
+          ) : team ? (
+            // Fallback to legacy teamId if teamMembers is not available
             <span
               className={cn(
               'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',
@@ -73,8 +97,7 @@ export function ServoCard({
             >
               {team.name}
             </span>
-          )}
-          {!ministry && !team && (
+          ) : (
             <span
               className={cn(
               'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border',

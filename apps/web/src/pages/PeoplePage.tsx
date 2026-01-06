@@ -11,9 +11,10 @@ import { useViewMode } from '@/hooks/useViewMode'
 import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
 import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
-import { Person, UserRole } from '@minc-hub/shared/types'
+import { Person, UserRole, MemberType, TeamMember } from '@minc-hub/shared/types'
 import { ServoCard } from './people/components/ServoCard'
 import { CreateUserForm } from './people/components/CreateUserForm'
+import { TeamMembersSelector } from './people/components/TeamMembersSelector'
 import { UserIcon, EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { formatDate } from '@minc-hub/shared/utils'
 import { usePeople } from '@/hooks/usePeople'
@@ -36,9 +37,7 @@ export default function PeoplePage() {
 
   // Debug: Log data to verify it's being loaded
   useEffect(() => {
-    console.log('PeoplePage - people:', people.length, people)
-    console.log('PeoplePage - ministries:', ministries.length, ministries)
-    console.log('PeoplePage - teams:', teams.length, teams)
+    // console.log('PeoplePage - people:', people.length, people)
   }, [people, ministries, teams])
   const { users, createUser, isLoading: isLoadingUsers } = useUsers()
   const { services } = useServices()
@@ -58,6 +57,7 @@ export default function PeoplePage() {
     notes: '',
     ministryId: '',
     teamId: '',
+    teamMembers: [] as Array<{ teamId: string; memberType: MemberType }>,
     preferredServiceIds: [] as string[],
   })
 
@@ -140,6 +140,7 @@ export default function PeoplePage() {
     notes: '',
     ministryId: '',
     teamId: '',
+    teamMembers: [] as Array<{ teamId: string; memberType: MemberType }>,
     preferredServiceIds: [] as string[],
   }
 
@@ -149,6 +150,22 @@ export default function PeoplePage() {
       // Extract preferred service IDs from person (assuming it's stored in notes or a custom field)
       // For now, we'll initialize as empty array - this would need backend support
       const preferredServiceIds: string[] = []
+
+      // Convert teamMembers to form format
+      const teamMembers: Array<{ teamId: string; memberType: MemberType }> =
+        person.teamMembers?.map((tm: TeamMember) => ({
+          teamId: tm.teamId,
+          memberType: tm.memberType,
+        })) ?? []
+
+      // If person has teamId but no teamMembers, add it as fixed for compatibility
+      if (person.teamId && teamMembers.length === 0) {
+        teamMembers.push({
+          teamId: person.teamId,
+          memberType: MemberType.FIXED,
+        })
+      }
+
       setPersonFormData({
         name: person.name,
         email: person.email ?? '',
@@ -158,6 +175,7 @@ export default function PeoplePage() {
         notes: person.notes ?? '',
         ministryId: person.ministryId ?? '',
         teamId: person.teamId ?? '',
+        teamMembers,
         preferredServiceIds,
       })
     } else {
@@ -191,8 +209,30 @@ export default function PeoplePage() {
 
     try {
       // Remove preferredServiceIds from payload as backend doesn't support it yet
-      const { preferredServiceIds, ...personData } = personFormData
-      
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { preferredServiceIds, ...rawPersonData } = personFormData
+
+      // Create a clean copy of data
+      const personData = { ...rawPersonData }
+
+      // Clean empty strings
+      if (!personData.ministryId) delete personData.ministryId
+      if (!personData.teamId) delete personData.teamId
+
+      // Set teamId to first fixed team member for compatibility (if exists)
+      if (personData.teamMembers && personData.teamMembers.length > 0) {
+        const firstFixedTeam = personData.teamMembers.find(tm => tm.memberType === MemberType.FIXED)
+        if (firstFixedTeam) {
+          personData.teamId = firstFixedTeam.teamId
+        } else {
+          // If no fixed team, use first team
+          personData.teamId = personData.teamMembers[0].teamId
+        }
+      }
+
+      // Ensure teamId is cleaned if it's still empty string after logic
+      if (!personData.teamId) delete personData.teamId
+
       if (editingPerson) {
         await updatePerson(editingPerson.id, personData)
       } else {
@@ -210,8 +250,30 @@ export default function PeoplePage() {
 
     try {
       // Remove preferredServiceIds from payload as backend doesn't support it yet
-      const { preferredServiceIds, ...personData } = personFormData
-      
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { preferredServiceIds, ...rawPersonData } = personFormData
+
+      // Create a clean copy of data
+      const personData = { ...rawPersonData }
+
+      // Clean empty strings
+      if (!personData.ministryId) delete personData.ministryId
+      if (!personData.teamId) delete personData.teamId
+
+      // Set teamId to first fixed team member for compatibility (if exists)
+      if (personData.teamMembers && personData.teamMembers.length > 0) {
+        const firstFixedTeam = personData.teamMembers.find(tm => tm.memberType === MemberType.FIXED)
+        if (firstFixedTeam) {
+          personData.teamId = firstFixedTeam.teamId
+        } else {
+          // If no fixed team, use first team
+          personData.teamId = personData.teamMembers[0].teamId
+        }
+      }
+
+      // Ensure teamId is cleaned if it's still empty string after logic
+      if (!personData.teamId) delete personData.teamId
+
       let savedPerson: Person | null = null
 
       if (editingPerson) {
@@ -326,7 +388,35 @@ export default function PeoplePage() {
       <TableCell>{person.email ?? '-'}</TableCell>
       <TableCell>{person.phone ?? '-'}</TableCell>
       <TableCell>{getMinistry(person.ministryId)?.name ?? '-'}</TableCell>
-      <TableCell>{getTeam(person.teamId)?.name ?? '-'}</TableCell>
+      <TableCell>
+        {person.teamMembers && person.teamMembers.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {person.teamMembers.map(teamMember => {
+              const team = teams.find(t => t.id === teamMember.teamId)
+              const isFixed = teamMember.memberType === MemberType.FIXED
+              return (
+                <span
+                  key={teamMember.id}
+                  className={cn(
+                    'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
+                    isFixed
+                      ? 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
+                      : 'bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400'
+                  )}
+                  title={isFixed ? 'Membro fixo' : 'Ajuda eventual'}
+                >
+                  {team?.name ?? 'Equipe desconhecida'}
+                  {!isFixed && <span className="ml-1 text-[10px] opacity-75">(E)</span>}
+                </span>
+              )
+            })}
+          </div>
+        ) : getTeam(person.teamId) ? (
+          <span className="text-sm">{getTeam(person.teamId)?.name}</span>
+        ) : (
+          '-'
+        )}
+      </TableCell>
       <TableCell>{person.birthDate ? formatDate(person.birthDate) : '-'}</TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
@@ -456,32 +546,25 @@ export default function PeoplePage() {
               placeholder="(11) 99999-9999"
             />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Select
-              label="Time"
-              value={personFormData.ministryId}
-              onChange={e => handlePersonMinistryChange(e.target.value)}
-              options={[
-                { value: '', label: 'Selecione um time' },
-                ...filteredMinistries.map(m => ({ value: m.id, label: m.name })),
-              ]}
-            />
-            <Select
-              label="Equipe"
-              value={personFormData.teamId}
-              onChange={e => setPersonFormData({ ...personFormData, teamId: e.target.value })}
-              disabled={!personFormData.ministryId}
-              options={[
-                {
-                  value: '',
-                  label: personFormData.ministryId
-                    ? 'Selecione uma equipe'
-                    : 'Selecione um time primeiro',
-                },
-                ...teams
-                  .filter(t => t.ministryId === personFormData.ministryId && t.isActive)
-                  .map(t => ({ value: t.id, label: t.name })),
-              ]}
+          <Select
+            label="Time"
+            value={personFormData.ministryId}
+            onChange={e => handlePersonMinistryChange(e.target.value)}
+            options={[
+              { value: '', label: 'Selecione um time' },
+              ...filteredMinistries.map(m => ({ value: m.id, label: m.name })),
+            ]}
+          />
+          <div>
+            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2">
+              Equipes
+            </label>
+            <TeamMembersSelector
+              teams={teams}
+              ministries={ministries}
+              selectedMinistryId={personFormData.ministryId || undefined}
+              value={personFormData.teamMembers}
+              onChange={teamMembers => setPersonFormData({ ...personFormData, teamMembers })}
             />
           </div>
           <Input

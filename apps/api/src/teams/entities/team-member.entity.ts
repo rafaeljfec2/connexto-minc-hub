@@ -11,10 +11,16 @@ import {
 import { TeamEntity } from './team.entity';
 import { PersonEntity } from '../../persons/entities/person.entity';
 
+export enum MemberType {
+  FIXED = 'fixed',
+  EVENTUAL = 'eventual',
+}
+
 @Entity('team_members')
 @Unique(['teamId', 'personId'])
 @Index(['teamId'])
 @Index(['personId'])
+@Index(['memberType'])
 export class TeamMemberEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -32,6 +38,14 @@ export class TeamMemberEntity {
   @ManyToOne(() => PersonEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'person_id' })
   person: PersonEntity;
+
+  @Column({
+    type: 'enum',
+    enum: MemberType,
+    name: 'member_type',
+    default: MemberType.FIXED,
+  })
+  memberType: MemberType;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -16,6 +16,20 @@ export interface User {
   updatedAt: string
 }
 
+export enum MemberType {
+  FIXED = 'fixed',
+  EVENTUAL = 'eventual',
+}
+
+export interface TeamMember {
+  id: string
+  teamId: string
+  personId: string
+  memberType: MemberType
+  createdAt: string
+  team?: Team
+}
+
 export interface Person {
   id: string
   name: string
@@ -26,6 +40,7 @@ export interface Person {
   notes?: string
   ministryId?: string
   teamId?: string
+  teamMembers?: TeamMember[]
   createdAt: string
   updatedAt: string
 }

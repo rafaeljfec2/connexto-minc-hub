@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { PersonEntity } from './entities/person.entity';
-import { TeamMemberEntity } from '../teams/entities/team-member.entity';
+import { TeamMemberEntity, MemberType } from '../teams/entities/team-member.entity';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
 
@@ -16,17 +16,35 @@ export class PersonsService {
   ) {}
 
   async create(createPersonDto: CreatePersonDto): Promise<PersonEntity> {
+    const { teamMembers, ...personData } = createPersonDto;
+    
     const person = this.personsRepository.create({
-      ...createPersonDto,
-      birthDate: createPersonDto.birthDate ? new Date(createPersonDto.birthDate) : null,
+      ...personData,
+      birthDate: personData.birthDate ? new Date(personData.birthDate) : null,
     });
-    return this.personsRepository.save(person);
+    
+    const savedPerson = await this.personsRepository.save(person);
+
+    // Create team members if provided
+    if (teamMembers && teamMembers.length > 0) {
+      const teamMemberEntities = teamMembers.map(tm =>
+        this.teamMembersRepository.create({
+          teamId: tm.teamId,
+          personId: savedPerson.id,
+          memberType: tm.memberType ?? MemberType.FIXED,
+        }),
+      );
+      await this.teamMembersRepository.save(teamMemberEntities);
+    }
+
+    // Return person with team members loaded
+    return this.findOne(savedPerson.id);
   }
 
   async findAll(): Promise<PersonEntity[]> {
     return this.personsRepository.find({
       where: { deletedAt: IsNull() },
-      relations: ['ministry', 'team'],
+      relations: ['ministry', 'team', 'teamMembers', 'teamMembers.team'],
       order: { name: 'ASC' },
     });
   }
@@ -34,7 +52,7 @@ export class PersonsService {
   async findByMinistry(ministryId: string): Promise<PersonEntity[]> {
     return this.personsRepository.find({
       where: { ministryId, deletedAt: IsNull() },
-      relations: ['ministry', 'team'],
+      relations: ['ministry', 'team', 'teamMembers', 'teamMembers.team'],
       order: { name: 'ASC' },
     });
   }
@@ -85,7 +103,7 @@ export class PersonsService {
   async findOne(id: string): Promise<PersonEntity> {
     const person = await this.personsRepository.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: ['ministry', 'team', 'teamMembers', 'attendances'],
+      relations: ['ministry', 'team', 'teamMembers', 'teamMembers.team', 'attendances'],
     });
 
     if (!person) {
@@ -97,17 +115,38 @@ export class PersonsService {
 
   async update(id: string, updatePersonDto: UpdatePersonDto): Promise<PersonEntity> {
     const person = await this.findOne(id);
+    const { teamMembers, ...personData } = updatePersonDto;
     
-    if (updatePersonDto.birthDate) {
-      updatePersonDto.birthDate = new Date(updatePersonDto.birthDate).toISOString();
+    if (personData.birthDate) {
+      personData.birthDate = new Date(personData.birthDate).toISOString();
     }
     
     Object.assign(person, {
-      ...updatePersonDto,
-      birthDate: updatePersonDto.birthDate ? new Date(updatePersonDto.birthDate) : person.birthDate,
+      ...personData,
+      birthDate: personData.birthDate ? new Date(personData.birthDate) : person.birthDate,
     });
     
-    return this.personsRepository.save(person);
+    const savedPerson = await this.personsRepository.save(person);
+
+    // Update team members if provided
+    if (teamMembers !== undefined) {
+      // Remove all existing team members for this person
+      await this.teamMembersRepository.delete({ personId: savedPerson.id });
+
+      // Create new team members if provided
+      if (teamMembers.length > 0) {
+        const teamMemberEntities = teamMembers.map(tm =>
+          this.teamMembersRepository.create({
+            teamId: tm.teamId,
+            personId: savedPerson.id,
+            memberType: tm.memberType ?? MemberType.FIXED,
+          }),
+        );
+        await this.teamMembersRepository.save(teamMemberEntities);
+      }
+    }
+    
+    return this.findOne(savedPerson.id);
   }
 
   async remove(id: string): Promise<void> {

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TeamEntity } from './entities/team.entity';
-import { TeamMemberEntity } from './entities/team-member.entity';
+import { TeamMemberEntity, MemberType } from './entities/team-member.entity';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { AddTeamMemberDto } from './dto/add-team-member.dto';
@@ -154,6 +154,7 @@ export class TeamsService {
     const teamMember = this.teamMembersRepository.create({
       teamId,
       personId: addTeamMemberDto.personId,
+      memberType: addTeamMemberDto.memberType ?? MemberType.FIXED,
     });
 
     return this.teamMembersRepository.save(teamMember);

@@ -6,7 +6,31 @@ import {
   IsEmail,
   IsDateString,
   MaxLength,
+  IsArray,
+  ValidateNested,
+  IsEnum,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { MemberType } from '../../teams/entities/team-member.entity';
+
+class TeamMemberDto {
+  @ApiProperty({
+    example: 'uuid-da-equipe',
+    description: 'ID da equipe',
+  })
+  @IsUUID('4', { message: 'ID da equipe deve ser um UUID válido' })
+  teamId: string;
+
+  @ApiProperty({
+    example: 'fixed',
+    description: 'Tipo de membro: fixed (fixo) ou eventual',
+    enum: MemberType,
+    default: MemberType.FIXED,
+  })
+  @IsEnum(MemberType, { message: 'Tipo de membro deve ser "fixed" ou "eventual"' })
+  @IsOptional()
+  memberType?: MemberType;
+}
 
 export class CreatePersonDto {
   @ApiProperty({
@@ -28,12 +52,27 @@ export class CreatePersonDto {
 
   @ApiProperty({
     example: 'uuid-da-equipe',
-    description: 'ID da equipe',
+    description: 'ID da equipe principal (legado, para compatibilidade)',
     required: false,
   })
   @IsUUID('4', { message: 'ID da equipe deve ser um UUID válido' })
   @IsOptional()
   teamId?: string;
+
+  @ApiProperty({
+    example: [
+      { teamId: 'uuid-equipe-1', memberType: 'fixed' },
+      { teamId: 'uuid-equipe-2', memberType: 'eventual' },
+    ],
+    description: 'Lista de equipes em que a pessoa serve',
+    type: [TeamMemberDto],
+    required: false,
+  })
+  @IsArray({ message: 'teamMembers deve ser um array' })
+  @ValidateNested({ each: true })
+  @Type(() => TeamMemberDto)
+  @IsOptional()
+  teamMembers?: TeamMemberDto[];
 
   @ApiProperty({
     example: 'joao@example.com',
