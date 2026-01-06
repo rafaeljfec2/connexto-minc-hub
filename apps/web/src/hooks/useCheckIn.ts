@@ -40,7 +40,7 @@ export function useCheckIn() {
         setHasNoSchedule(false)
         setErrorType(null)
         setErrorMessage(null)
-        showToast('QR Code gerado com sucesso!', 'success')
+        // Don't show toast - success is already displayed in the visual container
         return data
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Erro ao gerar QR Code'
