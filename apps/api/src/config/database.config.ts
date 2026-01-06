@@ -42,7 +42,10 @@ export class DatabaseConfig implements TypeOrmOptionsFactory {
       synchronize: false, // Always false - use migrations instead
       logging: nodeEnv === 'development',
       ssl: getSslConfig(requiresSsl),
-      extra: getExtraConnectionOptions(requiresSsl),
+      extra: {
+        ...getExtraConnectionOptions(requiresSsl),
+        timezone: 'America/Sao_Paulo',
+      },
     };
   }
 }

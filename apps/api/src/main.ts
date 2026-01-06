@@ -1,3 +1,5 @@
+process.env.TZ = 'America/Sao_Paulo';
+
 import { ValidationPipe, Logger as NestLogger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
