@@ -24,7 +24,8 @@
     "migration:create": "ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create src/migrations/MigrationName",
     "migration:run": "ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -d src/config/data-source.ts",
     "migration:revert": "ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d src/config/data-source.ts",
-    "migration:show": "ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show -d src/config/data-source.ts"
+    "migration:show": "ts-node --project tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:show -d src/config/data-source.ts",
+    "migrate:data": "ts-node --project tsconfig.json -r tsconfig-paths/register src/scripts/migrate-data.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

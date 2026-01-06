@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
+import { Repository, IsNull, QueryFailedError } from 'typeorm';
 import { UserEntity, UserRole } from './entities/user.entity';
 
 @Injectable()
@@ -70,12 +70,24 @@ export class UsersService {
     role?: UserRole;
     personId?: string | null;
   }): Promise<UserEntity> {
-    const user = this.usersRepository.create({
-      ...userData,
-      role: userData.role ?? UserRole.SERVO,
-      isActive: true,
-    });
-    return this.usersRepository.save(user);
+    try {
+      const user = this.usersRepository.create({
+        ...userData,
+        role: userData.role ?? UserRole.SERVO,
+        isActive: true,
+      });
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error.message.includes('duplicate key') ||
+          error.message.includes('unique constraint') ||
+          error.message.includes('users_email_key'))
+      ) {
+        throw new ConflictException(`User with email ${userData.email} already exists`);
+      }
+      throw error;
+    }
   }
 
   async updateLastLogin(userId: string): Promise<void> {
@@ -117,8 +129,22 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    Object.assign(user, updateData);
-    return this.usersRepository.save(user);
+    try {
+      Object.assign(user, updateData);
+      return await this.usersRepository.save(user);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error.message.includes('duplicate key') ||
+          error.message.includes('unique constraint') ||
+          error.message.includes('users_email_key'))
+      ) {
+        throw new ConflictException(
+          `User with email ${updateData.email} already exists`,
+        );
+      }
+      throw error;
+    }
   }
 
   async remove(id: string): Promise<void> {

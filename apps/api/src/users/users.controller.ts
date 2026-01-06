@@ -33,6 +33,7 @@ export class UsersController {
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully', type: UserEntity })
+  @ApiResponse({ status: 409, description: 'User with this email already exists' })
   async create(@Body() createUserDto: CreateUserDto): Promise<UserEntity> {
     const passwordHash = await bcrypt.hash(createUserDto.password, 10);
     

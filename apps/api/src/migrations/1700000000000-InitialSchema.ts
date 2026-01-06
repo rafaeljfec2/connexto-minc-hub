@@ -189,7 +189,7 @@ export class InitialSchema1700000000000 implements MigrationInterface {
           email VARCHAR(255) NOT NULL UNIQUE,
           password_hash VARCHAR(255) NOT NULL,
           name VARCHAR(255) NOT NULL,
-          role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'coordinator', 'leader', 'member')),
+          role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'pastor', 'lider_de_time', 'lider_de_equipe', 'servo')),
           is_active BOOLEAN NOT NULL DEFAULT true,
           last_login_at TIMESTAMP,
           created_at TIMESTAMP NOT NULL DEFAULT NOW(),
