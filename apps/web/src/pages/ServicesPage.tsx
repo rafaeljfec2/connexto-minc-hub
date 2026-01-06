@@ -1,143 +1,160 @@
-import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
-import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
-import { Checkbox } from "@/components/ui/Checkbox";
-import { StatusBadge } from "@/components/ui/StatusBadge";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { TableRow, TableCell } from "@/components/ui/Table";
-import { useModal } from "@/hooks/useModal";
-import { useCrud } from "@/hooks/useCrud";
-import { useViewMode } from "@/hooks/useViewMode";
-import { CrudPageLayout } from "@/components/crud/CrudPageLayout";
-import { CrudFilters } from "@/components/crud/CrudFilters";
-import { CrudView } from "@/components/crud/CrudView";
-import { Service, ServiceType } from "@minc-hub/shared/types";
-import { formatTime } from "@minc-hub/shared/utils";
+import { useState, useMemo } from 'react'
+import { Button } from '@/components/ui/Button'
+import { Modal } from '@/components/ui/Modal'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { StatusBadge } from '@/components/ui/StatusBadge'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { TableRow, TableCell } from '@/components/ui/Table'
+import { useModal } from '@/hooks/useModal'
+import { useViewMode } from '@/hooks/useViewMode'
+import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
+import { CrudFilters } from '@/components/crud/CrudFilters'
+import { CrudView } from '@/components/crud/CrudView'
+import { Service, ServiceType } from '@minc-hub/shared/types'
+import { formatTime } from '@minc-hub/shared/utils'
 import {
   DAYS_OF_WEEK,
   SERVICE_TYPES,
   getDayLabel,
   getServiceTypeLabel,
-} from "@/lib/constants";
-import { ServiceCard } from "./services/components/ServiceCard";
-import { EditIcon, TrashIcon, PlusIcon } from "@/components/icons";
-import { MOCK_SERVICES } from "@/lib/mockData";
+} from '@/lib/constants'
+import { ServiceCard } from './services/components/ServiceCard'
+import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { useServices } from '@/hooks/useServices'
+import { useChurch } from '@/contexts/ChurchContext'
 
 export default function ServicesPage() {
-  const {
-    items: services,
-    create,
-    update,
-    remove,
-  } = useCrud<Service>({
-    initialItems: MOCK_SERVICES,
-  });
-  const modal = useModal();
-  const deleteModal = useModal();
-  const [editingService, setEditingService] = useState<Service | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const { services, isLoading, createService, updateService, deleteService } = useServices()
+  const { selectedChurch } = useChurch()
+  const modal = useModal()
+  const deleteModal = useModal()
+  const [editingService, setEditingService] = useState<Service | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
   const { viewMode, setViewMode } = useViewMode({
-    storageKey: "services-view-mode",
+    storageKey: 'services-view-mode',
     defaultMode: 'list',
-  });
-  const [formData, setFormData] = useState({
-    name: "",
+  })
+  const getInitialFormData = () => ({
+    name: '',
     type: ServiceType.SUNDAY_MORNING,
     dayOfWeek: 0,
-    time: "09:00",
+    time: '09:00',
     isActive: true,
-  });
+    churchId: selectedChurch?.id ?? '',
+  })
+
+  const [formData, setFormData] = useState(getInitialFormData())
 
   const filteredServices = useMemo(() => {
-    return services.filter((service) => {
+    return services.filter(service => {
       const matchesSearch =
-        searchTerm === "" ||
-        service.name.toLowerCase().includes(searchTerm.toLowerCase());
+        searchTerm === '' ||
+        service.name.toLowerCase().includes(searchTerm.toLowerCase())
 
-      return matchesSearch;
-    });
-  }, [services, searchTerm]);
+      return matchesSearch
+    })
+  }, [services, searchTerm])
 
   function handleOpenModal(service?: Service) {
     if (service) {
-      setEditingService(service);
+      setEditingService(service)
+      // Convert time from HH:mm:ss to HH:mm for input
+      const timeForInput = service.time.includes(':')
+        ? service.time.substring(0, 5)
+        : service.time
+
       setFormData({
         name: service.name,
         type: service.type,
         dayOfWeek: service.dayOfWeek,
-        time: service.time,
+        time: timeForInput,
         isActive: service.isActive,
-      });
+        churchId: service.churchId,
+      })
     } else {
-      setEditingService(null);
-      setFormData({
-        name: "",
-        type: ServiceType.SUNDAY_MORNING,
-        dayOfWeek: 0,
-        time: "09:00",
-        isActive: true,
-      });
+      setEditingService(null)
+      setFormData(getInitialFormData())
     }
-    modal.open();
+    modal.open()
   }
 
   function handleCloseModal() {
-    modal.close();
-    setEditingService(null);
-    setFormData({
-      name: "",
-      type: ServiceType.SUNDAY_MORNING,
-      dayOfWeek: 0,
-      time: "09:00",
-      isActive: true,
-    });
+    modal.close()
+    setEditingService(null)
+    setFormData(getInitialFormData())
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
 
-    if (editingService) {
-      update(editingService.id, formData);
-    } else {
-      create({ ...formData, churchId: "1" });
+    if (!selectedChurch) {
+      return
     }
 
-    handleCloseModal();
+    try {
+      // Convert time from HH:mm to HH:mm:ss format expected by backend
+      const timeFormatted = formData.time.includes(':')
+        ? `${formData.time}:00`
+        : formData.time
+
+      const serviceData = {
+        ...formData,
+        churchId: selectedChurch.id,
+        time: timeFormatted,
+      }
+
+      if (editingService) {
+        await updateService(editingService.id, serviceData)
+      } else {
+        await createService(serviceData)
+      }
+
+      handleCloseModal()
+    } catch (error) {
+      // Error already handled in the hook with toast
+      console.error('Error submitting service form:', error)
+    }
   }
 
   function handleDeleteClick(id: string) {
-    setDeletingId(id);
-    deleteModal.open();
+    setDeletingId(id)
+    deleteModal.open()
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (deletingId) {
-      remove(deletingId);
-      setDeletingId(null);
+      try {
+        await deleteService(deletingId)
+        setDeletingId(null)
+        deleteModal.close()
+      } catch (error) {
+        // Error already handled in the hook with toast
+        console.error('Error deleting service:', error)
+      }
     }
   }
 
-  const hasFilters = searchTerm !== "";
+  const hasFilters = searchTerm !== ''
 
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {filteredServices.map((service) => (
+      {filteredServices.map(service => (
         <ServiceCard
           key={service.id}
           service={service}
           onEdit={handleOpenModal}
           onDelete={handleDeleteClick}
-          isUpdating={false}
-          isDeleting={false}
+          isUpdating={isLoading}
+          isDeleting={isLoading}
         />
       ))}
     </div>
-  );
+  )
 
-  const listViewRows = filteredServices.map((service) => (
+  const listViewRows = filteredServices.map(service => (
     <TableRow key={service.id}>
       <TableCell>
         <span className="font-medium">{service.name}</span>
@@ -169,7 +186,7 @@ export default function ServicesPage() {
         </div>
       </TableCell>
     </TableRow>
-  ));
+  ))
 
   return (
     <>
@@ -181,12 +198,12 @@ export default function ServicesPage() {
         hasFilters={hasFilters}
         isEmpty={filteredServices.length === 0}
         emptyTitle={
-          hasFilters ? "Nenhum culto encontrado" : "Nenhum culto cadastrado"
+          hasFilters ? 'Nenhum culto encontrado' : 'Nenhum culto cadastrado'
         }
         emptyDescription={
           hasFilters
-            ? "Tente ajustar os filtros para encontrar cultos"
-            : "Comece adicionando um novo culto"
+            ? 'Tente ajustar os filtros para encontrar cultos'
+            : 'Comece adicionando um novo culto'
         }
         createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
         filters={
@@ -204,12 +221,12 @@ export default function ServicesPage() {
             gridView={gridView}
             listView={{
               headers: [
-                "Nome",
-                "Tipo",
-                "Dia da Semana",
-                "Horário",
-                "Status",
-                "Ações",
+                'Nome',
+                'Tipo',
+                'Dia da Semana',
+                'Horário',
+                'Status',
+                'Ações',
               ],
               rows: listViewRows,
             }}
@@ -220,23 +237,23 @@ export default function ServicesPage() {
       <Modal
         isOpen={modal.isOpen}
         onClose={handleCloseModal}
-        title={editingService ? "Editar Culto" : "Novo Culto"}
+        title={editingService ? 'Editar Culto' : 'Novo Culto'}
         size="md"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Nome do Culto *"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <Select
             label="Tipo de Culto *"
             value={formData.type}
-            onChange={(e) =>
+            onChange={e =>
               setFormData({ ...formData, type: e.target.value as ServiceType })
             }
-            options={SERVICE_TYPES.map((type) => ({
+            options={SERVICE_TYPES.map(type => ({
               value: type.value,
               label: type.label,
             }))}
@@ -245,10 +262,10 @@ export default function ServicesPage() {
           <Select
             label="Dia da Semana *"
             value={formData.dayOfWeek.toString()}
-            onChange={(e) =>
+            onChange={e =>
               setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })
             }
-            options={DAYS_OF_WEEK.map((day) => ({
+            options={DAYS_OF_WEEK.map(day => ({
               value: day.value.toString(),
               label: day.label,
             }))}
@@ -258,13 +275,13 @@ export default function ServicesPage() {
             label="Horário *"
             type="time"
             value={formData.time}
-            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+            onChange={e => setFormData({ ...formData, time: e.target.value })}
             required
           />
           <Checkbox
             label="Culto ativo"
             checked={formData.isActive}
-            onChange={(e) =>
+            onChange={e =>
               setFormData({ ...formData, isActive: e.target.checked })
             }
           />
@@ -276,8 +293,8 @@ export default function ServicesPage() {
             >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              {editingService ? "Salvar Alterações" : "Criar Culto"}
+            <Button type="submit" variant="primary" disabled={isLoading}>
+              {editingService ? 'Salvar Alterações' : 'Criar Culto'}
             </Button>
           </div>
         </form>
@@ -285,7 +302,10 @@ export default function ServicesPage() {
 
       <ConfirmDialog
         isOpen={deleteModal.isOpen}
-        onClose={deleteModal.close}
+        onClose={() => {
+          deleteModal.close()
+          setDeletingId(null)
+        }}
         onConfirm={handleDeleteConfirm}
         title="Excluir Culto"
         message="Tem certeza que deseja excluir este culto? Esta ação não pode ser desfeita."
@@ -294,5 +314,5 @@ export default function ServicesPage() {
         variant="danger"
       />
     </>
-  );
+  )
 }

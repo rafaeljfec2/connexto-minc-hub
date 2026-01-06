@@ -92,13 +92,27 @@ export function createApiServices(api: AxiosInstance) {
 
     servicesService: {
       getAll: (churchId?: string) =>
-        api.get<Service[]>('/services', {
-          params: churchId ? { churchId } : undefined,
+        api
+          .get<ApiResponse<Service[]>>('/services', {
+            params: churchId ? { churchId } : undefined,
+          })
+          .then(res => extractArrayData<Service>(res.data)),
+      getById: (id: string) =>
+        api.get<ApiResponse<Service>>(`/services/${id}`).then(res =>
+          extractEntityData<Service>(res.data, 'Service not found')
+        ),
+      create: (data: CreateEntity<Service>) =>
+        api.post<ApiResponse<Service>>('/services', data).then(res =>
+          extractEntityData<Service>(res.data, 'Failed to create service')
+        ),
+      update: (id: string, data: Partial<Service>) =>
+        api.patch<ApiResponse<Service>>(`/services/${id}`, data).then(res =>
+          extractEntityData<Service>(res.data, 'Failed to update service')
+        ),
+      delete: (id: string) =>
+        api.delete<ApiResponse<void>>(`/services/${id}`).then(() => {
+          // Delete doesn't return data
         }),
-      getById: (id: string) => api.get<Service>(`/services/${id}`),
-      create: (data: CreateEntity<Service>) => api.post<Service>('/services', data),
-      update: (id: string, data: Partial<Service>) => api.put<Service>(`/services/${id}`, data),
-      delete: (id: string) => api.delete(`/services/${id}`),
     },
 
     schedulesService: {
