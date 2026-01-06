@@ -1,0 +1,84 @@
+import { useAuth } from '@/contexts/AuthContext'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
+
+function getGreeting() {
+  const hour = new Date().getHours()
+  if (hour < 12) return 'Bom dia'
+  if (hour < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
+
+interface DashboardHeaderMobileProps {
+  readonly onNotificationPress?: () => void
+}
+
+export function DashboardHeaderMobile({
+  onNotificationPress,
+}: Readonly<DashboardHeaderMobileProps>) {
+  const { user } = useAuth()
+  const firstName = user?.name?.split(' ')[0] ?? 'Usuário'
+
+  const handleMenuClick = () => {
+    // Trigger the mobile menu button click from Sidebar
+    const menuButton = document.querySelector(
+      '[aria-label="Abrir menu"], [aria-label="Fechar menu"]'
+    ) as HTMLElement
+    if (menuButton) {
+      menuButton.click()
+    }
+  }
+
+  return (
+    <div className="sticky top-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 transition-all duration-300">
+      <div className="flex items-center justify-between px-4 py-3 gap-2">
+        <button
+          onClick={handleMenuClick}
+          className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+          aria-label="Abrir menu"
+        >
+          <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 6h16M4 12h16M4 18h16"
+            />
+          </svg>
+        </button>
+
+        <div className="flex items-center gap-2 flex-1">
+          <div className="h-10 w-10 rounded-full bg-primary-600 flex items-center justify-center text-sm font-medium text-white">
+            {user?.name?.charAt(0).toUpperCase() ?? 'U'}
+          </div>
+          <div className="flex flex-col flex-1 min-w-0">
+            <span className="text-xs text-dark-600 dark:text-dark-400 leading-tight">
+              {getGreeting()},
+            </span>
+            <span className="text-lg font-bold text-dark-900 dark:text-dark-50 truncate">
+              {firstName}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={onNotificationPress}
+            className="relative p-2 rounded-xl bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+            aria-label="Notificações"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
+            </svg>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary-500 rounded-full border-2 border-white dark:border-dark-900" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
