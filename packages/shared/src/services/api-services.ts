@@ -116,13 +116,68 @@ export function createApiServices(api: AxiosInstance) {
     },
 
     schedulesService: {
-      getAll: () => api.get<Schedule[]>('/schedules'),
-      getById: (id: string) => api.get<Schedule>(`/schedules/${id}`),
-      create: (data: CreateEntity<Schedule>) => api.post<Schedule>('/schedules', data),
-      update: (id: string, data: Partial<Schedule>) => api.put<Schedule>(`/schedules/${id}`, data),
-      delete: (id: string) => api.delete(`/schedules/${id}`),
-      autoAssign: (serviceId: string, date: string) =>
-        api.post<Schedule>('/schedules/auto-assign', { serviceId, date }),
+      getAll: (serviceId?: string, startDate?: string, endDate?: string) =>
+        api
+          .get<ApiResponse<Schedule[]>>('/schedules', {
+            params: {
+              ...(serviceId && { serviceId }),
+              ...(startDate && { startDate }),
+              ...(endDate && { endDate }),
+            },
+          })
+          .then(res => {
+            const schedules = extractArrayData<Schedule>(res.data)
+            // Extract teamIds from scheduleTeams relationship if present
+            return schedules.map(schedule => {
+              if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
+                return {
+                  ...schedule,
+                  teamIds: (schedule as any).scheduleTeams.map((st: any) => st.teamId || st.team?.id).filter(Boolean),
+                }
+              }
+              return schedule
+            })
+          }),
+      getById: (id: string) =>
+        api.get<ApiResponse<Schedule>>(`/schedules/${id}`).then(res => {
+          const schedule = extractEntityData<Schedule>(res.data, 'Schedule not found')
+          // Extract teamIds from scheduleTeams relationship if present
+          if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
+            return {
+              ...schedule,
+              teamIds: (schedule as any).scheduleTeams.map((st: any) => st.teamId || st.team?.id).filter(Boolean),
+            }
+          }
+          return schedule
+        }),
+      create: (data: CreateEntity<Schedule>) =>
+        api.post<ApiResponse<Schedule>>('/schedules', data).then(res => {
+          const schedule = extractEntityData<Schedule>(res.data, 'Failed to create schedule')
+          // Extract teamIds from scheduleTeams relationship if present
+          if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
+            return {
+              ...schedule,
+              teamIds: (schedule as any).scheduleTeams.map((st: any) => st.teamId || st.team?.id).filter(Boolean),
+            }
+          }
+          return schedule
+        }),
+      update: (id: string, data: Partial<Schedule>) =>
+        api.patch<ApiResponse<Schedule>>(`/schedules/${id}`, data).then(res => {
+          const schedule = extractEntityData<Schedule>(res.data, 'Failed to update schedule')
+          // Extract teamIds from scheduleTeams relationship if present
+          if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
+            return {
+              ...schedule,
+              teamIds: (schedule as any).scheduleTeams.map((st: any) => st.teamId || st.team?.id).filter(Boolean),
+            }
+          }
+          return schedule
+        }),
+      delete: (id: string) =>
+        api.delete<ApiResponse<void>>(`/schedules/${id}`).then(() => {
+          // Delete doesn't return data
+        }),
     },
 
     attendanceService: {
