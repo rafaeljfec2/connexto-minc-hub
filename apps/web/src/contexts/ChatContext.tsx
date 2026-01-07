@@ -232,7 +232,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Active Conversation Management
   const handleSetActiveConversation = useCallback(
     async (conversation: Conversation | null) => {
-      // Use functional state update to check previous value without adding dependency
+      // Optimization: Check immediately against Ref to block redundant fetches
+      if (conversation && activeConversationRef.current?.id === conversation.id) {
+        return
+      }
+
+      // Use functional state update
       setActiveConversation(prevActive => {
         // If switching away from an active conversation, leave its room
         if (prevActive && (!conversation || prevActive.id !== conversation.id)) {
@@ -241,15 +246,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         return conversation
       })
 
-      if (conversation) {
-        // Optimization: If we are already on this conversation (same ID),
-        // DO NOT re-fetch messages. This prevents "refresh" loop on updates.
-        // We use the Ref because 'activeConversation' in this scope might be stale if deps didn't change.
-        if (activeConversationRef.current?.id === conversation.id) {
-          // Just update local state if needed (handled by setActiveConversation above)
-          return
-        }
+      // Update Ref immediately to block subsequent calls in same tick/render cycle
+      activeConversationRef.current = conversation
 
+      if (conversation) {
         setIsLoadingMessages(true)
         chatSocket.joinConversation(conversation.id)
         try {
@@ -289,8 +289,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         text,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        timestamp: new Date().toISOString(),
-        read: false,
+        timestamp: new Date().toISOString(), // Compatible with Message type
+        read: false, // Compatible with Message type
       }
 
       // Optimistic Update
@@ -307,6 +307,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             }
           : null
       )
+
+      // Update Ref immediately to block any race-condition fetches from effects reacting to this change
+      if (activeConversationRef.current) {
+        activeConversationRef.current = {
+          ...activeConversationRef.current,
+          lastMessage: optimisticMessage,
+          updatedAt: optimisticMessage.createdAt,
+          unreadCount: 0,
+        }
+      }
 
       // Also update conversation list optimistically
       setConversations(prev => {
