@@ -1,40 +1,72 @@
-import { useState, useRef, useEffect } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { useRef, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { ChatBubble } from './chat/components/ChatBubble'
 import { ChatInput } from './chat/components/ChatInput'
-import { MOCK_MESSAGES, MOCK_USERS, type Message } from './chat/constants/mockChatData'
+import { useChat } from '@/contexts/ChatContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function ChatDetailPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
   const navigate = useNavigate()
-  const location = useLocation()
-  const otherUserId = (location.state as { otherUserId?: string })?.otherUserId ?? ''
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const otherUser = otherUserId ? MOCK_USERS[otherUserId] : null
-  const [messages, setMessages] = useState<Message[]>(
-    conversationId ? MOCK_MESSAGES[conversationId] ?? [] : []
-  )
+  const {
+    conversations,
+    activeConversation,
+    setActiveConversation,
+    messages,
+    sendMessage,
+    isLoadingMessages,
+  } = useChat()
+  const { user } = useAuth()
+
+  // Set active conversation on mount
+  useEffect(() => {
+    if (conversationId && conversations.length > 0) {
+      if (activeConversation?.id !== conversationId) {
+        const conversation = conversations.find(c => c.id === conversationId)
+        if (conversation) {
+          setActiveConversation(conversation)
+        }
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      // Don't clear active conversation here if we want to preserve state when going back?
+      // But typically we should clear it if we leave the page.
+      setActiveConversation(null)
+    }
+  }, [conversationId, conversations, setActiveConversation])
+  // removed activeConversation dependency to avoid loop, but added check inside
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  function handleSend(text: string) {
-    const newMessage: Message = {
-      id: Math.random().toString(),
-      text,
-      senderId: 'me',
-      timestamp: new Date().toISOString(),
-      read: false,
+  const handleSend = async (text: string) => {
+    if (text.trim()) {
+      await sendMessage(text)
     }
-    setMessages(prev => [...prev, newMessage])
   }
 
-  if (!otherUser) {
+  const otherUser = activeConversation?.participants.find(p => p.id !== user?.id)
+
+  if (!activeConversation || !otherUser) {
+    if (isLoadingMessages) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        </div>
+      )
+    }
+    // If not found in conversations list (and check logic finished), show not found
+    // Or it might be loading conversations?
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-dark-400 dark:text-dark-500">Conversa não encontrada</p>
+        <p className="text-dark-400 dark:text-dark-500">
+          {conversations.length === 0 ? 'Carregando...' : 'Conversa não encontrada'}
+        </p>
       </div>
     )
   }
@@ -47,7 +79,10 @@ export default function ChatDetailPage() {
         <div className="fixed top-0 left-0 right-0 z-[100] bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-b border-dark-200 dark:border-dark-800 safe-area-top">
           <div className="flex items-center gap-3 px-4 py-3">
             <button
-              onClick={() => navigate('/chat')}
+              onClick={() => {
+                setActiveConversation(null)
+                navigate('/chat')
+              }}
               className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800 active:scale-95"
               aria-label="Voltar"
             >
@@ -63,7 +98,10 @@ export default function ChatDetailPage() {
 
             <div className="relative flex-shrink-0">
               <img
-                src={otherUser.avatar}
+                src={
+                  otherUser.avatar ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.name)}`
+                }
                 alt={otherUser.name}
                 className="w-10 h-10 rounded-full bg-dark-200 dark:bg-dark-800"
               />
@@ -76,9 +114,7 @@ export default function ChatDetailPage() {
               <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 truncate">
                 {otherUser.name}
               </h2>
-              {otherUser.isOnline && (
-                <p className="text-xs text-green-500">Online</p>
-              )}
+              {otherUser.isOnline && <p className="text-xs text-green-500">Online</p>}
             </div>
 
             <button
@@ -100,7 +136,11 @@ export default function ChatDetailPage() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] px-4 bg-grain">
           <div className="py-4">
-            {messages.length === 0 ? (
+            {isLoadingMessages && messages.length === 0 ? (
+              <div className="flex items-center justify-center p-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-dark-400 dark:text-dark-500 text-sm">
                   Nenhuma mensagem ainda. Comece a conversa!
@@ -111,8 +151,8 @@ export default function ChatDetailPage() {
                 <ChatBubble
                   key={message.id}
                   message={message.text}
-                  isMe={message.senderId === 'me'}
-                  timestamp={message.timestamp}
+                  isMe={message.senderId === user?.id}
+                  timestamp={message.createdAt}
                 />
               ))
             )}
@@ -133,7 +173,10 @@ export default function ChatDetailPage() {
             {/* Header */}
             <div className="flex items-center gap-3 px-6 py-4 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
               <button
-                onClick={() => navigate('/chat')}
+                onClick={() => {
+                  setActiveConversation(null)
+                  navigate('/chat')
+                }}
                 className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800"
                 aria-label="Voltar"
               >
@@ -149,7 +192,10 @@ export default function ChatDetailPage() {
 
               <div className="relative flex-shrink-0">
                 <img
-                  src={otherUser.avatar}
+                  src={
+                    otherUser.avatar ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.name)}`
+                  }
                   alt={otherUser.name}
                   className="w-10 h-10 rounded-full bg-dark-200 dark:bg-dark-800"
                 />
@@ -162,9 +208,7 @@ export default function ChatDetailPage() {
                 <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 truncate">
                   {otherUser.name}
                 </h2>
-                {otherUser.isOnline && (
-                  <p className="text-xs text-green-500">Online</p>
-                )}
+                {otherUser.isOnline && <p className="text-xs text-green-500">Online</p>}
               </div>
 
               <button
@@ -185,7 +229,11 @@ export default function ChatDetailPage() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-6 py-4 bg-dark-50/50 dark:bg-dark-950/50">
               <div className="space-y-3">
-                {messages.length === 0 ? (
+                {isLoadingMessages && messages.length === 0 ? (
+                  <div className="flex items-center justify-center p-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+                  </div>
+                ) : messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
                     <p className="text-dark-400 dark:text-dark-500 text-sm">
                       Nenhuma mensagem ainda. Comece a conversa!
@@ -196,8 +244,8 @@ export default function ChatDetailPage() {
                     <ChatBubble
                       key={message.id}
                       message={message.text}
-                      isMe={message.senderId === 'me'}
-                      timestamp={message.timestamp}
+                      isMe={message.senderId === user?.id}
+                      timestamp={message.createdAt}
                     />
                   ))
                 )}

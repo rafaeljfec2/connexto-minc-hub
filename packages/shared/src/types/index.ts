@@ -189,8 +189,8 @@ export interface SchedulePlanningTemplate {
 export interface ChatUser {
   id: string
   name: string
-  avatar: string | null
-  isOnline: boolean
+  avatar?: string | null
+  isOnline?: boolean
 }
 
 export interface Message {

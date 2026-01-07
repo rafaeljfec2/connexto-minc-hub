@@ -1,4 +1,4 @@
-import type { Conversation } from '../constants/mockChatData'
+import type { Conversation } from '@minc-hub/shared'
 
 interface ConversationItemProps {
   readonly conversation: Conversation
@@ -19,7 +19,9 @@ export function ConversationItem({ conversation, onPress }: ConversationItemProp
 
   if (!otherParticipant) return null
 
-  const lastMessageTime = new Date(conversation.lastMessage.timestamp)
+  const lastMessageTime = conversation.lastMessage
+    ? new Date(conversation.lastMessage.createdAt)
+    : new Date(conversation.updatedAt)
   const timeString = isToday(lastMessageTime)
     ? lastMessageTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     : lastMessageTime.toLocaleDateString('pt-BR')
@@ -36,7 +38,10 @@ export function ConversationItem({ conversation, onPress }: ConversationItemProp
     >
       <div className="relative flex-shrink-0">
         <img
-          src={otherParticipant.avatar}
+          src={
+            otherParticipant.avatar ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(otherParticipant.name)}`
+          }
           alt={otherParticipant.name}
           className="w-12 h-12 rounded-full bg-dark-200 dark:bg-dark-800"
         />
@@ -57,10 +62,10 @@ export function ConversationItem({ conversation, onPress }: ConversationItemProp
 
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm text-dark-600 dark:text-dark-400 truncate flex-1">
-            {conversation.lastMessage.senderId === 'me' && (
+            {conversation.lastMessage?.senderId === 'me' && (
               <span className="text-dark-500 dark:text-dark-500">Você: </span>
             )}
-            {conversation.lastMessage.text}
+            {conversation.lastMessage?.text || 'Nova conversa'}
           </p>
           {conversation.unreadCount > 0 && (
             <span className="flex-shrink-0 px-2 py-0.5 rounded-full bg-primary-500 text-white text-[10px] font-bold min-w-[20px] text-center">

@@ -94,7 +94,7 @@ async function bootstrap() {
 
     logger.log('✅ Middleware and configuration applied');
 
-    const port = process.env.PORT ?? 3001;
+    const port = process.env.PORT ?? 3000;
     logger.log(`🌐 Starting server on port ${port}...`);
 
     try {
