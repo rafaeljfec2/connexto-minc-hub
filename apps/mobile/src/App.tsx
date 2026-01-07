@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ChurchProvider } from '@/contexts/ChurchContext'
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
+import { DrawerProvider } from '@/contexts/DrawerContext'
 import { BackgroundGradient } from '@/components/BackgroundGradient'
 import { RootNavigator } from '@/navigator/navigator'
 import { linking } from '@/navigator/linking'
@@ -28,8 +29,10 @@ function AppContent() {
           },
         }}
       >
-        <RootNavigator />
-        <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+        <DrawerProvider>
+          <RootNavigator />
+          <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+        </DrawerProvider>
       </NavigationContainer>
     </BackgroundGradient>
   )

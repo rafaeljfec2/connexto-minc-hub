@@ -1,16 +1,17 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import type { CompositeNavigationProp } from '@react-navigation/native'
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import type { RootStackParamList, MainTabParamList } from '@/navigator/navigator.types'
-import { themeSpacing } from '@/theme'
+import { themeSpacing, themeTypography } from '@/theme'
 import { MENU_ITEMS, type MenuItem } from './menuItems'
 import { getScreenNameForMenuItem } from './navigationHelpers'
 import { DrawerHeader } from './DrawerHeader'
 import { MenuItem as MenuItemComponent } from './MenuItem'
 import { useTheme } from '@/contexts/ThemeContext'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface DrawerMenuProps {
   visible: boolean
@@ -22,9 +23,24 @@ type NavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<RootStackParamList>
 >
 
-export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
+export function DrawerMenu({ visible, onClose }: Readonly<DrawerMenuProps>) {
   const navigation = useNavigation<NavigationProp>()
   const { colors } = useTheme()
+  const { logout } = useAuth()
+
+  function handleLogout() {
+    onClose()
+    Alert.alert('Sair', 'Tem certeza que deseja sair?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: () => {
+          logout().catch(() => {})
+        },
+      },
+    ])
+  }
 
   function handleItemPress(item: MenuItem) {
     onClose()
@@ -70,6 +86,9 @@ export function DrawerMenu({ visible, onClose }: DrawerMenuProps) {
           </View>
 
           <View style={[styles.footer, { borderTopColor: colors.card.border }]}>
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+              <Text style={[styles.logoutText, { color: '#ef4444' }]}>Sair</Text>
+            </TouchableOpacity>
             <Text style={[styles.footerText, { color: colors.text.default }]}>MINC TEAMS</Text>
           </View>
         </View>
@@ -122,5 +141,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  logoutButton: {
+    padding: themeSpacing.sm,
+    marginBottom: themeSpacing.sm,
+    alignItems: 'center',
+  },
+  logoutText: {
+    fontSize: themeTypography.sizes.md,
+    fontWeight: themeTypography.weights.semibold,
   },
 })

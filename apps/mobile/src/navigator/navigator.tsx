@@ -31,18 +31,24 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
 const Tab = createBottomTabNavigator<MainTabParamList>()
 const HomeStack = createNativeStackNavigator<RootStackParamList>()
 
-const renderDashboardHeader = () => (
-  <DashboardHeader
-    onMenuPress={() => Alert.alert('Menu', 'Abrir drawer')}
-    onNotificationPress={() => Alert.alert('Notificações', 'Sem novas notificações')}
-  />
-)
+import { useDrawer } from '@/contexts/DrawerContext'
+
+const DashboardHeaderWrapper = () => {
+  const { openDrawer } = useDrawer()
+
+  return (
+    <DashboardHeader
+      onMenuPress={openDrawer}
+      onNotificationPress={() => Alert.alert('Notificações', 'Sem novas notificações')}
+    />
+  )
+}
 
 function HomeStackNavigator() {
   return (
     <HomeStack.Navigator
       screenOptions={{
-        header: renderDashboardHeader,
+        header: () => <DashboardHeaderWrapper />,
         animation: 'slide_from_right',
       }}
     >

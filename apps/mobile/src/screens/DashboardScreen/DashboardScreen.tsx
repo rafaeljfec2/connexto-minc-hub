@@ -6,7 +6,6 @@ import { QuickActions } from './QuickActions'
 import { ActivityFeed } from './ActivityFeed'
 import { UpcomingServices } from './UpcomingServices'
 import type { ActivityItem } from './ActivityFeed'
-import { DrawerMenu } from '@/components/DrawerMenu'
 import { FadeInView } from '@/components/Animations'
 import { UserMenu } from '@/components/Header/UserMenu'
 import { themeSpacing } from '@/theme'
@@ -18,7 +17,6 @@ type DashboardNavigationProp = NavigationProp<MainTabParamList & RootStackParamL
 
 export default function DashboardScreen() {
   const navigation = useNavigation<DashboardNavigationProp>()
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const isMockMode = API_CONFIG.MOCK_MODE
 
@@ -127,7 +125,6 @@ export default function DashboardScreen() {
         </FadeInView>
       </ScrollView>
 
-      <DrawerMenu visible={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
       <UserMenu visible={isUserMenuOpen} onClose={() => setIsUserMenuOpen(false)} />
     </View>
   )

@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors, themeSpacing } from '@/theme'
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle'
 import { Select } from '@/components/Select/Select'
 import { useChurch } from '@/contexts/ChurchContext'
 
@@ -40,7 +39,6 @@ export function DashboardHeader({
         </View>
 
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <ThemeToggle />
           <TouchableOpacity
             style={[
               styles.notificationButton,
