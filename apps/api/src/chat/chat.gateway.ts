@@ -56,7 +56,7 @@ const COOKIE_TOKEN_NAMES = ['access_token', 'auth_token'];
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:5173',
-      'https://www.minteams.com.br',
+      'https://www.mincteams.com.br',
       'https://mincteams.com.br',
     ],
     credentials: true,
