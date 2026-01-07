@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { useAuth } from '@/contexts/AuthContext'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export default function ProfilePage() {
   const { user, logout } = useAuth()
@@ -122,6 +123,19 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+
+          {/* Aparência */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Aparência</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-dark-700 dark:text-dark-300">Tema do Sistema</span>
+                <ThemeToggle />
+              </div>
             </CardContent>
           </Card>
         </div>
