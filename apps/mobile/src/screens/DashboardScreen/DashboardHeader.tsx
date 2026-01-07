@@ -5,20 +5,17 @@ import { Ionicons } from '@expo/vector-icons'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors, themeSpacing } from '@/theme'
-import { UserAvatar } from '@/components/Header/UserAvatar'
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle'
 import { Select } from '@/components/Select/Select'
 import { useChurch } from '@/contexts/ChurchContext'
 
 interface DashboardHeaderProps {
   onMenuPress?: () => void
-  onProfilePress?: () => void
   onNotificationPress?: () => void
 }
 
 export function DashboardHeader({
   onMenuPress,
-  onProfilePress,
   onNotificationPress,
 }: Readonly<DashboardHeaderProps>) {
   const { user } = useAuth()
@@ -54,11 +51,6 @@ export function DashboardHeader({
             <Ionicons name="notifications-outline" size={24} color={colors.text.default} />
             <View style={styles.badge} />
           </TouchableOpacity>
-          <UserAvatar
-            userName={user?.name || 'User'}
-            onPress={onProfilePress || (() => {})}
-            size={42}
-          />
         </View>
       </View>
     </SafeAreaView>

@@ -34,7 +34,6 @@ const HomeStack = createNativeStackNavigator<RootStackParamList>()
 const renderDashboardHeader = () => (
   <DashboardHeader
     onMenuPress={() => Alert.alert('Menu', 'Abrir drawer')}
-    onProfilePress={() => Alert.alert('Perfil', 'Ir para perfil')}
     onNotificationPress={() => Alert.alert('Notificações', 'Sem novas notificações')}
   />
 )
