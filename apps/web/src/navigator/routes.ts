@@ -18,6 +18,8 @@ import CheckinPage from '@/pages/CheckinPage'
 import ChatPage from '@/pages/ChatPage'
 import ChatDetailPage from '@/pages/ChatDetailPage'
 
+import TeamDetailsPage from '@/pages/TeamDetailsPage'
+
 export const protectedRoutes: RouteConfig[] = [
   {
     path: '/dashboard',
@@ -26,6 +28,11 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/people',
     component: PeoplePage,
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+  },
+  {
+    path: '/teams/:id',
+    component: TeamDetailsPage,
     allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {

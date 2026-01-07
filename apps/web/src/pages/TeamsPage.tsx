@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { useState, useMemo, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -23,6 +24,7 @@ import { TeamItemCard } from './teams/components/TeamItemCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 
 export default function TeamsPage() {
+  const navigate = useNavigate()
   const { teams, isLoading, createTeam, updateTeam, deleteTeam } = useTeams()
   const { churches } = useChurches()
   const { ministries } = useMinistries()
@@ -177,11 +179,15 @@ export default function TeamsPage() {
     handleOpenModal(team)
   }
 
+  const handleTeamClick = (team: Team) => {
+    navigate(`/teams/${team.id}`)
+  }
+
   // Layout mobile com novo design
   const mobileListView = (
-    <div className="lg:hidden">
+    <div className="lg:hidden h-screen flex flex-col overflow-hidden">
       {/* Barra de busca */}
-      <div className="px-4 pt-4 pb-3 bg-white dark:bg-dark-950">
+      <div className="px-4 pt-4 pb-3 bg-white dark:bg-dark-950 flex-shrink-0">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg
@@ -209,7 +215,7 @@ export default function TeamsPage() {
       </div>
 
       {/* Filtros por ministério */}
-      <div className="px-4 pb-3 bg-white dark:bg-dark-950 overflow-x-auto">
+      <div className="px-4 pb-3 bg-white dark:bg-dark-950 overflow-x-auto flex-shrink-0">
         <div className="flex gap-2">
           <button
             onClick={() => setSelectedMinistryFilter('all')}
@@ -238,7 +244,7 @@ export default function TeamsPage() {
       </div>
 
       {/* Seção Minhas Equipes */}
-      <div className="px-4 py-3 bg-white dark:bg-dark-950 border-b border-dark-200 dark:border-dark-800">
+      <div className="px-4 py-3 bg-white dark:bg-dark-950 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-dark-900 dark:text-dark-50">Minhas Equipes</h2>
           <button className="text-sm text-primary-600 dark:text-primary-400 font-medium hover:underline">
@@ -247,8 +253,8 @@ export default function TeamsPage() {
         </div>
       </div>
 
-      {/* Lista de equipes */}
-      <div className="bg-dark-50 dark:bg-dark-950 min-h-screen pb-20 px-4 py-4">
+      {/* Lista de equipes - área com scroll */}
+      <div className="bg-dark-50 dark:bg-dark-950 flex-1 overflow-y-auto px-4 py-4">
         {isLoading ? (
           <div className="flex items-center justify-center p-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
@@ -267,6 +273,7 @@ export default function TeamsPage() {
                 team={team}
                 ministryName={getMinistryName(team.ministryId)}
                 onMenuClick={handleTeamMenuClick}
+                onClick={handleTeamClick}
               />
             ))}
           </div>

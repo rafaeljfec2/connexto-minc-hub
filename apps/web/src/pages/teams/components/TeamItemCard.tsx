@@ -1,11 +1,14 @@
 import { Team, Person } from '@minc-hub/shared/types'
 import { usePeople } from '@/hooks/usePeople'
 import { useState, useEffect, useMemo } from 'react'
+import { createApiServices } from '@minc-hub/shared/services'
+import { api } from '@/lib/api'
 
 interface TeamItemCardProps {
   readonly team: Team
   readonly ministryName?: string
   readonly onMenuClick?: (team: Team) => void
+  readonly onClick?: (team: Team) => void
 }
 
 // Função para obter ícone e cor baseado no nome do ministério/equipe
@@ -56,26 +59,26 @@ function getTeamIcon(ministryName?: string, teamName?: string) {
     }
   }
 
-  // Ícone padrão
+  // Ícone padrão - duas pessoas (laranja)
   return {
     icon: (
-      <svg className="w-6 h-6 text-primary-500" fill="currentColor" viewBox="0 0 24 24">
+      <svg className="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
         <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
       </svg>
     ),
-    iconColor: 'text-primary-500',
+    iconColor: 'text-orange-500',
   }
 }
 
-export function TeamItemCard({ team, ministryName, onMenuClick }: TeamItemCardProps) {
+const apiServices = createApiServices(api)
+
+export function TeamItemCard({ team, ministryName, onMenuClick, onClick }: TeamItemCardProps) {
   const { getPersonById } = usePeople()
   const [leader, setLeader] = useState<Person | null>(null)
   const [members, setMembers] = useState<Person[]>([])
+  const [totalMembers, setTotalMembers] = useState(0)
 
   const teamIcon = useMemo(() => getTeamIcon(ministryName, team.name), [ministryName, team.name])
-  
-  const totalMembers = team.memberIds?.length ?? 0
-  // Ajustar cálculo de membros adicionais (mostra 3 avatares, não 4)
   const additionalMembers = totalMembers > 3 ? totalMembers - 3 : 0
 
   // Carregar líder
@@ -88,41 +91,82 @@ export function TeamItemCard({ team, ministryName, onMenuClick }: TeamItemCardPr
         .catch(() => {
           // Ignore errors
         })
+    } else {
+      setLeader(null)
     }
   }, [team.leaderId, getPersonById])
 
-  // Carregar membros (primeiros 3 para exibir avatares)
+  // Carregar membros - buscar da API se memberIds não estiver disponível
   useEffect(() => {
-    if (team.memberIds && team.memberIds.length > 0) {
-      Promise.all(
-        team.memberIds
-          .slice(0, 3)
-          .map(memberId => getPersonById(memberId).catch(() => null))
-      )
-        .then(people => {
-          setMembers(people.filter((p): p is Person => p !== null))
-        })
-    } else {
-      setMembers([])
+    let cancelled = false
+
+    const loadMembers = async () => {
+      try {
+        let personIds: string[] = []
+
+        // Se team.memberIds existe e tem valores, usar eles
+        if (team.memberIds && team.memberIds.length > 0) {
+          personIds = team.memberIds
+        } else {
+          // Caso contrário, buscar da API
+          personIds = await apiServices.teamsService.getMembers(team.id)
+        }
+
+        if (cancelled) return
+
+        setTotalMembers(personIds.length)
+
+        if (personIds.length === 0) {
+          setMembers([])
+          return
+        }
+
+        const firstThreeIds = personIds.slice(0, 3)
+        const peoplePromises = firstThreeIds.map(personId =>
+          getPersonById(personId).catch(() => null)
+        )
+        const people = await Promise.all(peoplePromises)
+
+        if (cancelled) return
+
+        setMembers(people.filter((p): p is Person => p !== null))
+      } catch (error) {
+        if (cancelled) return
+        console.error('Error loading team members:', error)
+        setMembers([])
+        setTotalMembers(0)
+      }
     }
-  }, [team.memberIds, getPersonById])
+
+    loadMembers()
+
+    return () => {
+      cancelled = true
+    }
+  }, [team.id, team.memberIds, getPersonById])
+
+  if (!team) {
+    return null
+  }
 
   return (
-    <div className="bg-white dark:bg-dark-900 rounded-lg p-4 shadow-sm">
+    <div
+      className={`bg-gray-100 dark:bg-dark-800 rounded-lg p-4 shadow-sm ${onClick ? 'cursor-pointer hover:bg-gray-200 dark:hover:bg-dark-700 transition-colors' : ''}`}
+      onClick={() => onClick?.(team)}
+    >
       <div className="flex items-start gap-3">
-        {/* Ícone - fundo branco com ícone colorido */}
-        <div className="bg-white dark:bg-dark-800 rounded-lg w-12 h-12 flex items-center justify-center flex-shrink-0 border border-dark-100 dark:border-dark-700">
-          <div className={teamIcon.iconColor}>
-            {teamIcon.icon}
-          </div>
+        {/* Ícone - quadrado branco com ícone colorido */}
+        <div className="bg-white dark:bg-dark-900 rounded-lg w-12 h-12 flex items-center justify-center flex-shrink-0">
+          <div className={teamIcon.iconColor}>{teamIcon.icon}</div>
         </div>
 
         {/* Conteúdo */}
         <div className="flex-1 min-w-0">
+          {/* Título, subtítulo e menu */}
           <div className="flex items-start justify-between mb-3">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base font-semibold text-dark-900 dark:text-dark-50 mb-1">
-                {team.name}
+            <div className="flex-1 min-w-0 pr-2">
+              <h3 className="text-base font-bold text-dark-900 dark:text-dark-50 mb-1">
+                {team.name || 'Sem nome'}
               </h3>
               {leader && (
                 <p className="text-sm text-dark-500 dark:text-dark-400">
@@ -131,11 +175,14 @@ export function TeamItemCard({ team, ministryName, onMenuClick }: TeamItemCardPr
               )}
             </div>
 
-            {/* Menu de três pontos - no canto superior direito */}
+            {/* Menu de três pontos verticais - canto superior direito */}
             {onMenuClick && (
               <button
-                onClick={() => onMenuClick(team)}
-                className="p-1 text-dark-400 dark:text-dark-500 hover:text-dark-600 dark:hover:text-dark-300 transition-colors flex-shrink-0 -mt-1"
+                onClick={e => {
+                  e.stopPropagation()
+                  onMenuClick(team)
+                }}
+                className="p-1 text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300 transition-colors flex-shrink-0"
                 aria-label="Menu"
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -145,30 +192,42 @@ export function TeamItemCard({ team, ministryName, onMenuClick }: TeamItemCardPr
             )}
           </div>
 
-          {/* Avatares e membros */}
+          {/* Avatares e botão de membros */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              {/* Avatares dos membros - sobrepostos (máximo 3) */}
-              {members.slice(0, 3).map((member, index) => (
-                <div
-                  key={member.id}
-                  className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-semibold border-2 border-white dark:border-dark-900 overflow-hidden"
-                  style={{ marginLeft: index > 0 ? '-8px' : '0', zIndex: 10 - index }}
-                >
-                  <span className="text-xs">{member.name.charAt(0).toUpperCase()}</span>
-                </div>
-              ))}
-              {/* Badge de membros adicionais - cinza claro como na imagem */}
-              {additionalMembers > 0 && (
-                <div className="w-8 h-8 rounded-full bg-dark-100 dark:bg-dark-800 flex items-center justify-center text-dark-700 dark:text-dark-300 text-xs font-semibold border-2 border-white dark:border-dark-900" style={{ marginLeft: '-8px', zIndex: 1 }}>
-                  +{additionalMembers}
-                </div>
+            {/* Avatares sobrepostos - 3 avatares circulares */}
+            <div className="flex items-center min-h-[32px]">
+              {members.length > 0 && (
+                <>
+                  {members.slice(0, 3).map((member, index) => (
+                    <div
+                      key={member.id}
+                      className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-semibold border-2 border-white dark:border-dark-900 overflow-hidden"
+                      style={{ marginLeft: index > 0 ? '-8px' : '0', zIndex: 10 - index }}
+                    >
+                      <span className="text-xs">{member.name.charAt(0).toUpperCase()}</span>
+                    </div>
+                  ))}
+                  {/* Badge "+X" - círculo cinza claro com texto branco */}
+                  {additionalMembers > 0 && (
+                    <div
+                      className="w-8 h-8 rounded-full bg-gray-300 dark:bg-dark-700 flex items-center justify-center text-white text-xs font-semibold border-2 border-white dark:border-dark-900"
+                      style={{ marginLeft: '-8px', zIndex: 1 }}
+                    >
+                      +{additionalMembers}
+                    </div>
+                  )}
+                </>
+              )}
+              {members.length === 0 && totalMembers > 0 && (
+                <span className="text-xs text-dark-400 dark:text-dark-500">
+                  Carregando membros...
+                </span>
               )}
             </div>
 
-            {/* Botão de total de membros - azul claro com texto azul escuro */}
+            {/* Botão de total de membros - azul claro com texto azul escuro, formato pill */}
             {totalMembers > 0 && (
-              <span className="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium">
+              <span className="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-medium whitespace-nowrap">
                 {totalMembers} {totalMembers === 1 ? 'Membro' : 'Membros'}
               </span>
             )}

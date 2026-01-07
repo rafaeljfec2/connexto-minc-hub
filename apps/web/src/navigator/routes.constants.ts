@@ -16,4 +16,5 @@ export const ROUTES = {
   CHECKIN: '/checkin',
   CHAT: '/chat',
   CHAT_DETAIL: '/chat/:conversationId',
+  TEAM_DETAILS: '/teams/:id',
 } as const

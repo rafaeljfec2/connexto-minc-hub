@@ -79,6 +79,16 @@ export function createApiServices(api: AxiosInstance) {
         api
           .get<ApiResponse<Team>>(`/teams/${id}`)
           .then(res => extractEntityData<Team>(res.data, 'Team not found')),
+      getMembers: (id: string) =>
+        api
+          .get<ApiResponse<Array<{ id: string; teamId: string; personId: string; person: Person }>>>(
+            `/teams/${id}/members`,
+          )
+          .then(res => {
+            const members = extractArrayData<{ id: string; teamId: string; personId: string; person: Person }>(res.data)
+            // Retornar array de personIds
+            return members.map(m => m.personId)
+          }),
       create: (data: Omit<CreateEntity<Team>, 'memberIds'>) =>
         api
           .post<ApiResponse<Team>>('/teams', data)
