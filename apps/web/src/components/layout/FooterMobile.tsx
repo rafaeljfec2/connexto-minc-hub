@@ -112,9 +112,12 @@ const TABS: TabItem[] = [
   },
 ]
 
+import { useChat } from '@/hooks/useChat'
+
 export function FooterMobile() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { unreadCount } = useChat()
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-20 w-full border-t border-dark-200 dark:border-dark-800 bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 safe-area-bottom pb-[env(safe-area-inset-bottom)] transition-all duration-300">
@@ -126,10 +129,17 @@ export function FooterMobile() {
               key={tab.id}
               type="button"
               onClick={() => navigate(tab.href)}
-              className="flex flex-col items-center justify-center gap-1 flex-1 py-2 min-w-0 active:opacity-70 transition-opacity"
+              className="flex flex-col items-center justify-center gap-1 flex-1 py-2 min-w-0 active:opacity-70 transition-opacity relative"
             >
-              <div className={`${isActive ? 'text-primary-500' : 'text-dark-400 dark:text-dark-400'}`}>
+              <div
+                className={`${isActive ? 'text-primary-500' : 'text-dark-400 dark:text-dark-400'} relative`}
+              >
                 {isActive ? tab.activeIcon : tab.icon}
+                {tab.id === 'chat' && unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-dark-950">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
               </div>
               <span
                 className={`text-xs font-medium ${isActive ? 'text-primary-500' : 'text-dark-400 dark:text-dark-400'}`}

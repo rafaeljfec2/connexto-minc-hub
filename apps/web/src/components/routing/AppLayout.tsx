@@ -9,7 +9,6 @@ interface AppLayoutProps {
   readonly children: ReactNode
 }
 
-import { ChatFloatingButton } from '@/components/chat/ChatFloatingButton'
 import { ChatProvider } from '@/contexts/ChatContext'
 
 // ... existing imports
@@ -20,7 +19,9 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <ChatProvider>
-      <div className={`${isChatPage ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-grain relative animate-fade-in overflow-x-hidden`}>
+      <div
+        className={`${isChatPage ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-grain relative animate-fade-in overflow-x-hidden`}
+      >
         <div className="absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
         <div className={`relative z-10 ${isChatPage ? 'h-full overflow-hidden' : ''}`}>
           <Sidebar />
@@ -51,17 +52,18 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <Header />
               </div>
             )}
-            <main className={`animate-fade-in-up ${
-              location.pathname.startsWith('/chat/') 
-                ? 'p-0 h-full overflow-hidden' 
-                : 'min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-4rem)] pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pt-0 lg:pb-0'
-            }`}>
+            <main
+              className={`animate-fade-in-up ${
+                location.pathname.startsWith('/chat/')
+                  ? 'p-0 h-full overflow-hidden'
+                  : 'min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-4rem)] pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pt-0 lg:pb-0'
+              }`}
+            >
               {children}
             </main>
           </div>
 
-          {/* Chat Button */}
-          {!isChatPage && <ChatFloatingButton />}
+          {/* Chat Button Removed - Moved to Footer */}
         </div>
       </div>
     </ChatProvider>
