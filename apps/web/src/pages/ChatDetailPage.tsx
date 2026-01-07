@@ -21,8 +21,11 @@ export default function ChatDetailPage() {
   const { user } = useAuth()
 
   // Set active conversation on mount
+  // Only set when conversationId changes, not when conversations array updates
   useEffect(() => {
     if (conversationId && conversations.length > 0) {
+      // Only update if the active conversation ID doesn't match
+      // This prevents re-fetching when conversations array updates due to new messages
       if (activeConversation?.id !== conversationId) {
         const conversation = conversations.find(c => c.id === conversationId)
         if (conversation) {
@@ -37,8 +40,9 @@ export default function ChatDetailPage() {
       // But typically we should clear it if we leave the page.
       setActiveConversation(null)
     }
-  }, [conversationId, conversations, setActiveConversation])
-  // removed activeConversation dependency to avoid loop, but added check inside
+    // Only depend on conversationId, not on conversations or activeConversation
+    // This prevents re-execution when conversations array updates
+  }, [conversationId, setActiveConversation])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

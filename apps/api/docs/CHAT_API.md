@@ -164,6 +164,8 @@ Authorization: Bearer <token>
 
 **POST** `/api/chat/conversations/:conversationId/messages`
 
+> **⚠️ DEPRECATED**: Este endpoint REST está deprecado. Use o evento WebSocket `send-message` para enviar mensagens em tempo real. Este endpoint pode ser mantido apenas para compatibilidade ou casos especiais.
+
 Cria uma nova mensagem em uma conversa.
 
 **Headers:**
@@ -275,6 +277,8 @@ Content-Type: application/json
 
 **PUT** `/api/chat/conversations/:conversationId/messages/read`
 
+> **⚠️ DEPRECATED**: Este endpoint REST está deprecado. Use o evento WebSocket `mark-read` para marcar mensagens como lidas em tempo real. Este endpoint pode ser mantido apenas para compatibilidade ou casos especiais.
+
 Marca todas as mensagens não lidas de uma conversa como lidas.
 
 **Headers:**
@@ -350,7 +354,13 @@ Authorization: Bearer <token>
 
 ## WebSocket (Obrigatório - Comunicação em Tempo Real)
 
-O chat utiliza WebSocket para comunicação em tempo real. Todos os eventos de chat (novas mensagens, status de leitura, digitação, status online) são transmitidos via WebSocket.
+O chat utiliza WebSocket para comunicação em tempo real. **TODOS os eventos de chat (novas mensagens, status de leitura, digitação, status online) DEVEM ser transmitidos via WebSocket.**
+
+**IMPORTANTE**: 
+- **Envio de mensagens**: Use exclusivamente o evento WebSocket `send-message`. NÃO use o endpoint REST POST.
+- **Marcar como lida**: Use exclusivamente o evento WebSocket `mark-read`. NÃO use o endpoint REST PUT.
+- **Recebimento de mensagens**: Mensagens são recebidas exclusivamente via evento WebSocket `new-message`.
+- **Histórico inicial**: O endpoint REST GET `/api/chat/conversations/:conversationId/messages` pode ser usado APENAS para carregar o histórico inicial quando uma conversa é aberta pela primeira vez. Após isso, todas as mensagens devem ser recebidas via WebSocket.
 
 ### Conexão WebSocket
 
@@ -404,7 +414,7 @@ Todos os eventos devem seguir o formato:
    }
    ```
 
-3. **send-message**: Enviar mensagem via WebSocket (alternativa ao POST REST)
+3. **send-message**: Enviar mensagem via WebSocket (**OBRIGATÓRIO - Use este método ao invés de REST**)
 
    ```json
    {
@@ -416,8 +426,10 @@ Todos os eventos devem seguir o formato:
    }
    ```
 
+   - **Este é o método preferido e obrigatório para envio de mensagens**
    - O servidor deve criar a mensagem e broadcast para todos os participantes
    - Resposta: evento `new-message` para todos os participantes
+   - **NÃO use o endpoint REST POST `/api/chat/conversations/:conversationId/messages` para envio de mensagens**
 
 4. **typing**: Indicar que está digitando
 
@@ -434,7 +446,7 @@ Todos os eventos devem seguir o formato:
    - Enviar `isTyping: true` quando começar a digitar
    - Enviar `isTyping: false` quando parar de digitar (ou após 3 segundos de inatividade)
 
-5. **mark-read**: Marcar mensagens como lidas via WebSocket (alternativa ao PUT REST)
+5. **mark-read**: Marcar mensagens como lidas via WebSocket (**OBRIGATÓRIO - Use este método ao invés de REST**)
    ```json
    {
      "event": "mark-read",
@@ -444,6 +456,9 @@ Todos os eventos devem seguir o formato:
      }
    }
    ```
+   
+   - **Este é o método preferido e obrigatório para marcar mensagens como lidas**
+   - **NÃO use o endpoint REST PUT `/api/chat/conversations/:conversationId/messages/read` para marcar como lida**
 
 ### Eventos do Servidor para o Cliente
 

@@ -22,7 +22,7 @@ export class ChatWebSocketService {
     this.url = url
   }
 
-  connect(token: string) {
+  connect(token?: string) {
     if (this.socket?.connected) {
       console.log('[ChatWS] Already connected')
       return
@@ -31,12 +31,19 @@ export class ChatWebSocketService {
     const connectionUrl = `${this.url}/chat`
     console.log('[ChatWS] Connecting to:', connectionUrl)
 
-    this.socket = io(connectionUrl, {
-      auth: { token },
+    // Only include token in auth if it's provided and not empty
+    // Otherwise, rely on cookie-based authentication
+    const socketOptions: any = {
       transports: ['websocket'],
       autoConnect: true,
-      withCredentials: true,
-    })
+      withCredentials: true, // Critical for cookie-based auth
+    }
+
+    if (token && token.trim().length > 0) {
+      socketOptions.auth = { token: token.trim() }
+    }
+
+    this.socket = io(connectionUrl, socketOptions)
 
     this.socket.on('connect', () => {
       console.log('Chat WebSocket connected', this.socket?.id)
@@ -68,7 +75,10 @@ export class ChatWebSocketService {
 
   // Although sendMessage acts primarily via API, socket can be used too if preferred
   sendMessage(conversationId: string, text: string) {
-    if (!this.socket?.connected) return
+    if (!this.socket?.connected) {
+      console.error('[ChatWS] Cannot send message: socket not connected')
+      return
+    }
     this.socket?.emit('send-message', { conversationId, text })
   }
 

@@ -95,10 +95,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.connectedClients.set(client.id, client);
 
       // Join user specific room for online status/notifications
-      client.join(`user:${client.userId}`);
+      // This is CRITICAL - all users must be in their user room to receive messages
+      const userRoom = `user:${client.userId}`;
+      client.join(userRoom);
+      
+      // Log room membership for debugging
+      const rooms = Array.from(client.rooms);
+      this.logger.log(`Chat Client connected: ${client.userId} (Client ID: ${client.id})`);
+      this.logger.log(`User ${client.userId} joined room: ${userRoom}`);
+      this.logger.debug(`Client ${client.id} is now in rooms: ${rooms.join(', ')}`);
 
       client.emit('connected', { userId: client.userId, serverTime: new Date() });
-      this.logger.log(`Chat Client connected: ${client.userId}`);
     } catch (error) {
       this.logger.error(
         `Chat Client connection failed: ${client.userId || 'unknown'} - ${error.message}`,
@@ -118,9 +125,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { conversationId: string },
     @ConnectedSocket() client: AuthenticatedSocket,
   ) {
-    if (!client.userId) return;
+    if (!client.userId) {
+      this.logger.warn(`join-conversation: Client ${client.id} has no userId`);
+      return;
+    }
     client.join(`conversation:${data.conversationId}`);
     this.logger.log(`User ${client.userId} joined conversation ${data.conversationId}`);
+
+    // Log room membership for debugging
+    const rooms = Array.from(client.rooms);
+    this.logger.debug(`User ${client.userId} is now in rooms: ${rooms.join(', ')}`);
   }
 
   @SubscribeMessage('leave-conversation')
@@ -144,23 +158,53 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         text: data.text,
       });
 
-      // Broadcast to conversation room (including sender, or exclude sender depending on FE preference)
-      this.server.to(`conversation:${data.conversationId}`).emit('new-message', {
-        ...message,
-        timestamp: message.createdAt, // Ensure frontend gets timestamp field as expected
-      });
       const conversation = await this.chatService.findOneConversation(
         data.conversationId,
         client.userId,
       );
+
+      // Prepare message payload
+      const messagePayload = {
+        ...message,
+        timestamp: message.createdAt, // Ensure frontend gets timestamp field as expected
+      };
+
+      // Get participant user IDs for logging and broadcasting
+      const participantUserIds = conversation.participants.map((p) => p.userId);
+      
+      this.logger.log(
+        `Broadcasting message ${message.id} from user ${client.userId} to conversation ${data.conversationId}`,
+      );
+      this.logger.log(`Participants: ${participantUserIds.join(', ')}`);
+
+      // Broadcast to conversation room (for users who have the conversation open)
+      this.server.to(`conversation:${data.conversationId}`).emit('new-message', messagePayload);
+      this.logger.debug(`Emitted to conversation room: conversation:${data.conversationId}`);
+
+      // Also broadcast to individual user rooms to ensure all participants receive the message
+      // This is critical because users might not be in the conversation room if they don't have it open
       conversation.participants.forEach((p) => {
-        this.server.to(`user:${p.userId}`).emit('conversation-updated', {
+        const userId = p.userId;
+        const userRoom = `user:${userId}`;
+        
+        // Send new-message to user's personal room (they will receive it even if conversation is not open)
+        this.server.to(userRoom).emit('new-message', messagePayload);
+        this.logger.debug(`Emitted new-message to user room: ${userRoom}`);
+
+        // Also send conversation-updated for list updates
+        this.server.to(userRoom).emit('conversation-updated', {
           conversationId: data.conversationId,
           lastMessage: message,
           // Unread count is user-specific, ideally payload includes generic update signal
         });
+        this.logger.debug(`Emitted conversation-updated to user room: ${userRoom}`);
       });
+
+      this.logger.log(
+        `Message ${message.id} sent to conversation ${data.conversationId} by user ${client.userId}. Broadcasted to ${conversation.participants.length} participants.`,
+      );
     } catch (error) {
+      this.logger.error(`Error sending message: ${error.message}`);
       client.emit('error', { message: error.message });
     }
   }
