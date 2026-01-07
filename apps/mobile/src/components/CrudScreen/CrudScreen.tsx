@@ -12,8 +12,6 @@ import {
 import { themeSpacing } from '@/theme'
 
 interface CrudScreenProps<T> {
-  title: string
-  subtitle?: string
   searchTerm: string
   onSearchChange: (text: string) => void
   data: T[]

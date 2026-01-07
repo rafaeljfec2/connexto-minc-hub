@@ -108,15 +108,19 @@ export default function ServicesScreen() {
     deleteModal.close()
   }
 
-  function renderItem({ item }: { item: Service }) {
-    return (
-      <ServiceCard
-        service={item}
-        onEdit={() => handleOpenModal(item)}
-        onDelete={() => handleDeleteClick(item.id)}
-      />
-    )
-  }
+  const renderItem = React.useCallback(
+    (props: { item: Service }) => {
+      const { item } = props
+      return (
+        <ServiceCard
+          service={item}
+          onEdit={() => handleOpenModal(item)}
+          onDelete={() => handleDeleteClick(item.id)}
+        />
+      )
+    },
+    [handleOpenModal, handleDeleteClick]
+  )
 
   const emptyComponent = (
     <EmptyState

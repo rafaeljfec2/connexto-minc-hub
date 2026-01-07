@@ -35,20 +35,24 @@ export default function SchedulesScreen() {
     // TODO: Implementar deleção
   }
 
-  function renderItem({ item }: { item: Schedule }) {
-    const serviceName = getServiceName(item.serviceId, services)
-    const teamNames = getTeamNames(item.teamIds, teams)
+  const renderItem = React.useCallback(
+    (props: { item: Schedule }) => {
+      const { item } = props
+      const serviceName = getServiceName(item.serviceId, services)
+      const teamNames = getTeamNames(item.teamIds, teams)
 
-    return (
-      <ScheduleCard
-        schedule={item}
-        serviceName={serviceName}
-        teamNames={teamNames}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-    )
-  }
+      return (
+        <ScheduleCard
+          schedule={item}
+          serviceName={serviceName}
+          teamNames={teamNames}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )
+    },
+    [services, teams]
+  )
 
   const emptyComponent = (
     <EmptyState

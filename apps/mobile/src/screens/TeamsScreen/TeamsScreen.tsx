@@ -113,8 +113,6 @@ export default function TeamsScreen() {
 
   return (
     <CrudScreen
-      title="Equipes"
-      subtitle="Gerencie equipes dos times"
       searchTerm={searchTerm}
       onSearchChange={setSearchTerm}
       data={filteredData}

@@ -140,8 +140,6 @@ export default function PeopleScreen() {
   const hasFilters = searchTerm || filterMinistry !== 'all' || filterTeam !== 'all'
   return (
     <CrudScreen
-      title="Servos"
-      subtitle="Gerencie servos do Time Boas-Vindas"
       searchTerm={searchTerm}
       onSearchChange={setSearchTerm}
       data={filteredData}

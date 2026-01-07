@@ -15,8 +15,13 @@ export function DrawerProvider({ children }: { children: ReactNode }) {
   const openDrawer = () => setIsDrawerOpen(true)
   const closeDrawer = () => setIsDrawerOpen(false)
 
+  const contextValue = React.useMemo(
+    () => ({ openDrawer, closeDrawer, isDrawerOpen }),
+    [isDrawerOpen]
+  )
+
   return (
-    <DrawerContext.Provider value={{ openDrawer, closeDrawer, isDrawerOpen }}>
+    <DrawerContext.Provider value={contextValue}>
       {children}
       <DrawerMenu visible={isDrawerOpen} onClose={closeDrawer} />
     </DrawerContext.Provider>
