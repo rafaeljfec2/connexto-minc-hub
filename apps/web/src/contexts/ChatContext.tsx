@@ -42,12 +42,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get token directly from storage since it's not exposed in context
     const token = localStorage.getItem('auth_token')
+    console.log('[ChatContext] Checking connection requirements:', {
+      hasToken: !!token,
+      hasUser: !!user,
+    })
 
-    if (token) {
-      chatSocket.connect(token.replace('Bearer ', ''))
+    // We allow connection if user is present. If token is missing from storage,
+    // we assume cookie-based auth will handle it (handled by gateway + withCredentials).
+    if (user) {
+      console.log('[ChatContext] Attempting to connect to WebSocket...')
+      chatSocket.connect(token?.replace('Bearer ', '') || '')
       setIsConnected(chatSocket.isConnected())
 
-      const onConnect = () => setIsConnected(true)
+      const onConnect = () => {
+        console.log('[ChatContext] WebSocket Connected Event received')
+        setIsConnected(true)
+      }
 
       chatSocket.on('connected', onConnect)
 
@@ -56,7 +66,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         chatSocket.disconnect()
       }
     }
-  }, [chatSocket])
+  }, [chatSocket, user])
 
   // Load Conversations
   const loadConversations = useCallback(async () => {
@@ -176,8 +186,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const sendMessage = useCallback(
     async (text: string) => {
-      if (!activeConversation) return
+      console.log('[ChatContext] sendMessage called with:', text)
+      if (!activeConversation) {
+        console.warn('[ChatContext] sendMessage failed: No active conversation')
+        return
+      }
       try {
+        console.log('[ChatContext] Sending message via socket to:', activeConversation.id)
         // Send via WebSocket to ensure real-time broadcast to all participants
         // The Gateway handles saving to DB and broadcasting 'new-message' event
         chatSocket.sendMessage(activeConversation.id, text)

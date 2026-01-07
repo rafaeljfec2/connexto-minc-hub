@@ -23,16 +23,27 @@ export class ChatWebSocketService {
   }
 
   connect(token: string) {
-    if (this.socket?.connected) return
+    if (this.socket?.connected) {
+      console.log('[ChatWS] Already connected')
+      return
+    }
 
-    this.socket = io(`${this.url}/chat`, {
+    const connectionUrl = `${this.url}/chat`
+    console.log('[ChatWS] Connecting to:', connectionUrl)
+
+    this.socket = io(connectionUrl, {
       auth: { token },
       transports: ['websocket'],
       autoConnect: true,
+      withCredentials: true,
     })
 
     this.socket.on('connect', () => {
-      console.log('Chat WebSocket connected')
+      console.log('Chat WebSocket connected', this.socket?.id)
+    })
+
+    this.socket.on('connect_error', err => {
+      console.error('Chat WebSocket connection error:', err)
     })
 
     this.socket.on('disconnect', () => {
@@ -57,6 +68,11 @@ export class ChatWebSocketService {
 
   // Although sendMessage acts primarily via API, socket can be used too if preferred
   sendMessage(conversationId: string, text: string) {
+    if (!this.socket?.connected) {
+      console.warn('[ChatWS] sendMessage failed: Socket not connected')
+      return
+    }
+    console.log('[ChatWS] Emitting send-message event:', { conversationId, text })
     this.socket?.emit('send-message', { conversationId, text })
   }
 

@@ -177,11 +177,13 @@ export default function ChatPage() {
         </div>
       </main>
 
-      <UserSelectionModal
-        isOpen={isNewChatModalOpen}
-        onClose={() => setIsNewChatModalOpen(false)}
-        onSelectUser={handleSelectUser}
-      />
+      {isNewChatModalOpen && (
+        <UserSelectionModal
+          isOpen={isNewChatModalOpen}
+          onClose={() => setIsNewChatModalOpen(false)}
+          onSelectUser={handleSelectUser}
+        />
+      )}
     </>
   )
 }

@@ -2,7 +2,6 @@ import { useState, useMemo } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { useUsers } from '@/hooks/useUsers'
 import { useAuth } from '@/contexts/AuthContext'
-import { User } from '@minc-hub/shared/types'
 
 interface UserSelectionModalProps {
   isOpen: boolean
@@ -76,15 +75,7 @@ export function UserSelectionModal({ isOpen, onClose, onSelectUser }: UserSelect
                 >
                   <div className="flex-shrink-0">
                     <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-semibold group-hover:scale-105 transition-transform">
-                      {user.avatar ? (
-                        <img
-                          src={user.avatar}
-                          alt={user.name}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        user.name.charAt(0).toUpperCase()
-                      )}
+                      {user.name.charAt(0).toUpperCase()}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
