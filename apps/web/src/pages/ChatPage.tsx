@@ -12,6 +12,26 @@ export default function ChatPage() {
   const { conversations, isLoadingConversations, startConversation } = useChat()
   const { user } = useAuth()
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  // Filtrar conversas baseado no termo de busca
+  const filteredConversations = useMemo(() => {
+    if (!searchTerm.trim()) return conversations
+
+    const term = searchTerm.toLowerCase()
+    return conversations.filter(conversation => {
+      const otherParticipant = conversation.participants.find(p => p.id !== user?.id)
+      if (!otherParticipant) return false
+
+      // Buscar pelo nome do participante
+      if (otherParticipant.name.toLowerCase().includes(term)) return true
+
+      // Buscar pelo texto da última mensagem
+      if (conversation.lastMessage?.text.toLowerCase().includes(term)) return true
+
+      return false
+    })
+  }, [conversations, searchTerm, user?.id])
 
   function handleConversationPress(conversationId: string, otherUserId: string) {
     navigate(`/chat/${conversationId}`, { state: { otherUserId } })
@@ -93,11 +113,20 @@ export default function ChatPage() {
   )
 
   const renderConversationsList = () => {
-    if (!conversations.length) return null
+    if (!filteredConversations.length) {
+      if (searchTerm.trim()) {
+        return (
+          <div className="flex flex-col items-center justify-center p-8 text-center">
+            <p className="text-dark-500 dark:text-dark-400">Nenhuma conversa encontrada</p>
+          </div>
+        )
+      }
+      return null
+    }
 
     return (
       <div>
-        {conversations.map((conversation, index) => {
+        {filteredConversations.map((conversation, index) => {
           const otherParticipant = conversation.participants.find(p => p.id !== user?.id)
           if (!otherParticipant) return null
           return (
@@ -122,13 +151,13 @@ export default function ChatPage() {
     <>
       {/* Mobile View */}
       <div className="lg:hidden fixed inset-0 flex flex-col bg-white dark:bg-dark-950 overflow-hidden z-10">
-        {/* Header - Increased by 10% total (h-14 = 3.5rem, 10% = 3.85rem) */}
-        <header className="flex-shrink-0 border-b border-dark-200 dark:border-dark-800 bg-white/95 dark:bg-dark-950/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-dark-950/80 safe-area-top pt-[env(safe-area-inset-top)]">
-          <div className="flex items-center justify-between px-4 h-[3.85rem]">
-            <div className="flex items-center gap-5 flex-1 min-w-0">
+        {/* Header */}
+        <header className="flex-shrink-0 border-b border-dark-200 dark:border-dark-800 bg-white dark:bg-dark-950 safe-area-top pt-[env(safe-area-inset-top)]">
+          <div className="flex items-center justify-between px-4 h-14">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
               <button
                 onClick={handleMenuClick}
-                className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg transition-all duration-200 active:scale-95"
+                className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg transition-colors"
                 aria-label="Abrir menu"
               >
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,12 +169,12 @@ export default function ChatPage() {
                   />
                 </svg>
               </button>
-              <h1 className="text-lg font-bold text-dark-900 dark:text-dark-50 truncate">Chat</h1>
+              <h1 className="text-lg font-bold text-dark-900 dark:text-dark-50">Chat</h1>
             </div>
 
             <button
               onClick={() => setIsNewChatModalOpen(true)}
-              className="p-2 rounded-xl text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:bg-primary-100 dark:active:bg-primary-900/30 transition-all duration-200 active:scale-95"
+              className="p-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
               aria-label="Nova conversa"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,15 +187,43 @@ export default function ChatPage() {
               </svg>
             </button>
           </div>
+
+          {/* Search Bar */}
+          <div className="px-4 pb-3">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="h-5 w-5 text-dark-400 dark:text-dark-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                placeholder="Buscar conversa..."
+                className="w-full pl-10 pr-4 py-2.5 bg-dark-50 dark:bg-dark-900 border border-dark-200 dark:border-dark-800 rounded-lg text-sm text-dark-900 dark:text-dark-50 placeholder-dark-400 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              />
+            </div>
+          </div>
         </header>
 
-        {/* Content Area - Flex 1, padding-bottom for footer, starts immediately after header */}
+        {/* Content Area */}
         <main className="flex-1 overflow-y-auto pb-20 bg-white dark:bg-dark-950">
           {(() => {
             if (isLoadingConversations && conversations.length === 0) {
               return renderLoadingState()
             }
-            if (conversations.length === 0) {
+            if (conversations.length === 0 && !searchTerm.trim()) {
               return renderEmptyState()
             }
             return renderConversationsList()
