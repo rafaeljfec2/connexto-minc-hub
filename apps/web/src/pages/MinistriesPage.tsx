@@ -17,6 +17,7 @@ import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
 import { Ministry } from '@minc-hub/shared/types'
 import { MinistryCard } from './ministries/components/MinistryCard'
+import { MinistryItemCard } from './ministries/components/MinistryItemCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 
 export default function MinistriesPage() {
@@ -131,6 +132,79 @@ export default function MinistriesPage() {
 
   const hasFilters = searchTerm !== ''
 
+  const handleMinistryMenuClick = (ministry: Ministry) => {
+    // Abrir menu de opções (editar/excluir)
+    handleOpenModal(ministry)
+  }
+
+  // Layout mobile com novo design
+  const mobileListView = (
+    <div className="lg:hidden">
+      {/* Barra de busca */}
+      <div className="px-4 pt-4 pb-3 bg-white dark:bg-dark-950">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg
+              className="h-5 w-5 text-dark-400 dark:text-dark-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Buscar time..."
+            className="w-full pl-10 pr-4 py-2.5 bg-dark-50 dark:bg-dark-900 border border-dark-200 dark:border-dark-800 rounded-lg text-sm text-dark-900 dark:text-dark-50 placeholder-dark-400 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* Seção Meus Times */}
+      <div className="px-4 py-3 bg-white dark:bg-dark-950 border-b border-dark-200 dark:border-dark-800">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-dark-900 dark:text-dark-50">Meus Times</h2>
+          <button className="text-sm text-primary-600 dark:text-primary-400 font-medium hover:underline">
+            Ver todos
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de times */}
+      <div className="bg-dark-50 dark:bg-dark-950 min-h-screen pb-20 px-4 py-4">
+        {isLoading ? (
+          <div className="flex items-center justify-center p-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+          </div>
+        ) : filteredMinistries.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <p className="text-dark-500 dark:text-dark-400">
+              {hasFilters ? 'Nenhum time encontrado' : 'Nenhum time cadastrado'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredMinistries.map(ministry => (
+              <MinistryItemCard
+                key={ministry.id}
+                ministry={ministry}
+                onMenuClick={handleMinistryMenuClick}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {filteredMinistries.map((ministry) => (
@@ -182,42 +256,48 @@ export default function MinistriesPage() {
 
   return (
     <>
-      <CrudPageLayout
-        title="Times"
-        description="Gerencie os times (ministérios) da igreja"
-        createButtonLabel="Novo Time"
-        onCreateClick={() => handleOpenModal()}
-        hasFilters={hasFilters}
-        isEmpty={filteredMinistries.length === 0 && !isLoading}
-        emptyTitle={
-          hasFilters ? 'Nenhum time encontrado' : 'Nenhum time cadastrado'
-        }
-        emptyDescription={
-          hasFilters
-            ? 'Tente ajustar os filtros para encontrar times'
-            : 'Comece adicionando um novo time'
-        }
-        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
-        filters={
-          <CrudFilters
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            searchPlaceholder="Buscar por nome ou descrição..."
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-        }
-        content={
-          <CrudView
-            viewMode={viewMode}
-            gridView={gridView}
-            listView={{
-              headers: ['Nome', 'Descrição', 'Igreja', 'Status', 'Ações'],
-              rows: listViewRows,
-            }}
-          />
-        }
-      />
+      {/* Mobile View - Novo Layout */}
+      {mobileListView}
+
+      {/* Desktop View - Layout Original */}
+      <div className="hidden lg:block">
+        <CrudPageLayout
+          title="Times"
+          description="Gerencie os times (ministérios) da igreja"
+          createButtonLabel="Novo Time"
+          onCreateClick={() => handleOpenModal()}
+          hasFilters={hasFilters}
+          isEmpty={filteredMinistries.length === 0 && !isLoading}
+          emptyTitle={
+            hasFilters ? 'Nenhum time encontrado' : 'Nenhum time cadastrado'
+          }
+          emptyDescription={
+            hasFilters
+              ? 'Tente ajustar os filtros para encontrar times'
+              : 'Comece adicionando um novo time'
+          }
+          createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+          filters={
+            <CrudFilters
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Buscar por nome ou descrição..."
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          }
+          content={
+            <CrudView
+              viewMode={viewMode}
+              gridView={gridView}
+              listView={{
+                headers: ['Nome', 'Descrição', 'Igreja', 'Status', 'Ações'],
+                rows: listViewRows,
+              }}
+            />
+          }
+        />
+      </div>
 
       <Modal
         isOpen={modal.isOpen}

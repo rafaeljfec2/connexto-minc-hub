@@ -19,6 +19,7 @@ import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
 import { Team } from '@minc-hub/shared/types'
 import { TeamCard } from './teams/components/TeamCard'
+import { TeamItemCard } from './teams/components/TeamItemCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 
 export default function TeamsPage() {
@@ -36,6 +37,7 @@ export default function TeamsPage() {
   const [editingTeam, setEditingTeam] = useState<Team | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+  const [selectedMinistryFilter, setSelectedMinistryFilter] = useState<string>('all')
   const { viewMode, setViewMode } = useViewMode({
     storageKey: 'teams-view-mode',
     defaultMode: 'list',
@@ -82,9 +84,12 @@ export default function TeamsPage() {
         team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         team.description?.toLowerCase().includes(searchTerm.toLowerCase())
 
-      return matchesSearch
+      const matchesMinistry =
+        selectedMinistryFilter === 'all' || team.ministryId === selectedMinistryFilter
+
+      return matchesSearch && matchesMinistry
     })
-  }, [teams, searchTerm])
+  }, [teams, searchTerm, selectedMinistryFilter])
 
   function getMinistryName(ministryId: string) {
     return ministries.find(m => m.id === ministryId)?.name ?? 'Time não encontrado'
@@ -164,7 +169,111 @@ export default function TeamsPage() {
     }
   }
 
-  const hasFilters = searchTerm !== ''
+  const hasFilters = searchTerm !== '' || selectedMinistryFilter !== 'all'
+
+  const handleTeamMenuClick = (team: Team) => {
+    // Abrir menu de opções (editar/excluir)
+    // Por enquanto, vamos apenas abrir o modal de edição
+    handleOpenModal(team)
+  }
+
+  // Layout mobile com novo design
+  const mobileListView = (
+    <div className="lg:hidden">
+      {/* Barra de busca */}
+      <div className="px-4 pt-4 pb-3 bg-white dark:bg-dark-950">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg
+              className="h-5 w-5 text-dark-400 dark:text-dark-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            placeholder="Buscar equipe..."
+            className="w-full pl-10 pr-4 py-2.5 bg-dark-50 dark:bg-dark-900 border border-dark-200 dark:border-dark-800 rounded-lg text-sm text-dark-900 dark:text-dark-50 placeholder-dark-400 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      {/* Filtros por ministério */}
+      <div className="px-4 pb-3 bg-white dark:bg-dark-950 overflow-x-auto">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setSelectedMinistryFilter('all')}
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+              selectedMinistryFilter === 'all'
+                ? 'bg-dark-900 dark:bg-dark-50 text-white dark:text-dark-900'
+                : 'bg-dark-100 dark:bg-dark-800 text-dark-700 dark:text-dark-300'
+            }`}
+          >
+            Todos
+          </button>
+          {filteredMinistries.map(ministry => (
+            <button
+              key={ministry.id}
+              onClick={() => setSelectedMinistryFilter(ministry.id)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                selectedMinistryFilter === ministry.id
+                  ? 'bg-dark-900 dark:bg-dark-50 text-white dark:text-dark-900'
+                  : 'bg-dark-100 dark:bg-dark-800 text-dark-700 dark:text-dark-300'
+              }`}
+            >
+              {ministry.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Seção Minhas Equipes */}
+      <div className="px-4 py-3 bg-white dark:bg-dark-950 border-b border-dark-200 dark:border-dark-800">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-dark-900 dark:text-dark-50">Minhas Equipes</h2>
+          <button className="text-sm text-primary-600 dark:text-primary-400 font-medium hover:underline">
+            Ver todas
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de equipes */}
+      <div className="bg-dark-50 dark:bg-dark-950 min-h-screen pb-20 px-4 py-4">
+        {isLoading ? (
+          <div className="flex items-center justify-center p-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+          </div>
+        ) : filteredTeams.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <p className="text-dark-500 dark:text-dark-400">
+              {hasFilters ? 'Nenhuma equipe encontrada' : 'Nenhuma equipe cadastrada'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredTeams.map(team => (
+              <TeamItemCard
+                key={team.id}
+                team={team}
+                ministryName={getMinistryName(team.ministryId)}
+                onMenuClick={handleTeamMenuClick}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -217,40 +326,46 @@ export default function TeamsPage() {
 
   return (
     <>
-      <CrudPageLayout
-        title="Equipes"
-        description="Gerencie equipes do Time Boas-Vindas"
-        createButtonLabel="Nova Equipe"
-        onCreateClick={() => handleOpenModal()}
-        hasFilters={hasFilters}
-        isEmpty={filteredTeams.length === 0 && !isLoading}
-        emptyTitle={hasFilters ? 'Nenhuma equipe encontrada' : 'Nenhuma equipe cadastrada'}
-        emptyDescription={
-          hasFilters
-            ? 'Tente ajustar os filtros para encontrar equipes'
-            : 'Comece adicionando uma nova equipe'
-        }
-        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
-        filters={
-          <CrudFilters
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            searchPlaceholder="Buscar por nome ou descrição..."
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-        }
-        content={
-          <CrudView
-            viewMode={viewMode}
-            gridView={gridView}
-            listView={{
-              headers: ['Nome', 'Time', 'Descrição', 'Membros', 'Status', 'Ações'],
-              rows: listViewRows,
-            }}
-          />
-        }
-      />
+      {/* Mobile View - Novo Layout */}
+      {mobileListView}
+
+      {/* Desktop View - Layout Original */}
+      <div className="hidden lg:block">
+        <CrudPageLayout
+          title="Equipes"
+          description="Gerencie equipes do Time Boas-Vindas"
+          createButtonLabel="Nova Equipe"
+          onCreateClick={() => handleOpenModal()}
+          hasFilters={hasFilters}
+          isEmpty={filteredTeams.length === 0 && !isLoading}
+          emptyTitle={hasFilters ? 'Nenhuma equipe encontrada' : 'Nenhuma equipe cadastrada'}
+          emptyDescription={
+            hasFilters
+              ? 'Tente ajustar os filtros para encontrar equipes'
+              : 'Comece adicionando uma nova equipe'
+          }
+          createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+          filters={
+            <CrudFilters
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Buscar por nome ou descrição..."
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          }
+          content={
+            <CrudView
+              viewMode={viewMode}
+              gridView={gridView}
+              listView={{
+                headers: ['Nome', 'Time', 'Descrição', 'Membros', 'Status', 'Ações'],
+                rows: listViewRows,
+              }}
+            />
+          }
+        />
+      </div>
 
       <Modal
         isOpen={modal.isOpen}

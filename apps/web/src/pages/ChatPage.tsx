@@ -5,7 +5,6 @@ import { ConversationItem } from './chat/components/ConversationItem'
 import { UserSelectionModal } from './chat/components/UserSelectionModal'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
-import { SearchInput } from '@/components/ui/SearchInput'
 
 export default function ChatPage() {
   const navigate = useNavigate()
