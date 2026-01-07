@@ -13,7 +13,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
-  const [unreadCount, setUnreadCount] = useState(0)
+  const unreadCount = useMemo(() => {
+    return conversations.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0)
+  }, [conversations])
   const [isLoadingConversations, setIsLoadingConversations] = useState(false)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
@@ -91,23 +93,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, chatApi])
 
-  const loadUnreadCount = useCallback(async () => {
-    if (!user) return
-    try {
-      const { totalUnread } = await chatApi.getUnreadCount()
-      setUnreadCount(totalUnread)
-    } catch (error) {
-      console.error('Failed to load unread count', error)
-    }
-  }, [user, chatApi])
-
   // Initial Data Load
   useEffect(() => {
     if (user) {
       loadConversations()
-      loadUnreadCount()
     }
-  }, [user, loadConversations, loadUnreadCount])
+  }, [user, loadConversations])
 
   // Handle Incoming Messages
   // Ref to access activeConversation inside socket listeners without triggering re-effects
@@ -125,74 +116,50 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Handle Incoming Messages (Stable Listener)
   // Handle Incoming Messages (Stable Listener)
-  useEffect(() => {
-    // Extracted logic to update or append message
-    const updateMessagesState = (message: Message) => {
-      setMessages(prev => {
-        // Check for existing real message (deduplicate)
-        if (prev.some(m => m.id === message.id)) return prev
+  // Extracted logic to update or append message
+  const updateMessagesState = useCallback((message: Message) => {
+    setMessages(prev => {
+      // Check for existing real message (deduplicate)
+      if (prev.some(m => m.id === message.id)) return prev
 
-        // Check for optimistic message to replace (same text)
-        const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
+      // Check for optimistic message to replace (same text)
+      const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
 
-        if (tempIndex !== -1) {
-          // Swap in place to preserve order/scroll stability
-          const newMessages = [...prev]
-          newMessages[tempIndex] = message
-          // Reset optimistic update flag when real message arrives
-          isOptimisticUpdateRef.current = false
-          return newMessages
-        }
-
-        // Else append
-        return [...prev, message]
-      })
-    }
-
-    // Extracted logic to sync active conversation
-    const syncActiveConversation = (message: Message) => {
-      setActiveConversation(prev => {
-        if (!prev) return null
-        // Only update if the conversation ID matches
-        if (prev.id === message.conversationId) {
-          const updated = {
-            ...prev,
-            lastMessage: message,
-            unreadCount: 0,
-            updatedAt: message.createdAt,
-          }
-          activeConversationRef.current = updated
-          return updated
-        }
-        return prev
-      })
-    }
-
-    const handleNewMessage = (message: Message) => {
-      const currentActive = activeConversationRef.current
-
-      // If message belongs to active conversation, append or swap it
-      if (currentActive && message.conversationId === currentActive.id) {
-        updateMessagesState(message)
-
-        // If we are active, we read it immediately via WebSocket
-        if (message.senderId !== user?.id) {
-          chatSocket.markAsRead(currentActive.id, [message.id])
-        }
-
-        // SYNC ACTIVE CONVERSATION STATE (without triggering fetch)
-        syncActiveConversation(message)
+      if (tempIndex !== -1) {
+        // Swap in place to preserve order/scroll stability
+        const newMessages = [...prev]
+        newMessages[tempIndex] = message
+        // Reset optimistic update flag when real message arrives
+        isOptimisticUpdateRef.current = false
+        return newMessages
       }
 
-      // Always update conversation list (for both active and inactive conversations)
-      updateConversationList(message)
-    }
+      // Else append
+      return [...prev, message]
+    })
+  }, [])
 
-    const handleConversationUpdated = (data: { conversationId: string; lastMessage: Message }) => {
-      updateConversationList(data.lastMessage)
-    }
+  // Extracted logic to sync active conversation
+  const syncActiveConversation = useCallback((message: Message) => {
+    setActiveConversation(prev => {
+      if (!prev) return null
+      // Only update if the conversation ID matches
+      if (prev.id === message.conversationId) {
+        const updated = {
+          ...prev,
+          lastMessage: message,
+          unreadCount: 0,
+          updatedAt: message.createdAt,
+        }
+        activeConversationRef.current = updated
+        return updated
+      }
+      return prev
+    })
+  }, [])
 
-    const updateConversationList = (message: Message) => {
+  const updateConversationList = useCallback(
+    (message: Message) => {
       setConversations(prev => {
         // Optimization: Check if update is needed to avoid "refresh" flicker
         // Prefer .some over .find for simple existence check, but here we need the item to compare properties
@@ -225,23 +192,51 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       if (currentActive && currentActive.id === message.conversationId) {
         syncActiveConversation(message)
       }
+    },
+    [user, syncActiveConversation]
+  )
 
-      const activeId = currentActive?.id
-      if ((!activeId || activeId !== message.conversationId) && message.senderId !== user?.id) {
-        setUnreadCount(prev => prev + 1)
+  const handleNewMessage = useCallback(
+    (message: Message) => {
+      const currentActive = activeConversationRef.current
+
+      // If message belongs to active conversation, append or swap it
+      if (currentActive && message.conversationId === currentActive.id) {
+        updateMessagesState(message)
+
+        // If we are active, we read it immediately via WebSocket
+        if (message.senderId !== user?.id) {
+          chatSocket.markAsRead(currentActive.id, [message.id])
+        }
+
+        // SYNC ACTIVE CONVERSATION STATE (without triggering fetch)
+        syncActiveConversation(message)
       }
-    }
 
+      // Always update conversation list (for both active and inactive conversations)
+      updateConversationList(message)
+    },
+    [updateMessagesState, syncActiveConversation, updateConversationList, chatSocket, user]
+  )
+
+  const handleConversationUpdated = useCallback(
+    (data: { conversationId: string; lastMessage: Message }) => {
+      updateConversationList(data.lastMessage)
+    },
+    [updateConversationList]
+  )
+
+  const onReconnected = useCallback(() => {
+    const currentActive = activeConversationRef.current
+    if (currentActive) {
+      chatSocket.joinConversation(currentActive.id)
+    }
+  }, [chatSocket])
+
+  // Handle Incoming Messages (Stable Listener)
+  useEffect(() => {
     chatSocket.on('new-message', handleNewMessage)
     chatSocket.on('conversation-updated', handleConversationUpdated)
-
-    // Re-join room on reconnect
-    const onReconnected = () => {
-      const currentActive = activeConversationRef.current
-      if (currentActive) {
-        chatSocket.joinConversation(currentActive.id)
-      }
-    }
     chatSocket.on('connected', onReconnected)
 
     return () => {
@@ -249,7 +244,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       chatSocket.off('conversation-updated', handleConversationUpdated)
       chatSocket.off('connected', onReconnected)
     }
-  }, [chatSocket, user])
+  }, [chatSocket, handleNewMessage, handleConversationUpdated, onReconnected])
 
   // Active Conversation Management
   const handleSetActiveConversation = useCallback(
@@ -309,7 +304,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             setConversations(prev =>
               prev.map(c => (c.id === conversation.id ? { ...c, unreadCount: 0 } : c))
             )
-            loadUnreadCount() // Refresh global count
           }
         } catch (error) {
           console.error('Failed to load messages', error)
@@ -321,7 +315,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         setHasMoreMessages(false)
       }
     },
-    [chatSocket, chatApi, loadUnreadCount]
+    [chatSocket, chatApi]
   )
 
   const loadMoreMessages = useCallback(async () => {
