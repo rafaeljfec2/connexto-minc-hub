@@ -20,38 +20,30 @@ export function useChatEventHandlers({
   setActiveConversation,
   setConversations,
 }: UseChatEventHandlersProps) {
-  // Extracted logic to update or append message
   const updateMessagesState = useCallback(
     (message: Message) => {
       setMessages(prev => {
-        // Check for existing real message (deduplicate)
         if (prev.some(m => m.id === message.id)) return prev
 
-        // Check for optimistic message to replace (same text)
         const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
 
         if (tempIndex !== -1) {
-          // Swap in place to preserve order/scroll stability
           const newMessages = [...prev]
           newMessages[tempIndex] = message
-          // Reset optimistic update flag when real message arrives
           isOptimisticUpdateRef.current = false
           return newMessages
         }
 
-        // Else append
         return [...prev, message]
       })
     },
     [setMessages, isOptimisticUpdateRef]
   )
 
-  // Extracted logic to sync active conversation
   const syncActiveConversation = useCallback(
     (message: Message) => {
       setActiveConversation(prev => {
         if (!prev) return null
-        // Only update if the conversation ID matches
         if (prev.id === message.conversationId) {
           const updated = {
             ...prev,
