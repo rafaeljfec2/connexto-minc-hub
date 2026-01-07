@@ -1,4 +1,4 @@
-import { useRef, useEffect, useLayoutEffect, useCallback } from 'react'
+import { useRef, useEffect, useLayoutEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ChatBubble } from './chat/components/ChatBubble'
 import { ChatInput } from './chat/components/ChatInput'
@@ -10,7 +10,7 @@ export default function ChatDetailPage() {
   const navigate = useNavigate()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>()
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   const {
     conversations,
@@ -46,20 +46,6 @@ export default function ChatDetailPage() {
     // This prevents re-execution when conversations array updates
   }, [conversationId, setActiveConversation])
 
-  // Function to scroll to bottom - like a typewriter
-  // Always scrolls to the very bottom, no conditions
-  const scrollToBottom = useCallback(() => {
-    if (messagesContainerRef.current) {
-      const container = messagesContainerRef.current
-      // Force scroll to the very bottom - like a typewriter
-      // Use scrollHeight to ensure we go to the absolute bottom
-      container.scrollTop = container.scrollHeight
-    }
-    // Also try scrollIntoView as backup
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
-    }
-  }, [])
 
   // MutationObserver to detect DOM changes and auto-scroll
   // This ensures scroll stays at bottom when new messages are added to DOM
@@ -120,7 +106,6 @@ export default function ChatDetailPage() {
   useLayoutEffect(() => {
     // Force scroll BEFORE paint to ensure it starts at bottom
     if (messagesContainerRef.current) {
-      const container = messagesContainerRef.current
       // Set scroll to bottom immediately - this runs before paint
       // Use a small timeout to ensure DOM is ready
       setTimeout(() => {
