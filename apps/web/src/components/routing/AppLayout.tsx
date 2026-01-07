@@ -39,9 +39,10 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main Content - Animated Background & Page */}
       <div
-        className={`${isChatPage ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-grain relative animate-fade-in overflow-x-hidden`}
+        className={`${isChatPage ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-gray-50 dark:bg-dark-950 lg:bg-grain relative animate-fade-in overflow-x-hidden`}
       >
-        <div className="absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
+        {/* Overlay only for grain effect on desktop */}
+        <div className="hidden lg:block absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
         <div className={`relative z-10 ${isChatPage ? 'h-full overflow-hidden' : ''}`}>
           {/* Desktop Layout Content */}
           <div className={`lg:ml-64 relative ${isChatPage ? 'h-screen overflow-hidden' : ''}`}>
