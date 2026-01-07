@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ConversationItem } from './chat/components/ConversationItem'
+import { UserSelectionModal } from './chat/components/UserSelectionModal'
 import { useChat } from '@/contexts/ChatContext'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function ChatPage() {
   const navigate = useNavigate()
-  const { conversations, isLoadingConversations } = useChat()
+  const { conversations, isLoadingConversations, startConversation } = useChat()
   const { user } = useAuth()
+  const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
 
   function handleConversationPress(conversationId: string, otherUserId: string) {
     navigate(`/chat/${conversationId}`, { state: { otherUserId } })
@@ -20,6 +23,26 @@ export default function ChatPage() {
     ) as HTMLElement
     if (menuButton) {
       menuButton.click()
+    }
+  }
+
+  const handleSelectUser = async (userId: string) => {
+    try {
+      // Check if conversation already exists
+      const existingConversation = conversations.find(c =>
+        c.participants.some(p => p.id === userId)
+      )
+
+      if (existingConversation) {
+        navigate(`/chat/${existingConversation.id}`, { state: { otherUserId: userId } })
+      } else {
+        const newConversation = await startConversation(userId)
+        navigate(`/chat/${newConversation.id}`, { state: { otherUserId: userId } })
+      }
+      setIsNewChatModalOpen(false)
+    } catch (error) {
+      console.error('Failed to start conversation', error)
+      // Ideally show toast here
     }
   }
 
@@ -54,7 +77,7 @@ export default function ChatPage() {
             Sua caixa de entrada está vazia. Comece uma nova conversa com alguém da equipe!
           </p>
           <button
-            onClick={() => navigate('/users')}
+            onClick={() => setIsNewChatModalOpen(true)}
             className="px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors font-medium shadow-md w-full max-w-xs"
           >
             Iniciar nova conversa
@@ -73,6 +96,7 @@ export default function ChatPage() {
               key={conversation.id}
               conversation={conversation}
               onPress={handleConversationPress}
+              currentUserId={user?.id}
             />
           )
         })}
@@ -106,7 +130,7 @@ export default function ChatPage() {
             </div>
 
             <button
-              onClick={() => navigate('/users')}
+              onClick={() => setIsNewChatModalOpen(true)}
               className="p-2 rounded-xl text-primary-500 hover:bg-primary-50 dark:hover:bg-dark-800 transition-colors"
               aria-label="Nova conversa"
             >
@@ -133,7 +157,7 @@ export default function ChatPage() {
         <div className="flex justify-between items-center mb-6">
           <PageHeader title="Chat" description="Comunicação com sua equipe" />
           <button
-            onClick={() => navigate('/users')}
+            onClick={() => setIsNewChatModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium shadow-sm"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,6 +176,12 @@ export default function ChatPage() {
           {renderContent()}
         </div>
       </main>
+
+      <UserSelectionModal
+        isOpen={isNewChatModalOpen}
+        onClose={() => setIsNewChatModalOpen(false)}
+        onSelectUser={handleSelectUser}
+      />
     </>
   )
 }

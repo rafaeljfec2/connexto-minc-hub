@@ -3,6 +3,7 @@ import type { Conversation } from '@minc-hub/shared'
 interface ConversationItemProps {
   readonly conversation: Conversation
   readonly onPress: (conversationId: string, otherUserId: string) => void
+  readonly currentUserId?: string
 }
 
 function isToday(date: Date): boolean {
@@ -14,8 +15,8 @@ function isToday(date: Date): boolean {
   )
 }
 
-export function ConversationItem({ conversation, onPress }: ConversationItemProps) {
-  const otherParticipant = conversation.participants.find(p => p.id !== 'me')
+export function ConversationItem({ conversation, onPress, currentUserId }: ConversationItemProps) {
+  const otherParticipant = conversation.participants.find(p => p.id !== currentUserId)
 
   if (!otherParticipant) return null
 
@@ -62,7 +63,7 @@ export function ConversationItem({ conversation, onPress }: ConversationItemProp
 
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm text-dark-600 dark:text-dark-400 truncate flex-1">
-            {conversation.lastMessage?.senderId === 'me' && (
+            {conversation.lastMessage?.senderId === currentUserId && (
               <span className="text-dark-500 dark:text-dark-500">Você: </span>
             )}
             {conversation.lastMessage?.text || 'Nova conversa'}

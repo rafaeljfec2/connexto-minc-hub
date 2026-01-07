@@ -137,7 +137,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Active Conversation Management
   const handleSetActiveConversation = useCallback(
     async (conversation: Conversation | null) => {
-      setActiveConversation(conversation)
+      // Use functional state update to check previous value without adding dependency
+      setActiveConversation(prevActive => {
+        // If switching away from an active conversation, leave its room
+        if (prevActive && (!conversation || prevActive.id !== conversation.id)) {
+          chatSocket.leaveConversation(prevActive.id)
+        }
+        return conversation
+      })
+
       if (conversation) {
         setIsLoadingMessages(true)
         chatSocket.joinConversation(conversation.id)
@@ -160,13 +168,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           setIsLoadingMessages(false)
         }
       } else {
-        if (activeConversation) {
-          chatSocket.leaveConversation(activeConversation.id)
-        }
         setMessages([])
       }
     },
-    [chatSocket, chatApi, activeConversation, loadUnreadCount]
+    [chatSocket, chatApi, loadUnreadCount]
   )
 
   const sendMessage = useCallback(
