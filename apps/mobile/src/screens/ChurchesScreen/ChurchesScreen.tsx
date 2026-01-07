@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { View, StyleSheet, ScrollView } from 'react-native'
 import {
-  Header,
   SearchBar,
   ListContainer,
   EmptyState,
@@ -20,7 +19,12 @@ import { useModal } from '@/hooks/useModal'
 import { themeSpacing } from '@/theme'
 
 export default function ChurchesScreen() {
-  const { items: churches, create, update, remove } = useCrud<Church>({
+  const {
+    items: churches,
+    create,
+    update,
+    remove,
+  } = useCrud<Church>({
     initialItems: MOCK_CHURCHES,
   })
   const [searchTerm, setSearchTerm] = useState('')
@@ -115,7 +119,6 @@ export default function ChurchesScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Igrejas" subtitle="Gerencie as igrejas cadastradas no sistema" />
       <SearchBar
         placeholder="Buscar por nome, endereço, email ou telefone..."
         value={searchTerm}

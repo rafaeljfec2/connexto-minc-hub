@@ -71,11 +71,9 @@ export default function CheckinScreen() {
   const getSegmentStyle = (isActive: boolean) => ({
     backgroundColor: isActive ? colors.card.background : 'transparent',
   })
-
   return (
     <View style={styles.container}>
       <Header title="Check-in" subtitle="Escaneie o QR code para registrar presença" />
-
       <View
         style={[
           styles.toggleContainer,

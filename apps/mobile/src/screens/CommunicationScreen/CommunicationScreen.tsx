@@ -1,12 +1,11 @@
 import React from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
-import { Header } from '@/components'
+
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
 
 export default function CommunicationScreen() {
   return (
     <View style={styles.container}>
-      <Header title="Comunicação" subtitle="Comunicação com sua equipe" />
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
           <Text style={styles.emptyText}>Nenhuma conversa disponível</Text>

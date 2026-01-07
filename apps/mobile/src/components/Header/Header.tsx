@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useAuth } from '@/contexts/AuthContext'
 import { DrawerMenu } from '../DrawerMenu'
-import { UserMenu } from './UserMenu'
-import { UserAvatar } from './UserAvatar'
 import { themeSpacing, themeTypography } from '@/theme'
 import { useTheme } from '@/contexts/ThemeContext'
 
@@ -15,10 +12,9 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
-  const { user } = useAuth()
   const { colors, theme } = useTheme()
   const insets = useSafeAreaInsets()
-  const [showMenu, setShowMenu] = useState(false)
+
   const [showDrawer, setShowDrawer] = useState(false)
 
   function handleMenuPress() {
@@ -48,12 +44,8 @@ export function Header({ title, subtitle, onMenuPress }: HeaderProps) {
           )}
         </View>
 
-        <View style={styles.rightContainer}>
-          <UserAvatar userName={user?.name} onPress={() => setShowMenu(true)} />
-        </View>
+        <View style={styles.rightContainer} />
       </View>
-
-      <UserMenu visible={showMenu} onClose={() => setShowMenu(false)} />
 
       <DrawerMenu visible={showDrawer} onClose={() => setShowDrawer(false)} />
     </View>

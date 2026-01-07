@@ -1,7 +1,6 @@
 import React from 'react'
 import { View, StyleSheet, ScrollView } from 'react-native'
 import {
-  Header,
   SearchBar,
   ListContainer,
   EmptyState,
@@ -44,8 +43,6 @@ interface CrudScreenProps<T> {
 }
 
 export function CrudScreen<T extends { id: string }>({
-  title,
-  subtitle,
   searchTerm,
   onSearchChange,
   data,
@@ -68,14 +65,13 @@ export function CrudScreen<T extends { id: string }>({
   onConfirmDelete,
   deleteTitle = 'Confirmar Exclusão',
   deleteMessage = 'Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.',
-}: CrudScreenProps<T>) {
+}: Readonly<CrudScreenProps<T>>) {
   const emptyComponent = (
     <EmptyState message={emptyMessage} emptyMessage={emptyMessage} searchTerm={searchTerm} />
   )
 
   return (
     <View style={styles.container}>
-      <Header title={title} subtitle={subtitle} />
       <SearchBar placeholder="Buscar..." value={searchTerm} onChangeText={onSearchChange} />
       <ListContainer
         data={data}

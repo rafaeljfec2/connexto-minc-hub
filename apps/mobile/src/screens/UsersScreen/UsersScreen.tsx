@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { View, StyleSheet, ScrollView } from 'react-native'
 import {
-  Header,
   SearchBar,
   ListContainer,
   EmptyState,
@@ -21,7 +20,12 @@ import { getRoleLabel } from '@/utils/formatters'
 import { themeSpacing } from '@/theme'
 
 export default function UsersScreen() {
-  const { items: users, create, update, remove } = useCrud<User>({
+  const {
+    items: users,
+    create,
+    update,
+    remove,
+  } = useCrud<User>({
     initialItems: MOCK_USERS,
   })
   const [searchTerm, setSearchTerm] = useState('')
@@ -124,7 +128,6 @@ export default function UsersScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Usuários" subtitle="Gerencie os usuários do sistema" />
       <SearchBar
         placeholder="Buscar por nome, email ou função..."
         value={searchTerm}

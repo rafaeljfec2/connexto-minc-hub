@@ -57,7 +57,6 @@ export default function SchedulesScreen() {
       searchTerm={searchTerm}
     />
   )
-
   return (
     <View style={styles.container}>
       <Header title="Escalas" subtitle="Gerencie escalas de cultos" />

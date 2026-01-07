@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { View, StyleSheet, ScrollView } from 'react-native'
 import {
-  Header,
   SearchBar,
   ListContainer,
   EmptyState,
@@ -20,7 +19,12 @@ import { useModal } from '@/hooks/useModal'
 import { themeSpacing } from '@/theme'
 
 export default function ServicesScreen() {
-  const { items: services, create, update, remove } = useCrud<Service>({
+  const {
+    items: services,
+    create,
+    update,
+    remove,
+  } = useCrud<Service>({
     initialItems: MOCK_SERVICES,
   })
   const [searchTerm, setSearchTerm] = useState('')
@@ -80,7 +84,7 @@ export default function ServicesScreen() {
   async function handleSubmit() {
     const submitData = {
       ...formData,
-      dayOfWeek: parseInt(formData.dayOfWeek, 10),
+      dayOfWeek: Number.parseInt(formData.dayOfWeek, 10),
       churchId: '1', // Default church
     }
     if (editingService) {
@@ -124,12 +128,7 @@ export default function ServicesScreen() {
 
   return (
     <View style={styles.container}>
-      <Header title="Cultos" subtitle="Gerencie os cultos cadastrados" />
-      <SearchBar
-        placeholder="Buscar por nome..."
-        value={searchTerm}
-        onChangeText={setSearchTerm}
-      />
+      <SearchBar placeholder="Buscar por nome..." value={searchTerm} onChangeText={setSearchTerm} />
       <ListContainer
         data={filteredData}
         renderItem={renderItem}
