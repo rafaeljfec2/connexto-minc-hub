@@ -120,11 +120,11 @@ export default function ChatPage() {
   return (
     <>
       {/* Mobile View */}
-      <div className="lg:hidden flex flex-col h-screen bg-white dark:bg-dark-950 overflow-hidden">
-        {/* Header - Fixed with exact height */}
+      <div className="lg:hidden fixed inset-0 flex flex-col bg-white dark:bg-dark-950 overflow-hidden z-10">
+        {/* Header - Increased by 10% total (h-14 = 3.5rem, 10% = 3.85rem) */}
         <header className="flex-shrink-0 border-b border-dark-200 dark:border-dark-800 bg-white/95 dark:bg-dark-950/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-dark-950/80 safe-area-top pt-[env(safe-area-inset-top)]">
-          <div className="flex items-center justify-between px-4 h-14">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex items-center justify-between px-4 h-[3.85rem]">
+            <div className="flex items-center gap-5 flex-1 min-w-0">
               <button
                 onClick={handleMenuClick}
                 className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg transition-all duration-200 active:scale-95"
@@ -159,7 +159,7 @@ export default function ChatPage() {
           </div>
         </header>
 
-        {/* Content Area - Flex 1, no padding-top, starts immediately after header */}
+        {/* Content Area - Flex 1, padding-bottom for footer, starts immediately after header */}
         <main className="flex-1 overflow-y-auto pb-20 bg-white dark:bg-dark-950">
           {(() => {
             if (isLoadingConversations && conversations.length === 0) {

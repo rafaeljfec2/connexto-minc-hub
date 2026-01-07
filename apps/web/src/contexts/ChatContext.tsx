@@ -111,13 +111,30 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, [activeConversation])
 
   // Handle Incoming Messages (Stable Listener)
+  // Handle Incoming Messages (Stable Listener)
   useEffect(() => {
     const handleNewMessage = (message: Message) => {
       const currentActive = activeConversationRef.current
 
-      // If message belongs to active conversation, append it
+      // If message belongs to active conversation, append or swap it
       if (currentActive && message.conversationId === currentActive.id) {
-        setMessages(prev => [...prev, message])
+        setMessages(prev => {
+          // Check for existing real message (deduplicate)
+          if (prev.find(m => m.id === message.id)) return prev
+
+          // Check for optimistic message to replace (same text)
+          const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
+
+          if (tempIndex !== -1) {
+            // Swap in place to preserve order/scroll stability
+            const newMessages = [...prev]
+            newMessages[tempIndex] = message
+            return newMessages
+          }
+
+          // Else append
+          return [...prev, message]
+        })
 
         // If we are active, we read it immediately
         if (message.senderId !== user?.id) {
@@ -147,6 +164,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     const updateConversationList = (message: Message) => {
       setConversations(prev => {
+        // Optimization: Check if update is needed to avoid "refresh" flicker
+        const existingConv = prev.find(c => c.id === message.conversationId)
+        if (existingConv && existingConv.lastMessage?.id === message.id) {
+          return prev // No change needed, prevent re-render
+        }
+
         return prev
           .map(c => {
             if (c.id === message.conversationId) {
@@ -219,6 +242,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       })
 
       if (conversation) {
+        // Optimization: If we are already on this conversation (same ID),
+        // DO NOT re-fetch messages. This prevents "refresh" loop on updates.
+        // We use the Ref because 'activeConversation' in this scope might be stale if deps didn't change.
+        if (activeConversationRef.current?.id === conversation.id) {
+          // Just update local state if needed (handled by setActiveConversation above)
+          return
+        }
+
         setIsLoadingMessages(true)
         chatSocket.joinConversation(conversation.id)
         try {
@@ -257,11 +288,25 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         senderId: user?.id || '',
         text,
         createdAt: new Date().toISOString(),
-        isRead: false,
+        updatedAt: new Date().toISOString(),
+        timestamp: new Date().toISOString(),
+        read: false,
       }
 
       // Optimistic Update
       setMessages(prev => [...prev, optimisticMessage])
+
+      // Update active conversation state immediately
+      setActiveConversation(prev =>
+        prev
+          ? {
+              ...prev,
+              lastMessage: optimisticMessage,
+              updatedAt: optimisticMessage.createdAt,
+              unreadCount: 0,
+            }
+          : null
+      )
 
       // Also update conversation list optimistically
       setConversations(prev => {
@@ -319,26 +364,38 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     [chatSocket]
   )
 
-  return (
-    <ChatContext.Provider
-      value={{
-        conversations,
-        activeConversation,
-        setActiveConversation: handleSetActiveConversation,
-        messages,
-        sendMessage,
-        joinConversation,
-        leaveConversation,
-        unreadCount,
-        isLoadingConversations,
-        isLoadingMessages,
-        startConversation,
-        isConnected,
-      }}
-    >
-      {children}
-    </ChatContext.Provider>
+  const value = useMemo(
+    () => ({
+      conversations,
+      activeConversation,
+      setActiveConversation: handleSetActiveConversation,
+      messages,
+      sendMessage,
+      joinConversation,
+      leaveConversation,
+      unreadCount,
+      isLoadingConversations,
+      isLoadingMessages,
+      startConversation,
+      isConnected,
+    }),
+    [
+      conversations,
+      activeConversation,
+      handleSetActiveConversation,
+      messages,
+      sendMessage,
+      joinConversation,
+      leaveConversation,
+      unreadCount,
+      isLoadingConversations,
+      isLoadingMessages,
+      startConversation,
+      isConnected,
+    ]
   )
+
+  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
 }
 
 export function useChat() {
