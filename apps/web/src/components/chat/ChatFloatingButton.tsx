@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { MessageCircle } from 'lucide-react'
-import { useChat } from '@/contexts/ChatContext'
+import { useChat } from '@/hooks/useChat'
 import { ChatWindow } from './ChatWindow'
 import { cn } from '@/lib/utils'
 

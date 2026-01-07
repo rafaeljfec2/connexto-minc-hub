@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ConversationItem } from './chat/components/ConversationItem'
 import { UserSelectionModal } from './chat/components/UserSelectionModal'
-import { useChat } from '@/contexts/ChatContext'
+import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function ChatPage() {

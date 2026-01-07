@@ -1,36 +1,12 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-} from 'react'
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useAuth } from './AuthContext'
 import { ChatWebSocketService, ChatApiService, Conversation, Message } from '@minc-hub/shared'
 // We need to instantiate services. Ideally this comes from a DI container or a configured instance.
 // For now we will instantiate them here or outside.
 import { api } from '@/lib/api' // Assuming this is the configured axios instance
+import { ChatContext } from '@/hooks/useChat'
 
 const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-
-interface ChatContextType {
-  conversations: Conversation[]
-  activeConversation: Conversation | null
-  setActiveConversation: (conversation: Conversation | null) => void
-  messages: Message[]
-  sendMessage: (text: string) => Promise<void>
-  joinConversation: (conversationId: string) => void
-  leaveConversation: (conversationId: string) => void
-  unreadCount: number
-  isLoadingConversations: boolean
-  isLoadingMessages: boolean
-  startConversation: (participantId: string) => Promise<Conversation>
-  isConnected: boolean
-}
-
-const ChatContext = createContext<ChatContextType | undefined>(undefined)
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
@@ -46,7 +22,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const chatApi = useMemo(() => new ChatApiService(api), [])
   const chatSocket = useMemo(() => new ChatWebSocketService(SOCKET_URL), [])
 
-  // Connect/Disconnect Socket
+  // (Rest of the file remains standard, just replaced imported Context)
+
+  // ... (previous useEffects and handlers) ...
+
   useEffect(() => {
     if (!user) return
 
@@ -69,14 +48,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const tokenToUse = token && token.trim().length > 0 ? token : undefined
 
     if (!tokenToUse) {
-      console.log('[ChatContext] No token in localStorage. Will use cookie-based authentication.')
+      // Debug log removed
     }
 
     chatSocket.connect(tokenToUse)
     setIsConnected(chatSocket.isConnected())
 
-    const onConnect = (data: { userId: string; serverTime: string }) => {
-      console.log('[ChatContext] WebSocket connected:', data)
+    const onConnect = (_: { userId: string; serverTime: string }) => {
+      // Debug log removed
       setIsConnected(true)
     }
 
@@ -143,30 +122,54 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Handle Incoming Messages (Stable Listener)
   // Handle Incoming Messages (Stable Listener)
   useEffect(() => {
+    // Extracted logic to update or append message
+    const updateMessagesState = (message: Message) => {
+      setMessages(prev => {
+        // Check for existing real message (deduplicate)
+        if (prev.some(m => m.id === message.id)) return prev
+
+        // Check for optimistic message to replace (same text)
+        const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
+
+        if (tempIndex !== -1) {
+          // Swap in place to preserve order/scroll stability
+          const newMessages = [...prev]
+          newMessages[tempIndex] = message
+          // Reset optimistic update flag when real message arrives
+          isOptimisticUpdateRef.current = false
+          return newMessages
+        }
+
+        // Else append
+        return [...prev, message]
+      })
+    }
+
+    // Extracted logic to sync active conversation
+    const syncActiveConversation = (message: Message) => {
+      setActiveConversation(prev => {
+        if (!prev) return null
+        // Only update if the conversation ID matches
+        if (prev.id === message.conversationId) {
+          const updated = {
+            ...prev,
+            lastMessage: message,
+            unreadCount: 0,
+            updatedAt: message.createdAt,
+          }
+          activeConversationRef.current = updated
+          return updated
+        }
+        return prev
+      })
+    }
+
     const handleNewMessage = (message: Message) => {
       const currentActive = activeConversationRef.current
 
       // If message belongs to active conversation, append or swap it
       if (currentActive && message.conversationId === currentActive.id) {
-        setMessages(prev => {
-          // Check for existing real message (deduplicate)
-          if (prev.find(m => m.id === message.id)) return prev
-
-          // Check for optimistic message to replace (same text)
-          const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
-
-          if (tempIndex !== -1) {
-            // Swap in place to preserve order/scroll stability
-            const newMessages = [...prev]
-            newMessages[tempIndex] = message
-            // Reset optimistic update flag when real message arrives
-            isOptimisticUpdateRef.current = false
-            return newMessages
-          }
-
-          // Else append
-          return [...prev, message]
-        })
+        updateMessagesState(message)
 
         // If we are active, we read it immediately via WebSocket
         if (message.senderId !== user?.id) {
@@ -174,26 +177,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }
 
         // SYNC ACTIVE CONVERSATION STATE (without triggering fetch)
-        // Use direct state update to avoid triggering handleSetActiveConversation
-        setActiveConversation(prev => {
-          if (!prev) return null
-          // Only update if the conversation ID matches
-          if (prev.id === message.conversationId) {
-            const updated = {
-              ...prev,
-              lastMessage: message,
-              unreadCount: 0,
-              updatedAt: message.createdAt,
-            }
-            activeConversationRef.current = updated
-            return updated
-          }
-          return prev
-        })
-      } else {
-        // Message received for a conversation that is not currently active
-        // Still update the conversation list, but don't add to messages array
-        // This ensures the conversation list shows the latest message even if not open
+        syncActiveConversation(message)
       }
 
       // Always update conversation list (for both active and inactive conversations)
@@ -207,6 +191,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const updateConversationList = (message: Message) => {
       setConversations(prev => {
         // Optimization: Check if update is needed to avoid "refresh" flicker
+        // Prefer .some over .find for simple existence check, but here we need the item to compare properties
         const existingConv = prev.find(c => c.id === message.conversationId)
         if (existingConv && existingConv.lastMessage?.id === message.id) {
           return prev // No change needed, prevent re-render
@@ -234,17 +219,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       // Sync active conversation to prevent stale state (without triggering fetch)
       const currentActive = activeConversationRef.current
       if (currentActive && currentActive.id === message.conversationId) {
-        setActiveConversation(prev => {
-          if (!prev || prev.id !== message.conversationId) return prev
-          const updated = {
-            ...prev,
-            lastMessage: message,
-            unreadCount: 0,
-            updatedAt: message.createdAt,
-          }
-          activeConversationRef.current = updated
-          return updated
-        })
+        syncActiveConversation(message)
       }
 
       const activeId = currentActive?.id
@@ -420,7 +395,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     async (participantId: string) => {
       const conversation = await chatApi.startConversation(participantId)
       // Check if already in list
-      if (!conversations.find(c => c.id === conversation.id)) {
+      if (!conversations.some(c => c.id === conversation.id)) {
         setConversations(prev => [conversation, ...prev])
       }
       return conversation
@@ -474,12 +449,4 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   )
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
-}
-
-export function useChat() {
-  const context = useContext(ChatContext)
-  if (context === undefined) {
-    throw new Error('useChat must be used within a ChatProvider')
-  }
-  return context
 }

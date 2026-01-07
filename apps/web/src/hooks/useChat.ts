@@ -1,0 +1,27 @@
+import { createContext, useContext } from 'react'
+import { Conversation, Message } from '@minc-hub/shared'
+
+export interface ChatContextType {
+  conversations: Conversation[]
+  activeConversation: Conversation | null
+  setActiveConversation: (conversation: Conversation | null) => void
+  messages: Message[]
+  sendMessage: (text: string) => Promise<void>
+  joinConversation: (conversationId: string) => void
+  leaveConversation: (conversationId: string) => void
+  unreadCount: number
+  isLoadingConversations: boolean
+  isLoadingMessages: boolean
+  startConversation: (participantId: string) => Promise<Conversation>
+  isConnected: boolean
+}
+
+export const ChatContext = createContext<ChatContextType | undefined>(undefined)
+
+export function useChat() {
+  const context = useContext(ChatContext)
+  if (context === undefined) {
+    throw new Error('useChat must be used within a ChatProvider')
+  }
+  return context
+}

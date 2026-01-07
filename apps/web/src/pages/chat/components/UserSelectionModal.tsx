@@ -57,54 +57,64 @@ export function UserSelectionModal({ isOpen, onClose, onSelectUser }: UserSelect
 
         {/* User List */}
         <div className="flex-1 overflow-y-auto -mx-4 px-4">
-          {isLoading ? (
-            <div className="flex justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-8 text-dark-500 dark:text-dark-400">
-              {searchQuery ? 'Nenhum usuário encontrado.' : 'Nenhum usuário disponível.'}
-            </div>
-          ) : (
-            <div className="divide-y divide-dark-100 dark:divide-dark-800">
-              {filteredUsers.map(user => (
-                <button
-                  key={user.id}
-                  onClick={() => onSelectUser(user.id)}
-                  className="w-full flex items-center gap-3 p-3 hover:bg-dark-50 dark:hover:bg-dark-800/50 transition-colors rounded-lg text-left group"
-                >
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-semibold group-hover:scale-105 transition-transform">
-                      {user.name.charAt(0).toUpperCase()}
+          {(() => {
+            if (isLoading) {
+              return (
+                <div className="flex justify-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+                </div>
+              )
+            }
+
+            if (filteredUsers.length === 0) {
+              return (
+                <div className="text-center py-8 text-dark-500 dark:text-dark-400">
+                  {searchQuery ? 'Nenhum usuário encontrado.' : 'Nenhum usuário disponível.'}
+                </div>
+              )
+            }
+
+            return (
+              <div className="divide-y divide-dark-100 dark:divide-dark-800">
+                {filteredUsers.map(user => (
+                  <button
+                    key={user.id}
+                    onClick={() => onSelectUser(user.id)}
+                    className="w-full flex items-center gap-3 p-3 hover:bg-dark-50 dark:hover:bg-dark-800/50 transition-colors rounded-lg text-left group"
+                  >
+                    <div className="flex-shrink-0">
+                      <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-semibold group-hover:scale-105 transition-transform">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-dark-900 dark:text-dark-50 truncate">
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-dark-500 dark:text-dark-400 truncate">
-                      {user.email}
-                    </p>
-                  </div>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg
-                      className="w-5 h-5 text-primary-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      />
-                    </svg>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-dark-900 dark:text-dark-50 truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-xs text-dark-500 dark:text-dark-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg
+                        className="w-5 h-5 text-primary-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                        />
+                      </svg>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )
+          })()}
         </div>
       </div>
     </Modal>

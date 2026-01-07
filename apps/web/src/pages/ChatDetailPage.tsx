@@ -1,8 +1,8 @@
-import { useRef, useEffect, useLayoutEffect } from 'react'
+import { useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ChatBubble } from './chat/components/ChatBubble'
 import { ChatInput } from './chat/components/ChatInput'
-import { useChat } from '@/contexts/ChatContext'
+import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 
 export default function ChatDetailPage() {
@@ -11,6 +11,8 @@ export default function ChatDetailPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+  // Guard to prevent race conditions where conversations update before activeConversation state
+  const intendedConversationIdRef = useRef<string | null>(null)
 
   const {
     conversations,
@@ -22,39 +24,61 @@ export default function ChatDetailPage() {
   } = useChat()
   const { user } = useAuth()
 
-  // Set active conversation on mount
-  // Only set when conversationId changes, not when conversations array updates
+  // Common scroll logic
+  const forceScroll = useCallback(() => {
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current
+      container.scrollTop = container.scrollHeight
+    }
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({
+        behavior: 'auto',
+        block: 'end',
+        inline: 'nearest',
+      })
+    }
+  }, [])
+
+  // Set active conversation on mount or change
   useEffect(() => {
     if (conversationId && conversations.length > 0) {
+      // If we already intend to be on this conversation, ignore updates until activeConversation catches up
+      // or if we are already on it
+      if (
+        intendedConversationIdRef.current === conversationId &&
+        activeConversation?.id !== conversationId
+      ) {
+        return
+      }
+
       // Only update if the active conversation ID doesn't match
-      // This prevents re-fetching when conversations array updates due to new messages
       if (activeConversation?.id !== conversationId) {
         const conversation = conversations.find(c => c.id === conversationId)
         if (conversation) {
+          intendedConversationIdRef.current = conversationId
           setActiveConversation(conversation)
         }
+      } else {
+        // We are synced
+        intendedConversationIdRef.current = conversationId
       }
     }
+  }, [conversationId, conversations, activeConversation, setActiveConversation])
 
-    // Cleanup on unmount
+  // Cleanup on unmount
+  useEffect(() => {
     return () => {
-      // Don't clear active conversation here if we want to preserve state when going back?
-      // But typically we should clear it if we leave the page.
+      intendedConversationIdRef.current = null
       setActiveConversation(null)
     }
-    // Only depend on conversationId, not on conversations or activeConversation
-    // This prevents re-execution when conversations array updates
-  }, [conversationId, setActiveConversation])
-
+  }, [setActiveConversation])
 
   // MutationObserver to detect DOM changes and auto-scroll
-  // This ensures scroll stays at bottom when new messages are added to DOM
   useEffect(() => {
     const container = messagesContainerRef.current
     if (!container) return
 
-    const observer = new MutationObserver((mutations) => {
-      // Only scroll if there were actual changes
+    const observer = new MutationObserver(mutations => {
       let hasChanges = false
       for (const mutation of mutations) {
         if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
@@ -62,21 +86,8 @@ export default function ChatDetailPage() {
           break
         }
       }
-      
+
       if (hasChanges) {
-        // Always scroll to bottom when DOM changes (new messages added)
-        // Multiple attempts to ensure it works
-        const forceScroll = () => {
-          if (messagesContainerRef.current) {
-            const container = messagesContainerRef.current
-            // Force scroll to absolute bottom
-            container.scrollTop = container.scrollHeight
-          }
-          if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
-          }
-        }
-        
         // Immediate scroll
         forceScroll()
         requestAnimationFrame(forceScroll)
@@ -88,7 +99,6 @@ export default function ChatDetailPage() {
       }
     })
 
-    // Observe changes to the messages container and its children
     observer.observe(container, {
       childList: true,
       subtree: true,
@@ -99,15 +109,11 @@ export default function ChatDetailPage() {
     return () => {
       observer.disconnect()
     }
-  }, [])
+  }, [forceScroll])
 
   // Force initial scroll to bottom when container mounts (BEFORE paint)
-  // This ensures the scroll starts at the bottom like a typewriter
   useLayoutEffect(() => {
-    // Force scroll BEFORE paint to ensure it starts at bottom
     if (messagesContainerRef.current) {
-      // Set scroll to bottom immediately - this runs before paint
-      // Use a small timeout to ensure DOM is ready
       setTimeout(() => {
         if (messagesContainerRef.current) {
           messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
@@ -118,66 +124,28 @@ export default function ChatDetailPage() {
 
   // Force scroll on mount - runs after first render
   useLayoutEffect(() => {
-    const forceScroll = () => {
-      if (messagesContainerRef.current) {
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
-      }
-    }
-    // Force immediately
     forceScroll()
-    // And after a frame
     requestAnimationFrame(forceScroll)
-  }, []) // Run once on mount
+  }, [forceScroll])
 
   // Also force scroll AFTER paint to catch any late DOM updates
   useEffect(() => {
-    // Force scroll function
-    const forceScroll = () => {
-      if (messagesContainerRef.current) {
-        const container = messagesContainerRef.current
-        // Always scroll to absolute bottom
-        container.scrollTop = container.scrollHeight
-      }
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
-      }
-    }
-    
-    // Try immediately and repeatedly to ensure it works
     requestAnimationFrame(forceScroll)
-    const timers = [0, 10, 50, 100, 200, 300, 500, 1000].map(delay => 
+    const timers = [0, 10, 50, 100, 200, 300, 500, 1000].map(delay =>
       setTimeout(forceScroll, delay)
     )
-    
+
     return () => {
       timers.forEach(timer => clearTimeout(timer))
     }
-  }, [conversationId]) // Run when conversation changes
+  }, [conversationId, forceScroll])
 
   // Auto-scroll to bottom when messages change
-  // Always scroll to the end when new messages arrive (user sent or received)
-  // Works like a typewriter - always shows the latest message
   useEffect(() => {
-    // Clear any pending scroll timeout
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current)
     }
 
-    // Aggressive scrolling - multiple attempts to ensure it works
-    // Like a typewriter - always scroll to show the latest
-    // Force scroll immediately and repeatedly
-    const forceScroll = () => {
-      if (messagesContainerRef.current) {
-        const container = messagesContainerRef.current
-        // Always scroll to absolute bottom
-        container.scrollTop = container.scrollHeight
-      }
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
-      }
-    }
-
-    // Multiple attempts with different timings
     requestAnimationFrame(forceScroll)
     scrollTimeoutRef.current = setTimeout(forceScroll, 0)
     setTimeout(forceScroll, 10)
@@ -192,21 +160,11 @@ export default function ChatDetailPage() {
         clearTimeout(scrollTimeoutRef.current)
       }
     }
-  }, [messages])
+  }, [messages, forceScroll])
 
   // Scroll to bottom when messages finish loading
   useEffect(() => {
     if (!isLoadingMessages && messages.length > 0) {
-      const forceScroll = () => {
-        if (messagesContainerRef.current) {
-          const container = messagesContainerRef.current
-          container.scrollTop = container.scrollHeight
-        }
-        if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
-        }
-      }
-      
       requestAnimationFrame(forceScroll)
       setTimeout(forceScroll, 0)
       setTimeout(forceScroll, 50)
@@ -214,24 +172,11 @@ export default function ChatDetailPage() {
       setTimeout(forceScroll, 300)
       setTimeout(forceScroll, 500)
     }
-  }, [isLoadingMessages, messages.length])
+  }, [isLoadingMessages, messages.length, forceScroll])
 
   const handleSend = async (text: string) => {
     if (text.trim()) {
       await sendMessage(text)
-      // Force scroll immediately after sending (optimistic update)
-      // Like a typewriter - always scroll to show the new message
-      // Multiple attempts to ensure scroll happens
-      const forceScroll = () => {
-        if (messagesContainerRef.current) {
-          const container = messagesContainerRef.current
-          container.scrollTop = container.scrollHeight
-        }
-        if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
-        }
-      }
-      
       requestAnimationFrame(forceScroll)
       setTimeout(forceScroll, 0)
       setTimeout(forceScroll, 10)
@@ -245,6 +190,42 @@ export default function ChatDetailPage() {
   // Fallback: If activeConversation is missing (e.g. during updates), try to find it in the list
   const currentConversation = activeConversation || conversations.find(c => c.id === conversationId)
   const otherUser = currentConversation?.participants.find(p => p.id !== user?.id)
+
+  const renderMessages = () => {
+    if (isLoadingMessages && messages.length === 0) {
+      return (
+        <div className="flex items-center justify-center p-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
+        </div>
+      )
+    }
+
+    if (messages.length === 0) {
+      return (
+        <div className="flex items-center justify-center flex-1">
+          <p className="text-dark-400 dark:text-dark-500 text-sm">
+            Nenhuma mensagem ainda. Comece a conversa!
+          </p>
+        </div>
+      )
+    }
+
+    return (
+      <>
+        {messages.map(message => (
+          <ChatBubble
+            key={message.id}
+            message={message.text}
+            isMe={message.senderId === user?.id}
+            timestamp={message.createdAt}
+          />
+        ))}
+        {/* Spacer to ensure last message aligns with input footer */}
+        <div className="h-4" />
+        <div ref={messagesEndRef} className="h-0" />
+      </>
+    )
+  }
 
   if (!currentConversation || !otherUser) {
     if (isLoadingMessages) {
@@ -336,38 +317,14 @@ export default function ChatDetailPage() {
             flexDirection: 'column',
           }}
         >
-          <div 
+          <div
             className="py-4 flex-1 flex flex-col"
             style={{
               justifyContent: 'flex-end',
               minHeight: '100%',
             }}
           >
-            {isLoadingMessages && messages.length === 0 ? (
-              <div className="flex items-center justify-center p-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="flex items-center justify-center flex-1">
-                <p className="text-dark-400 dark:text-dark-500 text-sm">
-                  Nenhuma mensagem ainda. Comece a conversa!
-                </p>
-              </div>
-            ) : (
-              <>
-                {messages.map(message => (
-                  <ChatBubble
-                    key={message.id}
-                    message={message.text}
-                    isMe={message.senderId === user?.id}
-                    timestamp={message.createdAt}
-                  />
-                ))}
-                {/* Spacer to ensure last message aligns with input footer */}
-                <div className="h-4" />
-                <div ref={messagesEndRef} className="h-0" />
-              </>
-            )}
+            {renderMessages()}
           </div>
         </div>
 
@@ -442,33 +399,7 @@ export default function ChatDetailPage() {
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto px-6 py-4 bg-dark-50/50 dark:bg-dark-950/50"
             >
-              <div className="space-y-3 min-h-full flex flex-col">
-                {isLoadingMessages && messages.length === 0 ? (
-                  <div className="flex items-center justify-center p-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-dark-400 dark:text-dark-500 text-sm">
-                      Nenhuma mensagem ainda. Comece a conversa!
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {messages.map(message => (
-                      <ChatBubble
-                        key={message.id}
-                        message={message.text}
-                        isMe={message.senderId === user?.id}
-                        timestamp={message.createdAt}
-                      />
-                    ))}
-                    {/* Spacer to ensure last message aligns with input footer */}
-                    <div className="h-2" />
-                    <div ref={messagesEndRef} className="h-0" />
-                  </>
-                )}
-              </div>
+              <div className="space-y-3 min-h-full flex flex-col">{renderMessages()}</div>
             </div>
 
             {/* Input */}

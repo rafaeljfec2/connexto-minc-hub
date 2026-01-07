@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Send, X, MessageSquare, ChevronLeft } from 'lucide-react'
-import { useChat } from '@/contexts/ChatContext'
+import { useChat } from '@/hooks/useChat'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
@@ -76,50 +76,7 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-950">
-        {!activeConversation ? (
-          // Conversation List
-          <div className="divide-y divide-gray-100 dark:divide-dark-800">
-            {conversations.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">
-                <p>Nenhuma conversa encontrada.</p>
-              </div>
-            ) : (
-              conversations.map(conv => (
-                <button
-                  key={conv.id}
-                  onClick={() => handleSelectConversation(conv)}
-                  className="w-full p-4 text-left hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors flex items-center gap-3"
-                >
-                  <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 dark:text-primary-400 font-semibold uppercase">
-                    {getParticipantName(conv).substring(0, 2)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-baseline mb-1">
-                      <span className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {getParticipantName(conv)}
-                      </span>
-                      {conv.lastMessage && (
-                        <span className="text-xs text-gray-500">
-                          {format(new Date(conv.lastMessage.createdAt), 'HH:mm')}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate pr-2">
-                        {conv.lastMessage?.text || 'Nova conversa'}
-                      </p>
-                      {conv.unreadCount > 0 && (
-                        <span className="bg-primary-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[1.25rem] text-center">
-                          {conv.unreadCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        ) : (
+        {activeConversation ? (
           // Messages View
           <div className="flex flex-col h-full">
             <div className="flex-1 p-4 space-y-4 overflow-y-auto">
@@ -175,6 +132,49 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
                 </button>
               </form>
             </div>
+          </div>
+        ) : (
+          // Conversation List
+          <div className="divide-y divide-gray-100 dark:divide-dark-800">
+            {conversations.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <p>Nenhuma conversa encontrada.</p>
+              </div>
+            ) : (
+              conversations.map(conv => (
+                <button
+                  key={conv.id}
+                  onClick={() => handleSelectConversation(conv)}
+                  className="w-full p-4 text-left hover:bg-gray-100 dark:hover:bg-dark-800 transition-colors flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 dark:text-primary-400 font-semibold uppercase">
+                    {getParticipantName(conv).substring(0, 2)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {getParticipantName(conv)}
+                      </span>
+                      {conv.lastMessage && (
+                        <span className="text-xs text-gray-500">
+                          {format(new Date(conv.lastMessage.createdAt), 'HH:mm')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate pr-2">
+                        {conv.lastMessage?.text || 'Nova conversa'}
+                      </p>
+                      {conv.unreadCount > 0 && (
+                        <span className="bg-primary-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[1.25rem] text-center">
+                          {conv.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         )}
       </div>
