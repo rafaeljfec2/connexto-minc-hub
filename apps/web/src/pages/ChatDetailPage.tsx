@@ -13,6 +13,7 @@ export default function ChatDetailPage() {
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
   // Guard to prevent race conditions where conversations update before activeConversation state
   const intendedConversationIdRef = useRef<string | null>(null)
+  const previousScrollHeightRef = useRef<number | null>(null)
 
   const {
     conversations,
@@ -21,6 +22,9 @@ export default function ChatDetailPage() {
     messages,
     sendMessage,
     isLoadingMessages,
+    hasMoreMessages,
+    isLoadingMoreMessages,
+    loadMoreMessages,
   } = useChat()
   const { user } = useAuth()
 
@@ -30,17 +34,38 @@ export default function ChatDetailPage() {
       const container = messagesContainerRef.current
       container.scrollTop = container.scrollHeight
     }
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({
-        behavior: 'auto',
-        block: 'end',
-        inline: 'nearest',
-      })
-    }
   }, [])
+
+  // Restore scroll position when loading more messages
+  useLayoutEffect(() => {
+    if (previousScrollHeightRef.current !== null && messagesContainerRef.current) {
+      const container = messagesContainerRef.current
+      const newScrollHeight = container.scrollHeight
+      const scrollDiff = newScrollHeight - previousScrollHeightRef.current
+
+      // Only adjust if content grew
+      if (scrollDiff > 0) {
+        container.scrollTop = scrollDiff
+      }
+
+      previousScrollHeightRef.current = null
+    }
+  }, [messages])
+
+  const handleScroll = useCallback(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    // Allow a small threshold (e.g. 50px) to trigger loading before hitting hard top
+    if (container.scrollTop < 50 && hasMoreMessages && !isLoadingMoreMessages) {
+      previousScrollHeightRef.current = container.scrollHeight
+      loadMoreMessages()
+    }
+  }, [hasMoreMessages, isLoadingMoreMessages, loadMoreMessages])
 
   // Set active conversation on mount or change
   useEffect(() => {
+    // ... existing logic ...
     if (conversationId && conversations.length > 0) {
       // If we already intend to be on this conversation, ignore updates until activeConversation catches up
       // or if we are already on it
@@ -73,12 +98,15 @@ export default function ChatDetailPage() {
     }
   }, [setActiveConversation])
 
-  // MutationObserver to detect DOM changes and auto-scroll
+  // MutationObserver to detect DOM changes and auto-scroll (ONLY for new messages at bottom)
   useEffect(() => {
     const container = messagesContainerRef.current
     if (!container) return
 
     const observer = new MutationObserver(mutations => {
+      // If we are loading history, DO NOT auto-scroll to bottom
+      if (isLoadingMoreMessages) return
+
       let hasChanges = false
       for (const mutation of mutations) {
         if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
@@ -88,14 +116,9 @@ export default function ChatDetailPage() {
       }
 
       if (hasChanges) {
-        // Immediate scroll
+        // Only scroll if we were already near bottom OR it's a new message (logic can be refined)
+        // For now, let's keep it simple: if not loading history, scroll to bottom
         forceScroll()
-        requestAnimationFrame(forceScroll)
-        setTimeout(forceScroll, 0)
-        setTimeout(forceScroll, 10)
-        setTimeout(forceScroll, 50)
-        setTimeout(forceScroll, 100)
-        setTimeout(forceScroll, 200)
       }
     })
 
@@ -109,7 +132,9 @@ export default function ChatDetailPage() {
     return () => {
       observer.disconnect()
     }
-  }, [forceScroll])
+  }, [forceScroll, isLoadingMoreMessages])
+
+  // ... (rest of effects) ...
 
   // Force initial scroll to bottom when container mounts (BEFORE paint)
   useLayoutEffect(() => {
@@ -311,6 +336,7 @@ export default function ChatDetailPage() {
         {/* Messages Container - Only this should scroll */}
         <div
           ref={messagesContainerRef}
+          onScroll={handleScroll}
           className="flex-1 overflow-y-auto px-4 bg-grain min-h-0"
           style={{
             display: 'flex',
@@ -324,6 +350,11 @@ export default function ChatDetailPage() {
               minHeight: '100%',
             }}
           >
+            {isLoadingMoreMessages && (
+              <div className="flex justify-center py-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
+              </div>
+            )}
             {renderMessages()}
           </div>
         </div>
@@ -397,9 +428,17 @@ export default function ChatDetailPage() {
             {/* Messages */}
             <div
               ref={messagesContainerRef}
+              onScroll={handleScroll}
               className="flex-1 overflow-y-auto px-6 py-4 bg-dark-50/50 dark:bg-dark-950/50"
             >
-              <div className="space-y-3 min-h-full flex flex-col">{renderMessages()}</div>
+              <div className="space-y-3 min-h-full flex flex-col">
+                {isLoadingMoreMessages && (
+                  <div className="flex justify-center py-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
+                  </div>
+                )}
+                {renderMessages()}
+              </div>
             </div>
 
             {/* Input */}

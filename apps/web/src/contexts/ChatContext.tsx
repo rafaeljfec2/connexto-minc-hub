@@ -18,6 +18,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
 
+  // Pagination State
+  const [hasMoreMessages, setHasMoreMessages] = useState(false)
+  const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false)
+
   // Memoize services
   const chatApi = useMemo(() => new ChatApiService(api), [])
   const chatSocket = useMemo(() => new ChatWebSocketService(SOCKET_URL), [])
@@ -296,6 +300,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         try {
           const msgs = await chatApi.getMessages(conversation.id)
           setMessages(msgs)
+          setHasMoreMessages(msgs.length === 50)
 
           // Mark as read via WebSocket
           if (conversation.unreadCount > 0) {
@@ -313,10 +318,38 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         setMessages([])
+        setHasMoreMessages(false)
       }
     },
     [chatSocket, chatApi, loadUnreadCount]
   )
+
+  const loadMoreMessages = useCallback(async () => {
+    if (!activeConversation || isLoadingMoreMessages || !hasMoreMessages || messages.length === 0)
+      return
+
+    setIsLoadingMoreMessages(true)
+    const oldestMessage = messages[0]
+
+    try {
+      // Use the createdAt of the oldest message to fetch purely older messages
+      const olderMessages = await chatApi.getMessages(activeConversation.id, {
+        limit: 50,
+        before: oldestMessage.createdAt,
+      })
+
+      if (olderMessages.length > 0) {
+        setMessages(prev => [...olderMessages, ...prev])
+        setHasMoreMessages(olderMessages.length === 50)
+      } else {
+        setHasMoreMessages(false)
+      }
+    } catch (error) {
+      console.error('Failed to load more messages', error)
+    } finally {
+      setIsLoadingMoreMessages(false)
+    }
+  }, [activeConversation, chatApi, hasMoreMessages, isLoadingMoreMessages, messages])
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -431,6 +464,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       isLoadingMessages,
       startConversation,
       isConnected,
+      hasMoreMessages,
+      isLoadingMoreMessages,
+      loadMoreMessages,
     }),
     [
       conversations,
@@ -445,6 +481,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       isLoadingMessages,
       startConversation,
       isConnected,
+      hasMoreMessages,
+      isLoadingMoreMessages,
+      loadMoreMessages,
     ]
   )
 
