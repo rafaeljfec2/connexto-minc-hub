@@ -17,7 +17,6 @@ export default function ChatPage() {
   }
 
   const handleMenuClick = () => {
-    // Trigger the mobile menu button click from Sidebar (shared logic)
     const menuButton = document.querySelector(
       '[aria-label="Abrir menu"], [aria-label="Fechar menu"]'
     ) as HTMLElement
@@ -28,7 +27,6 @@ export default function ChatPage() {
 
   const handleSelectUser = async (userId: string) => {
     try {
-      // Check if conversation already exists
       const existingConversation = conversations.find(c =>
         c.participants.some(p => p.id === userId)
       )
@@ -42,62 +40,77 @@ export default function ChatPage() {
       setIsNewChatModalOpen(false)
     } catch (error) {
       console.error('Failed to start conversation', error)
-      // Ideally show toast here
     }
   }
 
-  const renderContent = () => {
-    if (isLoadingConversations && conversations.length === 0) {
-      return (
-        <div className="flex-1 flex items-center justify-center p-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-        </div>
-      )
-    }
-
-    if (conversations.length === 0) {
-      return (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
-          <div className="mb-6">
-            <svg
-              className="w-24 h-24 text-dark-300 dark:text-dark-700 mx-auto opacity-50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
-          </div>
-          <p className="text-dark-500 dark:text-dark-400 text-lg mb-6 max-w-xs mx-auto">
-            Sua caixa de entrada está vazia. Comece uma nova conversa com alguém da equipe!
-          </p>
-          <button
-            onClick={() => setIsNewChatModalOpen(true)}
-            className="px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors font-medium shadow-md w-full max-w-xs"
+  const renderEmptyState = () => (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <div className="mb-6 relative">
+        <div className="absolute inset-0 bg-primary-500/10 rounded-full blur-2xl" />
+        <div className="relative bg-primary-100 dark:bg-primary-900/20 rounded-full p-6">
+          <svg
+            className="w-16 h-16 text-primary-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            Iniciar nova conversa
-          </button>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
         </div>
-      )
-    }
+      </div>
+      <h3 className="text-xl font-semibold text-dark-900 dark:text-dark-50 mb-2">
+        Nenhuma conversa ainda
+      </h3>
+      <p className="text-dark-500 dark:text-dark-400 mb-8 max-w-sm mx-auto">
+        Sua caixa de entrada está vazia. Comece uma nova conversa com alguém da equipe!
+      </p>
+      <button
+        onClick={() => setIsNewChatModalOpen(true)}
+        className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 active:bg-primary-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        Iniciar nova conversa
+      </button>
+    </div>
+  )
+
+  const renderLoadingState = () => (
+    <div className="flex flex-col items-center justify-center p-12">
+      <div className="relative">
+        <div className="w-12 h-12 border-4 border-primary-200 dark:border-primary-900/30 rounded-full"></div>
+        <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+      </div>
+      <p className="mt-4 text-sm text-dark-500 dark:text-dark-400">Carregando conversas...</p>
+    </div>
+  )
+
+  const renderConversationsList = () => {
+    if (!conversations.length) return null
 
     return (
-      <div className="divide-y divide-dark-100 dark:divide-dark-800">
-        {conversations.map(conversation => {
+      <div>
+        {conversations.map((conversation, index) => {
           const otherParticipant = conversation.participants.find(p => p.id !== user?.id)
           if (!otherParticipant) return null
           return (
-            <ConversationItem
+            <div
               key={conversation.id}
-              conversation={conversation}
-              onPress={handleConversationPress}
-              currentUserId={user?.id}
-            />
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <ConversationItem
+                conversation={conversation}
+                onPress={handleConversationPress}
+                currentUserId={user?.id}
+              />
+            </div>
           )
         })}
       </div>
@@ -107,17 +120,17 @@ export default function ChatPage() {
   return (
     <>
       {/* Mobile View */}
-      <div className="lg:hidden flex flex-col min-h-screen bg-white dark:bg-dark-950">
-        {/* Custom Header with Glass Effect */}
-        <div className="fixed top-0 left-0 right-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 transition-all duration-300 safe-area-top pt-[env(safe-area-inset-top)]">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
+      <div className="lg:hidden flex flex-col h-screen bg-white dark:bg-dark-950 overflow-hidden">
+        {/* Header - Fixed with exact height */}
+        <header className="flex-shrink-0 border-b border-dark-200 dark:border-dark-800 bg-white/95 dark:bg-dark-950/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-dark-950/80 safe-area-top pt-[env(safe-area-inset-top)]">
+          <div className="flex items-center justify-between px-4 h-14">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <button
                 onClick={handleMenuClick}
-                className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
+                className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg transition-all duration-200 active:scale-95"
                 aria-label="Abrir menu"
               >
-                <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -126,15 +139,15 @@ export default function ChatPage() {
                   />
                 </svg>
               </button>
-              <h1 className="text-lg font-bold text-dark-900 dark:text-dark-50">Chat</h1>
+              <h1 className="text-lg font-bold text-dark-900 dark:text-dark-50 truncate">Chat</h1>
             </div>
 
             <button
               onClick={() => setIsNewChatModalOpen(true)}
-              className="p-2 rounded-xl text-primary-500 hover:bg-primary-50 dark:hover:bg-dark-800 transition-colors"
+              className="p-2 rounded-xl text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 active:bg-primary-100 dark:active:bg-primary-900/30 transition-all duration-200 active:scale-95"
               aria-label="Nova conversa"
             >
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -144,21 +157,29 @@ export default function ChatPage() {
               </svg>
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Content with padding for header - header: safe-area + py-3 (0.75rem top) + h-7 (1.75rem) + py-3 (0.75rem bottom) = 3.25rem */}
-        <div className="flex-1 overflow-y-auto pb-20 pt-[calc(3.25rem+env(safe-area-inset-top))]">
-          <div className="-mt-1">{renderContent()}</div>
-        </div>
+        {/* Content Area - Flex 1, no padding-top, starts immediately after header */}
+        <main className="flex-1 overflow-y-auto pb-20 bg-white dark:bg-dark-950">
+          {(() => {
+            if (isLoadingConversations && conversations.length === 0) {
+              return renderLoadingState()
+            }
+            if (conversations.length === 0) {
+              return renderEmptyState()
+            }
+            return renderConversationsList()
+          })()}
+        </main>
       </div>
 
-      {/* Desktop View (Unchanged) */}
+      {/* Desktop View */}
       <main className="hidden lg:block container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
           <PageHeader title="Chat" description="Comunicação com sua equipe" />
           <button
             onClick={() => setIsNewChatModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 active:bg-primary-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -172,11 +193,22 @@ export default function ChatPage() {
           </button>
         </div>
 
-        <div className="bg-white dark:bg-dark-900 rounded-lg border border-dark-200 dark:border-dark-800 min-h-[400px] flex flex-col">
-          {renderContent()}
+        <div className="bg-white dark:bg-dark-900 rounded-xl border border-dark-200 dark:border-dark-800 shadow-sm overflow-hidden">
+          <div className="min-h-[500px] max-h-[calc(100vh-12rem)] overflow-y-auto">
+            {(() => {
+              if (isLoadingConversations && conversations.length === 0) {
+                return renderLoadingState()
+              }
+              if (conversations.length === 0) {
+                return renderEmptyState()
+              }
+              return renderConversationsList()
+            })()}
+          </div>
         </div>
       </main>
 
+      {/* User Selection Modal */}
       {isNewChatModalOpen && (
         <UserSelectionModal
           isOpen={isNewChatModalOpen}

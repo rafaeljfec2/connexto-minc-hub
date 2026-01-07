@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react'
 import { useAuth } from './AuthContext'
 import { ChatWebSocketService, ChatApiService, Conversation, Message } from '@minc-hub/shared'
 // We need to instantiate services. Ideally this comes from a DI container or a configured instance.
@@ -96,27 +104,44 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, [user, loadConversations, loadUnreadCount])
 
   // Handle Incoming Messages
+  // Ref to access activeConversation inside socket listeners without triggering re-effects
+  const activeConversationRef = useRef(activeConversation)
+  useEffect(() => {
+    activeConversationRef.current = activeConversation
+  }, [activeConversation])
+
+  // Handle Incoming Messages (Stable Listener)
   useEffect(() => {
     const handleNewMessage = (message: Message) => {
+      const currentActive = activeConversationRef.current
+
       // If message belongs to active conversation, append it
-      if (activeConversation && message.conversationId === activeConversation.id) {
+      if (currentActive && message.conversationId === currentActive.id) {
         setMessages(prev => [...prev, message])
 
         // If we are active, we read it immediately
         if (message.senderId !== user?.id) {
-          chatApi.markAsRead(activeConversation.id, [message.id])
+          chatApi.markAsRead(currentActive.id, [message.id])
         }
+
+        // SYNC ACTIVE CONVERSATION STATE
+        setActiveConversation(prev =>
+          prev
+            ? {
+                ...prev,
+                lastMessage: message,
+                unreadCount: 0,
+                updatedAt: message.createdAt,
+              }
+            : null
+        )
       }
 
-      // Update conversation list for ALL messages (both active and inactive)
-      // Note: We might duplicate this with conversation-updated logic below,
-      // but new-message is faster if we are in the room.
+      // Update conversation list logic
       updateConversationList(message)
     }
 
     const handleConversationUpdated = (data: { conversationId: string; lastMessage: Message }) => {
-      // If we received new-message, we likely already updated.
-      // But this ensures users NOT in the room get the update.
       updateConversationList(data.lastMessage)
     }
 
@@ -126,7 +151,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           .map(c => {
             if (c.id === message.conversationId) {
               const isSelf = message.senderId === user?.id
-              const isActive = activeConversation?.id === c.id
+              const currentActive = activeConversationRef.current
+              const isActive = currentActive?.id === c.id
 
               return {
                 ...c,
@@ -140,8 +166,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       })
 
-      // Sync active conversation to prevent stale state (UI "not found" error)
-      if (activeConversation && activeConversation.id === message.conversationId) {
+      // Sync active conversation to prevent stale state
+      const currentActive = activeConversationRef.current
+      if (currentActive && currentActive.id === message.conversationId) {
         setActiveConversation(prev =>
           prev
             ? {
@@ -154,10 +181,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         )
       }
 
-      if (
-        (!activeConversation || activeConversation.id !== message.conversationId) &&
-        message.senderId !== user?.id
-      ) {
+      const activeId = currentActive?.id
+      if ((!activeId || activeId !== message.conversationId) && message.senderId !== user?.id) {
         setUnreadCount(prev => prev + 1)
       }
     }
@@ -167,8 +192,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     // Re-join room on reconnect
     const onReconnected = () => {
-      if (activeConversation) {
-        chatSocket.joinConversation(activeConversation.id)
+      const currentActive = activeConversationRef.current
+      if (currentActive) {
+        chatSocket.joinConversation(currentActive.id)
       }
     }
     chatSocket.on('connected', onReconnected)
@@ -178,7 +204,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       chatSocket.off('conversation-updated', handleConversationUpdated)
       chatSocket.off('connected', onReconnected)
     }
-  }, [chatSocket, activeConversation, user, chatApi])
+  }, [chatSocket, user, chatApi])
 
   // Active Conversation Management
   const handleSetActiveConversation = useCallback(
@@ -223,15 +249,48 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const sendMessage = useCallback(
     async (text: string) => {
       if (!activeConversation) return
+
+      const tempId = `temp-${Date.now()}`
+      const optimisticMessage: Message = {
+        id: tempId,
+        conversationId: activeConversation.id,
+        senderId: user?.id || '',
+        text,
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      }
+
+      // Optimistic Update
+      setMessages(prev => [...prev, optimisticMessage])
+
+      // Also update conversation list optimistically
+      setConversations(prev => {
+        return prev
+          .map(c => {
+            if (c.id === activeConversation.id) {
+              return {
+                ...c,
+                lastMessage: optimisticMessage,
+                updatedAt: optimisticMessage.createdAt,
+              }
+            }
+            return c
+          })
+          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      })
+
       try {
-        // Send via WebSocket to ensure real-time broadcast to all participants
-        // The Gateway handles saving to DB and broadcasting 'new-message' event
+        // Send via WebSocket
+        // Ensure we are in the room (just in case)
+        chatSocket.joinConversation(activeConversation.id)
         chatSocket.sendMessage(activeConversation.id, text)
       } catch (error) {
         console.error('Failed to send message', error)
+        // Rollback on error could go here, but for now we assume success or socket reconnection handling it
+        setMessages(prev => prev.filter(m => m.id !== tempId))
       }
     },
-    [activeConversation, chatSocket]
+    [activeConversation, chatSocket, user]
   )
 
   const startConversation = useCallback(
