@@ -101,23 +101,37 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       // If message belongs to active conversation, append it
       if (activeConversation && message.conversationId === activeConversation.id) {
         setMessages(prev => [...prev, message])
-        // Mark as read immediately if window is focused?
-        // For simplicity, we might wait for user interaction or simplified read logic
+
+        // If we are active, we read it immediately
+        if (message.senderId !== user?.id) {
+          chatApi.markAsRead(activeConversation.id, [message.id])
+        }
       }
 
-      // Update conversation list last message and unread count
+      // Update conversation list for ALL messages (both active and inactive)
+      // Note: We might duplicate this with conversation-updated logic below,
+      // but new-message is faster if we are in the room.
+      updateConversationList(message)
+    }
+
+    const handleConversationUpdated = (data: { conversationId: string; lastMessage: Message }) => {
+      // If we received new-message, we likely already updated.
+      // But this ensures users NOT in the room get the update.
+      updateConversationList(data.lastMessage)
+    }
+
+    const updateConversationList = (message: Message) => {
       setConversations(prev => {
         return prev
           .map(c => {
             if (c.id === message.conversationId) {
               const isSelf = message.senderId === user?.id
+              const isActive = activeConversation?.id === c.id
+
               return {
                 ...c,
                 lastMessage: message,
-                unreadCount:
-                  activeConversation?.id === c.id || isSelf
-                    ? c.unreadCount // If active, we theoretically read it? Or wait for markRead?
-                    : c.unreadCount + 1,
+                unreadCount: isActive || isSelf ? 0 : c.unreadCount + 1,
                 updatedAt: message.createdAt,
               }
             }
@@ -126,18 +140,45 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       })
 
-      if (!activeConversation || activeConversation.id !== message.conversationId) {
-        if (message.senderId !== user?.id) {
-          setUnreadCount(prev => prev + 1)
-        }
+      // Sync active conversation to prevent stale state (UI "not found" error)
+      if (activeConversation && activeConversation.id === message.conversationId) {
+        setActiveConversation(prev =>
+          prev
+            ? {
+                ...prev,
+                lastMessage: message,
+                unreadCount: 0,
+                updatedAt: message.createdAt,
+              }
+            : null
+        )
+      }
+
+      if (
+        (!activeConversation || activeConversation.id !== message.conversationId) &&
+        message.senderId !== user?.id
+      ) {
+        setUnreadCount(prev => prev + 1)
       }
     }
 
     chatSocket.on('new-message', handleNewMessage)
+    chatSocket.on('conversation-updated', handleConversationUpdated)
+
+    // Re-join room on reconnect
+    const onReconnected = () => {
+      if (activeConversation) {
+        chatSocket.joinConversation(activeConversation.id)
+      }
+    }
+    chatSocket.on('connected', onReconnected)
+
     return () => {
       chatSocket.off('new-message', handleNewMessage)
+      chatSocket.off('conversation-updated', handleConversationUpdated)
+      chatSocket.off('connected', onReconnected)
     }
-  }, [chatSocket, activeConversation, user])
+  }, [chatSocket, activeConversation, user, chatApi])
 
   // Active Conversation Management
   const handleSetActiveConversation = useCallback(

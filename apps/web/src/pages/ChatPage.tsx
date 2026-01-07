@@ -146,9 +146,9 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* Content with padding for header */}
-        <div className="flex-1 overflow-y-auto pt-[calc(3.5rem+env(safe-area-inset-top))] pb-20">
-          {renderContent()}
+        {/* Content with padding for header - header: safe-area + py-3 (0.75rem top) + h-7 (1.75rem) + py-3 (0.75rem bottom) = 3.25rem */}
+        <div className="flex-1 overflow-y-auto pb-20 pt-[calc(3.25rem+env(safe-area-inset-top))]">
+          <div className="-mt-1">{renderContent()}</div>
         </div>
       </div>
 

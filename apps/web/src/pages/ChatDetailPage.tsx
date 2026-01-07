@@ -50,9 +50,11 @@ export default function ChatDetailPage() {
     }
   }
 
-  const otherUser = activeConversation?.participants.find(p => p.id !== user?.id)
+  // Fallback: If activeConversation is missing (e.g. during updates), try to find it in the list
+  const currentConversation = activeConversation || conversations.find(c => c.id === conversationId)
+  const otherUser = currentConversation?.participants.find(p => p.id !== user?.id)
 
-  if (!activeConversation || !otherUser) {
+  if (!currentConversation || !otherUser) {
     if (isLoadingMessages) {
       return (
         <div className="flex items-center justify-center min-h-screen">
