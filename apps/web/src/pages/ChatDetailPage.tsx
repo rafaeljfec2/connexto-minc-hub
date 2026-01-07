@@ -274,7 +274,7 @@ export default function ChatDetailPage() {
   return (
     <>
       {/* Mobile View */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bottom-[3.8rem] flex flex-col bg-gray-50 dark:bg-dark-950 overflow-hidden z-20">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bottom-[3.8rem] flex flex-col bg-gray-50 dark:bg-dark-950 overflow-hidden z-40">
         {/* Header */}
         <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-b border-dark-200 dark:border-dark-800 safe-area-top pt-[env(safe-area-inset-top,0px)]">
           <div className="flex items-center gap-3 px-4 py-3">
@@ -344,13 +344,7 @@ export default function ChatDetailPage() {
             WebkitOverflowScrolling: 'touch', // Enable momentum scrolling on iOS
           }}
         >
-          <div
-            className="py-4 flex-1 flex flex-col"
-            style={{
-              justifyContent: 'flex-end',
-              minHeight: '100%',
-            }}
-          >
+          <div className="py-4 min-h-[100%] flex flex-col justify-end">
             {isLoadingMoreMessages && (
               <div className="flex justify-center py-2">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
