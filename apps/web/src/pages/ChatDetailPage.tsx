@@ -274,7 +274,7 @@ export default function ChatDetailPage() {
   return (
     <>
       {/* Mobile View */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bottom-[3.8rem] flex flex-col bg-grain overflow-hidden z-20">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bottom-[3.8rem] flex flex-col bg-gray-50 dark:bg-dark-950 overflow-hidden z-20">
         {/* Header */}
         <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-b border-dark-200 dark:border-dark-800 safe-area-top pt-[env(safe-area-inset-top,0px)]">
           <div className="flex items-center gap-3 px-4 py-3">
@@ -337,10 +337,11 @@ export default function ChatDetailPage() {
         <div
           ref={messagesContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto px-4 bg-grain min-h-0"
+          className="flex-1 overflow-y-auto px-4 bg-gray-50 dark:bg-dark-950 min-h-0 touch-pan-y"
           style={{
             display: 'flex',
             flexDirection: 'column',
+            WebkitOverflowScrolling: 'touch', // Enable momentum scrolling on iOS
           }}
         >
           <div
@@ -360,7 +361,7 @@ export default function ChatDetailPage() {
         </div>
 
         {/* Input Footer */}
-        <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-t border-dark-200 dark:border-dark-800">
+        <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-t border-dark-200 dark:border-dark-800 pb-2">
           <ChatInput onSend={handleSend} />
         </div>
       </div>
