@@ -185,7 +185,7 @@ export default function TeamsPage() {
 
   // Layout mobile com novo design
   const mobileListView = (
-    <div className="lg:hidden h-screen flex flex-col overflow-hidden">
+    <div className="lg:hidden fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950">
       {/* Barra de busca */}
       <div className="px-4 pt-4 pb-3 bg-white dark:bg-dark-950 flex-shrink-0">
         <div className="relative">
