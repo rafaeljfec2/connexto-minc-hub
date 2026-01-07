@@ -1,4 +1,4 @@
-process.env.TZ = 'America/Sao_Paulo';
+process.env.TZ = 'UTC';
 
 import { ValidationPipe, Logger as NestLogger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';

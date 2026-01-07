@@ -5,12 +5,25 @@ interface ChatBubbleProps {
 }
 
 export function ChatBubble({ message, isMe, timestamp }: ChatBubbleProps) {
-  // Ensure timestamp is treated as UTC
-  const date = new Date(timestamp.endsWith('Z') ? timestamp : `${timestamp}Z`)
-  const time = date.toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  // Robust UTC parsing
+  let dateStr = timestamp
+  if (typeof timestamp === 'string') {
+    // If it has no offset and no Z, append Z
+    if (!timestamp.endsWith('Z') && !/[+-]\d{2}:?\d{2}$/.test(timestamp)) {
+      dateStr = `${timestamp}Z`
+    }
+  }
+
+  const date = new Date(dateStr)
+  const isValidDate = !Number.isNaN(date.getTime())
+
+  const time = isValidDate
+    ? new Intl.DateTimeFormat('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'America/Sao_Paulo',
+      }).format(date)
+    : '--:--'
 
   return (
     <div
