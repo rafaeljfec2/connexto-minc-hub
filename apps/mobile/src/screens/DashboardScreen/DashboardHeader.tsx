@@ -7,27 +7,23 @@ import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors, themeSpacing } from '@/theme'
 import { UserAvatar } from '@/components/Header/UserAvatar'
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle'
-import { Select, type Option } from '@/components/Select/Select'
+import { Select } from '@/components/Select/Select'
+import { useChurch } from '@/contexts/ChurchContext'
 
 interface DashboardHeaderProps {
   onMenuPress?: () => void
   onProfilePress?: () => void
   onNotificationPress?: () => void
-  selectedChurchId: string
-  onChurchChange: (churchId: string) => void
-  churches: Option[]
 }
 
 export function DashboardHeader({
   onMenuPress,
   onProfilePress,
   onNotificationPress,
-  selectedChurchId,
-  onChurchChange,
-  churches,
 }: Readonly<DashboardHeaderProps>) {
   const { user } = useAuth()
   const { colors } = useTheme()
+  const { churches, selectedChurchId, setSelectedChurchId } = useChurch()
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -40,7 +36,7 @@ export function DashboardHeader({
           <Select
             value={selectedChurchId}
             options={churches}
-            onChange={onChurchChange}
+            onChange={setSelectedChurchId}
             variant="ghost"
             placeholder="Selecione a igreja..."
           />

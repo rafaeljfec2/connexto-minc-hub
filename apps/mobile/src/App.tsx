@@ -2,6 +2,7 @@ import React from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { StatusBar } from 'expo-status-bar'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ChurchProvider } from '@/contexts/ChurchContext'
 import { ThemeProvider, useTheme } from '@/contexts/ThemeContext'
 import { BackgroundGradient } from '@/components/BackgroundGradient'
 import { RootNavigator } from '@/navigator/navigator'
@@ -43,7 +44,9 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <AuthProvider>
-          <AppContent />
+          <ChurchProvider>
+            <AppContent />
+          </ChurchProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>

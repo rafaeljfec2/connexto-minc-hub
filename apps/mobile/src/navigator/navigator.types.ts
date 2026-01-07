@@ -12,6 +12,7 @@ export type RootStackParamList = {
   MonthlySchedule: undefined
   Communication: undefined
   ChatDetail: { conversationId: string; otherUserId: string }
+  Dashboard: undefined
 }
 
 export type MainTabParamList = {
@@ -20,7 +21,6 @@ export type MainTabParamList = {
   Checkin: undefined
   Chat: undefined
   Profile: undefined
-  QRCodeScanner: undefined
   QRCodeScanner: undefined
 }
 

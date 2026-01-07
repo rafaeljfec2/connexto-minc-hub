@@ -1,4 +1,5 @@
 import React from 'react'
+import { Alert } from 'react-native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Ionicons } from '@expo/vector-icons'
@@ -14,6 +15,7 @@ import { CheckinScreen } from '@/screens/QRCodeScannerScreen'
 import ChatScreen from '@/screens/ChatScreen'
 import ChatDetailScreen from '@/screens/ChatScreen/ChatDetailScreen'
 import ProfileScreen from '@/screens/ProfileScreen'
+
 import ChurchesScreen from '@/screens/ChurchesScreen'
 import MinistriesScreen from '@/screens/MinistriesScreen'
 import TeamsScreen from '@/screens/TeamsScreen'
@@ -23,8 +25,41 @@ import ServicesScreen from '@/screens/ServicesScreen'
 import MonthlyScheduleScreen from '@/screens/MonthlyScheduleScreen'
 import CommunicationScreen from '@/screens/CommunicationScreen'
 
+import { DashboardHeader } from '@/screens/DashboardScreen/DashboardHeader'
+
 const Stack = createNativeStackNavigator<RootStackParamList>()
 const Tab = createBottomTabNavigator<MainTabParamList>()
+const HomeStack = createNativeStackNavigator<RootStackParamList>()
+
+const renderDashboardHeader = () => (
+  <DashboardHeader
+    onMenuPress={() => Alert.alert('Menu', 'Abrir drawer')}
+    onProfilePress={() => Alert.alert('Perfil', 'Ir para perfil')}
+    onNotificationPress={() => Alert.alert('Notificações', 'Sem novas notificações')}
+  />
+)
+
+function HomeStackNavigator() {
+  return (
+    <HomeStack.Navigator
+      screenOptions={{
+        header: renderDashboardHeader,
+        animation: 'slide_from_right',
+      }}
+    >
+      <HomeStack.Screen name="Dashboard" component={DashboardScreen} />
+      <HomeStack.Screen name="Churches" component={ChurchesScreen} />
+      <HomeStack.Screen name="Ministries" component={MinistriesScreen} />
+      <HomeStack.Screen name="Teams" component={TeamsScreen} />
+      <HomeStack.Screen name="People" component={PeopleScreen} />
+      <HomeStack.Screen name="Users" component={UsersScreen} />
+      <HomeStack.Screen name="Services" component={ServicesScreen} />
+      <HomeStack.Screen name="MonthlySchedule" component={MonthlyScheduleScreen} />
+      <HomeStack.Screen name="Communication" component={CommunicationScreen} />
+      {/* Messages/Chat could also be here if we want tabs visible, but Chat has its own tab */}
+    </HomeStack.Navigator>
+  )
+}
 
 const DashboardIcon = ({ color, size }: { color: string; size: number }) => (
   <Ionicons name="home" size={size} color={color} />
@@ -64,7 +99,7 @@ function MainTabs() {
     >
       <Tab.Screen
         name="Dashboard"
-        component={DashboardScreen}
+        component={HomeStackNavigator}
         options={{
           tabBarLabel: 'Início',
           tabBarIcon: DashboardIcon,
@@ -102,7 +137,6 @@ function MainTabs() {
           tabBarIcon: ProfileIcon,
         }}
       />
-      {/* Hidden tabs removed from here and moved to Stack for proper transition animations */}
     </Tab.Navigator>
   )
 }
@@ -120,14 +154,6 @@ export function RootNavigator() {
         <>
           <Stack.Screen name="Main" component={MainTabs} />
           <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
-          <Stack.Screen name="Churches" component={ChurchesScreen} />
-          <Stack.Screen name="Ministries" component={MinistriesScreen} />
-          <Stack.Screen name="Teams" component={TeamsScreen} />
-          <Stack.Screen name="People" component={PeopleScreen} />
-          <Stack.Screen name="Users" component={UsersScreen} />
-          <Stack.Screen name="Services" component={ServicesScreen} />
-          <Stack.Screen name="MonthlySchedule" component={MonthlyScheduleScreen} />
-          <Stack.Screen name="Communication" component={CommunicationScreen} />
         </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />
