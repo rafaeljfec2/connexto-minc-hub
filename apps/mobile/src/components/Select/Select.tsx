@@ -17,6 +17,7 @@ interface SelectProps {
   placeholder?: string
   disabled?: boolean
   error?: string
+  variant?: 'default' | 'ghost'
 }
 
 export function Select({
@@ -27,7 +28,8 @@ export function Select({
   placeholder = 'Selecione...',
   disabled = false,
   error,
-}: SelectProps) {
+  variant = 'default',
+}: Readonly<SelectProps>) {
   const { colors } = useTheme()
   const [modalVisible, setModalVisible] = useState(false)
   const [searchText, setSearchText] = useState('')
@@ -44,6 +46,16 @@ export function Select({
     setSearchText('')
   }
 
+  const isGhost = variant === 'ghost'
+
+  // Explicitly type as string to allow 'transparent' and hex codes
+  let borderColor: string = colors.card.border
+  if (isGhost) {
+    borderColor = 'transparent'
+  } else if (error) {
+    borderColor = '#ef4444'
+  }
+
   return (
     <View style={styles.container}>
       {label && <Text style={[styles.label, { color: colors.text.default }]}>{label}</Text>}
@@ -51,10 +63,15 @@ export function Select({
         style={[
           styles.button,
           {
-            backgroundColor: colors.card.background,
-            borderColor: error ? '#ef4444' : colors.card.border,
+            backgroundColor: isGhost ? 'transparent' : colors.card.background,
+            borderColor,
+            borderWidth: isGhost ? 0 : 1,
+            paddingHorizontal: isGhost ? 0 : themeSpacing.md,
           },
-          disabled && { backgroundColor: colors.background.dark, opacity: 0.7 },
+          disabled && {
+            backgroundColor: isGhost ? 'transparent' : colors.background.dark,
+            opacity: 0.7,
+          },
         ]}
         onPress={() => !disabled && setModalVisible(true)}
         activeOpacity={0.7}
@@ -62,7 +79,11 @@ export function Select({
         <Text
           style={[
             styles.valueText,
-            { color: colors.text.default },
+            {
+              color: colors.text.default,
+              fontWeight: isGhost ? '600' : '400',
+              fontSize: isGhost ? themeTypography.sizes.lg : themeTypography.sizes.md,
+            },
             !selectedOption && { color: colors.text.dark },
             disabled && { color: colors.text.dark },
           ]}
@@ -71,8 +92,9 @@ export function Select({
         </Text>
         <Ionicons
           name="chevron-down"
-          size={20}
+          size={isGhost ? 16 : 20}
           color={disabled ? colors.text.dark : colors.text.default}
+          style={{ marginLeft: 4 }}
         />
       </TouchableOpacity>
       {error && <Text style={styles.errorText}>{error}</Text>}

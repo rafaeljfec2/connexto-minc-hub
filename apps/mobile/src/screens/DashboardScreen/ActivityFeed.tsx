@@ -18,7 +18,7 @@ interface ActivityFeedProps {
   activities?: ActivityItem[]
 }
 
-export function ActivityFeed({ activities = [] }: ActivityFeedProps) {
+export function ActivityFeed({ activities = [] }: Readonly<ActivityFeedProps>) {
   const { colors } = useTheme()
 
   if (activities.length === 0) {
@@ -69,6 +69,7 @@ export function ActivityFeed({ activities = [] }: ActivityFeedProps) {
 const styles = StyleSheet.create({
   container: {
     marginBottom: themeSpacing.lg,
+    paddingHorizontal: themeSpacing.md,
   },
   sectionTitle: {
     fontSize: themeTypography.sizes.md,

@@ -1,33 +1,33 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
-import { themeColors, themeSpacing, themeTypography } from '@/theme'
+import { themeColors, themeSpacing } from '@/theme'
 import { UserAvatar } from '@/components/Header/UserAvatar'
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle'
+import { Select, type Option } from '@/components/Select/Select'
 
 interface DashboardHeaderProps {
   onMenuPress?: () => void
   onProfilePress?: () => void
   onNotificationPress?: () => void
+  selectedChurchId: string
+  onChurchChange: (churchId: string) => void
+  churches: Option[]
 }
 
 export function DashboardHeader({
   onMenuPress,
   onProfilePress,
   onNotificationPress,
-}: DashboardHeaderProps) {
+  selectedChurchId,
+  onChurchChange,
+  churches,
+}: Readonly<DashboardHeaderProps>) {
   const { user } = useAuth()
   const { colors } = useTheme()
-
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return 'Bom dia'
-    if (hour < 18) return 'Boa tarde'
-    return 'Boa noite'
-  }
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
@@ -36,18 +36,14 @@ export function DashboardHeader({
           <Ionicons name="menu" size={28} color={colors.text.default} />
         </TouchableOpacity>
 
-        <View style={styles.profileSection}>
-          <UserAvatar
-            userName={user?.name || 'User'}
-            onPress={onProfilePress || (() => {})}
-            size={42}
+        <View style={styles.centerContainer}>
+          <Select
+            value={selectedChurchId}
+            options={churches}
+            onChange={onChurchChange}
+            variant="ghost"
+            placeholder="Selecione a igreja..."
           />
-          <View style={styles.textContainer}>
-            <Text style={[styles.greeting, { color: colors.text.default }]}>{getGreeting()},</Text>
-            <Text style={[styles.userName, { color: colors.text.default }]} numberOfLines={1}>
-              {user?.name?.split(' ')[0] || 'Usuário'}
-            </Text>
-          </View>
         </View>
 
         <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -62,6 +58,11 @@ export function DashboardHeader({
             <Ionicons name="notifications-outline" size={24} color={colors.text.default} />
             <View style={styles.badge} />
           </TouchableOpacity>
+          <UserAvatar
+            userName={user?.name || 'User'}
+            onPress={onProfilePress || (() => {})}
+            size={42}
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -75,30 +76,18 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: themeSpacing.md,
-    paddingVertical: themeSpacing.md,
+    paddingVertical: themeSpacing.sm,
     gap: themeSpacing.sm,
   },
   menuButton: {
     padding: themeSpacing.xs,
-    marginRight: 4,
   },
-  profileSection: {
-    flexDirection: 'row',
+  centerContainer: {
+    flex: 1,
     alignItems: 'center',
-    gap: themeSpacing.sm,
-    flex: 1,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  greeting: {
-    fontSize: themeTypography.sizes.sm,
-    opacity: 0.8,
-  },
-  userName: {
-    fontSize: themeTypography.sizes.xl,
-    fontWeight: themeTypography.weights.bold,
+    paddingHorizontal: themeSpacing.sm,
   },
   notificationButton: {
     padding: themeSpacing.sm,

@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, StyleSheet, ScrollView, Alert } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, type NavigationProp } from '@react-navigation/native'
 import { DashboardHeader } from './DashboardHeader'
 import { StatsCard } from './StatsCard'
 import { QuickActions } from './QuickActions'
@@ -13,12 +13,50 @@ import { UserMenu } from '@/components/Header/UserMenu'
 import { themeSpacing } from '@/theme'
 import { API_CONFIG } from '@/constants/config'
 import { MOCK_PEOPLE, MOCK_TEAMS, MOCK_SCHEDULES } from '@/constants/mockData'
+import { churchesService } from '@/contexts/AuthContext'
+import type { Option } from '@/components/Select/Select'
+import type { MainTabParamList, RootStackParamList } from '@/navigator/navigator.types'
+
+type DashboardNavigationProp = NavigationProp<MainTabParamList & RootStackParamList>
 
 export default function DashboardScreen() {
-  const navigation = useNavigation()
+  const navigation = useNavigation<DashboardNavigationProp>()
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [churches, setChurches] = useState<Option[]>([])
+  const [selectedChurchId, setSelectedChurchId] = useState('')
   const isMockMode = API_CONFIG.MOCK_MODE
+
+  useEffect(() => {
+    async function loadChurches() {
+      try {
+        if (isMockMode) {
+          const mockChurches = [
+            { label: 'MINC - BH', value: '1' },
+            { label: 'MINC - Santa Luzia', value: '2' },
+          ]
+          setChurches(mockChurches)
+          setSelectedChurchId(mockChurches[0].value)
+        } else {
+          // Fallback if service not ready or returns empty
+          try {
+            const data = await churchesService.getAll()
+            const options = data.map(c => ({ label: c.name, value: c.id }))
+            setChurches(options)
+            if (options.length > 0) {
+              setSelectedChurchId(options[0].value)
+            }
+          } catch (e) {
+            console.log('Error fetching churches, using mock', e)
+            // simplified fallback
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load churches:', error)
+      }
+    }
+    loadChurches()
+  }, [isMockMode])
 
   const handleActionPress = (actionId: string) => {
     switch (actionId) {
@@ -26,11 +64,9 @@ export default function DashboardScreen() {
         navigation.navigate('Checkin')
         break
       case 'schedules':
-        // Navigate to schedules or show modal
         Alert.alert('Em breve', 'Funcionalidade de escalas')
         break
       case 'teams':
-        // Navigate to teams
         Alert.alert('Em breve', 'Funcionalidade de equipes')
         break
       case 'chat':
@@ -40,6 +76,9 @@ export default function DashboardScreen() {
         break
     }
   }
+
+  // Transform Mocks for UI components
+  // ... rest of logic
 
   // Transform Mocks for UI components
   const recentActivities: ActivityItem[] = isMockMode
@@ -92,6 +131,9 @@ export default function DashboardScreen() {
         onMenuPress={() => setIsDrawerOpen(true)}
         onProfilePress={() => setIsUserMenuOpen(true)}
         onNotificationPress={() => Alert.alert('Notificações', 'Sem novas notificações')}
+        selectedChurchId={selectedChurchId}
+        onChurchChange={setSelectedChurchId}
+        churches={churches}
       />
 
       <ScrollView
