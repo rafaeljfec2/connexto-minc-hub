@@ -28,11 +28,11 @@ export default function SchedulesScreen() {
   })
 
   function handleEdit(_schedule: Schedule) {
-    // TODO: Implementar edição
+    alert('Funcionalidade de edição de escala será implementada em breve')
   }
 
   function handleDelete(_id: string) {
-    // TODO: Implementar deleção
+    alert('Funcionalidade de deleção de escala será implementada em breve')
   }
 
   const renderItem = React.useCallback(

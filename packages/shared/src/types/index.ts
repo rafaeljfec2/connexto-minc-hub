@@ -186,4 +186,31 @@ export interface SchedulePlanningTemplate {
   updatedAt: string
 }
 
+export interface ChatUser {
+  id: string
+  name: string
+  avatar: string | null
+  isOnline: boolean
+}
+
+export interface Message {
+  id: string
+  text: string
+  senderId: string
+  timestamp: string // ISO 8601
+  read: boolean
+  conversationId: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Conversation {
+  id: string
+  participants: ChatUser[]
+  lastMessage: Message | null
+  unreadCount: number
+  createdAt: string
+  updatedAt: string
+}
+
 export * from './api-response'

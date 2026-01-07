@@ -117,7 +117,7 @@ export function FooterMobile() {
   const location = useLocation()
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-20 w-full border-t border-dark-800 bg-dark-950 safe-area-bottom pb-[env(safe-area-inset-bottom)]">
+    <footer className="fixed bottom-0 left-0 right-0 z-20 w-full border-t border-dark-200 dark:border-dark-800 bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 safe-area-bottom pb-[env(safe-area-inset-bottom)] transition-all duration-300">
       <nav className="flex items-center justify-around px-2 py-2">
         {TABS.map(tab => {
           const isActive = location.pathname === tab.href
@@ -128,11 +128,11 @@ export function FooterMobile() {
               onClick={() => navigate(tab.href)}
               className="flex flex-col items-center justify-center gap-1 flex-1 py-2 min-w-0 active:opacity-70 transition-opacity"
             >
-              <div className={`${isActive ? 'text-primary-500' : 'text-dark-400'}`}>
+              <div className={`${isActive ? 'text-primary-500' : 'text-dark-400 dark:text-dark-400'}`}>
                 {isActive ? tab.activeIcon : tab.icon}
               </div>
               <span
-                className={`text-xs font-medium ${isActive ? 'text-primary-500' : 'text-dark-400'}`}
+                className={`text-xs font-medium ${isActive ? 'text-primary-500' : 'text-dark-400 dark:text-dark-400'}`}
               >
                 {tab.label}
               </span>

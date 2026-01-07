@@ -19,7 +19,6 @@ export default function ProfilePage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // TODO: Implementar atualização de perfil
     alert('Funcionalidade de atualização de perfil será implementada em breve')
   }
 
