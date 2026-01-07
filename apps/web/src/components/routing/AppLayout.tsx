@@ -19,32 +19,31 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <ChatProvider>
+      {/* Fixed Navigation Elements - Outside animation to preserve fixed positioning */}
+      <Sidebar />
+
+      {!isChatPage && (
+        <div className="lg:hidden">
+          <DashboardHeaderMobile
+            onNotificationPress={() => {
+              // Handle notifications
+            }}
+          />
+        </div>
+      )}
+
+      {/* Mobile Footer - Fixed for all mobile screens */}
+      <div className="lg:hidden">
+        <FooterMobile />
+      </div>
+
+      {/* Main Content - Animated Background & Page */}
       <div
         className={`${isChatPage ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-grain relative animate-fade-in overflow-x-hidden`}
       >
         <div className="absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
         <div className={`relative z-10 ${isChatPage ? 'h-full overflow-hidden' : ''}`}>
-          <Sidebar />
-
-          {/* Mobile Header - Fixed for all mobile screens, except chat pages */}
-          {!isChatPage && (
-            <div className="lg:hidden">
-              <DashboardHeaderMobile
-                onNotificationPress={() => {
-                  // Handle notifications
-                }}
-              />
-            </div>
-          )}
-
-          {/* Mobile Footer - Fixed for all mobile screens, except chat detail pages */}
-          {!/^\/chat\/[^/]+$/.test(location.pathname) && (
-            <div className="lg:hidden">
-              <FooterMobile />
-            </div>
-          )}
-
-          {/* Desktop Layout */}
+          {/* Desktop Layout Content */}
           <div className={`lg:ml-64 relative ${isChatPage ? 'h-screen overflow-hidden' : ''}`}>
             {/* Desktop Header - Only shown on desktop */}
             {!isChatPage && (
@@ -62,8 +61,6 @@ export function AppLayout({ children }: AppLayoutProps) {
               {children}
             </main>
           </div>
-
-          {/* Chat Button Removed - Moved to Footer */}
         </div>
       </div>
     </ChatProvider>

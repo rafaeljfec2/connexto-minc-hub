@@ -247,25 +247,30 @@ export function Sidebar() {
       {/* Mobile Menu - Hidden on chat pages */}
       {!isChatPage && (
         <div className="lg:hidden">
-          <MobileMenuButton isOpen={isMobileOpen} onClick={() => setIsMobileOpen(!isMobileOpen)} />
-
-        {isMobileOpen && (
-          <>
-            <button
-              type="button"
-              className="fixed inset-0 bg-white/50 dark:bg-dark-950/50 backdrop-blur-sm z-40 cursor-pointer animate-fade-in"
-              onClick={() => setIsMobileOpen(false)}
-              aria-label="Fechar menu"
+          <div className="hidden">
+            <MobileMenuButton
+              isOpen={isMobileOpen}
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
             />
-            <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 z-50 overflow-y-auto flex flex-col animate-slide-in-left">
-              <SidebarBranding />
-              <nav className="flex-1 overflow-y-auto p-4">
-                {renderNavItems(() => setIsMobileOpen(false))}
-              </nav>
-              {user && <SidebarUserInfo user={user} />}
-            </aside>
-          </>
-        )}
+          </div>
+
+          {isMobileOpen && (
+            <>
+              <button
+                type="button"
+                className="fixed inset-0 bg-white/50 dark:bg-dark-950/50 backdrop-blur-sm z-40 cursor-pointer animate-fade-in"
+                onClick={() => setIsMobileOpen(false)}
+                aria-label="Fechar menu"
+              />
+              <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 z-50 overflow-y-auto flex flex-col animate-slide-in-left">
+                <SidebarBranding />
+                <nav className="flex-1 overflow-y-auto p-4">
+                  {renderNavItems(() => setIsMobileOpen(false))}
+                </nav>
+                {user && <SidebarUserInfo user={user} />}
+              </aside>
+            </>
+          )}
         </div>
       )}
     </>
