@@ -65,7 +65,7 @@ export function ConversationItem({ conversation, onPress, currentUserId }: Conve
     <button
       type="button"
       onClick={handleClick}
-      className="w-full flex items-center gap-3 px-4 py-3 border-b border-dark-100 dark:border-dark-800 hover:bg-dark-50 dark:hover:bg-dark-800/50 active:bg-dark-100 dark:active:bg-dark-800 transition-colors text-left"
+      className="w-full flex items-center gap-3 px-4 py-3 border-b-[0.5px] border-dark-300 dark:border-dark-600 hover:bg-dark-50 dark:hover:bg-dark-800/50 active:bg-dark-100 dark:active:bg-dark-800 transition-colors text-left"
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
