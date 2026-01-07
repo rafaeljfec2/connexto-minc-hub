@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ChatBubble } from './chat/components/ChatBubble'
 import { ChatInput } from './chat/components/ChatInput'
@@ -9,6 +9,8 @@ export default function ChatDetailPage() {
   const { conversationId } = useParams<{ conversationId: string }>()
   const navigate = useNavigate()
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>()
 
   const {
     conversations,
@@ -44,13 +46,214 @@ export default function ChatDetailPage() {
     // This prevents re-execution when conversations array updates
   }, [conversationId, setActiveConversation])
 
+  // Function to scroll to bottom - like a typewriter
+  // Always scrolls to the very bottom, no conditions
+  const scrollToBottom = useCallback(() => {
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current
+      // Force scroll to the very bottom - like a typewriter
+      // Use scrollHeight to ensure we go to the absolute bottom
+      container.scrollTop = container.scrollHeight
+    }
+    // Also try scrollIntoView as backup
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
+    }
+  }, [])
+
+  // MutationObserver to detect DOM changes and auto-scroll
+  // This ensures scroll stays at bottom when new messages are added to DOM
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const observer = new MutationObserver((mutations) => {
+      // Only scroll if there were actual changes
+      let hasChanges = false
+      for (const mutation of mutations) {
+        if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
+          hasChanges = true
+          break
+        }
+      }
+      
+      if (hasChanges) {
+        // Always scroll to bottom when DOM changes (new messages added)
+        // Multiple attempts to ensure it works
+        const forceScroll = () => {
+          if (messagesContainerRef.current) {
+            const container = messagesContainerRef.current
+            // Force scroll to absolute bottom
+            container.scrollTop = container.scrollHeight
+          }
+          if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
+          }
+        }
+        
+        // Immediate scroll
+        forceScroll()
+        requestAnimationFrame(forceScroll)
+        setTimeout(forceScroll, 0)
+        setTimeout(forceScroll, 10)
+        setTimeout(forceScroll, 50)
+        setTimeout(forceScroll, 100)
+        setTimeout(forceScroll, 200)
+      }
+    })
+
+    // Observe changes to the messages container and its children
+    observer.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: false,
+      characterData: false,
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  // Force initial scroll to bottom when container mounts (BEFORE paint)
+  // This ensures the scroll starts at the bottom like a typewriter
+  useLayoutEffect(() => {
+    // Force scroll BEFORE paint to ensure it starts at bottom
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current
+      // Set scroll to bottom immediately - this runs before paint
+      // Use a small timeout to ensure DOM is ready
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+        }
+      }, 0)
+    }
+  }, [conversationId])
+
+  // Force scroll on mount - runs after first render
+  useLayoutEffect(() => {
+    const forceScroll = () => {
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+      }
+    }
+    // Force immediately
+    forceScroll()
+    // And after a frame
+    requestAnimationFrame(forceScroll)
+  }, []) // Run once on mount
+
+  // Also force scroll AFTER paint to catch any late DOM updates
+  useEffect(() => {
+    // Force scroll function
+    const forceScroll = () => {
+      if (messagesContainerRef.current) {
+        const container = messagesContainerRef.current
+        // Always scroll to absolute bottom
+        container.scrollTop = container.scrollHeight
+      }
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
+      }
+    }
+    
+    // Try immediately and repeatedly to ensure it works
+    requestAnimationFrame(forceScroll)
+    const timers = [0, 10, 50, 100, 200, 300, 500, 1000].map(delay => 
+      setTimeout(forceScroll, delay)
+    )
+    
+    return () => {
+      timers.forEach(timer => clearTimeout(timer))
+    }
+  }, [conversationId]) // Run when conversation changes
+
+  // Auto-scroll to bottom when messages change
+  // Always scroll to the end when new messages arrive (user sent or received)
+  // Works like a typewriter - always shows the latest message
+  useEffect(() => {
+    // Clear any pending scroll timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current)
+    }
+
+    // Aggressive scrolling - multiple attempts to ensure it works
+    // Like a typewriter - always scroll to show the latest
+    // Force scroll immediately and repeatedly
+    const forceScroll = () => {
+      if (messagesContainerRef.current) {
+        const container = messagesContainerRef.current
+        // Always scroll to absolute bottom
+        container.scrollTop = container.scrollHeight
+      }
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
+      }
+    }
+
+    // Multiple attempts with different timings
+    requestAnimationFrame(forceScroll)
+    scrollTimeoutRef.current = setTimeout(forceScroll, 0)
+    setTimeout(forceScroll, 10)
+    setTimeout(forceScroll, 50)
+    setTimeout(forceScroll, 100)
+    setTimeout(forceScroll, 200)
+    setTimeout(forceScroll, 300)
+    setTimeout(forceScroll, 500)
+
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+    }
   }, [messages])
+
+  // Scroll to bottom when messages finish loading
+  useEffect(() => {
+    if (!isLoadingMessages && messages.length > 0) {
+      const forceScroll = () => {
+        if (messagesContainerRef.current) {
+          const container = messagesContainerRef.current
+          container.scrollTop = container.scrollHeight
+        }
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
+        }
+      }
+      
+      requestAnimationFrame(forceScroll)
+      setTimeout(forceScroll, 0)
+      setTimeout(forceScroll, 50)
+      setTimeout(forceScroll, 150)
+      setTimeout(forceScroll, 300)
+      setTimeout(forceScroll, 500)
+    }
+  }, [isLoadingMessages, messages.length])
 
   const handleSend = async (text: string) => {
     if (text.trim()) {
       await sendMessage(text)
+      // Force scroll immediately after sending (optimistic update)
+      // Like a typewriter - always scroll to show the new message
+      // Multiple attempts to ensure scroll happens
+      const forceScroll = () => {
+        if (messagesContainerRef.current) {
+          const container = messagesContainerRef.current
+          container.scrollTop = container.scrollHeight
+        }
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end', inline: 'nearest' })
+        }
+      }
+      
+      requestAnimationFrame(forceScroll)
+      setTimeout(forceScroll, 0)
+      setTimeout(forceScroll, 10)
+      setTimeout(forceScroll, 50)
+      setTimeout(forceScroll, 100)
+      setTimeout(forceScroll, 200)
+      setTimeout(forceScroll, 300)
     }
   }
 
@@ -80,9 +283,9 @@ export default function ChatDetailPage() {
   return (
     <>
       {/* Mobile View */}
-      <div className="lg:hidden flex flex-col min-h-screen bg-grain">
+      <div className="lg:hidden fixed inset-0 flex flex-col bg-grain overflow-hidden z-20">
         {/* Header */}
-        <div className="fixed top-0 left-0 right-0 z-[100] bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-b border-dark-200 dark:border-dark-800 safe-area-top">
+        <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-b border-dark-200 dark:border-dark-800 safe-area-top pt-[env(safe-area-inset-top,0px)]">
           <div className="flex items-center gap-3 px-4 py-3">
             <button
               onClick={() => {
@@ -139,35 +342,52 @@ export default function ChatDetailPage() {
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] px-4 bg-grain">
-          <div className="py-4">
+        {/* Messages Container - Only this should scroll */}
+        <div
+          ref={messagesContainerRef}
+          className="flex-1 overflow-y-auto px-4 bg-grain min-h-0"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div 
+            className="py-4 flex-1 flex flex-col"
+            style={{
+              justifyContent: 'flex-end',
+              minHeight: '100%',
+            }}
+          >
             {isLoadingMessages && messages.length === 0 ? (
               <div className="flex items-center justify-center p-4">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
               </div>
             ) : messages.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
+              <div className="flex items-center justify-center flex-1">
                 <p className="text-dark-400 dark:text-dark-500 text-sm">
                   Nenhuma mensagem ainda. Comece a conversa!
                 </p>
               </div>
             ) : (
-              messages.map(message => (
-                <ChatBubble
-                  key={message.id}
-                  message={message.text}
-                  isMe={message.senderId === user?.id}
-                  timestamp={message.createdAt}
-                />
-              ))
+              <>
+                {messages.map(message => (
+                  <ChatBubble
+                    key={message.id}
+                    message={message.text}
+                    isMe={message.senderId === user?.id}
+                    timestamp={message.createdAt}
+                  />
+                ))}
+                {/* Spacer to ensure last message aligns with input footer */}
+                <div className="h-4" />
+                <div ref={messagesEndRef} className="h-0" />
+              </>
             )}
-            <div ref={messagesEndRef} />
           </div>
         </div>
 
-        {/* Input */}
-        <div className="fixed bottom-0 left-0 right-0 z-[100] bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom,0px)]">
+        {/* Input Footer */}
+        <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom,0px)]">
           <ChatInput onSend={handleSend} />
         </div>
       </div>
@@ -233,8 +453,11 @@ export default function ChatDetailPage() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 bg-dark-50/50 dark:bg-dark-950/50">
-              <div className="space-y-3">
+            <div
+              ref={messagesContainerRef}
+              className="flex-1 overflow-y-auto px-6 py-4 bg-dark-50/50 dark:bg-dark-950/50"
+            >
+              <div className="space-y-3 min-h-full flex flex-col">
                 {isLoadingMessages && messages.length === 0 ? (
                   <div className="flex items-center justify-center p-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"></div>
@@ -246,16 +469,20 @@ export default function ChatDetailPage() {
                     </p>
                   </div>
                 ) : (
-                  messages.map(message => (
-                    <ChatBubble
-                      key={message.id}
-                      message={message.text}
-                      isMe={message.senderId === user?.id}
-                      timestamp={message.createdAt}
-                    />
-                  ))
+                  <>
+                    {messages.map(message => (
+                      <ChatBubble
+                        key={message.id}
+                        message={message.text}
+                        isMe={message.senderId === user?.id}
+                        timestamp={message.createdAt}
+                      />
+                    ))}
+                    {/* Spacer to ensure last message aligns with input footer */}
+                    <div className="h-2" />
+                    <div ref={messagesEndRef} className="h-0" />
+                  </>
                 )}
-                <div ref={messagesEndRef} />
               </div>
             </div>
 

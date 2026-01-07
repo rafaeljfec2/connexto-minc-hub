@@ -192,6 +192,7 @@ export function Sidebar() {
   const location = useLocation()
   const { user, hasAnyRole } = useAuth()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
+  const isChatPage = location.pathname.startsWith('/chat')
 
   const visibleItems = navItems.filter(item => {
     if (!item.roles) return true
@@ -243,9 +244,10 @@ export function Sidebar() {
         {sidebarContent}
       </aside>
 
-      {/* Mobile Menu */}
-      <div className="lg:hidden">
-        <MobileMenuButton isOpen={isMobileOpen} onClick={() => setIsMobileOpen(!isMobileOpen)} />
+      {/* Mobile Menu - Hidden on chat pages */}
+      {!isChatPage && (
+        <div className="lg:hidden">
+          <MobileMenuButton isOpen={isMobileOpen} onClick={() => setIsMobileOpen(!isMobileOpen)} />
 
         {isMobileOpen && (
           <>
@@ -264,7 +266,8 @@ export function Sidebar() {
             </aside>
           </>
         )}
-      </div>
+        </div>
+      )}
     </>
   )
 }
