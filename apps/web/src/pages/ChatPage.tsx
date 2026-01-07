@@ -231,36 +231,38 @@ export default function ChatPage() {
       </div>
 
       {/* Desktop View */}
-      <main className="hidden lg:block container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <PageHeader title="Chat" description="Comunicação com sua equipe" />
-          <button
-            onClick={() => setIsNewChatModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 active:bg-primary-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Nova Conversa
-          </button>
-        </div>
+      <main className="hidden lg:block container mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-4rem)]">
+        <div className="h-full flex flex-col">
+          <div className="flex justify-between items-center mb-6 flex-shrink-0">
+            <PageHeader title="Chat" description="Comunicação com sua equipe" />
+            <button
+              onClick={() => setIsNewChatModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 active:bg-primary-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Nova Conversa
+            </button>
+          </div>
 
-        <div className="bg-white dark:bg-dark-900 rounded-xl border border-dark-200 dark:border-dark-800 shadow-sm overflow-hidden">
-          <div className="min-h-[500px] max-h-[calc(100vh-12rem)] overflow-y-auto">
-            {(() => {
-              if (isLoadingConversations && conversations.length === 0) {
-                return renderLoadingState()
-              }
-              if (conversations.length === 0) {
-                return renderEmptyState()
-              }
-              return renderConversationsList()
-            })()}
+          <div className="bg-white dark:bg-dark-900 rounded-xl border border-dark-200 dark:border-dark-800 shadow-sm overflow-hidden flex-1 flex flex-col">
+            <div className="flex-1 overflow-y-auto">
+              {(() => {
+                if (isLoadingConversations && conversations.length === 0) {
+                  return renderLoadingState()
+                }
+                if (conversations.length === 0) {
+                  return renderEmptyState()
+                }
+                return renderConversationsList()
+              })()}
+            </div>
           </div>
         </div>
       </main>

@@ -9,6 +9,7 @@ interface TeamCardProps {
   readonly ministryName?: string
   readonly onEdit: (team: Team) => void
   readonly onDelete: (id: string) => void
+  readonly onClick?: (team: Team) => void
   readonly isUpdating: boolean
   readonly isDeleting: boolean
 }
@@ -18,11 +19,15 @@ export function TeamCard({
   ministryName,
   onEdit,
   onDelete,
+  onClick,
   isUpdating,
   isDeleting,
 }: TeamCardProps) {
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card
+      className={`hover:shadow-lg transition-shadow ${onClick ? 'cursor-pointer' : ''}`}
+      onClick={() => onClick?.(team)}
+    >
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
@@ -35,9 +40,7 @@ export function TeamCard({
               </p>
             )}
             {ministryName && (
-              <p className="text-sm text-dark-500 dark:text-dark-500 mb-1">
-                {ministryName}
-              </p>
+              <p className="text-sm text-dark-500 dark:text-dark-500 mb-1">{ministryName}</p>
             )}
             <p className="text-sm text-dark-500 dark:text-dark-500">
               {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) !== 1 ? 's' : ''}
@@ -51,7 +54,10 @@ export function TeamCard({
           </StatusBadge>
         </div>
 
-        <div className="flex gap-2 pt-4 border-t border-dark-200 dark:border-dark-800">
+        <div
+          className="flex gap-2 pt-4 border-t border-dark-200 dark:border-dark-800"
+          onClick={e => e.stopPropagation()}
+        >
           <Button
             size="sm"
             variant="outline"

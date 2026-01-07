@@ -78,12 +78,12 @@ export default function TeamDetailsPage() {
   const teamInitial = teamName.charAt(0).toUpperCase()
 
   return (
-    <div className="fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950">
+    <div className="fixed lg:static top-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:top-auto bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:bottom-auto left-0 right-0 lg:w-full lg:max-w-5xl lg:mx-auto lg:my-8 lg:h-[calc(100vh-8rem)] flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950 lg:bg-white lg:dark:bg-dark-900 lg:rounded-2xl lg:shadow-xl lg:border lg:border-gray-200 lg:dark:border-dark-800">
       {/* Header with Back Button - Minimal Gap */}
-      <div className="px-4 pt-4 pb-0 flex items-center shrink-0">
+      <div className="px-4 pt-4 lg:pt-6 pb-0 flex items-center shrink-0">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 -ml-2 text-dark-900 dark:text-dark-50 rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+          className="p-2 -ml-2 text-dark-900 dark:text-dark-50 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
@@ -94,7 +94,7 @@ export default function TeamDetailsPage() {
         {/* Avatar Ring */}
         <div className="relative mb-3">
           <div className="w-20 h-20 rounded-full bg-white dark:bg-dark-900 p-1 shadow-sm ring-1 ring-black/5">
-            <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-4 FAB0 to-orange-600 flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl font-bold">
               {teamInitial}
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function TeamDetailsPage() {
       </div>
 
       {/* Tabs - Static */}
-      <div className="px-4 mb-4 shrink-0">
+      <div className="px-4 mb-4 shrink-0 lg:px-8">
         <div className="bg-gray-100 dark:bg-dark-900 p-1 rounded-xl flex">
           {(['membros', 'tarefas', 'atividades'] as const).map(tab => (
             <button
@@ -140,7 +140,7 @@ export default function TeamDetailsPage() {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-4 pb-32 space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-8 pb-32 lg:pb-8 space-y-6">
         {activeTab === 'membros' && (
           <>
             {/* Leadership Section */}
@@ -232,7 +232,7 @@ export default function TeamDetailsPage() {
       </div>
 
       {/* FAB */}
-      <button className="fixed bottom-24 right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-primary-600/30 transition-transform active:scale-95 z-50">
+      <button className="fixed lg:absolute bottom-24 lg:bottom-8 right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-primary-600/30 transition-transform active:scale-95 z-50">
         <UserPlus className="w-6 h-6" />
       </button>
     </div>

@@ -293,6 +293,7 @@ export default function TeamsPage() {
             ministryName={getMinistryName(team.ministryId)}
             onEdit={handleOpenModal}
             onDelete={handleDeleteClick}
+            onClick={handleTeamClick}
             isUpdating={isLoading}
             isDeleting={isLoading}
           />
@@ -306,7 +307,12 @@ export default function TeamsPage() {
     .map(team => (
       <TableRow key={team.id}>
         <TableCell>
-          <span className="font-medium">{team.name}</span>
+          <span
+            className="font-medium cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors block"
+            onClick={() => handleTeamClick(team)}
+          >
+            {team.name}
+          </span>
         </TableCell>
         <TableCell>{getMinistryName(team.ministryId)}</TableCell>
         <TableCell>{team.description ?? '-'}</TableCell>
