@@ -5,7 +5,9 @@ interface ChatBubbleProps {
 }
 
 export function ChatBubble({ message, isMe, timestamp }: ChatBubbleProps) {
-  const time = new Date(timestamp).toLocaleTimeString('pt-BR', {
+  // Ensure timestamp is treated as UTC
+  const date = new Date(timestamp.endsWith('Z') ? timestamp : `${timestamp}Z`)
+  const time = date.toLocaleTimeString('pt-BR', {
     hour: '2-digit',
     minute: '2-digit',
   })

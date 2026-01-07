@@ -12,6 +12,7 @@ export interface ChatSocketEvents {
   'user-typing': (data: { conversationId: string; userId: string; isTyping: boolean }) => void
   'conversation-updated': (data: any) => void
   error: (data: { message: string }) => void
+  disconnect: (reason: string) => void
 }
 
 export class ChatWebSocketService {
