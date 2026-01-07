@@ -130,19 +130,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error: unknown) {
       console.error('Erro ao verificar autenticação:', error)
       // Verifica se é erro 401 (não autorizado)
-      const isUnauthorized =
-        error &&
-        typeof error === 'object' &&
-        'response' in error &&
-        error.response &&
-        typeof error.response === 'object' &&
-        'status' in error.response &&
-        error.response.status === 401
+      // Check if it's an unauthorized error (401)
+      const status = (error as any)?.response?.status
+      const isUnauthorized = status === 401
 
       // Só limpa o usuário se for realmente não autorizado
+      // Só limpa o usuário se for realmente não autorizado
       if (isUnauthorized) {
+        // console.warn('Sessão expirada ou inválida (401). Realizando logout local.')
         setUser(null)
         saveUserToStorage(null)
+
+        // Redireciona para login se necessário
+        if (globalThis.window !== undefined && !window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
       }
       // Para outros erros, mantém o usuário do storage (pode ser erro temporário)
       // O usuário já foi restaurado do storage no início da função

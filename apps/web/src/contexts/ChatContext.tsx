@@ -41,21 +41,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // Connect/Disconnect Socket
   useEffect(() => {
     // Get token directly from storage since it's not exposed in context
+    // Get token directly from storage since it's not exposed in context
     const token = localStorage.getItem('auth_token')
-    console.log('[ChatContext] Checking connection requirements:', {
-      hasToken: !!token,
-      hasUser: !!user,
-    })
 
     // We allow connection if user is present. If token is missing from storage,
     // we assume cookie-based auth will handle it (handled by gateway + withCredentials).
     if (user) {
-      console.log('[ChatContext] Attempting to connect to WebSocket...')
       chatSocket.connect(token?.replace('Bearer ', '') || '')
       setIsConnected(chatSocket.isConnected())
 
       const onConnect = () => {
-        console.log('[ChatContext] WebSocket Connected Event received')
         setIsConnected(true)
       }
 
@@ -186,13 +181,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   const sendMessage = useCallback(
     async (text: string) => {
-      console.log('[ChatContext] sendMessage called with:', text)
-      if (!activeConversation) {
-        console.warn('[ChatContext] sendMessage failed: No active conversation')
-        return
-      }
+      if (!activeConversation) return
       try {
-        console.log('[ChatContext] Sending message via socket to:', activeConversation.id)
         // Send via WebSocket to ensure real-time broadcast to all participants
         // The Gateway handles saving to DB and broadcasting 'new-message' event
         chatSocket.sendMessage(activeConversation.id, text)

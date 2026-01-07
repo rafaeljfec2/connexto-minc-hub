@@ -68,11 +68,7 @@ export class ChatWebSocketService {
 
   // Although sendMessage acts primarily via API, socket can be used too if preferred
   sendMessage(conversationId: string, text: string) {
-    if (!this.socket?.connected) {
-      console.warn('[ChatWS] sendMessage failed: Socket not connected')
-      return
-    }
-    console.log('[ChatWS] Emitting send-message event:', { conversationId, text })
+    if (!this.socket?.connected) return
     this.socket?.emit('send-message', { conversationId, text })
   }
 

@@ -12,6 +12,7 @@ import { Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ChatService } from './chat.service';
+import { jwtConstants } from '../auth/constants';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
@@ -20,7 +21,13 @@ interface AuthenticatedSocket extends Socket {
 @WebSocketGateway({
   namespace: '/chat',
   cors: {
-    origin: '*',
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5173',
+      'https://www.minteams.com.br',
+      'https://mincteams.com.br',
+    ],
     credentials: true,
   },
 })
@@ -44,17 +51,30 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.handshake.query?.token ||
         client.handshake.headers?.authorization?.replace('Bearer ', '');
 
-      if (!token && client.handshake.headers.cookie) {
-        const cookies = client.handshake.headers.cookie.split(';').reduce(
-          (acc, cookie) => {
-            const [key, value] = cookie.trim().split('=');
-            acc[key] = value;
-            return acc;
-          },
-          {} as Record<string, string>,
-        );
+      let tokenSource = 'auth/header';
 
-        token = cookies['access_token'];
+      if (!token && client.handshake.headers.cookie) {
+        try {
+          const cookies = client.handshake.headers.cookie.split(';').reduce(
+            (acc, cookie) => {
+              const parts = cookie.trim().split('=');
+              if (parts.length >= 2) {
+                const key = parts.shift()?.trim();
+                const value = parts.join('='); // Rejoin in case value had '='
+                if (key && value) {
+                  acc[key] = decodeURIComponent(value);
+                }
+              }
+              return acc;
+            },
+            {} as Record<string, string>,
+          );
+
+          token = cookies['access_token'];
+          if (token) tokenSource = 'cookie';
+        } catch (e) {
+          this.logger.warn(`Failed to parse cookies for client ${client.id}: ${e.message}`);
+        }
       }
 
       if (!token) {
@@ -63,8 +83,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
+      this.logger.log(
+        `Authenticating client ${client.id} via ${tokenSource} (Token len: ${token.length})`,
+      );
+
       const payload = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('JWT_SECRET'),
+        secret: jwtConstants.secret,
       });
 
       client.userId = payload.sub;
@@ -76,7 +100,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       client.emit('connected', { userId: client.userId, serverTime: new Date() });
       this.logger.log(`Chat Client connected: ${client.userId}`);
     } catch (error) {
-      this.logger.error(`Chat Client connection failed: ${client.userId}`, error);
+      this.logger.error(
+        `Chat Client connection failed: ${client.userId || 'unknown'} - ${error.message}`,
+      );
+      client.emit('error', { message: 'Authentication failed' });
       client.disconnect();
     }
   }
@@ -122,13 +149,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         ...message,
         timestamp: message.createdAt, // Ensure frontend gets timestamp field as expected
       });
-
-      // Notify other participant if they are not in the conversation room but are online
-      // We might need to fetch conversation participants to know who to notify
-      // For simplified MVp, assuming active socket room works.
-
-      // Emit conversation update to participants' user rooms (to update list order/unread count)
-      // This is a bit heavyweight, maybe just emit 'message' and let FE client update convo list
       const conversation = await this.chatService.findOneConversation(
         data.conversationId,
         client.userId,
