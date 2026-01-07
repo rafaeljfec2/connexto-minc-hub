@@ -9,20 +9,20 @@ interface StatsCardMobileProps {
 
 export function StatsCardMobile({ title, value, icon, trend }: Readonly<StatsCardMobileProps>) {
   return (
-    <Card className="flex-1 min-w-[45%] p-4">
+    <Card className="flex-1 min-w-[45%] p-4 rounded-3xl border-none shadow-sm bg-white dark:bg-dark-900">
       <div className="flex items-start justify-between mb-3">
-        <div className="p-2 rounded-lg bg-primary-500/15 text-primary-600 dark:text-primary-400">
+        <div className="p-2.5 rounded-xl bg-orange-50 dark:bg-primary-900/10 text-orange-500 dark:text-primary-400">
           {icon}
         </div>
         {trend && (
-          <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
+          <span className="px-2 py-0.5 rounded-full bg-orange-100 dark:bg-primary-900/20 text-[10px] font-bold text-orange-600 dark:text-primary-400">
             {trend}
           </span>
         )}
       </div>
       <div className="space-y-0.5">
-        <div className="text-xl font-bold text-dark-900 dark:text-dark-50">{value}</div>
-        <div className="text-xs font-medium text-dark-600 dark:text-dark-400">{title}</div>
+        <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">{value}</div>
+        <div className="text-xs font-medium text-dark-500 dark:text-dark-400">{title}</div>
       </div>
     </Card>
   )

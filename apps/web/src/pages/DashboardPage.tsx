@@ -33,15 +33,13 @@ export default function DashboardPage() {
   }, [schedules])
 
   const nextService = upcomingSchedules[0]
-  const nextServiceData = nextService
-    ? services.find(s => s.id === nextService.serviceId)
-    : null
+  const nextServiceData = nextService ? services.find(s => s.id === nextService.serviceId) : null
 
   return (
     <>
       {/* Mobile View */}
-      <div className="lg:hidden flex flex-col min-h-screen">
-        <div className="flex-1 overflow-y-auto pb-20 pt-4">
+      <div className="lg:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-dark-950">
+        <div className="flex-1 pb-24 pt-4">
           <QuickActionsMobile />
           <div className="px-4 space-y-4 mb-6">
             <div className="flex gap-4">
@@ -123,12 +121,8 @@ export default function DashboardPage() {
       {/* Desktop View */}
       <main className="hidden lg:block container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-dark-900 dark:text-dark-50 mb-2">
-            Dashboard
-          </h1>
-          <p className="text-dark-600 dark:text-dark-400">
-            Bem-vindo, {user?.name ?? 'Usuário'}
-          </p>
+          <h1 className="text-3xl font-bold text-dark-900 dark:text-dark-50 mb-2">Dashboard</h1>
+          <p className="text-dark-600 dark:text-dark-400">Bem-vindo, {user?.name ?? 'Usuário'}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

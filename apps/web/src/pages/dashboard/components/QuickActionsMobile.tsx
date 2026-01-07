@@ -88,14 +88,14 @@ export function QuickActionsMobile({ onActionPress }: Readonly<QuickActionsMobil
       <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 mb-4 px-4">
         Acesso Rápido
       </h2>
-      <div className="flex gap-6 overflow-x-auto px-4 pb-2 scrollbar-hide">
+      <div className="flex items-center justify-between px-6 pb-2">
         {actions.map(action => (
           <button
             key={action.id}
             onClick={action.onPress}
             className="flex flex-col items-center gap-2 flex-shrink-0"
           >
-            <div className="w-14 h-14 rounded-full bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 flex items-center justify-center text-dark-900 dark:text-dark-50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-16 h-16 rounded-full bg-white dark:bg-dark-900 flex items-center justify-center text-dark-900 dark:text-dark-50 shadow-sm border-none">
               {action.icon}
             </div>
             <span className="text-xs font-medium text-dark-900 dark:text-dark-50">
