@@ -51,21 +51,32 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.handshake.query?.token ||
         client.handshake.headers?.authorization?.replace('Bearer ', '');
 
-      let tokenSource = 'auth/header';
+      let tokenSource: string | null = 'auth/header';
 
       // Validate token from auth/query/header - must be a valid JWT (at least 50 chars)
-      if (token && token.length < 50) {
-        this.logger.warn(
-          `Token from ${tokenSource} is too short (${token.length} chars), likely invalid. Trying cookies...`,
-        );
-        token = undefined; // Reset to try cookies
+      // JWT tokens are typically 200+ characters, but we use 50 as a minimum safety check
+      if (token) {
+        if (token.length < 50) {
+          this.logger.warn(
+            `Token from ${tokenSource} is too short (${token.length} chars), likely invalid (socket.id?). Ignoring and trying cookies...`,
+          );
+          token = undefined; // Reset to try cookies
+          tokenSource = null; // Reset source
+        } else {
+          // Token has valid length, but we'll still try cookies if JWT verification fails
+          this.logger.debug(
+            `Found token in ${tokenSource} for client ${client.id} (length: ${token.length})`,
+          );
+        }
       }
 
       // Try cookies if no valid token found
       if (!token && client.handshake.headers.cookie) {
         try {
-          this.logger.debug(`Parsing cookies for client ${client.id}: ${client.handshake.headers.cookie.substring(0, 100)}...`);
-          
+          this.logger.debug(
+            `Parsing cookies for client ${client.id}: ${client.handshake.headers.cookie.substring(0, 100)}...`,
+          );
+
           const cookies = client.handshake.headers.cookie.split(';').reduce(
             (acc, cookie) => {
               const parts = cookie.trim().split('=');
@@ -81,13 +92,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             {} as Record<string, string>,
           );
 
-          this.logger.debug(`Parsed cookies for client ${client.id}: ${Object.keys(cookies).join(', ')}`);
+          this.logger.debug(
+            `Parsed cookies for client ${client.id}: ${Object.keys(cookies).join(', ')}`,
+          );
 
           // Try both 'access_token' and 'auth_token' cookie names
           token = cookies['access_token'] || cookies['auth_token'];
           if (token) {
             tokenSource = 'cookie';
-            this.logger.debug(`Found token in cookie for client ${client.id} (length: ${token.length})`);
+            this.logger.debug(
+              `Found token in cookie for client ${client.id} (length: ${token.length})`,
+            );
             // Validate cookie token too
             if (token.length < 50) {
               this.logger.warn(
@@ -96,7 +111,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
               token = undefined;
             }
           } else {
-            this.logger.warn(`No access_token or auth_token found in cookies for client ${client.id}`);
+            this.logger.warn(
+              `No access_token or auth_token found in cookies for client ${client.id}`,
+            );
           }
         } catch (e) {
           this.logger.warn(`Failed to parse cookies for client ${client.id}: ${e.message}`);
@@ -106,14 +123,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       if (!token) {
-        this.logger.warn(`Connection attempt rejected: No valid token found for client ${client.id}`);
+        this.logger.warn(
+          `Connection attempt rejected: No valid token found for client ${client.id}. Check if cookies are being sent.`,
+        );
         client.emit('error', { message: 'Authentication failed: No valid token found' });
         client.disconnect();
         return;
       }
 
+      // At this point, we have a token with valid length
+      // Log authentication attempt
       this.logger.log(
-        `Authenticating client ${client.id} via ${tokenSource} (Token len: ${token.length})`,
+        `Authenticating client ${client.id} via ${tokenSource || 'unknown'} (Token len: ${token.length})`,
       );
 
       const payload = this.jwtService.verify(token, {
@@ -127,7 +148,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // This is CRITICAL - all users must be in their user room to receive messages
       const userRoom = `user:${client.userId}`;
       client.join(userRoom);
-      
+
       // Log room membership for debugging
       const rooms = Array.from(client.rooms);
       this.logger.log(`Chat Client connected: ${client.userId} (Client ID: ${client.id})`);
@@ -203,7 +224,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Get participant user IDs for logging and broadcasting
       const participantUserIds = conversation.participants.map((p) => p.userId);
-      
+
       this.logger.log(
         `Broadcasting message ${message.id} from user ${client.userId} to conversation ${data.conversationId}`,
       );
@@ -218,7 +239,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       conversation.participants.forEach((p) => {
         const userId = p.userId;
         const userRoom = `user:${userId}`;
-        
+
         // Send new-message to user's personal room (they will receive it even if conversation is not open)
         this.server.to(userRoom).emit('new-message', messagePayload);
         this.logger.debug(`Emitted new-message to user room: ${userRoom}`);
