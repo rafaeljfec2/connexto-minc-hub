@@ -61,20 +61,8 @@ export class ChatService {
           order: { createdAt: 'DESC' },
         });
 
-        const unreadCount = await this.messageRepository.count({
-          where: {
-            conversationId: conversation.id,
-            read: false,
-            // Only count messages NOT sent by the current user
-            // Assuming strict logic: user should read messages sent by others
-            // But efficient query is needed.
-            // Simplified: count unread messages where sender != userId
-          },
-        });
-
-        // Correct unread count logic:
-        // We need to count messages that are NOT read AND NOT sent by the current user
-        const realUnreadCount = await this.messageRepository
+        // Count unread messages that are NOT read AND NOT sent by the current user
+        const unreadCount = await this.messageRepository
           .createQueryBuilder('message')
           .where('message.conversationId = :conversationId', { conversationId: conversation.id })
           .andWhere('message.read = :read', { read: false })
@@ -90,7 +78,7 @@ export class ChatService {
             timestamp: p.joinedAt,
           })),
           lastMessage,
-          unreadCount: realUnreadCount,
+          unreadCount,
         };
       }),
     );
