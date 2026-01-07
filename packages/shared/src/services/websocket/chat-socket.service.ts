@@ -29,7 +29,7 @@ export class ChatWebSocketService {
     }
 
     const connectionUrl = `${this.url}/chat`
-    console.log('[ChatWS] Connecting to:', connectionUrl)
+    console.log('[ChatWS] Connecting to:', connectionUrl, 'with token length:', token?.length || 0)
 
     // Only include token in auth if it's provided and not empty
     // Otherwise, rely on cookie-based authentication
@@ -40,7 +40,15 @@ export class ChatWebSocketService {
     }
 
     if (token && token.trim().length > 0) {
-      socketOptions.auth = { token: token.trim() }
+      // Validate token length before sending (JWT should be at least 50 chars)
+      if (token.trim().length < 50) {
+        console.warn('[ChatWS] Token is too short, likely invalid. Will rely on cookie-based auth.')
+      } else {
+        socketOptions.auth = { token: token.trim() }
+        console.log('[ChatWS] Using token-based auth (token length:', token.trim().length, ')')
+      }
+    } else {
+      console.log('[ChatWS] No token provided, will use cookie-based authentication')
     }
 
     this.socket = io(connectionUrl, socketOptions)

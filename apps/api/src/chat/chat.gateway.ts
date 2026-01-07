@@ -46,15 +46,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(client: AuthenticatedSocket) {
     try {
-      let token =
+      let token: string | undefined =
         client.handshake.auth?.token ||
         client.handshake.query?.token ||
         client.handshake.headers?.authorization?.replace('Bearer ', '');
 
       let tokenSource = 'auth/header';
 
+      // Validate token from auth/query/header - must be a valid JWT (at least 50 chars)
+      if (token && token.length < 50) {
+        this.logger.warn(
+          `Token from ${tokenSource} is too short (${token.length} chars), likely invalid. Trying cookies...`,
+        );
+        token = undefined; // Reset to try cookies
+      }
+
+      // Try cookies if no valid token found
       if (!token && client.handshake.headers.cookie) {
         try {
+          this.logger.debug(`Parsing cookies for client ${client.id}: ${client.handshake.headers.cookie.substring(0, 100)}...`);
+          
           const cookies = client.handshake.headers.cookie.split(';').reduce(
             (acc, cookie) => {
               const parts = cookie.trim().split('=');
@@ -70,15 +81,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             {} as Record<string, string>,
           );
 
-          token = cookies['access_token'];
-          if (token) tokenSource = 'cookie';
+          this.logger.debug(`Parsed cookies for client ${client.id}: ${Object.keys(cookies).join(', ')}`);
+
+          // Try both 'access_token' and 'auth_token' cookie names
+          token = cookies['access_token'] || cookies['auth_token'];
+          if (token) {
+            tokenSource = 'cookie';
+            this.logger.debug(`Found token in cookie for client ${client.id} (length: ${token.length})`);
+            // Validate cookie token too
+            if (token.length < 50) {
+              this.logger.warn(
+                `Cookie token is too short (${token.length} chars), likely invalid.`,
+              );
+              token = undefined;
+            }
+          } else {
+            this.logger.warn(`No access_token or auth_token found in cookies for client ${client.id}`);
+          }
         } catch (e) {
           this.logger.warn(`Failed to parse cookies for client ${client.id}: ${e.message}`);
         }
+      } else if (!token) {
+        this.logger.warn(`No cookies found in handshake headers for client ${client.id}`);
       }
 
       if (!token) {
-        this.logger.warn(`Connection attempt rejected: No token found for client ${client.id}`);
+        this.logger.warn(`Connection attempt rejected: No valid token found for client ${client.id}`);
+        client.emit('error', { message: 'Authentication failed: No valid token found' });
         client.disconnect();
         return;
       }
@@ -110,7 +139,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.error(
         `Chat Client connection failed: ${client.userId || 'unknown'} - ${error.message}`,
       );
-      client.emit('error', { message: 'Authentication failed' });
+      if (error.stack) {
+        this.logger.debug(`Stack trace: ${error.stack}`);
+      }
+      client.emit('error', { message: `Authentication failed: ${error.message}` });
       client.disconnect();
     }
   }
