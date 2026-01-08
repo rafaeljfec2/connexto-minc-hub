@@ -172,15 +172,18 @@ export default function TeamDetailsPage() {
                 </div>
 
                 <div className="bg-white dark:bg-dark-900 rounded-3xl shadow-sm border border-gray-100 dark:border-dark-800 divide-y divide-gray-100 dark:divide-dark-800 overflow-hidden">
-                  {isLoadingMembers ? (
+                  {isLoadingMembers && (
                     <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                       Carregando membros...
                     </div>
-                  ) : members.length === 0 ? (
+                  )}
+                  {!isLoadingMembers && members.length === 0 && (
                     <div className="p-8 text-center text-gray-500 dark:text-gray-400">
                       Nenhum membro encontrado.
                     </div>
-                  ) : (
+                  )}
+                  {!isLoadingMembers &&
+                    members.length > 0 &&
                     members.map(member => (
                       <div
                         key={member.id}
@@ -211,8 +214,7 @@ export default function TeamDetailsPage() {
                           </button>
                         </div>
                       </div>
-                    ))
-                  )}
+                    ))}
                 </div>
               </section>
             </>

@@ -22,6 +22,7 @@ import { Team } from '@minc-hub/shared/types'
 import { TeamCard } from './teams/components/TeamCard'
 import { TeamItemCard } from './teams/components/TeamItemCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
@@ -154,6 +155,7 @@ export default function TeamsPage() {
       }
       handleCloseModal()
     } catch (error) {
+      console.error(error)
       // Error already handled in the hook with toast
     }
   }
@@ -169,6 +171,7 @@ export default function TeamsPage() {
         await deleteTeam(deletingId)
         setDeletingId(null)
       } catch (error) {
+        console.error(error)
         // Error already handled in the hook with toast
       }
     }
@@ -258,17 +261,21 @@ export default function TeamsPage() {
 
       {/* Lista de equipes - área com scroll */}
       <div className="bg-dark-50 dark:bg-dark-950 flex-1 overflow-y-auto px-4 py-4">
-        {isLoading ? (
+        {isLoading && (
           <div className="flex items-center justify-center p-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
           </div>
-        ) : filteredTeams.length === 0 ? (
+        )}
+
+        {!isLoading && filteredTeams.length === 0 && (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <p className="text-dark-500 dark:text-dark-400">
               {hasFilters ? 'Nenhuma equipe encontrada' : 'Nenhuma equipe cadastrada'}
             </p>
           </div>
-        ) : (
+        )}
+
+        {!isLoading && filteredTeams.length > 0 && (
           <div className="space-y-3">
             {filteredTeams.map(team => (
               <TeamItemCard
@@ -310,22 +317,24 @@ export default function TeamsPage() {
     .map(team => (
       <TableRow key={team.id}>
         <TableCell>
-          <span
-            className="font-medium cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors block"
+          <button
+            type="button"
+            className="font-medium cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors block text-left w-full"
             onClick={() => handleTeamClick(team)}
           >
             {team.name}
-          </span>
+          </button>
         </TableCell>
         <TableCell>{getMinistryName(team.ministryId)}</TableCell>
         <TableCell>{team.description ?? '-'}</TableCell>
         <TableCell>
-          <span
-            className="cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors"
+          <button
+            type="button"
+            className="cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors block text-left w-full"
             onClick={() => handleTeamClick(team)}
           >
             {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) !== 1 ? 's' : ''}
-          </span>
+          </button>
         </TableCell>
         <TableCell>
           <StatusBadge status={team.isActive ? 'active' : 'inactive'}>
@@ -383,6 +392,48 @@ export default function TeamsPage() {
                 headers: ['Nome', 'Time', 'Descrição', 'Membros', 'Status', 'Ações'],
                 rows: listViewRows,
               }}
+              isLoading={isLoading}
+              skeletonCard={
+                <div className="bg-white dark:bg-dark-900 rounded-lg p-6 shadow-sm border border-dark-200 dark:border-dark-800">
+                  <div className="flex items-center gap-4 mb-4">
+                    <Skeleton className="h-12 w-12 rounded-lg" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-3/4 mb-2" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-dark-100 dark:border-dark-800">
+                    <div className="flex -space-x-2">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                    </div>
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                  </div>
+                </div>
+              }
+              skeletonRow={
+                <>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-48" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-16" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-8 rounded-md ml-auto" />
+                  </TableCell>
+                </>
+              }
             />
           }
         />

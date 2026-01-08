@@ -1,8 +1,7 @@
 FROM node:22-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
-RUN npm install -g turbo
+RUN corepack enable && npm install -g turbo
 
 # Prune the workspace to only include the api and its deps
 FROM base AS prune

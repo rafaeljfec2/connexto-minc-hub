@@ -76,16 +76,16 @@ export default function ChatDetailPage() {
         return
       }
 
-      // Only update if the active conversation ID doesn't match
-      if (activeConversation?.id !== conversationId) {
+      // Update active conversation if it doesn't match the URL
+      if (activeConversation?.id === conversationId) {
+        // We are synced
+        intendedConversationIdRef.current = conversationId
+      } else {
         const conversation = conversations.find(c => c.id === conversationId)
         if (conversation) {
           intendedConversationIdRef.current = conversationId
           setActiveConversation(conversation)
         }
-      } else {
-        // We are synced
-        intendedConversationIdRef.current = conversationId
       }
     }
   }, [conversationId, conversations, activeConversation, setActiveConversation])
