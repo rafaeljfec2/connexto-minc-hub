@@ -23,7 +23,10 @@ import { TeamCard } from './teams/components/TeamCard'
 import { TeamItemCard } from './teams/components/TeamItemCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+
 export default function TeamsPage() {
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
   const navigate = useNavigate()
   const { teams, isLoading, createTeam, updateTeam, deleteTeam } = useTeams()
   const { churches } = useChurches()
@@ -345,7 +348,7 @@ export default function TeamsPage() {
   return (
     <>
       {/* Mobile View - Novo Layout */}
-      {mobileListView}
+      {!isDesktop && mobileListView}
 
       {/* Desktop View - Layout Original */}
       <div className="hidden lg:block">
