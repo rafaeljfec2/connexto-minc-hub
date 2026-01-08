@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, MoreVertical, Star, UserPlus, Check } from 'lucide-react'
+import { ArrowLeft, MoreVertical, Star, Check } from 'lucide-react'
 import { useTeams } from '@/hooks/useTeams'
 import { Team, Person } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
@@ -104,7 +104,7 @@ export default function TeamDetailsPage() {
       </div>
 
       {/* Right Panel (Desktop: Content / Mobile: Bottom) */}
-      <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-dark-900 lg:bg-transparent">
+      <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-dark-900 lg:bg-transparent relative">
         {/* Tabs - Static */}
         <div className="px-4 mb-4 lg:mt-6 shrink-0 lg:px-8">
           <div className="bg-gray-100 dark:bg-dark-900 p-1 rounded-xl flex">
@@ -219,11 +219,6 @@ export default function TeamDetailsPage() {
           )}
         </div>
       </div>
-
-      {/* FAB - Adjusted for desktop */}
-      <button className="fixed lg:absolute bottom-24 lg:bottom-8 right-6 w-14 h-14 bg-primary-600 hover:bg-primary-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-primary-600/30 transition-transform active:scale-95 z-50">
-        <UserPlus className="w-6 h-6" />
-      </button>
     </div>
   )
 }
