@@ -87,11 +87,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     }
   }, [conversationId, conversations, activeConversation, setActiveConversation])
 
-  // Cleanup on unmount handled by Page but we can handle it here too if needed,
-  // but better to let the page handle it or just rely on new ID setting the new one.
-  // Actually, we should probably reset active conversation when this component unmounts
-  // OR when conversationId changes to null (which won't happen here as it's required).
-
   // Force initial scroll to bottom when container mounts
   useLayoutEffect(() => {
     if (messagesContainerRef.current) {
@@ -122,6 +117,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
   // Fallback: If activeConversation is missing (e.g. during updates), try to find it in the list
   const currentConversation = activeConversation || conversations.find(c => c.id === conversationId)
   const otherUser = currentConversation?.participants.find(p => p.id !== user?.id)
+  const otherUserName = otherUser?.name || 'Desconhecido'
 
   const renderMessages = () => {
     if (isLoadingMessages && messages.length === 0) {
@@ -203,9 +199,9 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
           <img
             src={
               otherUser.avatar ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.name || 'Desconhecido')}`
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUserName)}`
             }
-            alt={otherUser.name || 'Desconhecido'}
+            alt={otherUserName}
             className="w-10 h-10 rounded-full"
           />
           {otherUser.isOnline && (
@@ -215,7 +211,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
         <div>
           <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50">
-            {otherUser.name || 'Desconhecido'}
+            {otherUserName}
           </h2>
           {otherUser.isOnline && <p className="text-xs text-green-500">Online</p>}
         </div>

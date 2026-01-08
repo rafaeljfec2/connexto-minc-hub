@@ -2,8 +2,8 @@ import { Card } from '@/components/ui/Card'
 import { Schedule, Service } from '@minc-hub/shared/types'
 
 interface UpcomingServicesMobileProps {
-  readonly schedules: Schedule[]
-  readonly services: Service[]
+  readonly schedules: readonly Schedule[]
+  readonly services: readonly Service[]
 }
 
 export function UpcomingServicesMobile({

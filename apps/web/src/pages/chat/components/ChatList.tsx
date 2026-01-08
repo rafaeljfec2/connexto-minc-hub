@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/contexts/ToastContext'
 import { ConversationItem } from './ConversationItem'
 import { UserSelectionModal } from './UserSelectionModal'
 
@@ -10,11 +11,35 @@ interface ChatListProps {
   onConversationClick?: () => void
 }
 
+function ChatListLoading() {
+  return (
+    <div className="flex flex-col items-center justify-center p-8">
+      <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  )
+}
+
+function ChatListEmpty({ onNewChat }: { onNewChat: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 text-center">
+      <p className="text-dark-500 dark:text-dark-400 text-sm">Nenhuma conversa ainda</p>
+      <button
+        onClick={onNewChat}
+        className="mt-4 text-primary-500 text-sm font-medium hover:underline"
+      >
+        Iniciar conversa
+      </button>
+    </div>
+  )
+}
+
 export function ChatList({ className, onConversationClick }: ChatListProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { conversations, isLoadingConversations, startConversation } = useChat()
   const { user } = useAuth()
+  const { showError } = useToast()
+
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -28,7 +53,7 @@ export function ChatList({ className, onConversationClick }: ChatListProps) {
       if (!otherParticipant) return false
 
       // Buscar pelo nome do participante
-      if (otherParticipant.name.toLowerCase().includes(term)) return true
+      if (otherParticipant.name?.toLowerCase().includes(term)) return true
 
       // Buscar pelo texto da última mensagem
       if (conversation.lastMessage?.text.toLowerCase().includes(term)) return true
@@ -58,26 +83,9 @@ export function ChatList({ className, onConversationClick }: ChatListProps) {
       onConversationClick?.()
     } catch (error) {
       console.error('Failed to start conversation', error)
+      showError('Falha ao iniciar conversa. Tente novamente.')
     }
   }
-
-  const renderLoadingState = () => (
-    <div className="flex flex-col items-center justify-center p-8">
-      <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  )
-
-  const renderEmptyState = () => (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
-      <p className="text-dark-500 dark:text-dark-400 text-sm">Nenhuma conversa ainda</p>
-      <button
-        onClick={() => setIsNewChatModalOpen(true)}
-        className="mt-4 text-primary-500 text-sm font-medium hover:underline"
-      >
-        Iniciar conversa
-      </button>
-    </div>
-  )
 
   return (
     <div
@@ -131,9 +139,9 @@ export function ChatList({ className, onConversationClick }: ChatListProps) {
       {/* List */}
       <div className="flex-1 overflow-y-auto">
         {isLoadingConversations ? (
-          renderLoadingState()
+          <ChatListLoading />
         ) : filteredConversations.length === 0 ? (
-          renderEmptyState()
+          <ChatListEmpty onNewChat={() => setIsNewChatModalOpen(true)} />
         ) : (
           <div>
             {filteredConversations.map(conversation => {

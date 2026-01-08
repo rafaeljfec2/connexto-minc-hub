@@ -11,15 +11,15 @@
     @apply border-dark-800 dark:border-dark-800;
   }
 
+  html {
+    @apply scroll-smooth overflow-hidden;
+  }
+
   body {
-    @apply bg-white text-dark-900 dark:bg-dark-950 dark:text-dark-50;
+    @apply bg-white text-dark-900 dark:bg-dark-950 dark:text-dark-50 overflow-hidden;
     font-feature-settings:
       'rlig' 1,
       'calt' 1;
-  }
-
-  html {
-    @apply scroll-smooth;
   }
 }
 

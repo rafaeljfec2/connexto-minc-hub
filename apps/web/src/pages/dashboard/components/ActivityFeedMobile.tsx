@@ -10,7 +10,7 @@ export interface ActivityItem {
 }
 
 interface ActivityFeedMobileProps {
-  activities?: ActivityItem[]
+  readonly activities?: readonly ActivityItem[]
 }
 
 export function ActivityFeedMobile({ activities = [] }: Readonly<ActivityFeedMobileProps>) {
