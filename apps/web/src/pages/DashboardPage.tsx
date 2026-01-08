@@ -76,7 +76,7 @@ function MobileDashboard({
             <StatsCardMobile
               title="Próx. Culto"
               value={
-                nextServiceData
+                nextService && nextServiceData
                   ? new Date(nextService.date).toLocaleDateString('pt-BR', {
                       weekday: 'short',
                       hour: '2-digit',
@@ -168,7 +168,7 @@ function DesktopDashboard({
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-dark-900 dark:text-dark-50">
-              {nextServiceData
+              {nextService && nextServiceData
                 ? new Date(nextService.date).toLocaleDateString('pt-BR', {
                     weekday: 'short',
                     hour: '2-digit',

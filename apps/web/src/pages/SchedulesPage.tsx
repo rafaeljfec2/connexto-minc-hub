@@ -140,7 +140,11 @@ export default function SchedulesPage() {
 
   function getTeamNames(teamIds: string[]) {
     return teamIds
-      .map(id => filteredTeams.find(t => t.id === id)?.name)
+      .map(id => {
+        const team = teams.find(t => t.id === id)
+        const ministry = ministries.find(m => m.id === team?.ministryId)
+        return ministry ? `${ministry.name} - ${team?.name}` : team?.name
+      })
       .filter(Boolean)
       .join(', ')
   }
@@ -280,8 +284,6 @@ export default function SchedulesPage() {
 
   const listViewRows = filteredSchedules.map(schedule => {
     const ministryName = getMinistryName(schedule.teamIds ?? [])
-    const teamNames = getTeamNames(schedule.teamIds ?? [])
-    const teamNamesArray = teamNames ? teamNames.split(', ') : []
 
     return (
       <TableRow key={schedule.id}>
@@ -299,16 +301,22 @@ export default function SchedulesPage() {
           )}
         </TableCell>
         <TableCell>
-          {teamNamesArray.length > 0 ? (
+          {schedule.teamIds && schedule.teamIds.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
-              {teamNamesArray.map((teamName, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                >
-                  {teamName}
-                </span>
-              ))}
+              {schedule.teamIds.map((teamId, index) => {
+                const team = teams.find(t => t.id === teamId)
+                const ministry = ministries.find(m => m.id === team?.ministryId)
+                const label = ministry ? `${ministry.name} - ${team?.name}` : team?.name
+
+                return (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                  >
+                    {label}
+                  </span>
+                )
+              })}
             </div>
           ) : (
             <span className="text-dark-400 dark:text-dark-500">-</span>
@@ -410,7 +418,7 @@ export default function SchedulesPage() {
                 setFormData({
                   ...formData,
                   ministryId: ministryId ?? '',
-                  teamIds: [], // Clear teams when ministry changes
+                  // Dont clear teams when ministry changes, just filter the selection dropdown
                 })
               }}
               placeholder="Selecione um time"
@@ -435,7 +443,7 @@ export default function SchedulesPage() {
                     value: team.id,
                     label: team.name,
                   }))}
-                value={formData.teamIds[0] || null}
+                value={null} // Always null to allow selecting multiple
                 onValueChange={teamId => {
                   if (teamId && !formData.teamIds.includes(teamId)) {
                     setFormData({
@@ -455,14 +463,16 @@ export default function SchedulesPage() {
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {formData.teamIds.map(teamId => {
-                      const team = filteredTeams.find(t => t.id === teamId)
+                      // Find team in all teams, not just filtered ones
+                      const team = teams.find(t => t.id === teamId)
+                      const ministry = ministries.find(m => m.id === team?.ministryId)
                       return (
                         <div
                           key={teamId}
                           className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 rounded-lg"
                         >
                           <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
-                            {team?.name}
+                            {ministry ? `${ministry.name} - ${team?.name}` : team?.name}
                           </span>
                           <button
                             type="button"
