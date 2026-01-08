@@ -361,83 +361,92 @@ export default function ChatDetailPage() {
       </div>
 
       {/* Desktop View */}
-      <main className="hidden lg:flex items-center justify-center min-h-[calc(100vh-4rem)] p-4 bg-gray-50 dark:bg-dark-950">
-        <div className="w-full max-w-5xl h-[calc(100vh-8rem)] bg-white dark:bg-dark-900 rounded-2xl border border-dark-200 dark:border-dark-800 shadow-xl overflow-hidden flex flex-col">
-          {/* Header */}
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-dark-200 dark:border-dark-800 flex-shrink-0 bg-white dark:bg-dark-900">
-            <button
-              onClick={() => {
-                setActiveConversation(null)
-                navigate('/chat')
-              }}
-              className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800"
-              aria-label="Voltar"
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
+      {/* Desktop View */}
+      {/* Desktop View */}
+      <main className="hidden lg:block w-full h-full p-4 bg-gray-50 dark:bg-dark-950">
+        <div className="h-full w-full">
+          <div className="w-full h-full bg-white dark:bg-dark-900 rounded-2xl border border-gray-200 dark:border-dark-800 shadow-xl shadow-gray-200/50 dark:shadow-black/40 overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100 dark:border-dark-800 flex-shrink-0 bg-white/50 dark:bg-dark-900/50 backdrop-blur-sm">
+              <button
+                onClick={() => {
+                  setActiveConversation(null)
+                  navigate('/chat')
+                }}
+                className="p-2 -ml-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-dark-800"
+                aria-label="Voltar"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+
+              <div className="relative flex-shrink-0">
+                <img
+                  src={
+                    otherUser.avatar ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.name)}`
+                  }
+                  alt={otherUser.name}
+                  className="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-800 object-cover shadow-sm"
                 />
-              </svg>
-            </button>
+                {otherUser.isOnline && (
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-dark-900 shadow-sm" />
+                )}
+              </div>
 
-            <div className="relative flex-shrink-0">
-              <img
-                src={
-                  otherUser.avatar ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUser.name)}`
-                }
-                alt={otherUser.name}
-                className="w-10 h-10 rounded-full bg-dark-200 dark:bg-dark-800"
-              />
-              {otherUser.isOnline && (
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-dark-900" />
-              )}
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 truncate flex items-center gap-2">
+                  {otherUser.name}
+                </h2>
+                {otherUser.isOnline && (
+                  <p className="text-xs font-medium text-green-500 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                    Online
+                  </p>
+                )}
+              </div>
+
+              <button
+                className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+                aria-label="Menu"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                  />
+                </svg>
+              </button>
             </div>
 
-            <div className="flex-1 min-w-0">
-              <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 truncate">
-                {otherUser.name}
-              </h2>
-              {otherUser.isOnline && <p className="text-xs text-green-500">Online</p>}
-            </div>
-
-            <button
-              className="p-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors"
-              aria-label="Menu"
+            {/* Messages */}
+            <div
+              ref={messagesContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 overflow-y-auto px-6 py-6 bg-gray-50/50 dark:bg-dark-950/50"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Messages */}
-          <div
-            ref={messagesContainerRef}
-            onScroll={handleScroll}
-            className="flex-1 overflow-y-auto px-6 py-4 bg-gray-50/50 dark:bg-dark-950/50"
-          >
-            <div className="space-y-3 min-h-full flex flex-col">
-              {isLoadingMoreMessages && (
-                <div className="flex justify-center py-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
-                </div>
-              )}
-              {renderMessages()}
+              <div className="space-y-4 min-h-full flex flex-col">
+                {isLoadingMoreMessages && (
+                  <div className="flex justify-center py-2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
+                  </div>
+                )}
+                {renderMessages()}
+              </div>
             </div>
-          </div>
 
-          {/* Input */}
-          <div className="border-t border-dark-200 dark:border-dark-800 flex-shrink-0 bg-white dark:bg-dark-900">
-            <ChatInput onSend={handleSend} />
+            {/* Input */}
+            <div className="border-t border-gray-100 dark:border-dark-800 flex-shrink-0 bg-white dark:bg-dark-900 p-1">
+              <ChatInput onSend={handleSend} />
+            </div>
           </div>
         </div>
       </main>

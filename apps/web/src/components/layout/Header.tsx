@@ -7,6 +7,7 @@ import { BrandText } from '@/components/ui/BrandText'
 import { ComboBox, ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useChurches } from '@/hooks/useChurches'
+import { useChat } from '@/hooks/useChat'
 
 const HEADER_CLASSES = {
   container:
@@ -21,6 +22,7 @@ export function Header() {
   const navigate = useNavigate()
   const { selectedChurch, setSelectedChurch } = useChurch()
   const { churches, isLoading } = useChurches()
+  const { unreadCount } = useChat()
 
   const placeholderText = useMemo(() => {
     if (isLoading) return 'Carregando...'
@@ -125,10 +127,15 @@ export function Header() {
             </div>
             <button
               onClick={() => navigate('/chat')}
-              className="p-2 text-dark-500 hover:text-dark-900 dark:text-dark-400 dark:hover:text-dark-50 transition-colors rounded-full hover:bg-dark-100 dark:hover:bg-dark-800"
+              className="p-2 relative text-dark-500 hover:text-dark-900 dark:text-dark-400 dark:hover:text-dark-50 transition-colors rounded-full hover:bg-dark-100 dark:hover:bg-dark-800"
               aria-label="Chat"
             >
               <MessageCircle className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[1.25rem] h-5 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white dark:border-dark-900 px-1 shadow-sm">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </button>
             <ThemeToggle />
             <HeaderProfile />

@@ -231,19 +231,19 @@ export default function ChatPage() {
       </div>
 
       {/* Desktop View */}
-      <main className="hidden lg:block container mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-4rem)]">
+      <main className="hidden lg:block w-full h-full p-4 bg-gray-50 dark:bg-dark-950">
         <div className="h-full flex flex-col">
-          <div className="flex justify-between items-center mb-6 flex-shrink-0">
+          <div className="flex justify-between items-end mb-6 flex-shrink-0">
             <PageHeader title="Chat" description="Comunicação com sua equipe" />
             <button
               onClick={() => setIsNewChatModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary-500 text-white rounded-lg hover:bg-primary-600 active:bg-primary-700 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-xl hover:from-primary-700 hover:to-primary-600 active:scale-95 transition-all duration-200 font-semibold shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeWidth={2}
+                  strokeWidth={2.5}
                   d="M12 4v16m8-8H4"
                 />
               </svg>
@@ -251,7 +251,36 @@ export default function ChatPage() {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-dark-900 rounded-xl border border-dark-200 dark:border-dark-800 shadow-sm overflow-hidden flex-1 flex flex-col">
+          <div className="bg-white dark:bg-dark-900 rounded-2xl border border-gray-200 dark:border-dark-800 shadow-xl shadow-gray-200/50 dark:shadow-black/40 overflow-hidden flex-1 flex flex-col">
+            {/* Search Bar Area */}
+            <div className="px-6 py-4 border-b border-gray-100 dark:border-dark-800 bg-gray-50/30 dark:bg-dark-900/30 backdrop-blur-sm">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-gray-400 dark:text-gray-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="Buscar conversa por nome ou mensagem..."
+                  className="w-full pl-11 pr-4 py-3 bg-white dark:bg-dark-950 border border-gray-200 dark:border-dark-700 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all shadow-sm"
+                />
+              </div>
+            </div>
+
+            {/* List Content */}
             <div className="flex-1 overflow-y-auto">
               {(() => {
                 if (isLoadingConversations && conversations.length === 0) {

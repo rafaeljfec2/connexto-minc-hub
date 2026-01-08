@@ -54,7 +54,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             )}
             <main
               className={`animate-fade-in-up ${
-                location.pathname.startsWith('/chat/')
+                isChatPage
                   ? 'p-0 h-full overflow-hidden'
                   : 'min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-4rem)] pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pt-0 lg:pb-0'
               }`}
