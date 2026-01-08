@@ -11,6 +11,7 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  AfterLoad,
 } from 'typeorm';
 import { MinistryEntity } from '../../ministries/entities/ministry.entity';
 import { UserEntity } from '../../users/entities/user.entity';
@@ -64,4 +65,11 @@ export class TeamEntity {
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date | null;
+
+  memberIds: string[];
+
+  @AfterLoad()
+  populateMemberIds() {
+    this.memberIds = this.teamMembers?.map((tm) => tm.personId) || [];
+  }
 }

@@ -317,7 +317,12 @@ export default function TeamsPage() {
         <TableCell>{getMinistryName(team.ministryId)}</TableCell>
         <TableCell>{team.description ?? '-'}</TableCell>
         <TableCell>
-          {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) !== 1 ? 's' : ''}
+          <span
+            className="cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors"
+            onClick={() => handleTeamClick(team)}
+          >
+            {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) !== 1 ? 's' : ''}
+          </span>
         </TableCell>
         <TableCell>
           <StatusBadge status={team.isActive ? 'active' : 'inactive'}>

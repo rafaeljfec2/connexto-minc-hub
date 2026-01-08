@@ -48,6 +48,8 @@ export class TeamsService {
       ])
       .leftJoin('team.ministry', 'ministry')
       .leftJoin('team.leader', 'leader')
+      .leftJoin('team.teamMembers', 'teamMembers')
+      .addSelect(['teamMembers.id', 'teamMembers.personId'])
       .where('team.deletedAt IS NULL')
       .orderBy('team.name', 'ASC')
       .getMany();
@@ -77,6 +79,8 @@ export class TeamsService {
       ])
       .leftJoin('team.ministry', 'ministry')
       .leftJoin('team.leader', 'leader')
+      .leftJoin('team.teamMembers', 'teamMembers')
+      .addSelect(['teamMembers.id', 'teamMembers.personId'])
       .where('team.ministryId = :ministryId', { ministryId })
       .andWhere('team.deletedAt IS NULL')
       .orderBy('team.name', 'ASC')
