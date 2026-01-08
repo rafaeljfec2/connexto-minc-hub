@@ -133,7 +133,7 @@ const navItems: NavItem[] = [
         />
       </svg>
     ),
-    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
   },
   {
     label: 'Sorteio Mensal',

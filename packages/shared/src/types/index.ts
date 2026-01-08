@@ -12,6 +12,7 @@ export interface User {
   name: string
   role: UserRole
   personId?: string
+  canCheckIn: boolean
   createdAt: string
   updatedAt: string
 }

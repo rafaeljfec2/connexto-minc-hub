@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
@@ -36,10 +37,11 @@ export default function UsersPage() {
     password: '',
     role: UserRole.SERVO,
     personId: '',
+    canCheckIn: false,
   })
 
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
+    return users.filter(user => {
       const matchesSearch =
         searchTerm === '' ||
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -52,7 +54,7 @@ export default function UsersPage() {
 
   function getPersonName(personId?: string): string {
     if (!personId) return 'Não vinculado'
-    return people.find((p) => p.id === personId)?.name ?? 'Não encontrado'
+    return people.find(p => p.id === personId)?.name ?? 'Não encontrado'
   }
 
   function handleOpenModal(user?: User) {
@@ -64,6 +66,7 @@ export default function UsersPage() {
         password: '',
         role: user.role,
         personId: user.personId ?? '',
+        canCheckIn: user.canCheckIn ?? false,
       })
     } else {
       setEditingUser(null)
@@ -73,6 +76,7 @@ export default function UsersPage() {
         password: '',
         role: UserRole.SERVO,
         personId: '',
+        canCheckIn: false,
       })
     }
     modal.open()
@@ -87,33 +91,31 @@ export default function UsersPage() {
       password: '',
       role: UserRole.SERVO,
       personId: '',
+      canCheckIn: false,
     })
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    try {
-      if (editingUser) {
-        await updateUser(editingUser.id, {
-          name: formData.name,
-          email: formData.email,
-          role: formData.role,
-          personId: formData.personId || undefined,
-        })
-      } else {
-        await createUser({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-          personId: formData.personId || undefined,
-        })
-      }
-      handleCloseModal()
-    } catch (error) {
-      // Error already handled in the hook with toast
+    if (editingUser) {
+      await updateUser(editingUser.id, {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        personId: formData.personId || undefined,
+      })
+    } else {
+      await createUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        personId: formData.personId || undefined,
+        canCheckIn: formData.canCheckIn,
+      })
     }
+    handleCloseModal()
   }
 
   function handleDeleteClick(id: string) {
@@ -123,13 +125,9 @@ export default function UsersPage() {
 
   async function handleDeleteConfirm() {
     if (deletingId) {
-      try {
-        await deleteUser(deletingId)
-        setDeletingId(null)
-        deleteModal.close()
-      } catch (error) {
-        // Error already handled in the hook with toast
-      }
+      await deleteUser(deletingId)
+      setDeletingId(null)
+      deleteModal.close()
     }
   }
 
@@ -137,7 +135,7 @@ export default function UsersPage() {
 
   const gridView = (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {filteredUsers.map((user) => (
+      {filteredUsers.map(user => (
         <UserCard
           key={user.id}
           user={user}
@@ -150,7 +148,7 @@ export default function UsersPage() {
     </div>
   )
 
-  const listViewRows = filteredUsers.map((user) => (
+  const listViewRows = filteredUsers.map(user => (
     <TableRow key={user.id}>
       <TableCell>
         <div className="flex items-center gap-3">
@@ -231,7 +229,7 @@ export default function UsersPage() {
           <Input
             label="Nome *"
             value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -239,7 +237,7 @@ export default function UsersPage() {
               label="Email *"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
               required
             />
             {!editingUser && (
@@ -247,7 +245,7 @@ export default function UsersPage() {
                 label="Senha *"
                 type="password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={e => setFormData({ ...formData, password: e.target.value })}
                 required={!editingUser}
               />
             )}
@@ -255,22 +253,34 @@ export default function UsersPage() {
           <Select
             label="Papel *"
             value={formData.role}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value as UserRole })}
+            onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
             options={ROLE_OPTIONS}
           />
           <Select
             label="Servo Vinculado (Opcional)"
             value={formData.personId}
-            onChange={(e) => setFormData({ ...formData, personId: e.target.value })}
+            onChange={e => setFormData({ ...formData, personId: e.target.value })}
             options={[
               { value: '', label: 'Nenhum' },
-              ...people.map((person) => ({
+              ...people.map(person => ({
                 value: person.id,
                 label: person.name,
               })),
             ]}
             disabled={people.length === 0}
           />
+          <div className="pt-2">
+            <Checkbox
+              id="canCheckIn"
+              label="Permitir realizar check-in (Scan QR Code)"
+              checked={formData.canCheckIn}
+              onChange={e => setFormData({ ...formData, canCheckIn: e.target.checked })}
+              disabled={formData.role === UserRole.ADMIN}
+            />
+            <p className="text-xs text-dark-500 mt-1 ml-6">
+              Usuários com papel Admin sempre têm permissão.
+            </p>
+          </div>
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={handleCloseModal}>
               Cancelar

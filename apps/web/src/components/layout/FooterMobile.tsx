@@ -1,5 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ROUTES } from '@/navigator/routes.constants'
+import { useAuth } from '@/contexts/AuthContext'
+import { UserRole } from '@minc-hub/shared/types'
+import { useChat } from '@/hooks/useChat'
 
 interface TabItem {
   id: string
@@ -7,6 +10,7 @@ interface TabItem {
   href: string
   icon: React.ReactNode
   activeIcon: React.ReactNode
+  roles?: UserRole[]
 }
 
 const TABS: TabItem[] = [
@@ -49,6 +53,7 @@ const TABS: TabItem[] = [
         <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
     ),
+    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
   },
   {
     id: 'checkin',
@@ -112,17 +117,24 @@ const TABS: TabItem[] = [
   },
 ]
 
-import { useChat } from '@/hooks/useChat'
-
 export function FooterMobile() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { user, hasAnyRole } = useAuth()
   const { unreadCount } = useChat()
+
+  const visibleTabs = TABS.filter(tab => {
+    if (!tab.roles) return true
+    if (!user) return true // Show if logic uncertain, or maybe hidden? Assuming auth-ed here.
+    const userRole = String(user.role).toLowerCase()
+    if (userRole === 'admin') return true
+    return hasAnyRole(tab.roles)
+  })
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 z-20 w-full border-t border-dark-200 dark:border-dark-800 bg-white/95 dark:bg-dark-950 backdrop-blur supports-[backdrop-filter]:bg-white/80 safe-area-bottom pb-[env(safe-area-inset-bottom)] transition-all duration-300">
       <nav className="flex items-center justify-around px-2 py-2">
-        {TABS.map(tab => {
+        {visibleTabs.map(tab => {
           const isActive = location.pathname === tab.href
           return (
             <button

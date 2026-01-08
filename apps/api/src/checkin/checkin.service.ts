@@ -13,7 +13,7 @@ import { AttendanceEntity, AttendanceMethod } from '../attendances/entities/atte
 import { PersonEntity } from '../persons/entities/person.entity';
 import { TeamMemberEntity } from '../teams/entities/team-member.entity';
 import { TeamEntity } from '../teams/entities/team.entity';
-import { UserEntity } from '../users/entities/user.entity';
+import { UserEntity, UserRole } from '../users/entities/user.entity';
 import { GenerateQrCodeDto } from './dto/generate-qr-code.dto';
 import { ValidateQrCodeDto } from './dto/validate-qr-code.dto';
 import { QrCodeDataDto } from './dto/qr-code-data.dto';
@@ -154,6 +154,10 @@ export class CheckinService {
     qrCodeDto: ValidateQrCodeDto,
     checkedInBy: UserEntity,
   ): Promise<AttendanceEntity> {
+    if (checkedInBy.role !== UserRole.ADMIN && !checkedInBy.canCheckIn) {
+      throw new ForbiddenException('You do not have permission to perform check-ins');
+    }
+
     const qrCodeData = this.validateQrCodeData(qrCodeDto);
 
     // Validate schedule exists

@@ -48,12 +48,22 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/schedules',
     component: SchedulesPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [
+      UserRole.PASTOR,
+      UserRole.LIDER_DE_TIME,
+      UserRole.LIDER_DE_EQUIPE,
+      UserRole.SERVO,
+    ],
   },
   {
     path: '/communication',
     component: CommunicationPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [
+      UserRole.PASTOR,
+      UserRole.LIDER_DE_TIME,
+      UserRole.LIDER_DE_EQUIPE,
+      UserRole.SERVO,
+    ],
   },
   {
     path: '/churches',

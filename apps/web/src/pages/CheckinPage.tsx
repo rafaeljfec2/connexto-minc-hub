@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { canUserCheckIn } from '@minc-hub/shared/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { useCheckIn } from '@/hooks/useCheckIn'
@@ -13,6 +14,8 @@ type Mode = 'scan' | 'generate'
 export default function CheckinPage() {
   const { user, isLoading: isLoadingUser } = useAuth()
   const [mode, setMode] = useState<Mode>('generate')
+
+  const canScan = canUserCheckIn(user)
 
   const {
     generateQrCode,
@@ -177,12 +180,14 @@ export default function CheckinPage() {
               </button>
               <button
                 type="button"
+                disabled={!canScan}
+                title={!canScan ? 'Você não tem permissão para ler códigos' : ''}
                 onClick={() => handleModeChange('scan')}
                 className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                   mode === 'scan'
                     ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 font-bold'
                     : 'text-dark-400 dark:text-dark-400'
-                }`}
+                } ${!canScan ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Ler Código
               </button>

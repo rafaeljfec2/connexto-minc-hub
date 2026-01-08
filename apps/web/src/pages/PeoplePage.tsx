@@ -423,6 +423,7 @@ export default function PeoplePage() {
         password: userFormData.password,
         role: userFormData.role,
         personId: creatingUserForPerson.id,
+        canCheckIn: false,
       })
 
       handleCloseCreateUserModal()
