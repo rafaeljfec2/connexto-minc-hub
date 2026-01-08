@@ -1,10 +1,12 @@
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { MessageCircle } from 'lucide-react'
 import { HeaderProfile } from './HeaderProfile'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { BrandText } from '@/components/ui/BrandText'
 import { ComboBox, ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useChurches } from '@/hooks/useChurches'
-import { useMemo } from 'react'
 
 const HEADER_CLASSES = {
   container:
@@ -16,8 +18,15 @@ const HEADER_CLASSES = {
 }
 
 export function Header() {
+  const navigate = useNavigate()
   const { selectedChurch, setSelectedChurch } = useChurch()
   const { churches, isLoading } = useChurches()
+
+  const placeholderText = useMemo(() => {
+    if (isLoading) return 'Carregando...'
+    if (churches.length === 0) return 'Nenhuma igreja'
+    return 'Selecione uma igreja'
+  }, [isLoading, churches.length])
 
   // Convert churches to ComboBox options
   const churchOptions: ComboBoxOption<string>[] = useMemo(
@@ -47,9 +56,7 @@ export function Header() {
       <div className="flex flex-col">
         <span className="font-medium leading-tight text-sm">{church.name}</span>
         {church.address && (
-          <span className="text-xs text-dark-500 dark:text-dark-400 mt-0.5">
-            {church.address}
-          </span>
+          <span className="text-xs text-dark-500 dark:text-dark-400 mt-0.5">{church.address}</span>
         )}
       </div>
     )
@@ -87,9 +94,7 @@ export function Header() {
           {church.name}
         </span>
         {church.address && (
-          <span className="text-xs text-dark-500 dark:text-dark-400 mt-0.5">
-            {church.address}
-          </span>
+          <span className="text-xs text-dark-500 dark:text-dark-400 mt-0.5">{church.address}</span>
         )}
       </div>
     )
@@ -108,7 +113,7 @@ export function Header() {
                 options={churchOptions}
                 value={selectedChurch?.id || null}
                 onValueChange={handleChurchChange}
-                placeholder={isLoading ? "Carregando..." : churches.length === 0 ? "Nenhuma igreja" : "Selecione uma igreja"}
+                placeholder={placeholderText}
                 searchable
                 searchPlaceholder="Buscar igreja..."
                 renderItem={renderChurchItem}
@@ -118,6 +123,13 @@ export function Header() {
                 contentClassName="rounded-md shadow-lg"
               />
             </div>
+            <button
+              onClick={() => navigate('/chat')}
+              className="p-2 text-dark-500 hover:text-dark-900 dark:text-dark-400 dark:hover:text-dark-50 transition-colors rounded-full hover:bg-dark-100 dark:hover:bg-dark-800"
+              aria-label="Chat"
+            >
+              <MessageCircle className="w-5 h-5" />
+            </button>
             <ThemeToggle />
             <HeaderProfile />
           </div>
