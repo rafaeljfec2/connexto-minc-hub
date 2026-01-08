@@ -40,6 +40,9 @@ export default function DashboardPage() {
       {/* Mobile View */}
       <div className="lg:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-dark-950">
         <div className="flex-1 pb-24 pt-4">
+          <div className="mb-4">
+            <UpcomingServicesMobile schedules={schedules} services={services} />
+          </div>
           <QuickActionsMobile />
           <div className="px-4 space-y-4 mb-6">
             <div className="flex gap-4">
@@ -113,7 +116,7 @@ export default function DashboardPage() {
               />
             </div>
           </div>
-          <UpcomingServicesMobile schedules={schedules} services={services} />
+
           <ActivityFeedMobile activities={activities} />
         </div>
       </div>

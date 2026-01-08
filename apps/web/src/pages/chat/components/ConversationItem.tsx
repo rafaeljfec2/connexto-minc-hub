@@ -79,7 +79,7 @@ export function ConversationItem({ conversation, onPress, currentUserId }: Conve
           />
         ) : (
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-            {otherParticipant.name
+            {(otherParticipant.name || 'Desconhecido')
               .split(' ')
               .map(n => n[0])
               .join('')
