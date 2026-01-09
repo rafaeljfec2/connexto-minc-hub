@@ -5,6 +5,9 @@
   "description": "Sistema de gestão dos times da MINC TEAMS - Minha Igreja na Cidade",
   "scripts": {
     "dev": "turbo run dev",
+    "dev:web": "pnpm --filter @minc-hub/web dev",
+    "dev:api": "pnpm --filter @minc-hub/api dev",
+    "dev:mobile-webview": "pnpm --filter @minc-hub/mobile-webview start",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
