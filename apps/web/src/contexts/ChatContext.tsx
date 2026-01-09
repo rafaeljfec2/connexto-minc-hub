@@ -44,20 +44,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const chatApi = useMemo(() => new ChatApiService(api), [])
   const chatSocket = useMemo(() => new ChatWebSocketService(SOCKET_URL), [])
 
-  // 1. Connection Logic
-  const { isConnected } = useChatConnection({ chatSocket, user })
-
-  // 2. Event Handlers
-  useChatEventHandlers({
-    chatSocket,
-    user,
-    activeConversationRef,
-    isOptimisticUpdateRef,
-    setMessages,
-    setActiveConversation,
-    setConversations,
-  })
-
   // 3. Loaders (keep simple here)
   const loadConversations = useCallback(async () => {
     if (!user) return
@@ -71,6 +57,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       setIsLoadingConversations(false)
     }
   }, [user, chatApi])
+
+  // 1. Connection Logic
+  const { isConnected } = useChatConnection({ chatSocket, user })
+
+  // 2. Event Handlers
+  useChatEventHandlers({
+    chatSocket,
+    user,
+    activeConversationRef,
+    isOptimisticUpdateRef,
+    setMessages,
+    setActiveConversation,
+    setConversations,
+    loadConversations,
+  })
 
   // Initial Data Load
   useEffect(() => {

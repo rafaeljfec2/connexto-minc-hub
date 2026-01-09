@@ -143,17 +143,20 @@ export function useChatActions({
         return
       }
 
-      // Use functional state update
-      setActiveConversation(prevActive => {
-        // If switching away from an active conversation, leave its room
-        if (prevActive && (!conversation || prevActive.id !== conversation.id)) {
-          chatSocket.leaveConversation(prevActive.id)
-        }
-        return conversation
-      })
+      // Store previous conversation before updating
+      const prevActive = activeConversationRef.current
 
       // Update Ref immediately to block subsequent calls in same tick/render cycle
       activeConversationRef.current = conversation
+
+      // Use functional state update
+      setActiveConversation(prevActiveState => {
+        // If switching away from an active conversation, leave its room
+        if (prevActiveState && (!conversation || prevActiveState.id !== conversation.id)) {
+          chatSocket.leaveConversation(prevActiveState.id)
+        }
+        return conversation
+      })
 
       if (conversation) {
         setIsLoadingMessages(true)
@@ -170,7 +173,6 @@ export function useChatActions({
             setConversations(prev =>
               prev.map(c => (c.id === conversation.id ? { ...c, unreadCount: 0 } : c))
             )
-            // loadUnreadCount() // Removed in previous fix
           }
         } catch (error) {
           console.error('Failed to load messages', error)
@@ -178,6 +180,8 @@ export function useChatActions({
           setIsLoadingMessages(false)
         }
       } else {
+        // When setting to null, ensure ref is also null
+        activeConversationRef.current = null
         setMessages([])
         setHasMoreMessages(false)
       }

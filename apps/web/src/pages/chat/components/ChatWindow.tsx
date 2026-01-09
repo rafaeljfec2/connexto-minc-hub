@@ -88,6 +88,12 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     }
   }, [conversationId, conversations, activeConversation, setActiveConversation])
 
+  // Handle back button - clear active conversation
+  const handleBackClick = useCallback(() => {
+    setActiveConversation(null)
+    onBack?.()
+  }, [setActiveConversation, onBack])
+
   // Force initial scroll to bottom when container mounts
   useLayoutEffect(() => {
     if (messagesContainerRef.current) {
@@ -182,7 +188,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
       <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 flex items-center gap-3">
         {onBack && (
           <button
-            onClick={onBack}
+            onClick={handleBackClick}
             className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg lg:hidden"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,7 +227,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800">
+      <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom)]">
         <ChatInput onSend={handleSend} />
       </div>
     </div>

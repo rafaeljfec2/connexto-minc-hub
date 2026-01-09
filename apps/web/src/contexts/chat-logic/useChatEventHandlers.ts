@@ -9,6 +9,7 @@ interface UseChatEventHandlersProps {
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>
   setActiveConversation: React.Dispatch<React.SetStateAction<Conversation | null>>
   setConversations: React.Dispatch<React.SetStateAction<Conversation[]>>
+  loadConversations?: () => Promise<void>
 }
 
 export function useChatEventHandlers({
@@ -19,6 +20,7 @@ export function useChatEventHandlers({
   setMessages,
   setActiveConversation,
   setConversations,
+  loadConversations,
 }: UseChatEventHandlersProps) {
   const updateMessagesState = useCallback(
     (message: Message) => {
@@ -63,17 +65,23 @@ export function useChatEventHandlers({
   const updateConversationList = useCallback(
     (message: Message) => {
       setConversations(prev => {
-        // Check if update is needed to avoid "refresh" flicker
-        // Prefer .some over .find for simple existence check, but here we need the item to compare properties
-        // const existingConv = prev.find(c => c.id === message.conversationId)
+        const existingConv = prev.find(c => c.id === message.conversationId)
 
-        // Only skip if we already processed this message ID specifically to avoid loops,
-        // but verify unread count logic isn't bypassed incorrectly.
-        // Actually, removing the optimization is safer to ensure state consistency.
-        // if (existingConv && existingConv.lastMessage?.id === message.id) {
-        //   return prev
-        // }
+        // If conversation doesn't exist, reload the list to get it
+        if (!existingConv && loadConversations) {
+          // Reload conversations asynchronously to avoid blocking
+          loadConversations().catch(error => {
+            console.error('Failed to reload conversations after new message', error)
+          })
+          return prev
+        }
 
+        // Skip if this message is already the last message (avoid duplicate updates)
+        if (existingConv?.lastMessage?.id === message.id) {
+          return prev
+        }
+
+        // Update existing conversation
         return prev
           .map(c => {
             if (c.id === message.conversationId) {
@@ -81,10 +89,14 @@ export function useChatEventHandlers({
               const currentActive = activeConversationRef.current
               const isActive = currentActive?.id === c.id
 
+              // Only increment if not active, not self, and message is new
+              const shouldIncrement = !isActive && !isSelf && c.lastMessage?.id !== message.id
+              const newUnreadCount = shouldIncrement ? (c.unreadCount ?? 0) + 1 : isActive || isSelf ? 0 : (c.unreadCount ?? 0)
+
               return {
                 ...c,
                 lastMessage: message,
-                unreadCount: isActive || isSelf ? 0 : c.unreadCount + 1,
+                unreadCount: newUnreadCount,
                 updatedAt: message.createdAt,
               }
             }
@@ -99,7 +111,7 @@ export function useChatEventHandlers({
         syncActiveConversation(message)
       }
     },
-    [user, syncActiveConversation, setConversations, activeConversationRef]
+    [user, syncActiveConversation, setConversations, activeConversationRef, loadConversations]
   )
 
   const handleNewMessage = useCallback(
