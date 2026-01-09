@@ -1,21 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UploadResponseDto {
-  @ApiProperty({ description: 'URL of the uploaded file' })
+  @ApiProperty({
+    example: 'https://res.cloudinary.com/xxx/image/upload/v1/chat-attachments/abc.jpg',
+  })
   url: string;
 
-  @ApiProperty({ description: 'Cloudinary public ID' })
+  @ApiProperty({ example: 'chat-attachments/abc123' })
   publicId: string;
 
-  @ApiProperty({ description: 'Original file name' })
+  @ApiProperty({ example: 'photo.jpg' })
   originalName: string;
 
-  @ApiProperty({ description: 'File format/extension' })
+  @ApiProperty({ example: 'jpg' })
   format: string;
 
-  @ApiProperty({ description: 'File size in bytes' })
+  @ApiProperty({ example: 102400 })
   bytes: number;
 
-  @ApiProperty({ description: 'MIME type of the file' })
+  @ApiProperty({ example: 'image/jpeg' })
   mimeType: string;
 }
