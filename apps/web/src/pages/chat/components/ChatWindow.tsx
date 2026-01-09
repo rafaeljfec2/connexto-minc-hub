@@ -4,6 +4,7 @@ import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
+import { Avatar } from '@/components/ui/Avatar'
 
 interface ChatWindowProps {
   conversationId: string
@@ -195,19 +196,12 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
           </button>
         )}
 
-        <div className="relative">
-          <img
-            src={
-              otherUser.avatar ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(otherUserName)}`
-            }
-            alt={otherUserName}
-            className="w-10 h-10 rounded-full"
-          />
-          {otherUser.isOnline && (
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-dark-900" />
-          )}
-        </div>
+        <Avatar
+          src={otherUser.avatar}
+          name={otherUserName}
+          isOnline={otherUser.isOnline}
+          size="md"
+        />
 
         <div>
           <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50">

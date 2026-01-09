@@ -1,4 +1,5 @@
 import type { Conversation } from '@minc-hub/shared'
+import { Avatar } from '@/components/ui/Avatar'
 
 interface ConversationItemProps {
   readonly conversation: Conversation
@@ -70,27 +71,13 @@ export function ConversationItem({ conversation, onPress, currentUserId }: Conve
       `}
     >
       {/* Avatar */}
-      <div className="relative flex-shrink-0">
-        {otherParticipant.avatar ? (
-          <img
-            src={otherParticipant.avatar}
-            alt={otherParticipant.name}
-            className="w-12 h-12 rounded-full object-cover shadow-sm ring-2 ring-transparent group-hover:ring-gray-100 dark:group-hover:ring-gray-800 transition-all"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-            {(otherParticipant.name || 'Desconhecido')
-              .split(' ')
-              .map(n => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)}
-          </div>
-        )}
-        {otherParticipant.isOnline && (
-          <div className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-gray-950 shadow-sm" />
-        )}
-      </div>
+      <Avatar
+        src={otherParticipant.avatar}
+        name={otherParticipant.name}
+        isOnline={otherParticipant.isOnline}
+        size="lg"
+        className="ring-2 ring-transparent group-hover:ring-gray-100 dark:group-hover:ring-gray-800 transition-all rounded-full"
+      />
 
       {/* Content */}
       <div className="flex-1 min-w-0">

@@ -63,12 +63,16 @@ export function useChatEventHandlers({
   const updateConversationList = useCallback(
     (message: Message) => {
       setConversations(prev => {
-        // Optimization: Check if update is needed to avoid "refresh" flicker
+        // Check if update is needed to avoid "refresh" flicker
         // Prefer .some over .find for simple existence check, but here we need the item to compare properties
-        const existingConv = prev.find(c => c.id === message.conversationId)
-        if (existingConv && existingConv.lastMessage?.id === message.id) {
-          return prev // No change needed, prevent re-render
-        }
+        // const existingConv = prev.find(c => c.id === message.conversationId)
+
+        // Only skip if we already processed this message ID specifically to avoid loops,
+        // but verify unread count logic isn't bypassed incorrectly.
+        // Actually, removing the optimization is safer to ensure state consistency.
+        // if (existingConv && existingConv.lastMessage?.id === message.id) {
+        //   return prev
+        // }
 
         return prev
           .map(c => {
