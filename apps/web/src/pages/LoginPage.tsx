@@ -7,6 +7,7 @@ import { BrandText } from '@/components/ui/BrandText'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
@@ -19,6 +20,14 @@ export default function LoginPage() {
 
     try {
       await login(email, password)
+
+      // Store remember me preference
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true')
+      } else {
+        localStorage.removeItem('rememberMe')
+      }
+
       setTimeout(() => {
         navigate('/dashboard', { replace: true })
       }, 100)
@@ -137,7 +146,20 @@ export default function LoginPage() {
                 placeholder="•••••••••••"
               />
             </div>
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+              {/* Remember Me Checkbox */}
+              <label className="flex items-center cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={e => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 text-orange-600 bg-gray-50 dark:bg-dark-800 border-gray-300 dark:border-dark-700 rounded focus:ring-2 focus:ring-orange-500/20 cursor-pointer"
+                />
+                <span className="ml-2 text-xs font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-300 transition-colors">
+                  Permanecer conectado
+                </span>
+              </label>
+
               <a
                 href="#"
                 className="text-xs font-bold text-orange-600 hover:text-orange-700 dark:text-orange-500"
