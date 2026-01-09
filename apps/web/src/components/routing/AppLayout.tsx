@@ -38,25 +38,23 @@ export function AppLayout({ children }: AppLayoutProps) {
       </div>
 
       {/* Main Content - Animated Background & Page */}
-      <div
-        className={`${isChatPage ? 'h-screen overflow-hidden' : 'min-h-screen'} bg-gray-50 dark:bg-dark-950 lg:bg-grain relative animate-fade-in overflow-x-hidden`}
-      >
+      <div className="h-screen w-screen overflow-hidden bg-gray-50 dark:bg-dark-950 lg:bg-grain relative animate-fade-in">
         {/* Overlay only for grain effect on desktop */}
         <div className="hidden lg:block absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
-        <div className={`relative z-10 ${isChatPage ? 'h-full overflow-hidden' : ''}`}>
+        <div className="relative z-10 h-full flex flex-col lg:block">
           {/* Desktop Layout Content */}
-          <div className={`lg:ml-64 relative ${isChatPage ? 'h-screen overflow-hidden' : ''}`}>
+          <div className={`lg:ml-64 h-full relative flex flex-col`}>
             {/* Desktop Header - Only shown on desktop */}
             {!isChatPage && (
-              <div className="hidden lg:block">
+              <div className="hidden lg:block flex-shrink-0">
                 <Header />
               </div>
             )}
             <main
-              className={`animate-fade-in-up ${
+              className={`flex-1 overflow-y-auto overscroll-y-contain animate-fade-in-up scroll-smooth ${
                 isChatPage
-                  ? 'p-0 h-full overflow-hidden'
-                  : 'min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-4rem)] pt-[calc(4.5rem+env(safe-area-inset-top,0px))] pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pt-0 lg:pb-0'
+                  ? 'p-0 overflow-hidden'
+                  : 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(5.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-0 lg:pb-0 lg:px-8'
               }`}
             >
               {children}
