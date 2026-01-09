@@ -1,24 +1,25 @@
+import { lazy } from 'react'
 import { UserRole } from '@minc-hub/shared/types'
 import type { RouteConfig } from './routes.types'
 
-import DashboardPage from '@/pages/DashboardPage'
-import PeoplePage from '@/pages/PeoplePage'
-import TeamsPage from '@/pages/TeamsPage'
-import ServicesPage from '@/pages/ServicesPage'
-import SchedulesPage from '@/pages/SchedulesPage'
-import MonthlySchedulePage from '@/pages/MonthlySchedulePage'
-import CommunicationPage from '@/pages/CommunicationPage'
-import ChurchesPage from '@/pages/ChurchesPage'
-import MinistriesPage from '@/pages/MinistriesPage'
-import ProfilePage from '@/pages/ProfilePage'
-import SettingsPage from '@/pages/SettingsPage'
-import UsersPage from '@/pages/UsersPage'
-import SchedulePlanningConfigPage from '@/pages/SchedulePlanningConfigPage'
-import CheckinPage from '@/pages/CheckinPage'
-import ChatPage from '@/pages/ChatPage'
-import ChatDetailPage from '@/pages/ChatDetailPage'
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'))
+const PeoplePage = lazy(() => import('@/pages/PeoplePage'))
+const TeamsPage = lazy(() => import('@/pages/TeamsPage'))
+const ServicesPage = lazy(() => import('@/pages/ServicesPage'))
+const SchedulesPage = lazy(() => import('@/pages/SchedulesPage'))
+const MonthlySchedulePage = lazy(() => import('@/pages/MonthlySchedulePage'))
+const CommunicationPage = lazy(() => import('@/pages/CommunicationPage'))
+const ChurchesPage = lazy(() => import('@/pages/ChurchesPage'))
+const MinistriesPage = lazy(() => import('@/pages/MinistriesPage'))
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
+const UsersPage = lazy(() => import('@/pages/UsersPage'))
+const SchedulePlanningConfigPage = lazy(() => import('@/pages/SchedulePlanningConfigPage'))
+const CheckinPage = lazy(() => import('@/pages/CheckinPage'))
+const ChatPage = lazy(() => import('@/pages/ChatPage'))
+const ChatDetailPage = lazy(() => import('@/pages/ChatDetailPage'))
 
-import TeamDetailsPage from '@/pages/TeamDetailsPage'
+const TeamDetailsPage = lazy(() => import('@/pages/TeamDetailsPage'))
 
 export const protectedRoutes: RouteConfig[] = [
   {
