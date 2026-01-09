@@ -91,7 +91,7 @@ export function ChatList({ className, onConversationClick }: ChatListProps) {
 
   return (
     <div
-      className={`flex flex-col h-full bg-white dark:bg-dark-900 border-r border-dark-200 dark:border-dark-800 ${className}`}
+      className={`flex flex-col h-full bg-white dark:bg-dark-900 border-r border-dark-200 dark:border-dark-800 pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-0 ${className}`}
     >
       {/* Header */}
       <div className="p-4 border-b border-dark-200 dark:border-dark-800">
@@ -117,7 +117,7 @@ export function ChatList({ className, onConversationClick }: ChatListProps) {
             {isDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 z-20 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 z-50 overflow-hidden">
                   <button
                     onClick={() => {
                       setIsNewChatModalOpen(true)

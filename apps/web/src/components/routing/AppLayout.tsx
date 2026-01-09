@@ -22,7 +22,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isChatList = isChatPage && !isChatConversation
 
   const handleNewConversation = () => {
-    window.dispatchEvent(new Event('toggleNewChatDropdown'))
+    globalThis.dispatchEvent(new Event('toggleNewChatDropdown'))
   }
 
   return (
@@ -67,7 +67,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               className={`flex-1 overflow-y-auto overscroll-y-contain animate-fade-in-up scroll-smooth ${
                 isChatPage
                   ? 'p-0 pt-[env(safe-area-inset-top)] overflow-hidden'
-                  : 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-0 lg:pb-0 lg:px-8'
+                  : 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-16 lg:pb-0 lg:px-8'
               }`}
             >
               {children}
