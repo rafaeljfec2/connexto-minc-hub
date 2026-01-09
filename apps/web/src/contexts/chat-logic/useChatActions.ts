@@ -143,9 +143,6 @@ export function useChatActions({
         return
       }
 
-      // Store previous conversation before updating
-      const prevActive = activeConversationRef.current
-
       // Update Ref immediately to block subsequent calls in same tick/render cycle
       activeConversationRef.current = conversation
 

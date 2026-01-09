@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
-import { Schedule, Service, Team, Person } from '@minc-hub/shared/types'
+import { Schedule, Service, Team, Person, Ministry } from '@minc-hub/shared/types'
 import { ScheduleDetailsModal } from './ScheduleDetailsModal'
 
 interface UpcomingServicesMobileProps {
@@ -8,6 +8,7 @@ interface UpcomingServicesMobileProps {
   readonly services: readonly Service[]
   readonly teams: readonly Team[]
   readonly people: readonly Person[]
+  readonly ministries: readonly Ministry[]
 }
 
 export function UpcomingServicesMobile({
@@ -15,6 +16,7 @@ export function UpcomingServicesMobile({
   services,
   teams,
   people,
+  ministries,
 }: Readonly<UpcomingServicesMobileProps>) {
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -100,6 +102,7 @@ export function UpcomingServicesMobile({
         service={selectedService}
         teams={[...teams]}
         people={[...people]}
+        ministries={[...ministries]}
       />
     </div>
   )

@@ -1,5 +1,5 @@
 import { Modal } from '@/components/ui/Modal'
-import { Schedule, Service, Team, Person } from '@minc-hub/shared/types'
+import { Schedule, Service, Team, Person, Ministry } from '@minc-hub/shared/types'
 
 interface ScheduleDetailsModalProps {
   isOpen: boolean
@@ -8,6 +8,7 @@ interface ScheduleDetailsModalProps {
   service: Service | null
   teams: Team[]
   people: Person[]
+  ministries: Ministry[]
 }
 
 export function ScheduleDetailsModal({
@@ -17,6 +18,7 @@ export function ScheduleDetailsModal({
   service,
   teams,
   people,
+  ministries,
 }: ScheduleDetailsModalProps) {
   if (!schedule) return null
 
@@ -30,6 +32,12 @@ export function ScheduleDetailsModal({
     hour: '2-digit',
     minute: '2-digit',
   })
+
+  // Helper to get ministry name
+  const getMinistryName = (ministryId: string) => {
+    const ministry = ministries.find(m => m.id === ministryId)
+    return ministry?.name ?? 'Ministério'
+  }
 
   // Group teams by ministry (mocked/inferred) or just list them
   // For now, simple list
@@ -70,7 +78,12 @@ export function ScheduleDetailsModal({
                   className="border border-dark-200 dark:border-dark-800 rounded-lg overflow-hidden"
                 >
                   <div className="bg-gray-50 dark:bg-dark-900 p-3 border-b border-dark-200 dark:border-dark-800">
-                    <h5 className="font-semibold text-dark-900 dark:text-dark-50">{team.name}</h5>
+                    <h5 className="font-semibold text-dark-900 dark:text-dark-50">
+                      <span className="text-primary-600 dark:text-primary-400 uppercase text-xs font-bold mr-2 tracking-wide">
+                        {getMinistryName(team.ministryId)}
+                      </span>
+                      {team.name}
+                    </h5>
                   </div>
                   <div className="p-3">
                     <ul className="space-y-2">

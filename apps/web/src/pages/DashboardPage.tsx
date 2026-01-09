@@ -5,16 +5,18 @@ import { usePeople } from '@/hooks/usePeople'
 import { useTeams } from '@/hooks/useTeams'
 import { useSchedules } from '@/hooks/useSchedules'
 import { useServices } from '@/hooks/useServices'
+import { useMinistries } from '@/hooks/useMinistries' // Added import
 import { QuickActionsMobile } from './dashboard/components/QuickActionsMobile'
 import { StatsCardMobile } from './dashboard/components/StatsCardMobile'
 import { UpcomingServicesMobile } from './dashboard/components/UpcomingServicesMobile'
-import { User, Person, Team, Schedule, Service } from '@minc-hub/shared/types'
+import { User, Person, Team, Schedule, Service, Ministry } from '@minc-hub/shared/types' // Added Ministry type
 import { ActivityFeedMobile, type ActivityItem } from './dashboard/components/ActivityFeedMobile'
 
 interface DashboardViewProps {
   readonly user: User | null
   readonly people: readonly Person[]
   readonly teams: readonly Team[]
+  readonly ministries: readonly Ministry[] // Added interface prop
   readonly activeTeams: readonly Team[]
   readonly schedules: readonly Schedule[]
   readonly services: readonly Service[]
@@ -26,6 +28,7 @@ interface DashboardViewProps {
 function MobileDashboard({
   people,
   teams,
+  ministries, // Added prop
   activeTeams,
   schedules,
   services,
@@ -44,6 +47,7 @@ function MobileDashboard({
             schedules={schedules}
             services={services}
             teams={teams}
+            ministries={ministries} // Passed prop
             people={people}
           />
         )}
@@ -232,6 +236,7 @@ export default function DashboardPage() {
   const { teams } = useTeams()
   const { schedules } = useSchedules()
   const { services } = useServices()
+  const { ministries } = useMinistries() // Call hook
 
   const activeTeams = useMemo(() => teams.filter(t => t.isActive), [teams])
 
@@ -255,6 +260,7 @@ export default function DashboardPage() {
     user,
     people,
     teams,
+    ministries, // Add to viewProps
     activeTeams,
     schedules,
     services,
