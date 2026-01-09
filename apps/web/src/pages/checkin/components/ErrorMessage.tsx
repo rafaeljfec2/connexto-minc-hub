@@ -11,13 +11,24 @@ interface ErrorMessageProps {
   errorMessage?: string | null
 }
 
-export function ErrorMessage({ errorType, errorMessage }: ErrorMessageProps) {
+export function ErrorMessage({ errorType, errorMessage }: Readonly<ErrorMessageProps>) {
   if (!errorType) return null
+
+  const getClosedDescription = () => {
+    if (errorMessage?.includes('Check-in opens') && errorMessage.includes('Opens at')) {
+      const timeMatch = /Opens at (\d{2}:\d{2}:\d{2})/.exec(errorMessage)
+      if (timeMatch) {
+        const time = timeMatch[1].slice(0, 5)
+        return `Check-in disponível a partir das ${time} (30 min antes do culto)`
+      }
+    }
+    return errorMessage || 'O horário de check-in já passou ou ainda não está disponível'
+  }
 
   const errorMessages = {
     closed: {
       title: 'Check-in fechado',
-      description: errorMessage || 'O horário de check-in já passou ou ainda não está disponível',
+      description: getClosedDescription(),
       icon: '🕐',
     },
     'no-schedule': {
@@ -42,7 +53,7 @@ export function ErrorMessage({ errorType, errorMessage }: ErrorMessageProps) {
     },
   }
 
-  const error = errorMessages[errorType as keyof typeof errorMessages]
+  const error = errorMessages[errorType]
   if (!error) return null
 
   return (

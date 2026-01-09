@@ -7,6 +7,37 @@ import type { Attendance, GenerateQrCodeResponse } from '@minc-hub/shared/types'
 
 const apiServices = createApiServices(api)
 
+// Helper to categorize errors
+function categorizeError(message: string): {
+  type: 'closed' | 'no-schedule' | 'not-linked' | 'already-checked' | 'other'
+  msg: string
+  shouldShowToast: boolean
+} {
+  if (message.includes('No schedules found') || message.includes('Não há agenda')) {
+    return { type: 'no-schedule', msg: message, shouldShowToast: false }
+  }
+
+  if (message.includes('must be linked to a person') || message.includes('vinculado')) {
+    return { type: 'not-linked', msg: message, shouldShowToast: false }
+  }
+
+  if (
+    message.includes('Check-in is closed') ||
+    message.includes('has passed') ||
+    message.includes('not yet open') ||
+    message.includes('Service time') ||
+    message.includes('Check-in opens')
+  ) {
+    return { type: 'closed', msg: message, shouldShowToast: false }
+  }
+
+  if (message.includes('Already checked in')) {
+    return { type: 'already-checked', msg: message, shouldShowToast: true }
+  }
+
+  return { type: 'other', msg: message, shouldShowToast: false }
+}
+
 export function useCheckIn() {
   const { showToast } = useToast()
   const { user } = useAuth()
@@ -24,8 +55,6 @@ export function useCheckIn() {
   const generateQrCode = useCallback(
     async (date?: string) => {
       if (!user?.personId) {
-        // Don't show toast here - let the component handle it
-        // The component should check user state before calling this
         return null
       }
 
@@ -33,57 +62,32 @@ export function useCheckIn() {
       setHasNoSchedule(false)
       setErrorType(null)
       setErrorMessage(null)
+
       try {
         const data = await apiServices.checkinService.generateQrCode(date)
         setQrCode(data.qrCode)
         setQrCodeData(data)
-        setHasNoSchedule(false)
-        setErrorType(null)
-        setErrorMessage(null)
-        // Don't show toast - success is already displayed in the visual container
         return data
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Erro ao gerar QR Code'
+        const { type, msg, shouldShowToast } = categorizeError(message)
 
-        // Categorize errors based on message content
-        if (message.includes('No schedules found') || message.includes('Não há agenda')) {
+        setErrorType(type)
+        setErrorMessage(msg)
+        setQrCode(null)
+        setQrCodeData(null)
+
+        if (type === 'no-schedule') {
           setHasNoSchedule(true)
-          setErrorType('no-schedule')
-          setErrorMessage(message)
-          setQrCode(null)
-          setQrCodeData(null)
-          // Don't show error toast for "no schedule" - it's expected
-        } else if (
-          message.includes('must be linked to a person') ||
-          message.includes('vinculado')
-        ) {
-          setErrorType('not-linked')
-          setErrorMessage(message)
-          setQrCode(null)
-          setQrCodeData(null)
-          // This error should be handled by the component, not shown as toast here
-        } else if (
-          message.includes('Check-in is closed') ||
-          message.includes('has passed') ||
-          message.includes('not yet open') ||
-          message.includes('Service time')
-        ) {
-          setErrorType('closed')
-          setErrorMessage(message)
-          setQrCode(null)
-          setQrCodeData(null)
-          // Don't show toast - error is already displayed in the visual container
-        } else if (message.includes('Already checked in')) {
-          setErrorType('already-checked')
-          setErrorMessage(message)
-          setQrCode(null)
-          setQrCodeData(null)
-          showToast('Você já fez check-in para esta escala', 'info')
-        } else {
-          setErrorType('other')
-          setErrorMessage(message)
-          // Don't show toast - error is already displayed in the visual container
         }
+
+        if (shouldShowToast) {
+          showToast(
+            type === 'already-checked' ? 'Você já fez check-in para esta escala' : msg,
+            'info'
+          )
+        }
+
         return null
       } finally {
         setIsLoading(false)
