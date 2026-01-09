@@ -95,6 +95,25 @@ export class UsersController {
     return { avatarUrl };
   }
 
+  @Patch('profile')
+  @ApiOperation({ summary: 'Update current user profile' })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully', type: UserEntity })
+  async updateProfile(
+    @GetUser() user: UserEntity,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<UserEntity> {
+    const updateData: Partial<UserEntity> = {};
+
+    if (updateUserDto.name !== undefined) {
+      updateData.name = updateUserDto.name;
+    }
+    if (updateUserDto.email !== undefined) {
+      updateData.email = updateUserDto.email;
+    }
+
+    return this.usersService.update(user.id, updateData);
+  }
+
   @Get()
   @ApiOperation({ summary: 'List all users' })
   @ApiResponse({ status: 200, description: 'List of users', type: [UserEntity] })

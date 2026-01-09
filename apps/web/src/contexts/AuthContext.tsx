@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   hasAnyRole: (roles: UserRole[]) => boolean
+  updateUser: (updates: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -207,6 +208,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [user]
   )
 
+  const updateUser = useCallback(
+    (updates: Partial<User>) => {
+      setUser(prevUser => {
+        if (!prevUser) return null
+        const updatedUser = { ...prevUser, ...updates }
+        saveUserToStorage(updatedUser)
+        return updatedUser
+      })
+    },
+    []
+  )
+
   const contextValue = useMemo(
     () => ({
       user,
@@ -215,8 +228,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       login,
       logout,
       hasAnyRole,
+      updateUser,
     }),
-    [user, isLoading, login, logout, hasAnyRole]
+    [user, isLoading, login, logout, hasAnyRole, updateUser]
   )
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

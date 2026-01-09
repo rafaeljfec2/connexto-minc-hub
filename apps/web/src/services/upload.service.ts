@@ -55,3 +55,41 @@ export function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
+
+export interface AvatarUploadResponse {
+  avatarUrl: string
+}
+
+export async function uploadAvatar(
+  file: File,
+  onProgress?: (progress: UploadProgress) => void
+): Promise<AvatarUploadResponse> {
+  const formData = new FormData()
+  formData.append('avatar', file)
+
+  const response = await api.post<AvatarUploadResponse>('/users/avatar', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress: progressEvent => {
+      if (onProgress && progressEvent.total) {
+        onProgress({
+          loaded: progressEvent.loaded,
+          total: progressEvent.total,
+          percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
+        })
+      }
+    },
+  })
+
+  return response.data
+}
+
+export interface UpdateProfileData {
+  name?: string
+  email?: string
+}
+
+export async function updateProfile(data: UpdateProfileData): Promise<void> {
+  await api.patch('/users/profile', data)
+}
