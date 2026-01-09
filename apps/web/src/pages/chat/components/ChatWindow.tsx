@@ -121,6 +121,22 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     }
   }
 
+  const handleAttachment = (
+    type: 'camera' | 'gallery' | 'document' | 'location',
+    file?: File
+  ) => {
+    if (file) {
+      // TODO: Implement file upload when backend supports it
+      console.log(`Attachment type: ${type}, file:`, file.name, file.type, file.size)
+
+      // For now, send a message indicating the file was selected
+      const fileInfo = `📎 ${type === 'camera' ? '📷' : type === 'gallery' ? '🖼️' : '📄'} ${file.name} (${(file.size / 1024).toFixed(1)} KB)`
+      sendMessage(fileInfo)
+      requestAnimationFrame(forceScroll)
+      setTimeout(forceScroll, 100)
+    }
+  }
+
   // Fallback: If activeConversation is missing (e.g. during updates), try to find it in the list
   const currentConversation = activeConversation || conversations.find(c => c.id === conversationId)
   const otherUser = currentConversation?.participants.find(p => p.id !== user?.id)
@@ -240,7 +256,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
       {/* Input */}
       <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom)]">
-        <ChatInput onSend={handleSend} />
+        <ChatInput onSend={handleSend} onAttachment={handleAttachment} />
       </div>
     </div>
   )
