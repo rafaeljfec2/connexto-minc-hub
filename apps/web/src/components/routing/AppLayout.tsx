@@ -17,6 +17,8 @@ export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const isChatPage = location.pathname.startsWith('/chat')
 
+  const isChatConversation = location.pathname.startsWith('/chat/')
+
   return (
     <ChatProvider>
       {/* Fixed Navigation Elements - Outside animation to preserve fixed positioning */}
@@ -33,9 +35,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}
 
       {/* Mobile Footer - Fixed for all mobile screens */}
-      <div className="lg:hidden">
-        <FooterMobile />
-      </div>
+      {!isChatConversation && (
+        <div className="lg:hidden">
+          <FooterMobile />
+        </div>
+      )}
 
       {/* Main Content - Animated Background & Page */}
       <div className="h-screen w-screen overflow-hidden bg-gray-50 dark:bg-dark-950 lg:bg-grain relative animate-fade-in">
