@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -19,15 +19,11 @@ import { Ministry } from '@minc-hub/shared/types'
 import { MinistryCard } from './ministries/components/MinistryCard'
 import { MinistryItemCard } from './ministries/components/MinistryItemCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { useSort } from '@/hooks/useSort'
+import { SortableColumn } from '@/components/ui/SortableColumn'
 
 export default function MinistriesPage() {
-  const {
-    ministries,
-    isLoading,
-    createMinistry,
-    updateMinistry,
-    deleteMinistry,
-  } = useMinistries()
+  const { ministries, isLoading, createMinistry, updateMinistry, deleteMinistry } = useMinistries()
   const { churches } = useChurches()
   const modal = useModal()
   const deleteModal = useModal()
@@ -45,6 +41,11 @@ export default function MinistriesPage() {
     isActive: true,
   })
 
+  const { sortConfig, handleSort, sortData } = useSort<Ministry>({
+    defaultKey: 'name',
+    defaultDirection: 'asc',
+  })
+
   // Update churchId when churches are loaded
   useEffect(() => {
     if (churches.length > 0 && !formData.churchId) {
@@ -52,20 +53,35 @@ export default function MinistriesPage() {
     }
   }, [churches, formData.churchId])
 
-  const filteredMinistries = useMemo(() => {
-    return ministries.filter((ministry) => {
-      const matchesSearch =
-        searchTerm === '' ||
-        ministry.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ministry.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const getChurchName = useCallback(
+    (churchId: string) => {
+      return churches.find(c => c.id === churchId)?.name ?? 'Igreja não encontrada'
+    },
+    [churches]
+  )
 
+  const filteredMinistries = useMemo(() => {
+    const result = ministries.filter(ministry => {
+      const matchesSearch =
+        ministry.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (ministry.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getChurchName(ministry.churchId).toLowerCase().includes(searchTerm.toLowerCase())
       return matchesSearch
     })
-  }, [ministries, searchTerm])
 
-  function getChurchName(churchId: string) {
-    return churches.find((c) => c.id === churchId)?.name ?? 'Igreja não encontrada'
-  }
+    return sortData(result, {
+      name: item => item.name.toLowerCase(),
+      description: item => (item.description || '').toLowerCase(),
+      church: item => (churches.find(c => c.id === item.churchId)?.name ?? '').toLowerCase(),
+      status: item => (item.isActive ? 1 : 0),
+    })
+  }, [ministries, searchTerm, sortData, churches, getChurchName])
+
+  const renderHeader = (key: string, label: string) => (
+    <SortableColumn key={key} sortKey={key} currentSort={sortConfig} onSort={handleSort}>
+      {label}
+    </SortableColumn>
+  )
 
   function handleOpenModal(ministry?: Ministry) {
     if (ministry) {
@@ -207,7 +223,7 @@ export default function MinistriesPage() {
 
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {filteredMinistries.map((ministry) => (
+      {filteredMinistries.map(ministry => (
         <MinistryCard
           key={ministry.id}
           ministry={ministry}
@@ -221,7 +237,7 @@ export default function MinistriesPage() {
     </div>
   )
 
-  const listViewRows = filteredMinistries.map((ministry) => (
+  const listViewRows = filteredMinistries.map(ministry => (
     <TableRow key={ministry.id}>
       <TableCell>
         <span className="font-medium">{ministry.name}</span>
@@ -235,18 +251,10 @@ export default function MinistriesPage() {
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenModal(ministry)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(ministry)}>
             <EditIcon className="h-4 w-4" />
           </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => handleDeleteClick(ministry.id)}
-          >
+          <Button variant="danger" size="sm" onClick={() => handleDeleteClick(ministry.id)}>
             <TrashIcon className="h-4 w-4" />
           </Button>
         </div>
@@ -268,9 +276,7 @@ export default function MinistriesPage() {
           onCreateClick={() => handleOpenModal()}
           hasFilters={hasFilters}
           isEmpty={filteredMinistries.length === 0 && !isLoading}
-          emptyTitle={
-            hasFilters ? 'Nenhum time encontrado' : 'Nenhum time cadastrado'
-          }
+          emptyTitle={hasFilters ? 'Nenhum time encontrado' : 'Nenhum time cadastrado'}
           emptyDescription={
             hasFilters
               ? 'Tente ajustar os filtros para encontrar times'
@@ -291,7 +297,13 @@ export default function MinistriesPage() {
               viewMode={viewMode}
               gridView={gridView}
               listView={{
-                headers: ['Nome', 'Descrição', 'Igreja', 'Status', 'Ações'],
+                headers: [
+                  renderHeader('name', 'Nome'),
+                  renderHeader('description', 'Descrição'),
+                  renderHeader('church', 'Igreja'),
+                  renderHeader('status', 'Status'),
+                  'Ações',
+                ],
                 rows: listViewRows,
               }}
             />
@@ -309,10 +321,8 @@ export default function MinistriesPage() {
           <Select
             label="Igreja *"
             value={formData.churchId}
-            onChange={(e) =>
-              setFormData({ ...formData, churchId: e.target.value })
-            }
-            options={churches.map((church) => ({
+            onChange={e => setFormData({ ...formData, churchId: e.target.value })}
+            options={churches.map(church => ({
               value: church.id,
               label: church.name,
             }))}
@@ -321,33 +331,23 @@ export default function MinistriesPage() {
           <Input
             label="Nome do Time *"
             value={formData.name}
-            onChange={(e) =>
-              setFormData({ ...formData, name: e.target.value })
-            }
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
             required
           />
           <Textarea
             label="Descrição"
             value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
             placeholder="Descrição do time..."
             rows={4}
           />
           <Checkbox
             label="Time ativo"
             checked={formData.isActive}
-            onChange={(e) =>
-              setFormData({ ...formData, isActive: e.target.checked })
-            }
+            onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
           />
           <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleCloseModal}
-            >
+            <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary">

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -25,6 +25,8 @@ import { useServices } from '@/hooks/useServices'
 import { CheckboxList } from '@/components/ui/CheckboxList'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useSort } from '@/hooks/useSort'
+import { SortableColumn } from '@/components/ui/SortableColumn'
 
 function PersonCardSkeleton() {
   return (
@@ -136,6 +138,11 @@ export default function PeoplePage() {
     defaultMode: 'list',
   })
 
+  const { sortConfig, handleSort, sortData } = useSort<Person>({
+    defaultKey: 'name',
+    defaultDirection: 'asc',
+  })
+
   const availableTeams = useMemo(() => {
     if (filterMinistry === 'all') {
       return teams.filter(t => t.isActive)
@@ -143,13 +150,29 @@ export default function PeoplePage() {
     return teams.filter(t => t.ministryId === filterMinistry && t.isActive)
   }, [filterMinistry, teams])
 
+  const getMinistry = useCallback(
+    (ministryId?: string) => {
+      if (!ministryId) return undefined
+      return ministries.find(m => m.id === ministryId)
+    },
+    [ministries]
+  )
+
+  const getTeam = useCallback(
+    (teamId?: string) => {
+      if (!teamId) return undefined
+      return teams.find(t => t.id === teamId)
+    },
+    [teams]
+  )
+
   // Filter ministries by selected church (already filtered in useMinistries)
   const filteredMinistries = useMemo(() => {
     return ministries.filter(m => m.isActive)
   }, [ministries])
 
   const filteredPeople = useMemo(() => {
-    return people.filter(person => {
+    const result = people.filter(person => {
       const matchesSearch =
         searchTerm === '' ||
         person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -162,7 +185,22 @@ export default function PeoplePage() {
 
       return matchesSearch && matchesMinistry && matchesTeam
     })
-  }, [people, searchTerm, filterMinistry, filterTeam])
+
+    return sortData(result, {
+      name: item => item.name.toLowerCase(),
+      email: item => (item.email || '').toLowerCase(),
+      phone: item => (item.phone || '').toLowerCase(),
+      ministry: item => (getMinistry(item.ministryId)?.name || '').toLowerCase(),
+      team: item => (getTeam(item.teamId)?.name || '').toLowerCase(),
+      birthday: item => (item.birthDate ? new Date(item.birthDate).getTime() : 0),
+    })
+  }, [people, searchTerm, filterMinistry, filterTeam, sortData, getMinistry, getTeam])
+
+  const renderHeader = (key: string, label: string) => (
+    <SortableColumn key={key} sortKey={key} currentSort={sortConfig} onSort={handleSort}>
+      {label}
+    </SortableColumn>
+  )
 
   const activeServices = useMemo(() => {
     return services.filter(service => service.isActive)
@@ -176,16 +214,6 @@ export default function PeoplePage() {
         : [...currentIds, serviceId]
       return { ...prev, preferredServiceIds: newIds }
     })
-  }
-
-  function getMinistry(ministryId?: string) {
-    if (!ministryId) return undefined
-    return ministries.find(m => m.id === ministryId)
-  }
-
-  function getTeam(teamId?: string) {
-    if (!teamId) return undefined
-    return teams.find(t => t.id === teamId)
   }
 
   const initialPersonFormData = {
@@ -592,12 +620,12 @@ export default function PeoplePage() {
             gridView={gridView}
             listView={{
               headers: [
-                'Nome',
-                'Email',
-                'Telefone',
-                'Time',
-                'Equipe',
-                'Data de Nascimento',
+                renderHeader('name', 'Nome'),
+                renderHeader('email', 'Email'),
+                renderHeader('phone', 'Telefone'),
+                renderHeader('ministry', 'Time'),
+                renderHeader('team', 'Equipe'),
+                renderHeader('birthday', 'Data de Nascimento'),
                 'Ações',
               ],
               rows: listViewRows,

@@ -21,6 +21,8 @@ import { useTeams } from '@/hooks/useTeams'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useChurch } from '@/contexts/ChurchContext'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useSort } from '@/hooks/useSort'
+import { SortableColumn } from '@/components/ui/SortableColumn'
 
 function ScheduleCardSkeleton() {
   return (
@@ -122,17 +124,52 @@ export default function SchedulesPage() {
     return filtered
   }, [teams, selectedChurch, formData.ministryId])
 
+  // Sort config state using custom hook
+  const { sortConfig, handleSort, sortData } = useSort<Schedule>({
+    defaultKey: 'date',
+    defaultDirection: 'desc',
+  })
+
+  // Helper to get ministry name from teamIds (needed for sorting)
+  const getMinistryNameByTeamIds = useMemo(() => {
+    return (ids: string[]) => {
+      if (!ids || ids.length === 0) return ''
+      const firstTeam = teams.find(t => ids.includes(t.id))
+      if (!firstTeam) return ''
+      return ministries.find(m => m.id === firstTeam.ministryId)?.name ?? ''
+    }
+  }, [teams, ministries])
+
   const filteredSchedules = useMemo(() => {
-    if (!searchTerm) return schedules
-    const searchLower = searchTerm.toLowerCase()
-    return schedules.filter(schedule => {
-      const service = filteredServices.find(s => s.id === schedule.serviceId)
-      return (
-        service?.name.toLowerCase().includes(searchLower) ||
-        formatDate(schedule.date).toLowerCase().includes(searchLower)
-      )
+    let result = schedules
+
+    // 1. Filter by search term
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      result = result.filter(schedule => {
+        const service = filteredServices.find(s => s.id === schedule.serviceId)
+        return (
+          service?.name.toLowerCase().includes(searchLower) ||
+          formatDate(schedule.date).toLowerCase().includes(searchLower)
+        )
+      })
+    }
+
+    // 2. Apply sorting using generic sortData
+    // 2. Apply sorting using generic sortData
+    return sortData(result, {
+      service: item =>
+        (filteredServices.find(s => s.id === item.serviceId)?.name ?? '').toLowerCase(),
+      date: item => new Date(item.date).getTime(),
+      ministry: item => getMinistryNameByTeamIds(item.teamIds ?? []).toLowerCase(),
     })
-  }, [schedules, searchTerm, filteredServices])
+  }, [schedules, searchTerm, filteredServices, sortData, getMinistryNameByTeamIds])
+
+  const renderHeader = (key: string, label: string) => (
+    <SortableColumn key={key} sortKey={key} currentSort={sortConfig} onSort={handleSort}>
+      {label}
+    </SortableColumn>
+  )
 
   function getServiceName(serviceId: string) {
     return filteredServices.find(s => s.id === serviceId)?.name ?? 'Culto não encontrado'
@@ -370,7 +407,14 @@ export default function SchedulesPage() {
             skeletonRow={<ScheduleRowSkeleton />}
             gridView={gridView}
             listView={{
-              headers: ['Culto', 'Data', 'Time', 'Equipes', 'Ações'],
+              headers: [
+                renderHeader('service', 'Culto'),
+                renderHeader('date', 'Data'),
+                renderHeader('ministry', 'Time'),
+                'Equipes',
+                'Ações',
+              ],
+
               rows: listViewRows,
             }}
           />

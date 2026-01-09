@@ -14,6 +14,8 @@ import { CrudView } from '@/components/crud/CrudView'
 import { User, UserRole } from '@minc-hub/shared/types'
 import { UserCard } from './users/components/UserCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { useSort } from '@/hooks/useSort'
+import { SortableColumn } from '@/components/ui/SortableColumn'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { ROLE_OPTIONS, getRoleLabel } from '@/lib/userUtils'
 import { useUsers } from '@/hooks/useUsers'
@@ -40,8 +42,13 @@ export default function UsersPage() {
     canCheckIn: false,
   })
 
+  const { sortConfig, handleSort, sortData } = useSort<User>({
+    defaultKey: 'name',
+    defaultDirection: 'asc',
+  })
+
   const filteredUsers = useMemo(() => {
-    return users.filter(user => {
+    const result = users.filter(user => {
       const matchesSearch =
         searchTerm === '' ||
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,7 +57,21 @@ export default function UsersPage() {
 
       return matchesSearch
     })
-  }, [users, searchTerm])
+
+    return sortData(result, {
+      name: item => item.name.toLowerCase(),
+      email: item => item.email.toLowerCase(),
+      role: item => getRoleLabel(item.role).toLowerCase(),
+      person: item =>
+        (item.personId ? people.find(p => p.id === item.personId)?.name : '')?.toLowerCase() ?? '',
+    })
+  }, [users, searchTerm, sortData, people])
+
+  const renderHeader = (key: string, label: string) => (
+    <SortableColumn key={key} sortKey={key} currentSort={sortConfig} onSort={handleSort}>
+      {label}
+    </SortableColumn>
+  )
 
   function getPersonName(personId?: string): string {
     if (!personId) return 'Não vinculado'
@@ -104,6 +125,7 @@ export default function UsersPage() {
         email: formData.email,
         role: formData.role,
         personId: formData.personId || undefined,
+        canCheckIn: formData.canCheckIn,
       })
     } else {
       await createUser({
@@ -212,7 +234,14 @@ export default function UsersPage() {
             viewMode={viewMode}
             gridView={gridView}
             listView={{
-              headers: ['Nome', 'Email', 'Papel', 'Servo Vinculado', 'Ações'],
+              headers: [
+                renderHeader('name', 'Nome'),
+                renderHeader('email', 'Email'),
+                renderHeader('role', 'Função'),
+                renderHeader('person', 'Pessoa Vinculada'),
+                'Ações',
+              ],
+
               rows: listViewRows,
             }}
           />

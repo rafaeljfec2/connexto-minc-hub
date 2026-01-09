@@ -14,16 +14,13 @@ import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
 import { Service, ServiceType } from '@minc-hub/shared/types'
 import { formatTime } from '@minc-hub/shared/utils'
-import {
-  DAYS_OF_WEEK,
-  SERVICE_TYPES,
-  getDayLabel,
-  getServiceTypeLabel,
-} from '@/lib/constants'
+import { DAYS_OF_WEEK, SERVICE_TYPES, getDayLabel, getServiceTypeLabel } from '@/lib/constants'
 import { ServiceCard } from './services/components/ServiceCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { useServices } from '@/hooks/useServices'
 import { useChurch } from '@/contexts/ChurchContext'
+import { useSort } from '@/hooks/useSort'
+import { SortableColumn } from '@/components/ui/SortableColumn'
 
 export default function ServicesPage() {
   const { services, isLoading, createService, updateService, deleteService } = useServices()
@@ -48,23 +45,39 @@ export default function ServicesPage() {
 
   const [formData, setFormData] = useState(getInitialFormData())
 
+  const { sortConfig, handleSort, sortData } = useSort<Service>({
+    defaultKey: 'name',
+    defaultDirection: 'asc',
+  })
+
   const filteredServices = useMemo(() => {
-    return services.filter(service => {
+    const result = services.filter(service => {
       const matchesSearch =
-        searchTerm === '' ||
-        service.name.toLowerCase().includes(searchTerm.toLowerCase())
+        searchTerm === '' || service.name.toLowerCase().includes(searchTerm.toLowerCase())
 
       return matchesSearch
     })
-  }, [services, searchTerm])
+
+    return sortData(result, {
+      name: item => item.name.toLowerCase(),
+      type: item => getServiceTypeLabel(item.type).toLowerCase(),
+      day: item => item.dayOfWeek,
+      time: item => item.time,
+      status: item => (item.isActive ? 1 : 0),
+    })
+  }, [services, searchTerm, sortData])
+
+  const renderHeader = (key: string, label: string) => (
+    <SortableColumn key={key} sortKey={key} currentSort={sortConfig} onSort={handleSort}>
+      {label}
+    </SortableColumn>
+  )
 
   function handleOpenModal(service?: Service) {
     if (service) {
       setEditingService(service)
       // Convert time from HH:mm:ss to HH:mm for input
-      const timeForInput = service.time.includes(':')
-        ? service.time.substring(0, 5)
-        : service.time
+      const timeForInput = service.time.includes(':') ? service.time.substring(0, 5) : service.time
 
       setFormData({
         name: service.name,
@@ -96,9 +109,7 @@ export default function ServicesPage() {
 
     try {
       // Convert time from HH:mm to HH:mm:ss format expected by backend
-      const timeFormatted = formData.time.includes(':')
-        ? `${formData.time}:00`
-        : formData.time
+      const timeFormatted = formData.time.includes(':') ? `${formData.time}:00` : formData.time
 
       const serviceData = {
         ...formData,
@@ -163,24 +174,16 @@ export default function ServicesPage() {
       <TableCell>{getDayLabel(service.dayOfWeek)}</TableCell>
       <TableCell>{formatTime(service.time)}</TableCell>
       <TableCell>
-        <StatusBadge status={service.isActive ? "active" : "inactive"}>
-          {service.isActive ? "Ativo" : "Inativo"}
+        <StatusBadge status={service.isActive ? 'active' : 'inactive'}>
+          {service.isActive ? 'Ativo' : 'Inativo'}
         </StatusBadge>
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleOpenModal(service)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(service)}>
             <EditIcon className="h-4 w-4" />
           </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => handleDeleteClick(service.id)}
-          >
+          <Button variant="danger" size="sm" onClick={() => handleDeleteClick(service.id)}>
             <TrashIcon className="h-4 w-4" />
           </Button>
         </div>
@@ -197,9 +200,7 @@ export default function ServicesPage() {
         onCreateClick={() => handleOpenModal()}
         hasFilters={hasFilters}
         isEmpty={filteredServices.length === 0}
-        emptyTitle={
-          hasFilters ? 'Nenhum culto encontrado' : 'Nenhum culto cadastrado'
-        }
+        emptyTitle={hasFilters ? 'Nenhum culto encontrado' : 'Nenhum culto cadastrado'}
         emptyDescription={
           hasFilters
             ? 'Tente ajustar os filtros para encontrar cultos'
@@ -221,11 +222,11 @@ export default function ServicesPage() {
             gridView={gridView}
             listView={{
               headers: [
-                'Nome',
-                'Tipo',
-                'Dia da Semana',
-                'Horário',
-                'Status',
+                renderHeader('name', 'Nome'),
+                renderHeader('type', 'Tipo'),
+                renderHeader('day', 'Dia da Semana'),
+                renderHeader('time', 'Horário'),
+                renderHeader('status', 'Status'),
                 'Ações',
               ],
               rows: listViewRows,
@@ -250,9 +251,7 @@ export default function ServicesPage() {
           <Select
             label="Tipo de Culto *"
             value={formData.type}
-            onChange={e =>
-              setFormData({ ...formData, type: e.target.value as ServiceType })
-            }
+            onChange={e => setFormData({ ...formData, type: e.target.value as ServiceType })}
             options={SERVICE_TYPES.map(type => ({
               value: type.value,
               label: type.label,
@@ -262,9 +261,7 @@ export default function ServicesPage() {
           <Select
             label="Dia da Semana *"
             value={formData.dayOfWeek.toString()}
-            onChange={e =>
-              setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })
-            }
+            onChange={e => setFormData({ ...formData, dayOfWeek: Number.parseInt(e.target.value) })}
             options={DAYS_OF_WEEK.map(day => ({
               value: day.value.toString(),
               label: day.label,
@@ -281,16 +278,10 @@ export default function ServicesPage() {
           <Checkbox
             label="Culto ativo"
             checked={formData.isActive}
-            onChange={e =>
-              setFormData({ ...formData, isActive: e.target.checked })
-            }
+            onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
           />
           <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleCloseModal}
-            >
+            <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
             <Button type="submit" variant="primary" disabled={isLoading}>

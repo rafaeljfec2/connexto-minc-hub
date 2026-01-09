@@ -8,7 +8,7 @@ interface CrudViewProps {
   readonly viewMode: ViewMode
   readonly gridView: ReactNode
   readonly listView: {
-    readonly headers: string[]
+    readonly headers: ReactNode[]
     readonly rows: ReactNode[]
   }
   readonly isLoading?: boolean

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -23,6 +23,8 @@ import { TeamCard } from './teams/components/TeamCard'
 import { TeamItemCard } from './teams/components/TeamItemCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useSort } from '@/hooks/useSort'
+import { SortableColumn } from '@/components/ui/SortableColumn'
 
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
@@ -56,6 +58,11 @@ export default function TeamsPage() {
     isActive: true,
   })
 
+  const { sortConfig, handleSort, sortData } = useSort<Team>({
+    defaultKey: 'name',
+    defaultDirection: 'asc',
+  })
+
   // Filter ministries by selected church
   const filteredMinistries = useMemo(() => {
     if (!selectedChurch) {
@@ -83,8 +90,15 @@ export default function TeamsPage() {
     }
   }, [filteredMinistries, formData.ministryId])
 
+  const getMinistryName = useCallback(
+    (ministryId: string) => {
+      return ministries.find(m => m.id === ministryId)?.name ?? 'Time não encontrado'
+    },
+    [ministries]
+  )
+
   const filteredTeams = useMemo(() => {
-    return teams.filter(team => {
+    const result = teams.filter(team => {
       const matchesSearch =
         searchTerm === '' ||
         team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,11 +109,21 @@ export default function TeamsPage() {
 
       return matchesSearch && matchesMinistry
     })
-  }, [teams, searchTerm, selectedMinistryFilter])
 
-  function getMinistryName(ministryId: string) {
-    return ministries.find(m => m.id === ministryId)?.name ?? 'Time não encontrado'
-  }
+    return sortData(result, {
+      name: item => item.name.toLowerCase(),
+      ministry: item => getMinistryName(item.ministryId).toLowerCase(),
+      description: item => (item.description || '').toLowerCase(),
+      members: item => item.memberIds?.length ?? 0,
+      status: item => (item.isActive ? 1 : 0),
+    })
+  }, [teams, searchTerm, selectedMinistryFilter, sortData, getMinistryName])
+
+  const renderHeader = (key: string, label: string) => (
+    <SortableColumn key={key} sortKey={key} currentSort={sortConfig} onSort={handleSort}>
+      {label}
+    </SortableColumn>
+  )
 
   function handleOpenModal(team?: Team) {
     if (team) {
@@ -333,7 +357,7 @@ export default function TeamsPage() {
             className="cursor-pointer hover:text-primary-600 dark:hover:text-primary-400 hover:underline transition-colors block text-left w-full"
             onClick={() => handleTeamClick(team)}
           >
-            {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) !== 1 ? 's' : ''}
+            {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) === 1 ? '' : 's'}
           </button>
         </TableCell>
         <TableCell>
@@ -389,7 +413,14 @@ export default function TeamsPage() {
               viewMode={viewMode}
               gridView={gridView}
               listView={{
-                headers: ['Nome', 'Time', 'Descrição', 'Membros', 'Status', 'Ações'],
+                headers: [
+                  renderHeader('name', 'Nome'),
+                  renderHeader('ministry', 'Time'),
+                  renderHeader('description', 'Descrição'),
+                  renderHeader('members', 'Membros'),
+                  renderHeader('status', 'Status'),
+                  'Ações',
+                ],
                 rows: listViewRows,
               }}
               isLoading={isLoading}

@@ -13,15 +13,11 @@ import { CrudView } from '@/components/crud/CrudView'
 import { Church } from '@minc-hub/shared/types'
 import { ChurchCard } from './churches/components/ChurchCard'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { useSort } from '@/hooks/useSort'
+import { SortableColumn } from '@/components/ui/SortableColumn'
 
 export default function ChurchesPage() {
-  const {
-    churches,
-    isLoading,
-    createChurch,
-    updateChurch,
-    deleteChurch,
-  } = useChurches()
+  const { churches, isLoading, createChurch, updateChurch, deleteChurch } = useChurches()
   const modal = useModal()
   const deleteModal = useModal()
   const [editingChurch, setEditingChurch] = useState<Church | null>(null)
@@ -38,8 +34,13 @@ export default function ChurchesPage() {
     email: '',
   })
 
+  const { sortConfig, handleSort, sortData } = useSort<Church>({
+    defaultKey: 'name',
+    defaultDirection: 'asc',
+  })
+
   const filteredChurches = useMemo(() => {
-    return churches.filter(church => {
+    const result = churches.filter(church => {
       const matchesSearch =
         searchTerm === '' ||
         church.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,7 +50,20 @@ export default function ChurchesPage() {
 
       return matchesSearch
     })
-  }, [churches, searchTerm])
+
+    return sortData(result, {
+      name: item => item.name.toLowerCase(),
+      address: item => (item.address || '').toLowerCase(),
+      phone: item => (item.phone || '').toLowerCase(),
+      email: item => (item.email || '').toLowerCase(),
+    })
+  }, [churches, searchTerm, sortData])
+
+  const renderHeader = (key: string, label: string) => (
+    <SortableColumn key={key} sortKey={key} currentSort={sortConfig} onSort={handleSort}>
+      {label}
+    </SortableColumn>
+  )
 
   function handleOpenModal(church?: Church) {
     if (church) {
@@ -185,7 +199,13 @@ export default function ChurchesPage() {
             viewMode={viewMode}
             gridView={gridView}
             listView={{
-              headers: ['Nome', 'Endereço', 'Telefone', 'Email', 'Ações'],
+              headers: [
+                renderHeader('name', 'Nome'),
+                renderHeader('address', 'Endereço'),
+                renderHeader('phone', 'Telefone'),
+                renderHeader('email', 'Email'),
+                'Ações',
+              ],
               rows: listViewRows,
             }}
           />
@@ -231,11 +251,7 @@ export default function ChurchesPage() {
               Cancelar
             </Button>
             <Button type="submit" variant="primary" disabled={isLoading}>
-              {isLoading
-                ? 'Salvando...'
-                : editingChurch
-                  ? 'Salvar Alterações'
-                  : 'Criar Igreja'}
+              {isLoading ? 'Salvando...' : editingChurch ? 'Salvar Alterações' : 'Criar Igreja'}
             </Button>
           </div>
         </form>
