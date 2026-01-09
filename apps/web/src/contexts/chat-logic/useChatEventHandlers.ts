@@ -151,6 +151,34 @@ export function useChatEventHandlers({
     [updateConversationList]
   )
 
+  // Handle message-read event - update messages to show as read in real-time
+  const handleMessageRead = useCallback(
+    (data: { conversationId: string; readBy: string; messageIds?: string[] }) => {
+      const currentActive = activeConversationRef.current
+
+      // Only update if we're viewing this conversation and the reader is not us
+      if (currentActive?.id === data.conversationId && data.readBy !== user?.id) {
+        setMessages(prev =>
+          prev.map(msg => {
+            // If messageIds are provided, only mark those specific messages
+            if (data.messageIds && data.messageIds.length > 0) {
+              if (data.messageIds.includes(msg.id)) {
+                return { ...msg, read: true }
+              }
+              return msg
+            }
+            // If no messageIds, mark all messages from current user as read
+            if (msg.senderId === user?.id && !msg.read) {
+              return { ...msg, read: true }
+            }
+            return msg
+          })
+        )
+      }
+    },
+    [activeConversationRef, user, setMessages]
+  )
+
   const onReconnected = useCallback(() => {
     const currentActive = activeConversationRef.current
     if (currentActive) {
@@ -162,12 +190,14 @@ export function useChatEventHandlers({
   useEffect(() => {
     chatSocket.on('new-message', handleNewMessage)
     chatSocket.on('conversation-updated', handleConversationUpdated)
+    chatSocket.on('message-read', handleMessageRead)
     chatSocket.on('connected', onReconnected)
 
     return () => {
       chatSocket.off('new-message', handleNewMessage)
       chatSocket.off('conversation-updated', handleConversationUpdated)
+      chatSocket.off('message-read', handleMessageRead)
       chatSocket.off('connected', onReconnected)
     }
-  }, [chatSocket, handleNewMessage, handleConversationUpdated, onReconnected])
+  }, [chatSocket, handleNewMessage, handleConversationUpdated, handleMessageRead, onReconnected])
 }

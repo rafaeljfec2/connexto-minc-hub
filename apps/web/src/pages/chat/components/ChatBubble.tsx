@@ -45,10 +45,10 @@ export function ChatBubble({ message, isMe, timestamp, status }: ChatBubbleProps
         </span>
 
         {isMe && status && (
-          <span className="flex items-center gap-0.5 text-[10px] text-white/80">
+          <span className="flex items-center gap-0.5 text-[10px]">
             {status === 'sending' && (
               <svg
-                className="h-3 w-3 animate-spin"
+                className="h-3 w-3 text-white/70 animate-spin"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -60,32 +60,29 @@ export function ChatBubble({ message, isMe, timestamp, status }: ChatBubbleProps
             )}
 
             {status === 'sent' && (
-              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <svg className="h-3 w-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path
                   d="m5 13 3.5 3.5L19 6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="opacity-80"
                 />
               </svg>
             )}
 
             {status === 'read' && (
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <svg className="h-3.5 w-3.5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path
                   d="m4.5 13.5 3.75 3.75L19.5 6"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="opacity-90"
                 />
                 <path
                   d="m10 13.5 3.75 3.75L22 8"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="opacity-90"
                 />
               </svg>
             )}
