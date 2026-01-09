@@ -57,6 +57,9 @@ export class UserEntity {
   @Column({ type: 'boolean', default: false, name: 'can_check_in' })
   canCheckIn: boolean;
 
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  avatar: string | null;
+
   @Column({ type: 'timestamp', nullable: true, name: 'last_login_at' })
   lastLoginAt: Date | null;
 

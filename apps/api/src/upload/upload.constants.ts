@@ -3,6 +3,13 @@ export const UPLOAD_CONSTANTS = {
   DEFAULT_FOLDER: 'chat-attachments',
 } as const;
 
+export const AVATAR_CONSTANTS = {
+  MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
+  FOLDER: 'avatars',
+  WIDTH: 256,
+  HEIGHT: 256,
+} as const;
+
 export const ALLOWED_MIME_TYPES = [
   'image/jpeg',
   'image/png',
@@ -20,4 +27,11 @@ export const ALLOWED_MIME_TYPES = [
   'audio/wav',
 ] as const;
 
+export const AVATAR_ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+] as const;
+
 export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
+export type AvatarAllowedMimeType = (typeof AVATAR_ALLOWED_MIME_TYPES)[number];

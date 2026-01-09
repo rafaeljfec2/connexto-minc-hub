@@ -159,15 +159,12 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         })
 
         // Send message with attachment data
-        await sendMessage(
-          `📎 ${file.name}`,
-          {
-            attachmentUrl: uploadResult.url,
-            attachmentName: uploadResult.originalName,
-            attachmentType: uploadResult.mimeType,
-            attachmentSize: uploadResult.bytes,
-          }
-        )
+        await sendMessage(`📎 ${file.name}`, {
+          attachmentUrl: uploadResult.url,
+          attachmentName: uploadResult.originalName,
+          attachmentType: uploadResult.mimeType,
+          attachmentSize: uploadResult.bytes,
+        })
 
         requestAnimationFrame(forceScroll)
         setTimeout(forceScroll, 100)
@@ -271,7 +268,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         {onBack && (
           <button
             onClick={handleBackClick}
-            className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg lg:hidden"
+            className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg lg:hidden flex-shrink-0"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path

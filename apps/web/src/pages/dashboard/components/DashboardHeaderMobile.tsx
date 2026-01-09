@@ -5,10 +5,16 @@ import { useMemo } from 'react'
 
 interface DashboardHeaderMobileProps {
   readonly onNotificationPress?: () => void
+  readonly onBack?: () => void
+  readonly title?: string
+  readonly showChurchSelector?: boolean
 }
 
 export function DashboardHeaderMobile({
   onNotificationPress,
+  onBack,
+  title,
+  showChurchSelector = true,
 }: Readonly<DashboardHeaderMobileProps>) {
   const { selectedChurch, setSelectedChurch } = useChurch()
   const { churches } = useChurches()
@@ -44,41 +50,64 @@ export function DashboardHeaderMobile({
   return (
     <div className="fixed top-0 left-0 right-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950 transition-all duration-300 safe-area-top pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between px-4 py-3 gap-2">
-        <button
-          onClick={handleMenuClick}
-          className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors flex-shrink-0"
-          aria-label="Abrir menu"
-        >
-          <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </button>
+        {onBack ? (
+          <button
+            onClick={onBack}
+            className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors flex-shrink-0"
+            aria-label="Voltar"
+          >
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+        ) : (
+          <button
+            onClick={handleMenuClick}
+            className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors flex-shrink-0"
+            aria-label="Abrir menu"
+          >
+            <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        )}
 
         <div className="flex items-center justify-center flex-1 min-w-0 px-2">
-          <div className="w-full max-w-[200px]">
-            <ComboBox
-              options={churchOptions}
-              value={selectedChurch?.id || null}
-              onValueChange={handleChurchChange}
-              placeholder="Igreja"
-              searchable
-              searchPlaceholder="Buscar..."
-              maxHeight="max-h-56"
-              className="h-9 px-0 sm:px-3 text-sm font-semibold justify-center bg-transparent border-none hover:bg-dark-100 dark:hover:bg-dark-800 focus:ring-0 text-dark-900 dark:text-dark-50"
-              contentClassName="rounded-md shadow-lg"
-              showEmptyMessage={false}
-              renderTrigger={(_option, displayValue) => (
-                <div className="flex items-center gap-1.5 mx-auto max-w-full">
-                  <span className="truncate">{displayValue}</span>
-                </div>
-              )}
-            />
-          </div>
+          {title ? (
+            <h1 className="text-base font-semibold text-dark-900 dark:text-dark-50 truncate">
+              {title}
+            </h1>
+          ) : showChurchSelector ? (
+            <div className="w-full max-w-[200px]">
+              <ComboBox
+                options={churchOptions}
+                value={selectedChurch?.id || null}
+                onValueChange={handleChurchChange}
+                placeholder="Igreja"
+                searchable
+                searchPlaceholder="Buscar..."
+                maxHeight="max-h-56"
+                className="h-9 px-0 sm:px-3 text-sm font-semibold justify-center bg-transparent border-none hover:bg-dark-100 dark:hover:bg-dark-800 focus:ring-0 text-dark-900 dark:text-dark-50"
+                contentClassName="rounded-md shadow-lg"
+                showEmptyMessage={false}
+                renderTrigger={(_option, displayValue) => (
+                  <div className="flex items-center gap-1.5 mx-auto max-w-full">
+                    <span className="truncate">{displayValue}</span>
+                  </div>
+                )}
+              />
+            </div>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">

@@ -1,10 +1,26 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+import {
+  v2 as cloudinary,
+  UploadApiResponse,
+  UploadApiErrorResponse,
+  UploadApiOptions,
+} from 'cloudinary';
 import { UploadResponseDto } from './dto/upload-response.dto';
-import { UPLOAD_CONSTANTS, ALLOWED_MIME_TYPES } from './upload.constants';
+import {
+  UPLOAD_CONSTANTS,
+  ALLOWED_MIME_TYPES,
+  AVATAR_CONSTANTS,
+  AVATAR_ALLOWED_MIME_TYPES,
+} from './upload.constants';
 
 type CloudinaryResourceType = 'image' | 'video' | 'raw';
+
+interface FileValidationOptions {
+  readonly maxSize: number;
+  readonly allowedTypes: readonly string[];
+  readonly maxSizeLabel: string;
+}
 
 @Injectable()
 export class UploadService {
@@ -18,16 +34,55 @@ export class UploadService {
     file: Express.Multer.File,
     folder: string = UPLOAD_CONSTANTS.DEFAULT_FOLDER,
   ): Promise<UploadResponseDto> {
-    this.validateFile(file);
+    this.validateFileWithOptions(file, {
+      maxSize: UPLOAD_CONSTANTS.MAX_FILE_SIZE,
+      allowedTypes: ALLOWED_MIME_TYPES,
+      maxSizeLabel: '10MB',
+    });
 
     try {
-      const result = await this.uploadToCloudinary(file, folder);
+      const options: UploadApiOptions = {
+        folder,
+        resource_type: this.getResourceType(file.mimetype),
+        access_mode: 'public',
+      };
+      const result = await this.executeUpload(file, options);
       this.logger.log(`File uploaded: ${result.public_id}`);
-
       return this.mapToResponse(file, result);
     } catch (error) {
       this.logger.error('Upload failed', error);
       throw new BadRequestException('Failed to upload file');
+    }
+  }
+
+  async uploadAvatar(file: Express.Multer.File, userId: string): Promise<string> {
+    this.validateFileWithOptions(file, {
+      maxSize: AVATAR_CONSTANTS.MAX_FILE_SIZE,
+      allowedTypes: AVATAR_ALLOWED_MIME_TYPES,
+      maxSizeLabel: '5MB',
+    });
+
+    try {
+      const options: UploadApiOptions = {
+        folder: `${AVATAR_CONSTANTS.FOLDER}/${userId}`,
+        resource_type: 'image',
+        access_mode: 'public',
+        transformation: [
+          {
+            width: AVATAR_CONSTANTS.WIDTH,
+            height: AVATAR_CONSTANTS.HEIGHT,
+            crop: 'fill',
+            gravity: 'face',
+          },
+          { format: 'webp', quality: 'auto' },
+        ],
+      };
+      const result = await this.executeUpload(file, options);
+      this.logger.log(`Avatar uploaded for user ${userId}: ${result.public_id}`);
+      return result.secure_url;
+    } catch (error) {
+      this.logger.error(`Avatar upload failed for user ${userId}`, error);
+      throw new BadRequestException('Failed to upload avatar');
     }
   }
 
@@ -49,26 +104,27 @@ export class UploadService {
     });
   }
 
-  private validateFile(file: Express.Multer.File): void {
+  private validateFileWithOptions(file: Express.Multer.File, options: FileValidationOptions): void {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
 
-    if (file.size > UPLOAD_CONSTANTS.MAX_FILE_SIZE) {
-      throw new BadRequestException('File size exceeds 10MB limit');
+    if (file.size > options.maxSize) {
+      throw new BadRequestException(`File size exceeds ${options.maxSizeLabel} limit`);
     }
 
-    if (!ALLOWED_MIME_TYPES.includes(file.mimetype as (typeof ALLOWED_MIME_TYPES)[number])) {
+    if (!options.allowedTypes.includes(file.mimetype)) {
       throw new BadRequestException(`File type ${file.mimetype} is not allowed`);
     }
   }
 
-  private uploadToCloudinary(file: Express.Multer.File, folder: string): Promise<UploadApiResponse> {
+  private executeUpload(
+    file: Express.Multer.File,
+    options: UploadApiOptions,
+  ): Promise<UploadApiResponse> {
     return new Promise((resolve, reject) => {
-      const resourceType = this.getResourceType(file.mimetype);
-
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder, resource_type: resourceType, access_mode: 'public' },
+        options,
         (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
           if (error) {
             reject(new Error(error.message ?? 'Upload failed'));
@@ -79,7 +135,6 @@ export class UploadService {
           }
         },
       );
-
       uploadStream.end(file.buffer);
     });
   }

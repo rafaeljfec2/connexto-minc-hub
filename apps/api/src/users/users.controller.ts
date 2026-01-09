@@ -9,18 +9,27 @@ import {
   UseGuards,
   ParseUUIDPipe,
   NotFoundException,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserEntity } from './entities/user.entity';
+import { UploadService } from '../upload/upload.service';
+import { GetUser } from '../common/decorators/get-user.decorator';
+import { AVATAR_CONSTANTS } from '../upload/upload.constants';
 import * as bcrypt from 'bcrypt';
 
 @ApiTags('Users')
@@ -28,7 +37,10 @@ import * as bcrypt from 'bcrypt';
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly uploadService: UploadService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
@@ -36,7 +48,7 @@ export class UsersController {
   @ApiResponse({ status: 409, description: 'User with this email already exists' })
   async create(@Body() createUserDto: CreateUserDto): Promise<UserEntity> {
     const passwordHash = await bcrypt.hash(createUserDto.password, 10);
-    
+
     return this.usersService.create({
       name: createUserDto.name,
       email: createUserDto.email,
@@ -44,6 +56,43 @@ export class UsersController {
       role: createUserDto.role,
       personId: createUserDto.personId ?? null,
     });
+  }
+
+  @Post('avatar')
+  @ApiOperation({ summary: 'Upload user avatar' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        avatar: {
+          type: 'string',
+          format: 'binary',
+          description: 'Avatar image file (jpg, jpeg, png, webp). Max 5MB.',
+        },
+      },
+      required: ['avatar'],
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Avatar uploaded successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid file or file too large' })
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      limits: { fileSize: AVATAR_CONSTANTS.MAX_FILE_SIZE },
+    }),
+  )
+  async uploadAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @GetUser() user: UserEntity,
+  ): Promise<{ avatarUrl: string }> {
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
+
+    const avatarUrl = await this.uploadService.uploadAvatar(file, user.id);
+    await this.usersService.updateAvatar(user.id, avatarUrl);
+
+    return { avatarUrl };
   }
 
   @Get()
