@@ -152,14 +152,26 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
           </div>
         )}
-        {messages.map(message => (
-          <ChatBubble
-            key={message.id}
-            message={message.text}
-            isMe={message.senderId === user?.id}
-            timestamp={message.createdAt}
-          />
-        ))}
+        {messages.map(message => {
+          const isMe = message.senderId === user?.id
+          const status = isMe
+            ? message.id.startsWith('temp-')
+              ? 'sending'
+              : message.read
+                ? 'read'
+                : 'sent'
+            : undefined
+
+          return (
+            <ChatBubble
+              key={message.id}
+              message={message.text}
+              isMe={isMe}
+              timestamp={message.createdAt}
+              status={status}
+            />
+          )
+        })}
         {/* Spacer */}
         <div className="h-4" />
         <div ref={messagesEndRef} />
