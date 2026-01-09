@@ -179,7 +179,7 @@ export function ChatList({ className, onConversationClick }: ChatListProps) {
         </div>
 
         {/* Search */}
-        <div className="relative">
+        <div className="relative mt-4">
           <input
             type="text"
             placeholder="Buscar..."

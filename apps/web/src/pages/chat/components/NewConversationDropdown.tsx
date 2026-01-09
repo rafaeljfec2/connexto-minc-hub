@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 interface NewConversationDropdownProps {
   isOpen: boolean
   onClose: () => void
