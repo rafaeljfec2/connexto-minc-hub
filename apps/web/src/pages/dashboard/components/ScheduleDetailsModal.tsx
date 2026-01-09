@@ -1,6 +1,6 @@
 import { Modal } from '@/components/ui/Modal'
 import { Schedule, Service, Team, Person, Ministry } from '@minc-hub/shared/types'
-import { parseLocalDate } from '@/lib/utils'
+import { parseLocalDate, formatTime } from '@/lib/utils'
 
 interface ScheduleDetailsModalProps {
   isOpen: boolean
@@ -29,10 +29,12 @@ export function ScheduleDetailsModal({
   const day = scheduleDate.getDate().toString()
   const month = scheduleDate.toLocaleDateString('pt-BR', { month: 'long' })
   const weekday = scheduleDate.toLocaleDateString('pt-BR', { weekday: 'long' })
-  const time = scheduleDate.toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const time = service?.time
+    ? formatTime(service.time)
+    : scheduleDate.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
 
   // Helper to get ministry name
   const getMinistryName = (ministryId: string) => {

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Schedule, Service, Team, Person, Ministry } from '@minc-hub/shared/types'
 import { ScheduleDetailsModal } from './ScheduleDetailsModal'
-import { parseLocalDate } from '@/lib/utils'
+import { parseLocalDate, formatTime } from '@/lib/utils'
 
 interface UpcomingServicesMobileProps {
   readonly schedules: readonly Schedule[]
@@ -65,6 +65,7 @@ export function UpcomingServicesMobile({
             hour: '2-digit',
             minute: '2-digit',
           })
+          const formattedTime = service?.time ? formatTime(service.time) : time
 
           return (
             <button
@@ -86,9 +87,8 @@ export function UpcomingServicesMobile({
                     {service?.name ?? 'Culto'}
                   </div>
                   <div className="text-xs text-dark-900 dark:text-dark-50 truncate mb-1">
-                    {service?.time ?? time}
+                    {formattedTime}
                   </div>
-                  <div className="text-xs text-dark-600 dark:text-dark-400">{time}</div>
                 </div>
               </Card>
             </button>
