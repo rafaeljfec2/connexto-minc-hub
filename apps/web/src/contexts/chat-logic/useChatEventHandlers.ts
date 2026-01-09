@@ -1,4 +1,4 @@
-import { useEffect, useCallback, MutableRefObject } from 'react'
+import { useEffect, MutableRefObject, useRef } from 'react'
 import { ChatWebSocketService, Conversation, Message, User } from '@minc-hub/shared'
 
 interface UseChatEventHandlersProps {
@@ -22,9 +22,38 @@ export function useChatEventHandlers({
   setConversations,
   loadConversations,
 }: UseChatEventHandlersProps) {
-  const updateMessagesState = useCallback(
-    (message: Message) => {
-      setMessages(prev => {
+  // Use refs to keep all values stable and avoid re-registering listeners
+  const userRef = useRef(user)
+  const loadConversationsRef = useRef(loadConversations)
+  const setMessagesRef = useRef(setMessages)
+  const setActiveConversationRef = useRef(setActiveConversation)
+  const setConversationsRef = useRef(setConversations)
+
+  // Keep refs updated
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
+
+  useEffect(() => {
+    loadConversationsRef.current = loadConversations
+  }, [loadConversations])
+
+  useEffect(() => {
+    setMessagesRef.current = setMessages
+  }, [setMessages])
+
+  useEffect(() => {
+    setActiveConversationRef.current = setActiveConversation
+  }, [setActiveConversation])
+
+  useEffect(() => {
+    setConversationsRef.current = setConversations
+  }, [setConversations])
+
+  // Register listeners only once when chatSocket changes
+  useEffect(() => {
+    const updateMessagesState = (message: Message) => {
+      setMessagesRef.current(prev => {
         if (prev.some(m => m.id === message.id)) return prev
 
         const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
@@ -38,13 +67,10 @@ export function useChatEventHandlers({
 
         return [...prev, message]
       })
-    },
-    [setMessages, isOptimisticUpdateRef]
-  )
+    }
 
-  const syncActiveConversation = useCallback(
-    (message: Message) => {
-      setActiveConversation(prev => {
+    const syncActiveConversation = (message: Message) => {
+      setActiveConversationRef.current(prev => {
         if (!prev) return null
         if (prev.id === message.conversationId) {
           const updated = {
@@ -58,19 +84,15 @@ export function useChatEventHandlers({
         }
         return prev
       })
-    },
-    [setActiveConversation, activeConversationRef]
-  )
+    }
 
-  const updateConversationList = useCallback(
-    (message: Message) => {
-      setConversations(prev => {
+    const updateConversationList = (message: Message) => {
+      setConversationsRef.current(prev => {
         const existingConv = prev.find(c => c.id === message.conversationId)
 
         // If conversation doesn't exist, reload the list to get it
-        if (!existingConv && loadConversations) {
-          // Reload conversations asynchronously to avoid blocking
-          loadConversations().catch(error => {
+        if (!existingConv && loadConversationsRef.current) {
+          loadConversationsRef.current().catch(error => {
             console.error('Failed to reload conversations after new message', error)
           })
           return prev
@@ -85,13 +107,17 @@ export function useChatEventHandlers({
         return prev
           .map(c => {
             if (c.id === message.conversationId) {
-              const isSelf = message.senderId === user?.id
+              const isSelf = message.senderId === userRef.current?.id
               const currentActive = activeConversationRef.current
               const isActive = currentActive?.id === c.id
 
               // Only increment if not active, not self, and message is new
               const shouldIncrement = !isActive && !isSelf && c.lastMessage?.id !== message.id
-              const newUnreadCount = shouldIncrement ? (c.unreadCount ?? 0) + 1 : isActive || isSelf ? 0 : (c.unreadCount ?? 0)
+              const newUnreadCount = shouldIncrement
+                ? (c.unreadCount ?? 0) + 1
+                : isActive || isSelf
+                  ? 0
+                  : (c.unreadCount ?? 0)
 
               return {
                 ...c,
@@ -105,17 +131,14 @@ export function useChatEventHandlers({
           .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       })
 
-      // Sync active conversation to prevent stale state (without triggering fetch)
+      // Sync active conversation to prevent stale state
       const currentActive = activeConversationRef.current
       if (currentActive && currentActive.id === message.conversationId) {
         syncActiveConversation(message)
       }
-    },
-    [user, syncActiveConversation, setConversations, activeConversationRef, loadConversations]
-  )
+    }
 
-  const handleNewMessage = useCallback(
-    (message: Message) => {
+    const handleNewMessage = (message: Message) => {
       const currentActive = activeConversationRef.current
 
       // If message belongs to active conversation, append or swap it
@@ -123,42 +146,32 @@ export function useChatEventHandlers({
         updateMessagesState(message)
 
         // If we are active, we read it immediately via WebSocket
-        if (message.senderId !== user?.id) {
+        if (message.senderId !== userRef.current?.id) {
           chatSocket.markAsRead(currentActive.id, [message.id])
         }
 
-        // SYNC ACTIVE CONVERSATION STATE (without triggering fetch)
+        // SYNC ACTIVE CONVERSATION STATE
         syncActiveConversation(message)
       }
 
-      // Always update conversation list (for both active and inactive conversations)
+      // Always update conversation list
       updateConversationList(message)
-    },
-    [
-      updateMessagesState,
-      syncActiveConversation,
-      updateConversationList,
-      chatSocket,
-      user,
-      activeConversationRef,
-    ]
-  )
+    }
 
-  const handleConversationUpdated = useCallback(
-    (data: { conversationId: string; lastMessage: Message }) => {
+    const handleConversationUpdated = (data: { conversationId: string; lastMessage: Message }) => {
       updateConversationList(data.lastMessage)
-    },
-    [updateConversationList]
-  )
+    }
 
-  // Handle message-read event - update messages to show as read in real-time
-  const handleMessageRead = useCallback(
-    (data: { conversationId: string; readBy: string; messageIds?: string[] }) => {
+    const handleMessageRead = (data: {
+      conversationId: string
+      readBy: string
+      messageIds?: string[]
+    }) => {
       const currentActive = activeConversationRef.current
 
       // Only update if we're viewing this conversation and the reader is not us
-      if (currentActive?.id === data.conversationId && data.readBy !== user?.id) {
-        setMessages(prev =>
+      if (currentActive?.id === data.conversationId && data.readBy !== userRef.current?.id) {
+        setMessagesRef.current(prev =>
           prev.map(msg => {
             // If messageIds are provided, only mark those specific messages
             if (data.messageIds && data.messageIds.length > 0) {
@@ -168,26 +181,23 @@ export function useChatEventHandlers({
               return msg
             }
             // If no messageIds, mark all messages from current user as read
-            if (msg.senderId === user?.id && !msg.read) {
+            if (msg.senderId === userRef.current?.id && !msg.read) {
               return { ...msg, read: true }
             }
             return msg
           })
         )
       }
-    },
-    [activeConversationRef, user, setMessages]
-  )
-
-  const onReconnected = useCallback(() => {
-    const currentActive = activeConversationRef.current
-    if (currentActive) {
-      chatSocket.joinConversation(currentActive.id)
     }
-  }, [chatSocket, activeConversationRef])
 
-  // Handle Incoming Messages (Stable Listener)
-  useEffect(() => {
+    const onReconnected = () => {
+      const currentActive = activeConversationRef.current
+      if (currentActive) {
+        chatSocket.joinConversation(currentActive.id)
+      }
+    }
+
+    // Register all listeners
     chatSocket.on('new-message', handleNewMessage)
     chatSocket.on('conversation-updated', handleConversationUpdated)
     chatSocket.on('message-read', handleMessageRead)
@@ -199,5 +209,5 @@ export function useChatEventHandlers({
       chatSocket.off('message-read', handleMessageRead)
       chatSocket.off('connected', onReconnected)
     }
-  }, [chatSocket, handleNewMessage, handleConversationUpdated, handleMessageRead, onReconnected])
+  }, [chatSocket, activeConversationRef, isOptimisticUpdateRef])
 }
