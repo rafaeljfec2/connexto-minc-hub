@@ -74,7 +74,7 @@ export class ChatService {
           participants: conversation.participants.map((p) => ({
             id: p.userId,
             name: p.user?.name,
-            // avatar: p.user?.avatar // Add avatar if UserEntity has it
+            avatar: p.user?.avatar ?? null,
             timestamp: p.joinedAt,
           })),
           lastMessage,

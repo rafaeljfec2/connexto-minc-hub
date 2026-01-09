@@ -1,6 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { Dropdown } from '@/components/ui/Dropdown'
+import { Avatar } from '@/components/ui/Avatar'
 import { useNavigate } from 'react-router-dom'
 import { UserIcon, SettingsIcon, LogoutIcon, ChevronDownIcon } from '@/components/icons'
 
@@ -37,9 +38,7 @@ export function HeaderProfile() {
             type="button"
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800 transition-all duration-200"
           >
-            <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-sm font-medium text-white">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
+            <Avatar src={user.avatar} name={user.name} size="sm" />
             <span className="text-sm text-dark-700 dark:text-dark-300 hidden sm:inline">
               {user.name}
             </span>

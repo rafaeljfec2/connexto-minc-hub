@@ -1,5 +1,6 @@
 import { User } from '@minc-hub/shared/types'
 import { useAuth } from '@/contexts/AuthContext'
+import { Avatar } from '@/components/ui/Avatar'
 
 interface SidebarUserInfoProps {
   readonly user: User
@@ -10,13 +11,16 @@ export function SidebarUserInfo({ user }: SidebarUserInfoProps) {
 
   return (
     <div className="p-4 border-t border-dark-200 dark:border-dark-800 flex items-center justify-between gap-2">
-      <div className="flex flex-col min-w-0">
-        <span className="text-sm font-medium text-dark-900 dark:text-dark-50 truncate">
-          {user.name}
-        </span>
-        <span className="text-xs text-dark-500 dark:text-dark-400 truncate">
-          {user.email || 'Usuário'}
-        </span>
+      <div className="flex items-center gap-3 min-w-0">
+        <Avatar src={user.avatar} name={user.name} size="sm" />
+        <div className="flex flex-col min-w-0">
+          <span className="text-sm font-medium text-dark-900 dark:text-dark-50 truncate">
+            {user.name}
+          </span>
+          <span className="text-xs text-dark-500 dark:text-dark-400 truncate">
+            {user.email || 'Usuário'}
+          </span>
+        </div>
       </div>
       <button
         onClick={logout}
