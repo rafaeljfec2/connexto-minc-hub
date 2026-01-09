@@ -38,6 +38,7 @@ export default function UsersScreen() {
     email: '',
     password: '',
     role: UserRole.SERVO,
+    canCheckIn: true,
   })
 
   const { filteredData, refreshing, handleRefresh } = useListScreen({
@@ -62,6 +63,7 @@ export default function UsersScreen() {
         email: user.email,
         password: '',
         role: user.role,
+        canCheckIn: user.canCheckIn,
       })
     } else {
       setEditingUser(null)
@@ -70,6 +72,7 @@ export default function UsersScreen() {
         email: '',
         password: '',
         role: UserRole.SERVO,
+        canCheckIn: true,
       })
     }
     modal.open()
@@ -83,6 +86,7 @@ export default function UsersScreen() {
       email: '',
       password: '',
       role: UserRole.SERVO,
+      canCheckIn: true,
     })
   }
 

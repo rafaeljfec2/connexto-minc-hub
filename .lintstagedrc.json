@@ -1,0 +1,20 @@
+{
+  "apps/web/**/*.{ts,tsx}": [
+    "pnpm --filter @minc-hub/web exec eslint --fix --max-warnings 0",
+    "pnpm --filter @minc-hub/web exec prettier --write"
+  ],
+  "apps/api/**/*.ts": [
+    "pnpm --filter @minc-teams/api exec eslint --fix",
+    "pnpm --filter @minc-teams/api exec prettier --write"
+  ],
+  "packages/shared/**/*.{ts,tsx}": [
+    "pnpm --filter @minc-hub/shared exec eslint --fix --max-warnings 0",
+    "pnpm --filter @minc-hub/shared exec prettier --write"
+  ],
+  "apps/web/**/*.{json,css,md}": [
+    "pnpm --filter @minc-hub/web exec prettier --write"
+  ],
+  "apps/api/**/*.{json,md}": [
+    "pnpm --filter @minc-teams/api exec prettier --write"
+  ]
+}

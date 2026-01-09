@@ -105,8 +105,6 @@ export default function MinistriesScreen() {
 
   return (
     <CrudScreen
-      title="Times"
-      subtitle="Gerencie os times cadastrados"
       searchTerm={searchTerm}
       onSearchChange={setSearchTerm}
       data={filteredData}

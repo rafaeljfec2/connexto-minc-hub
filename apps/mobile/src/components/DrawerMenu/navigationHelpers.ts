@@ -1,12 +1,14 @@
-import type { MainTabParamList } from '@/navigator/navigator.types'
+import type { RootStackParamList } from '@/navigator/navigator.types'
 import type { MenuItem } from './menuItems'
 
-export function getScreenNameForMenuItem(item: MenuItem): keyof MainTabParamList | null {
+type NavigableScreens = Exclude<keyof RootStackParamList, 'Login' | 'Main' | 'ChatDetail'>
+
+export function getScreenNameForMenuItem(item: MenuItem): NavigableScreens | null {
   if (item.screen) {
     return null
   }
 
-  const screenMap: Record<string, keyof MainTabParamList> = {
+  const screenMap: Record<string, NavigableScreens> = {
     churches: 'Churches',
     ministries: 'Ministries',
     teams: 'Teams',

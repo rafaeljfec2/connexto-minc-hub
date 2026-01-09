@@ -12,6 +12,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,md}\"",
     "type-check": "tsc --noEmit",
+    "test": "echo 'No tests configured for web yet'",
     "clean": "rm -rf dist"
   },
   "dependencies": {

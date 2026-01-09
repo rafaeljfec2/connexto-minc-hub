@@ -5,6 +5,7 @@ export const MOCK_USER: User = {
   email: 'admin@minc.com',
   name: 'Usuário Admin',
   role: UserRole.PASTOR,
+  canCheckIn: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 }
@@ -27,6 +28,7 @@ export const MOCK_USERS: User[] = [
     email: 'admin@minchteams.com',
     name: 'Usuário Admin',
     role: UserRole.PASTOR,
+    canCheckIn: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
@@ -36,6 +38,7 @@ export const MOCK_USERS: User[] = [
     name: 'Coordenador Teste',
     role: UserRole.LIDER_DE_TIME,
     personId: '1',
+    canCheckIn: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },

@@ -14,9 +14,17 @@
     "format": "turbo run format",
     "format:check": "turbo run format:check",
     "test": "turbo run test",
-    "clean": "turbo run clean"
+    "test:api": "pnpm --filter @minc-teams/api test",
+    "typecheck": "turbo run type-check",
+    "typecheck:web": "pnpm --filter @minc-hub/web type-check",
+    "typecheck:api": "pnpm --filter @minc-teams/api type-check",
+    "clean": "turbo run clean",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
     "turbo": "^2.7.3"
   },
   "packageManager": "pnpm@8.15.0",

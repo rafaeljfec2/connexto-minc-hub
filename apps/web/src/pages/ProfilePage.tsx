@@ -50,10 +50,10 @@ export default function ProfilePage() {
   if (!user) return null
 
   return (
-    <div className="min-h-full bg-gray-50 dark:bg-dark-950">
-      <div className="max-w-5xl mx-auto px-4 py-6 lg:py-8">
+    <div className="h-full bg-gray-50 dark:bg-dark-950 lg:bg-transparent lg:dark:bg-transparent">
+      <div className="max-w-5xl mx-auto px-4 py-6 lg:pt-0 lg:pb-6">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4">
           <h1 className="text-2xl lg:text-3xl font-bold text-dark-900 dark:text-dark-50">
             Meu Perfil
           </h1>
@@ -71,9 +71,9 @@ export default function ProfilePage() {
         />
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           {/* Main Content - 2 columns on desktop */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4">
             {/* Personal Information */}
             <ProfileSection
               title="Informações Pessoais"
@@ -150,7 +150,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Sidebar - 1 column on desktop */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Quick Info */}
             <ProfileSection title="Informações" description="">
               <div className="space-y-3">
