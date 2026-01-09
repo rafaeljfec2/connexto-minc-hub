@@ -46,6 +46,27 @@ interface TypingDto {
   isTyping: boolean;
 }
 
+// WebRTC Signaling DTOs
+interface WebRTCOfferDto {
+  targetUserId: string;
+  offer: RTCSessionDescriptionInit;
+  fileInfo: {
+    name: string;
+    size: number;
+    type: string;
+  };
+}
+
+interface WebRTCAnswerDto {
+  targetUserId: string;
+  answer: RTCSessionDescriptionInit;
+}
+
+interface WebRTCIceCandidateDto {
+  targetUserId: string;
+  candidate: RTCIceCandidateInit;
+}
+
 const MIN_TOKEN_LENGTH = 50;
 const COOKIE_TOKEN_NAMES = ['access_token', 'auth_token'];
 
@@ -440,6 +461,109 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       conversationId: data.conversationId,
       userId: client.userId,
       isTyping: data.isTyping,
+    });
+  }
+
+  // ========================================
+  // WebRTC Signaling Events for P2P File Transfer
+  // ========================================
+
+  @SubscribeMessage('webrtc-offer')
+  handleWebRTCOffer(
+    @MessageBody() data: WebRTCOfferDto,
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ): void {
+    if (!client.userId) {
+      this.logger.warn('webrtc-offer: Client has no userId');
+      return;
+    }
+
+    this.logger.log(
+      `WebRTC offer from ${client.userId} to ${data.targetUserId} for file: ${data.fileInfo.name}`,
+    );
+
+    // Send offer to target user's personal room
+    this.broadcastToUserRoom(data.targetUserId, 'webrtc-offer', {
+      fromUserId: client.userId,
+      offer: data.offer,
+      fileInfo: data.fileInfo,
+    });
+  }
+
+  @SubscribeMessage('webrtc-answer')
+  handleWebRTCAnswer(
+    @MessageBody() data: WebRTCAnswerDto,
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ): void {
+    if (!client.userId) {
+      this.logger.warn('webrtc-answer: Client has no userId');
+      return;
+    }
+
+    this.logger.log(`WebRTC answer from ${client.userId} to ${data.targetUserId}`);
+
+    // Send answer to target user's personal room
+    this.broadcastToUserRoom(data.targetUserId, 'webrtc-answer', {
+      fromUserId: client.userId,
+      answer: data.answer,
+    });
+  }
+
+  @SubscribeMessage('webrtc-ice-candidate')
+  handleWebRTCIceCandidate(
+    @MessageBody() data: WebRTCIceCandidateDto,
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ): void {
+    if (!client.userId) {
+      return;
+    }
+
+    this.logger.debug(`ICE candidate from ${client.userId} to ${data.targetUserId}`);
+
+    // Send ICE candidate to target user's personal room
+    this.broadcastToUserRoom(data.targetUserId, 'webrtc-ice-candidate', {
+      fromUserId: client.userId,
+      candidate: data.candidate,
+    });
+  }
+
+  @SubscribeMessage('file-request')
+  handleFileRequest(
+    @MessageBody() data: { targetUserId: string; fileInfo: { name: string; size: number; type: string } },
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ): void {
+    if (!client.userId) {
+      this.logger.warn('file-request: Client has no userId');
+      return;
+    }
+
+    this.logger.log(
+      `File request from ${client.userId} to ${data.targetUserId} for file: ${data.fileInfo.name}`,
+    );
+
+    // Send file request to the original sender (who has the file)
+    // The sender will then initiate the WebRTC transfer
+    this.broadcastToUserRoom(data.targetUserId, 'file-request', {
+      fromUserId: client.userId,
+      fileInfo: data.fileInfo,
+    });
+  }
+
+  @SubscribeMessage('webrtc-reject')
+  handleWebRTCReject(
+    @MessageBody() data: { targetUserId: string; reason?: string },
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ): void {
+    if (!client.userId) {
+      return;
+    }
+
+    this.logger.log(`WebRTC rejected by ${client.userId} for ${data.targetUserId}`);
+
+    // Notify sender that transfer was rejected
+    this.broadcastToUserRoom(data.targetUserId, 'webrtc-rejected', {
+      fromUserId: client.userId,
+      reason: data.reason || 'Transfer rejected by recipient',
     });
   }
 }

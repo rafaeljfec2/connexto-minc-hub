@@ -1,5 +1,11 @@
 import { io, Socket } from 'socket.io-client'
 
+export interface FileInfo {
+  name: string
+  size: number
+  type: string
+}
+
 export interface ChatSocketEvents {
   'join-conversation': (data: { conversationId: string }) => void
   'leave-conversation': (data: { conversationId: string }) => void
@@ -7,17 +13,30 @@ export interface ChatSocketEvents {
   'mark-read': (data: { conversationId: string; messageIds?: string[] }) => void
   typing: (data: { conversationId: string; isTyping: boolean }) => void
   connected: (data: { userId: string; serverTime: string }) => void
-  'new-message': (data: any) => void // Typed as Message but loose for socket
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  'new-message': (data: any) => void
   'message-read': (data: { conversationId: string; readBy: string; messageIds?: string[] }) => void
   'user-typing': (data: { conversationId: string; userId: string; isTyping: boolean }) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   'conversation-updated': (data: any) => void
   error: (data: { message: string }) => void
   disconnect: (reason: string) => void
+  // File Request Event (receiver requests file from sender)
+  'file-request': (data: { fromUserId: string; fileInfo: FileInfo }) => void
+  // WebRTC Signaling Events
+  'webrtc-offer': (data: {
+    fromUserId: string
+    offer: RTCSessionDescriptionInit
+    fileInfo: FileInfo
+  }) => void
+  'webrtc-answer': (data: { fromUserId: string; answer: RTCSessionDescriptionInit }) => void
+  'webrtc-ice-candidate': (data: { fromUserId: string; candidate: RTCIceCandidateInit }) => void
+  'webrtc-rejected': (data: { fromUserId: string; reason: string }) => void
 }
 
 export class ChatWebSocketService {
   private socket: Socket | null = null
-  private url: string
+  private readonly url: string
 
   constructor(url: string) {
     this.url = url
@@ -58,7 +77,7 @@ export class ChatWebSocketService {
       console.log('Chat WebSocket connected', this.socket?.id)
     })
 
-    this.socket.on('connect_error', err => {
+    this.socket.on('connect_error', (err: Error) => {
       console.error('Chat WebSocket connection error:', err)
     })
 
@@ -97,6 +116,70 @@ export class ChatWebSocketService {
 
   sendTyping(conversationId: string, isTyping: boolean) {
     this.socket?.emit('typing', { conversationId, isTyping })
+  }
+
+  // ========================================
+  // File Transfer Methods
+  // ========================================
+
+  /**
+   * Request a file from another user (receiver calls this)
+   * The sender will then initiate the WebRTC transfer
+   */
+  sendFileRequest(targetUserId: string, fileInfo: FileInfo) {
+    if (!this.socket?.connected) {
+      console.error('[ChatWS] Cannot send file request: socket not connected')
+      return
+    }
+    this.socket.emit('file-request', { targetUserId, fileInfo })
+  }
+
+  // ========================================
+  // WebRTC Signaling Methods for P2P File Transfer
+  // ========================================
+
+  /**
+   * Send WebRTC offer to initiate P2P file transfer
+   */
+  sendWebRTCOffer(targetUserId: string, offer: RTCSessionDescriptionInit, fileInfo: FileInfo) {
+    if (!this.socket?.connected) {
+      console.error('[ChatWS] Cannot send WebRTC offer: socket not connected')
+      return
+    }
+    this.socket.emit('webrtc-offer', { targetUserId, offer, fileInfo })
+  }
+
+  /**
+   * Send WebRTC answer to accept P2P file transfer
+   */
+  sendWebRTCAnswer(targetUserId: string, answer: RTCSessionDescriptionInit) {
+    if (!this.socket?.connected) {
+      console.error('[ChatWS] Cannot send WebRTC answer: socket not connected')
+      return
+    }
+    this.socket.emit('webrtc-answer', { targetUserId, answer })
+  }
+
+  /**
+   * Send ICE candidate for WebRTC connection establishment
+   */
+  sendICECandidate(targetUserId: string, candidate: RTCIceCandidateInit) {
+    if (!this.socket?.connected) {
+      console.error('[ChatWS] Cannot send ICE candidate: socket not connected')
+      return
+    }
+    this.socket.emit('webrtc-ice-candidate', { targetUserId, candidate })
+  }
+
+  /**
+   * Reject a WebRTC file transfer
+   */
+  sendWebRTCReject(targetUserId: string, reason?: string) {
+    if (!this.socket?.connected) {
+      console.error('[ChatWS] Cannot send WebRTC reject: socket not connected')
+      return
+    }
+    this.socket.emit('webrtc-reject', { targetUserId, reason })
   }
 
   on<K extends keyof ChatSocketEvents>(event: K, callback: ChatSocketEvents[K]) {

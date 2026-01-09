@@ -262,7 +262,7 @@ export function Sidebar() {
                 onClick={() => setIsMobileOpen(false)}
                 aria-label="Fechar menu"
               />
-              <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 z-50 overflow-y-auto flex flex-col animate-slide-in-left">
+              <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 z-50 overflow-y-auto flex flex-col animate-slide-in-left pb-[env(safe-area-inset-bottom)]">
                 <SidebarBranding />
                 <nav className="flex-1 overflow-y-auto p-4">
                   {renderNavItems(() => setIsMobileOpen(false))}

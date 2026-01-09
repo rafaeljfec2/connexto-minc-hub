@@ -6,6 +6,7 @@ import { ChatContext } from '@/hooks/useChat'
 import { useChatConnection } from './chat-logic/useChatConnection'
 import { useChatEventHandlers } from './chat-logic/useChatEventHandlers'
 import { useChatActions } from './chat-logic/useChatActions'
+import { FileTransferProvider } from './FileTransferContext'
 
 const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -145,5 +146,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     ]
   )
 
-  return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>
+  return (
+    <ChatContext.Provider value={value}>
+      <FileTransferProvider chatSocket={chatSocket}>{children}</FileTransferProvider>
+    </ChatContext.Provider>
+  )
 }

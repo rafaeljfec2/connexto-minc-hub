@@ -1,10 +1,32 @@
-import { useRef, useEffect, useLayoutEffect, useCallback } from 'react'
+import { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react'
 
-import { ChatBubble } from './ChatBubble'
+import { ChatBubble, FileAttachment } from './ChatBubble'
 import { ChatInput } from './ChatInput'
+import { FileTransferProgress } from './FileTransferProgress'
+import { IncomingTransferModal } from './IncomingTransferModal'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 import { Avatar } from '@/components/ui/Avatar'
+import { useFileTransfer } from '@/contexts/FileTransferContext'
+
+// Pattern to detect file messages: [FILE]{"name":"...","size":123,"type":"..."}
+const FILE_MESSAGE_PATTERN = /^\[FILE\](\{.*\})$/
+
+interface ParsedFileInfo {
+  name: string
+  size: number
+  type: string
+}
+
+function parseFileMessage(text: string): ParsedFileInfo | null {
+  const match = text.match(FILE_MESSAGE_PATTERN)
+  if (!match) return null
+  try {
+    return JSON.parse(match[1]) as ParsedFileInfo
+  } catch {
+    return null
+  }
+}
 
 interface ChatWindowProps {
   conversationId: string
@@ -30,6 +52,66 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     loadMoreMessages,
   } = useChat()
   const { user } = useAuth()
+
+  // File transfer context - may not be available if not wrapped in provider
+  const fileTransferContext = (() => {
+    try {
+      return useFileTransfer()
+    } catch {
+      return null
+    }
+  })()
+
+  const activeTransfers = fileTransferContext?.activeTransfers ?? []
+  const incomingRequest = fileTransferContext?.incomingRequest ?? null
+
+  // Track download progress per message
+  const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({})
+
+  // Handler for requesting file download from sender (when clicking on file bubble)
+  const handleRequestFileDownload = useCallback(
+    async (senderId: string, fileInfo: FileAttachment) => {
+      if (!fileTransferContext) {
+        console.error('File transfer not available')
+        return
+      }
+
+      console.log('[ChatWindow] Requesting file from:', senderId, fileInfo)
+
+      // Request the file from the sender via WebRTC
+      // The sender needs to be online for this to work
+      try {
+        await fileTransferContext.requestFile(senderId, {
+          name: fileInfo.name,
+          size: fileInfo.size,
+          type: fileInfo.type,
+        })
+      } catch (error) {
+        console.error('Failed to request file:', error)
+        throw error
+      }
+    },
+    [fileTransferContext]
+  )
+
+  // Handler for downloading received files (from transfer progress panel)
+  const handleDownloadReceivedFile = useCallback(
+    (transferId: string) => {
+      fileTransferContext?.downloadFile(transferId)
+    },
+    [fileTransferContext]
+  )
+
+  // Update download progress from active transfers
+  useEffect(() => {
+    const newProgress: Record<string, number> = {}
+    for (const transfer of activeTransfers) {
+      if (transfer.direction === 'download') {
+        newProgress[`${transfer.peerId}-${transfer.fileName}`] = transfer.progress
+      }
+    }
+    setDownloadProgress(newProgress)
+  }, [activeTransfers])
 
   // Common scroll logic
   const forceScroll = useCallback(() => {
@@ -121,19 +203,68 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     }
   }
 
-  const handleAttachment = (
+  const handleAttachment = async (
     type: 'camera' | 'gallery' | 'document' | 'location',
     file?: File
   ) => {
-    if (file) {
-      // TODO: Implement file upload when backend supports it
-      console.log(`Attachment type: ${type}, file:`, file.name, file.type, file.size)
+    if (type === 'location') {
+      // Handle location sharing
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            const { latitude, longitude } = position.coords
+            const locationUrl = `https://www.google.com/maps?q=${latitude},${longitude}`
+            sendMessage(`📍 Localização: ${locationUrl}`)
+            requestAnimationFrame(forceScroll)
+            setTimeout(forceScroll, 100)
+          },
+          error => {
+            console.error('Geolocation error:', error)
+            sendMessage('❌ Não foi possível obter a localização')
+          }
+        )
+      }
+      return
+    }
 
-      // For now, send a message indicating the file was selected
-      const fileInfo = `📎 ${type === 'camera' ? '📷' : type === 'gallery' ? '🖼️' : '📄'} ${file.name} (${(file.size / 1024).toFixed(1)} KB)`
-      sendMessage(fileInfo)
+    if (file && otherUser) {
+      // Send file message with structured format for P2P download
+      const fileMessage = `[FILE]${JSON.stringify({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      })}`
+      sendMessage(fileMessage)
+
+      // If file transfer context is available, register the file for P2P sharing
+      if (fileTransferContext) {
+        try {
+          fileTransferContext.registerFileForSharing(file)
+          console.log(`[P2P] File registered for sharing: ${file.name}`)
+        } catch (error) {
+          console.error('[P2P] Failed to register file for sharing:', error)
+        }
+      }
+
       requestAnimationFrame(forceScroll)
       setTimeout(forceScroll, 100)
+    }
+  }
+
+  // File transfer handlers
+  const handleCancelTransfer = (transferId: string) => {
+    fileTransferContext?.cancelTransfer(transferId)
+  }
+
+  const handleAcceptTransfer = () => {
+    if (incomingRequest) {
+      fileTransferContext?.acceptTransfer(incomingRequest.transferId)
+    }
+  }
+
+  const handleRejectTransfer = () => {
+    if (incomingRequest) {
+      fileTransferContext?.rejectTransfer(incomingRequest.transferId)
     }
   }
 
@@ -178,13 +309,29 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                 : 'sent'
             : undefined
 
+          // Check if this is a file message
+          const fileInfo = parseFileMessage(message.text)
+          const fileAttachment: FileAttachment | undefined = fileInfo
+            ? {
+                ...fileInfo,
+                senderId: message.senderId,
+              }
+            : undefined
+
+          // Get download progress for this file
+          const progressKey = fileAttachment ? `${message.senderId}-${fileAttachment.name}` : ''
+          const progress = downloadProgress[progressKey]
+
           return (
             <ChatBubble
               key={message.id}
-              message={message.text}
+              message={fileInfo ? `📎 ${fileInfo.name}` : message.text}
               isMe={isMe}
               timestamp={message.createdAt}
               status={status}
+              fileAttachment={fileAttachment}
+              onDownloadFile={handleRequestFileDownload}
+              downloadProgress={progress}
             />
           )
         })}
@@ -213,7 +360,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-950">
       {/* Header */}
-      <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 flex items-center gap-3">
+      <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 pt-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-3">
         {onBack && (
           <button
             onClick={handleBackClick}
@@ -254,10 +401,30 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         <div className="py-4 min-h-full flex flex-col justify-end">{renderMessages()}</div>
       </div>
 
+      {/* File Transfer Progress */}
+      {activeTransfers.length > 0 && (
+        <FileTransferProgress
+          transfers={activeTransfers}
+          onCancel={handleCancelTransfer}
+          onDownload={handleDownloadReceivedFile}
+        />
+      )}
+
       {/* Input */}
       <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom)]">
         <ChatInput onSend={handleSend} onAttachment={handleAttachment} />
       </div>
+
+      {/* Incoming Transfer Modal */}
+      {incomingRequest && (
+        <IncomingTransferModal
+          isOpen={!!incomingRequest}
+          fromUserName={incomingRequest.fromUserName ?? 'Unknown'}
+          fileInfo={incomingRequest.fileInfo}
+          onAccept={handleAcceptTransfer}
+          onReject={handleRejectTransfer}
+        />
+      )}
     </div>
   )
 }

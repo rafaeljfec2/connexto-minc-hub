@@ -11,10 +11,6 @@ import {
 import { StatusBar } from 'expo-status-bar'
 import { WebView } from 'react-native-webview'
 import type { WebViewNavigation } from 'react-native-webview'
-import * as SplashScreen from 'expo-splash-screen'
-
-// Keep the splash screen visible while we fetch resources
-SplashScreen.preventAutoHideAsync()
 
 const WEBSITE_URL = 'https://www.mincteams.com.br'
 const ALLOWED_DOMAINS = ['mincteams.com.br', 'www.mincteams.com.br']
@@ -24,33 +20,15 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [canGoBack, setCanGoBack] = useState(false)
-  const [appIsReady, setAppIsReady] = useState(false)
-
-  // Prepare app and hide splash screen
-  useEffect(() => {
-    async function prepare() {
-      try {
-        // Add any initialization logic here (e.g., load fonts, check auth)
-        await new Promise(resolve => setTimeout(resolve, 1000))
-      } catch (e) {
-        console.warn(e)
-      } finally {
-        setAppIsReady(true)
-        await SplashScreen.hideAsync()
-      }
-    }
-
-    prepare()
-  }, [])
 
   // Handle Android back button
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       if (canGoBack && webViewRef.current) {
         webViewRef.current.goBack()
-        return true // Prevent default behavior
+        return true
       }
-      return false // Allow default behavior (exit app)
+      return false
     })
 
     return () => backHandler.remove()
@@ -59,12 +37,10 @@ export default function App() {
   const handleNavigationStateChange = (navState: WebViewNavigation) => {
     setCanGoBack(navState.canGoBack)
 
-    // Block external domains
     const url = navState.url
     const isAllowedDomain = ALLOWED_DOMAINS.some(domain => url.includes(domain))
 
     if (!isAllowedDomain && !navState.loading) {
-      // Stop loading and go back
       webViewRef.current?.stopLoading()
       if (canGoBack) {
         webViewRef.current?.goBack()
@@ -90,10 +66,6 @@ export default function App() {
     setHasError(false)
     setIsLoading(true)
     webViewRef.current?.reload()
-  }
-
-  if (!appIsReady) {
-    return null
   }
 
   if (hasError) {
@@ -138,12 +110,9 @@ export default function App() {
         startInLoadingState={true}
         scalesPageToFit={true}
         allowsBackForwardNavigationGestures={Platform.OS === 'ios'}
-        // Security settings
         allowsInlineMediaPlayback={true}
         mediaPlaybackRequiresUserAction={false}
-        // Performance
         cacheEnabled={true}
-        // Handle external links
         onShouldStartLoadWithRequest={request => {
           const isAllowed = ALLOWED_DOMAINS.some(domain => request.url.includes(domain))
           return isAllowed
