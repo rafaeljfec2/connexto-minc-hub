@@ -42,7 +42,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}
 
       {/* Main Content - Animated Background & Page */}
-      <div className="h-screen w-screen overflow-hidden bg-gray-50 dark:bg-dark-950 lg:bg-grain relative animate-fade-in">
+      <div className="h-[100dvh] w-screen overflow-hidden bg-gray-50 dark:bg-dark-950 lg:bg-grain relative animate-fade-in supports-[height:100dvh]:h-[100dvh] h-screen">
         {/* Overlay only for grain effect on desktop */}
         <div className="hidden lg:block absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
         <div className="relative z-10 h-full flex flex-col lg:block">
@@ -58,7 +58,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               className={`flex-1 overflow-y-auto overscroll-y-contain animate-fade-in-up scroll-smooth ${
                 isChatPage
                   ? 'p-0 overflow-hidden'
-                  : 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(5.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-0 lg:pb-0 lg:px-8'
+                  : 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-0 lg:pb-0 lg:px-8'
               }`}
             >
               {children}
