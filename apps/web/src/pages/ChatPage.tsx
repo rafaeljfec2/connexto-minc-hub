@@ -1,9 +1,10 @@
 import { ChatList } from './chat/components/ChatList'
 import { ChatLayout } from './chat/components/ChatLayout'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UserSelectionModal } from './chat/components/UserSelectionModal'
+import { NewConversationDropdown } from './chat/components/NewConversationDropdown'
 import { useChat } from '@/hooks/useChat'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 const EmptyState = ({ onStartNewChat }: { onStartNewChat: () => void }) => (
   <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-gray-50 dark:bg-dark-950">
@@ -45,8 +46,21 @@ const EmptyState = ({ onStartNewChat }: { onStartNewChat: () => void }) => (
 
 export default function ChatPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { startConversation, conversations } = useChat()
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
+  const [isGroupChatModalOpen, setIsGroupChatModalOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+
+  // Listen to dropdown state from AppLayout via custom event
+  useEffect(() => {
+    const handleDropdownToggle = () => {
+      setIsDropdownOpen(prev => !prev)
+    }
+
+    window.addEventListener('toggleNewChatDropdown', handleDropdownToggle)
+    return () => window.removeEventListener('toggleNewChatDropdown', handleDropdownToggle)
+  }, [])
 
   const handleSelectUser = async (userId: string) => {
     try {
@@ -74,15 +88,58 @@ export default function ChatPage() {
 
       <div className="hidden lg:block h-full">
         <ChatLayout>
-          <EmptyState onStartNewChat={() => setIsNewChatModalOpen(true)} />
+          <EmptyState onStartNewChat={() => setIsDropdownOpen(true)} />
         </ChatLayout>
       </div>
+
+      <NewConversationDropdown
+        isOpen={isDropdownOpen}
+        onClose={() => setIsDropdownOpen(false)}
+        onNewChat={() => setIsNewChatModalOpen(true)}
+        onNewGroupChat={() => setIsGroupChatModalOpen(true)}
+      />
 
       <UserSelectionModal
         isOpen={isNewChatModalOpen}
         onClose={() => setIsNewChatModalOpen(false)}
         onSelectUser={handleSelectUser}
       />
+
+      {/* Group Chat Modal - Placeholder */}
+      {isGroupChatModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-dark-900 rounded-xl shadow-xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="mx-auto w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-primary-600 dark:text-primary-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-dark-900 dark:text-dark-50 mb-2">Em Breve!</h3>
+              <p className="text-dark-600 dark:text-dark-400 mb-6">
+                A funcionalidade de conversas em grupo está em desenvolvimento e estará disponível
+                em breve.
+              </p>
+              <button
+                onClick={() => setIsGroupChatModalOpen(false)}
+                className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium transition-colors"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

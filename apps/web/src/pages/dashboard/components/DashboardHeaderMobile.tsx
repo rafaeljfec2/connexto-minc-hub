@@ -8,6 +8,8 @@ interface DashboardHeaderMobileProps {
   readonly onBack?: () => void
   readonly title?: string
   readonly showChurchSelector?: boolean
+  readonly onNewConversation?: () => void
+  readonly showNewConversationButton?: boolean
 }
 
 export function DashboardHeaderMobile({
@@ -15,6 +17,8 @@ export function DashboardHeaderMobile({
   onBack,
   title,
   showChurchSelector = true,
+  onNewConversation,
+  showNewConversationButton = false,
 }: Readonly<DashboardHeaderMobileProps>) {
   const { selectedChurch, setSelectedChurch } = useChurch()
   const { churches } = useChurches()
@@ -111,6 +115,22 @@ export function DashboardHeaderMobile({
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
+          {showNewConversationButton && onNewConversation && (
+            <button
+              onClick={onNewConversation}
+              className="relative p-2 rounded-xl text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+              aria-label="Nova conversa"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </button>
+          )}
           <button
             onClick={onNotificationPress}
             className="relative p-2 rounded-xl text-dark-700 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"

@@ -19,6 +19,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isChatPage = location.pathname.startsWith('/chat')
 
   const isChatConversation = location.pathname.startsWith('/chat/')
+  const isChatList = isChatPage && !isChatConversation
+
+  const handleNewConversation = () => {
+    window.dispatchEvent(new Event('toggleNewChatDropdown'))
+  }
 
   return (
     <ChatProvider>
@@ -33,6 +38,8 @@ export function AppLayout({ children }: AppLayoutProps) {
           onBack={isChatConversation ? () => navigate('/chat') : undefined}
           title={isChatConversation ? 'Chat' : undefined}
           showChurchSelector={!isChatPage}
+          showNewConversationButton={isChatList}
+          onNewConversation={handleNewConversation}
         />
       </div>
 
