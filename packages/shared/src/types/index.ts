@@ -194,6 +194,13 @@ export interface ChatUser {
   isOnline?: boolean
 }
 
+export interface MessageAttachment {
+  url: string
+  name: string
+  type: string
+  size: number
+}
+
 export interface Message {
   id: string
   text: string
@@ -203,6 +210,11 @@ export interface Message {
   conversationId: string
   createdAt: string
   updatedAt: string
+  // Attachment fields
+  attachmentUrl?: string | null
+  attachmentName?: string | null
+  attachmentType?: string | null
+  attachmentSize?: number | null
 }
 
 export interface Conversation {

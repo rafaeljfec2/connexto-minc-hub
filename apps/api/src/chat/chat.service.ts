@@ -195,6 +195,11 @@ export class ChatService {
       senderId,
       text: createMessageDto.text,
       read: false,
+      // Attachment fields
+      attachmentUrl: createMessageDto.attachmentUrl || null,
+      attachmentName: createMessageDto.attachmentName || null,
+      attachmentType: createMessageDto.attachmentType || null,
+      attachmentSize: createMessageDto.attachmentSize || null,
     });
 
     const savedMessage = await this.messageRepository.save(message);

@@ -4,6 +4,7 @@ import { Camera, Image, FileText, MapPin, X } from 'lucide-react'
 interface ChatInputProps {
   readonly onSend: (text: string) => void
   readonly onAttachment?: (type: 'camera' | 'gallery' | 'document' | 'location', file?: File) => void
+  readonly disabled?: boolean
 }
 
 interface AttachmentOption {
@@ -44,7 +45,7 @@ const attachmentOptions: AttachmentOption[] = [
   },
 ]
 
-export function ChatInput({ onSend, onAttachment }: ChatInputProps) {
+export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
   const [text, setText] = useState('')
   const [showAttachMenu, setShowAttachMenu] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -207,25 +208,26 @@ export function ChatInput({ onSend, onAttachment }: ChatInputProps) {
         )}
       </button>
 
-      <div className="flex-1 bg-dark-100 dark:bg-dark-800 rounded-2xl px-4 py-3 min-h-[44px]">
+      <div className={`flex-1 bg-dark-100 dark:bg-dark-800 rounded-2xl px-4 py-3 min-h-[44px] ${disabled ? 'opacity-50' : ''}`}>
         <textarea
           ref={textareaRef}
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Digite uma mensagem..."
+          placeholder={disabled ? 'Enviando arquivo...' : 'Digite uma mensagem...'}
           className="w-full bg-transparent text-dark-900 dark:text-dark-50 placeholder:text-dark-500 dark:placeholder:text-dark-400 text-sm resize-none outline-none max-h-[120px] overflow-y-auto block"
           rows={1}
           maxLength={500}
+          disabled={disabled}
         />
       </div>
 
       <button
         type="button"
         onClick={handleSend}
-        disabled={!text.trim()}
+        disabled={!text.trim() || disabled}
         className={`p-2.5 rounded-full transition-colors mb-0.5 ${
-          text.trim()
+          text.trim() && !disabled
             ? 'bg-primary-500 text-white hover:bg-primary-600'
             : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-not-allowed'
         }`}

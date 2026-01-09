@@ -1,5 +1,6 @@
 import { useCallback, MutableRefObject } from 'react'
 import { ChatWebSocketService, ChatApiService, Conversation, Message, User } from '@minc-hub/shared'
+import { AttachmentData } from '@/hooks/useChat'
 
 interface UseChatActionsProps {
   chatSocket: ChatWebSocketService
@@ -43,7 +44,7 @@ export function useChatActions({
   conversations,
 }: UseChatActionsProps) {
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, attachment?: AttachmentData) => {
       if (!activeConversation) return
 
       const tempId = `temp-${Date.now()}`
@@ -54,8 +55,13 @@ export function useChatActions({
         text,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        timestamp: new Date().toISOString(), // Compatible with Message type
-        read: false, // Compatible with Message type
+        timestamp: new Date().toISOString(),
+        read: false,
+        // Attachment fields
+        attachmentUrl: attachment?.attachmentUrl ?? null,
+        attachmentName: attachment?.attachmentName ?? null,
+        attachmentType: attachment?.attachmentType ?? null,
+        attachmentSize: attachment?.attachmentSize ?? null,
       }
 
       // Optimistic Update
@@ -99,7 +105,7 @@ export function useChatActions({
         // Send via WebSocket
         // Ensure we are in the room (just in case)
         chatSocket.joinConversation(activeConversation.id)
-        chatSocket.sendMessage(activeConversation.id, text)
+        chatSocket.sendMessage(activeConversation.id, text, attachment)
         // Flag will be reset when the real message arrives via WebSocket
         // If no response comes within 5 seconds, reset flag as fallback
         setTimeout(() => {

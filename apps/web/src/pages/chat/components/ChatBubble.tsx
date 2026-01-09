@@ -1,14 +1,12 @@
-import { useState, useCallback } from 'react'
-import { Download, FileText, Image, Film, Music, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Download, FileText, Image as ImageIcon, Film, Music, ExternalLink } from 'lucide-react'
 
 type MessageStatus = 'sending' | 'sent' | 'read'
-type FileDownloadStatus = 'pending' | 'downloading' | 'completed' | 'failed'
 
-export interface FileAttachment {
+export interface MessageAttachment {
+  url: string
   name: string
-  size: number
   type: string
-  senderId: string
+  size: number
 }
 
 interface ChatBubbleProps {
@@ -16,9 +14,7 @@ interface ChatBubbleProps {
   readonly isMe: boolean
   readonly timestamp: string
   readonly status?: MessageStatus
-  readonly fileAttachment?: FileAttachment
-  readonly onDownloadFile?: (senderId: string, fileInfo: FileAttachment) => Promise<void>
-  readonly downloadProgress?: number
+  readonly attachment?: MessageAttachment
 }
 
 function formatFileSize(bytes: number): string {
@@ -28,10 +24,14 @@ function formatFileSize(bytes: number): string {
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith('image/')) return <Image className="h-8 w-8" />
-  if (mimeType.startsWith('video/')) return <Film className="h-8 w-8" />
-  if (mimeType.startsWith('audio/')) return <Music className="h-8 w-8" />
-  return <FileText className="h-8 w-8" />
+  if (mimeType.startsWith('image/')) return <ImageIcon className="h-5 w-5" />
+  if (mimeType.startsWith('video/')) return <Film className="h-5 w-5" />
+  if (mimeType.startsWith('audio/')) return <Music className="h-5 w-5" />
+  return <FileText className="h-5 w-5" />
+}
+
+function isImageType(mimeType: string): boolean {
+  return mimeType.startsWith('image/')
 }
 
 export function ChatBubble({
@@ -39,12 +39,8 @@ export function ChatBubble({
   isMe,
   timestamp,
   status,
-  fileAttachment,
-  onDownloadFile,
-  downloadProgress,
+  attachment,
 }: ChatBubbleProps) {
-  const [downloadStatus, setDownloadStatus] = useState<FileDownloadStatus>('pending')
-
   // Robust UTC parsing
   let dateStr = timestamp
   if (typeof timestamp === 'string') {
@@ -64,88 +60,107 @@ export function ChatBubble({
       }).format(date)
     : '--:--'
 
-  const handleFileClick = useCallback(async () => {
-    if (!fileAttachment || !onDownloadFile || isMe) return
-    if (downloadStatus === 'downloading' || downloadStatus === 'completed') return
-
-    setDownloadStatus('downloading')
-    try {
-      await onDownloadFile(fileAttachment.senderId, fileAttachment)
-      setDownloadStatus('completed')
-    } catch {
-      setDownloadStatus('failed')
+  const handleDownload = () => {
+    if (attachment?.url) {
+      window.open(attachment.url, '_blank')
     }
-  }, [fileAttachment, onDownloadFile, isMe, downloadStatus])
+  }
 
-  // Render file attachment bubble
-  if (fileAttachment) {
-    const isClickable = !isMe && downloadStatus === 'pending'
-    const showProgress = downloadStatus === 'downloading' && downloadProgress !== undefined
+  // Render attachment bubble
+  if (attachment) {
+    const isImage = isImageType(attachment.type)
 
     return (
       <div
-        onClick={isClickable ? handleFileClick : undefined}
         className={`mb-3 max-w-[80%] rounded-2xl overflow-hidden ${
           isMe
             ? 'ml-auto bg-primary-500 text-white rounded-br-sm'
             : 'mr-auto bg-dark-200 dark:bg-dark-800 text-dark-900 dark:text-dark-50 rounded-bl-sm'
-        } ${isClickable ? 'cursor-pointer hover:opacity-90 active:scale-[0.98] transition-all' : ''}`}
+        }`}
       >
-        {/* File content */}
-        <div className="p-3 flex items-center gap-3">
-          {/* File icon */}
-          <div
-            className={`flex-shrink-0 p-2 rounded-lg ${
-              isMe ? 'bg-white/20' : 'bg-dark-300 dark:bg-dark-700'
-            }`}
+        {/* Image preview */}
+        {isImage && (
+          <a
+            href={attachment.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block"
           >
-            {downloadStatus === 'downloading' ? (
-              <Loader2 className="h-8 w-8 animate-spin" />
-            ) : downloadStatus === 'completed' ? (
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            ) : downloadStatus === 'failed' ? (
-              <AlertCircle className="h-8 w-8 text-red-500" />
-            ) : (
-              getFileIcon(fileAttachment.type)
-            )}
-          </div>
-
-          {/* File info */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{fileAttachment.name}</p>
-            <p className={`text-xs ${isMe ? 'text-white/70' : 'text-dark-500 dark:text-dark-400'}`}>
-              {formatFileSize(fileAttachment.size)}
-              {downloadStatus === 'failed' && ' • Falha ao baixar'}
-              {downloadStatus === 'completed' && ' • Baixado'}
-            </p>
-          </div>
-
-          {/* Download indicator for received files */}
-          {!isMe && downloadStatus === 'pending' && (
-            <div className="flex-shrink-0">
-              <Download className="h-5 w-5 text-primary-500" />
-            </div>
-          )}
-        </div>
-
-        {/* Progress bar */}
-        {showProgress && (
-          <div className="px-3 pb-2">
-            <div className="h-1 bg-black/20 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-white transition-all duration-300"
-                style={{ width: `${downloadProgress}%` }}
-              />
-            </div>
-          </div>
+            <img
+              src={attachment.url}
+              alt={attachment.name}
+              className="w-full max-h-64 object-cover"
+              loading="lazy"
+            />
+          </a>
         )}
 
-        {/* Timestamp */}
-        <div className="px-3 pb-2 flex justify-end items-center gap-1">
-          <span className={`text-[10px] ${isMe ? 'text-white/70' : 'text-dark-500 dark:text-dark-400'}`}>
-            {time}
-          </span>
-          {isMe && status && <StatusIcon status={status} />}
+        {/* File info */}
+        <div className="p-3">
+          {!isImage && (
+            <button
+              onClick={handleDownload}
+              className={`flex items-center gap-3 w-full p-2 rounded-lg transition-colors ${
+                isMe
+                  ? 'hover:bg-white/10'
+                  : 'hover:bg-dark-300 dark:hover:bg-dark-700'
+              }`}
+            >
+              <div
+                className={`flex-shrink-0 p-2 rounded-lg ${
+                  isMe ? 'bg-white/20' : 'bg-dark-300 dark:bg-dark-700'
+                }`}
+              >
+                {getFileIcon(attachment.type)}
+              </div>
+
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium truncate">{attachment.name}</p>
+                <p
+                  className={`text-xs ${
+                    isMe ? 'text-white/70' : 'text-dark-500 dark:text-dark-400'
+                  }`}
+                >
+                  {formatFileSize(attachment.size)}
+                </p>
+              </div>
+
+              <Download
+                className={`h-5 w-5 flex-shrink-0 ${
+                  isMe ? 'text-white/80' : 'text-primary-500'
+                }`}
+              />
+            </button>
+          )}
+
+          {/* Image caption / filename */}
+          {isImage && (
+            <div className="flex items-center gap-2">
+              <a
+                href={attachment.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center gap-1 text-xs ${
+                  isMe ? 'text-white/80 hover:text-white' : 'text-primary-500 hover:text-primary-600'
+                }`}
+              >
+                <ExternalLink className="h-3 w-3" />
+                <span>Abrir imagem</span>
+              </a>
+            </div>
+          )}
+
+          {/* Timestamp */}
+          <div className="flex justify-end items-center gap-1 mt-1">
+            <span
+              className={`text-[10px] ${
+                isMe ? 'text-white/70' : 'text-dark-500 dark:text-dark-400'
+              }`}
+            >
+              {time}
+            </span>
+            {isMe && status && <StatusIcon status={status} />}
+          </div>
         </div>
       </div>
     )
@@ -162,7 +177,9 @@ export function ChatBubble({
     >
       <p className="text-sm leading-relaxed mb-1 break-words whitespace-pre-wrap">{message}</p>
       <div className="flex justify-end items-center gap-1">
-        <span className={`text-[10px] ${isMe ? 'text-white/70' : 'text-dark-500 dark:text-dark-400'}`}>
+        <span
+          className={`text-[10px] ${isMe ? 'text-white/70' : 'text-dark-500 dark:text-dark-400'}`}
+        >
           {time}
         </span>
         {isMe && status && <StatusIcon status={status} />}
@@ -187,14 +204,39 @@ function StatusIcon({ status }: { status: MessageStatus }) {
         </svg>
       )}
       {status === 'sent' && (
-        <svg className="h-3 w-3 text-white/70" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="m5 13 3.5 3.5L19 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <svg
+          className="h-3 w-3 text-white/70"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path
+            d="m5 13 3.5 3.5L19 6"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       )}
       {status === 'read' && (
-        <svg className="h-3.5 w-3.5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="m4.5 13.5 3.75 3.75L19.5 6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="m10 13.5 3.75 3.75L22 8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <svg
+          className="h-3.5 w-3.5 text-green-400"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+        >
+          <path
+            d="m4.5 13.5 3.75 3.75L19.5 6"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="m10 13.5 3.75 3.75L22 8"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       )}
     </span>

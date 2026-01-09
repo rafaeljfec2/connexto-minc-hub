@@ -1,11 +1,5 @@
 import { io, Socket } from 'socket.io-client'
 
-export interface FileInfo {
-  name: string
-  size: number
-  type: string
-}
-
 export interface ChatSocketEvents {
   'join-conversation': (data: { conversationId: string }) => void
   'leave-conversation': (data: { conversationId: string }) => void
@@ -21,17 +15,6 @@ export interface ChatSocketEvents {
   'conversation-updated': (data: any) => void
   error: (data: { message: string }) => void
   disconnect: (reason: string) => void
-  // File Request Event (receiver requests file from sender)
-  'file-request': (data: { fromUserId: string; fileInfo: FileInfo }) => void
-  // WebRTC Signaling Events
-  'webrtc-offer': (data: {
-    fromUserId: string
-    offer: RTCSessionDescriptionInit
-    fileInfo: FileInfo
-  }) => void
-  'webrtc-answer': (data: { fromUserId: string; answer: RTCSessionDescriptionInit }) => void
-  'webrtc-ice-candidate': (data: { fromUserId: string; candidate: RTCIceCandidateInit }) => void
-  'webrtc-rejected': (data: { fromUserId: string; reason: string }) => void
 }
 
 export class ChatWebSocketService {
@@ -51,16 +34,14 @@ export class ChatWebSocketService {
     const connectionUrl = `${this.url}/chat`
     console.log('[ChatWS] Connecting to:', connectionUrl, 'with token length:', token?.length || 0)
 
-    // Only include token in auth if it's provided and not empty
-    // Otherwise, rely on cookie-based authentication
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const socketOptions: any = {
       transports: ['websocket'],
       autoConnect: true,
-      withCredentials: true, // Critical for cookie-based auth
+      withCredentials: true,
     }
 
     if (token && token.trim().length > 0) {
-      // Validate token length before sending (JWT should be at least 50 chars)
       if (token.trim().length < 50) {
         console.warn('[ChatWS] Token is too short, likely invalid. Will rely on cookie-based auth.')
       } else {
@@ -101,13 +82,21 @@ export class ChatWebSocketService {
     this.socket?.emit('leave-conversation', { conversationId })
   }
 
-  // Although sendMessage acts primarily via API, socket can be used too if preferred
-  sendMessage(conversationId: string, text: string) {
+  sendMessage(
+    conversationId: string,
+    text: string,
+    attachment?: {
+      attachmentUrl: string
+      attachmentName: string
+      attachmentType: string
+      attachmentSize: number
+    }
+  ) {
     if (!this.socket?.connected) {
       console.error('[ChatWS] Cannot send message: socket not connected')
       return
     }
-    this.socket?.emit('send-message', { conversationId, text })
+    this.socket?.emit('send-message', { conversationId, text, ...attachment })
   }
 
   markAsRead(conversationId: string, messageIds?: string[]) {
@@ -118,75 +107,13 @@ export class ChatWebSocketService {
     this.socket?.emit('typing', { conversationId, isTyping })
   }
 
-  // ========================================
-  // File Transfer Methods
-  // ========================================
-
-  /**
-   * Request a file from another user (receiver calls this)
-   * The sender will then initiate the WebRTC transfer
-   */
-  sendFileRequest(targetUserId: string, fileInfo: FileInfo) {
-    if (!this.socket?.connected) {
-      console.error('[ChatWS] Cannot send file request: socket not connected')
-      return
-    }
-    this.socket.emit('file-request', { targetUserId, fileInfo })
-  }
-
-  // ========================================
-  // WebRTC Signaling Methods for P2P File Transfer
-  // ========================================
-
-  /**
-   * Send WebRTC offer to initiate P2P file transfer
-   */
-  sendWebRTCOffer(targetUserId: string, offer: RTCSessionDescriptionInit, fileInfo: FileInfo) {
-    if (!this.socket?.connected) {
-      console.error('[ChatWS] Cannot send WebRTC offer: socket not connected')
-      return
-    }
-    this.socket.emit('webrtc-offer', { targetUserId, offer, fileInfo })
-  }
-
-  /**
-   * Send WebRTC answer to accept P2P file transfer
-   */
-  sendWebRTCAnswer(targetUserId: string, answer: RTCSessionDescriptionInit) {
-    if (!this.socket?.connected) {
-      console.error('[ChatWS] Cannot send WebRTC answer: socket not connected')
-      return
-    }
-    this.socket.emit('webrtc-answer', { targetUserId, answer })
-  }
-
-  /**
-   * Send ICE candidate for WebRTC connection establishment
-   */
-  sendICECandidate(targetUserId: string, candidate: RTCIceCandidateInit) {
-    if (!this.socket?.connected) {
-      console.error('[ChatWS] Cannot send ICE candidate: socket not connected')
-      return
-    }
-    this.socket.emit('webrtc-ice-candidate', { targetUserId, candidate })
-  }
-
-  /**
-   * Reject a WebRTC file transfer
-   */
-  sendWebRTCReject(targetUserId: string, reason?: string) {
-    if (!this.socket?.connected) {
-      console.error('[ChatWS] Cannot send WebRTC reject: socket not connected')
-      return
-    }
-    this.socket.emit('webrtc-reject', { targetUserId, reason })
-  }
-
   on<K extends keyof ChatSocketEvents>(event: K, callback: ChatSocketEvents[K]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.socket?.on(event, callback as any)
   }
 
   off<K extends keyof ChatSocketEvents>(event: K, callback?: ChatSocketEvents[K]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.socket?.off(event, callback as any)
   }
 

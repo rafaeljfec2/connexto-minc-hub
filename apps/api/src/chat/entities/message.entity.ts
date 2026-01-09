@@ -32,6 +32,19 @@ export class MessageEntity {
   @Column({ type: 'boolean', default: false })
   read: boolean;
 
+  // Attachment fields
+  @Column({ name: 'attachment_url', type: 'varchar', nullable: true })
+  attachmentUrl: string | null;
+
+  @Column({ name: 'attachment_name', type: 'varchar', nullable: true })
+  attachmentName: string | null;
+
+  @Column({ name: 'attachment_type', type: 'varchar', nullable: true })
+  attachmentType: string | null;
+
+  @Column({ name: 'attachment_size', type: 'int', nullable: true })
+  attachmentSize: number | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -1,32 +1,12 @@
 import { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react'
 
-import { ChatBubble, FileAttachment } from './ChatBubble'
+import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
-import { FileTransferProgress } from './FileTransferProgress'
-import { IncomingTransferModal } from './IncomingTransferModal'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 import { Avatar } from '@/components/ui/Avatar'
-import { useFileTransfer } from '@/contexts/FileTransferContext'
-
-// Pattern to detect file messages: [FILE]{"name":"...","size":123,"type":"..."}
-const FILE_MESSAGE_PATTERN = /^\[FILE\](\{.*\})$/
-
-interface ParsedFileInfo {
-  name: string
-  size: number
-  type: string
-}
-
-function parseFileMessage(text: string): ParsedFileInfo | null {
-  const match = text.match(FILE_MESSAGE_PATTERN)
-  if (!match) return null
-  try {
-    return JSON.parse(match[1]) as ParsedFileInfo
-  } catch {
-    return null
-  }
-}
+import { uploadChatFile, UploadProgress } from '@/services/upload.service'
+import { Loader2 } from 'lucide-react'
 
 interface ChatWindowProps {
   conversationId: string
@@ -53,65 +33,9 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
   } = useChat()
   const { user } = useAuth()
 
-  // File transfer context - may not be available if not wrapped in provider
-  const fileTransferContext = (() => {
-    try {
-      return useFileTransfer()
-    } catch {
-      return null
-    }
-  })()
-
-  const activeTransfers = fileTransferContext?.activeTransfers ?? []
-  const incomingRequest = fileTransferContext?.incomingRequest ?? null
-
-  // Track download progress per message
-  const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({})
-
-  // Handler for requesting file download from sender (when clicking on file bubble)
-  const handleRequestFileDownload = useCallback(
-    async (senderId: string, fileInfo: FileAttachment) => {
-      if (!fileTransferContext) {
-        console.error('File transfer not available')
-        return
-      }
-
-      console.log('[ChatWindow] Requesting file from:', senderId, fileInfo)
-
-      // Request the file from the sender via WebRTC
-      // The sender needs to be online for this to work
-      try {
-        await fileTransferContext.requestFile(senderId, {
-          name: fileInfo.name,
-          size: fileInfo.size,
-          type: fileInfo.type,
-        })
-      } catch (error) {
-        console.error('Failed to request file:', error)
-        throw error
-      }
-    },
-    [fileTransferContext]
-  )
-
-  // Handler for downloading received files (from transfer progress panel)
-  const handleDownloadReceivedFile = useCallback(
-    (transferId: string) => {
-      fileTransferContext?.downloadFile(transferId)
-    },
-    [fileTransferContext]
-  )
-
-  // Update download progress from active transfers
-  useEffect(() => {
-    const newProgress: Record<string, number> = {}
-    for (const transfer of activeTransfers) {
-      if (transfer.direction === 'download') {
-        newProgress[`${transfer.peerId}-${transfer.fileName}`] = transfer.progress
-      }
-    }
-    setDownloadProgress(newProgress)
-  }, [activeTransfers])
+  // Upload state
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   // Common scroll logic
   const forceScroll = useCallback(() => {
@@ -128,7 +52,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
       const newScrollHeight = container.scrollHeight
       const scrollDiff = newScrollHeight - previousScrollHeightRef.current
 
-      // Only adjust if content grew
       if (scrollDiff > 0) {
         container.scrollTop = scrollDiff
       }
@@ -141,7 +64,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     const container = messagesContainerRef.current
     if (!container) return
 
-    // Allow a small threshold (e.g. 50px) to trigger loading before hitting hard top
     if (container.scrollTop < 50 && hasMoreMessages && !isLoadingMoreMessages) {
       previousScrollHeightRef.current = container.scrollHeight
       loadMoreMessages()
@@ -208,7 +130,6 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     file?: File
   ) => {
     if (type === 'location') {
-      // Handle location sharing
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           position => {
@@ -227,48 +148,40 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
       return
     }
 
-    if (file && otherUser) {
-      // Send file message with structured format for P2P download
-      const fileMessage = `[FILE]${JSON.stringify({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      })}`
-      sendMessage(fileMessage)
+    if (file) {
+      setIsUploading(true)
+      setUploadProgress(0)
 
-      // If file transfer context is available, register the file for P2P sharing
-      if (fileTransferContext) {
-        try {
-          fileTransferContext.registerFileForSharing(file)
-          console.log(`[P2P] File registered for sharing: ${file.name}`)
-        } catch (error) {
-          console.error('[P2P] Failed to register file for sharing:', error)
-        }
+      try {
+        // Upload file to Cloudinary
+        const uploadResult = await uploadChatFile(file, (progress: UploadProgress) => {
+          setUploadProgress(progress.percentage)
+        })
+
+        // Send message with attachment data
+        await sendMessage(
+          `📎 ${file.name}`,
+          {
+            attachmentUrl: uploadResult.url,
+            attachmentName: uploadResult.originalName,
+            attachmentType: uploadResult.mimeType,
+            attachmentSize: uploadResult.bytes,
+          }
+        )
+
+        requestAnimationFrame(forceScroll)
+        setTimeout(forceScroll, 100)
+      } catch (error) {
+        console.error('Failed to upload file:', error)
+        sendMessage('❌ Falha ao enviar arquivo')
+      } finally {
+        setIsUploading(false)
+        setUploadProgress(0)
       }
-
-      requestAnimationFrame(forceScroll)
-      setTimeout(forceScroll, 100)
     }
   }
 
-  // File transfer handlers
-  const handleCancelTransfer = (transferId: string) => {
-    fileTransferContext?.cancelTransfer(transferId)
-  }
-
-  const handleAcceptTransfer = () => {
-    if (incomingRequest) {
-      fileTransferContext?.acceptTransfer(incomingRequest.transferId)
-    }
-  }
-
-  const handleRejectTransfer = () => {
-    if (incomingRequest) {
-      fileTransferContext?.rejectTransfer(incomingRequest.transferId)
-    }
-  }
-
-  // Fallback: If activeConversation is missing (e.g. during updates), try to find it in the list
+  // Fallback: If activeConversation is missing, try to find it in the list
   const currentConversation = activeConversation || conversations.find(c => c.id === conversationId)
   const otherUser = currentConversation?.participants.find(p => p.id !== user?.id)
   const otherUserName = otherUser?.name || 'Desconhecido'
@@ -309,29 +222,23 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                 : 'sent'
             : undefined
 
-          // Check if this is a file message
-          const fileInfo = parseFileMessage(message.text)
-          const fileAttachment: FileAttachment | undefined = fileInfo
-            ? {
-                ...fileInfo,
-                senderId: message.senderId,
-              }
-            : undefined
-
-          // Get download progress for this file
-          const progressKey = fileAttachment ? `${message.senderId}-${fileAttachment.name}` : ''
-          const progress = downloadProgress[progressKey]
-
           return (
             <ChatBubble
               key={message.id}
-              message={fileInfo ? `📎 ${fileInfo.name}` : message.text}
+              message={message.text}
               isMe={isMe}
               timestamp={message.createdAt}
               status={status}
-              fileAttachment={fileAttachment}
-              onDownloadFile={handleRequestFileDownload}
-              downloadProgress={progress}
+              attachment={
+                message.attachmentUrl
+                  ? {
+                      url: message.attachmentUrl,
+                      name: message.attachmentName ?? 'arquivo',
+                      type: message.attachmentType ?? 'application/octet-stream',
+                      size: message.attachmentSize ?? 0,
+                    }
+                  : undefined
+              }
             />
           )
         })}
@@ -360,7 +267,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-950">
       {/* Header */}
-      <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 pt-[calc(0.75rem+env(safe-area-inset-top))] flex items-center gap-3">
+      <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 flex items-center gap-3">
         {onBack && (
           <button
             onClick={handleBackClick}
@@ -401,30 +308,28 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         <div className="py-4 min-h-full flex flex-col justify-end">{renderMessages()}</div>
       </div>
 
-      {/* File Transfer Progress */}
-      {activeTransfers.length > 0 && (
-        <FileTransferProgress
-          transfers={activeTransfers}
-          onCancel={handleCancelTransfer}
-          onDownload={handleDownloadReceivedFile}
-        />
+      {/* Upload Progress */}
+      {isUploading && (
+        <div className="flex-shrink-0 bg-white dark:bg-dark-900 border-t border-dark-200 dark:border-dark-800 px-4 py-2">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
+            <div className="flex-1">
+              <div className="h-2 bg-dark-200 dark:bg-dark-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary-500 transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+            <span className="text-xs text-dark-500">{uploadProgress}%</span>
+          </div>
+        </div>
       )}
 
       {/* Input */}
       <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom)]">
-        <ChatInput onSend={handleSend} onAttachment={handleAttachment} />
+        <ChatInput onSend={handleSend} onAttachment={handleAttachment} disabled={isUploading} />
       </div>
-
-      {/* Incoming Transfer Modal */}
-      {incomingRequest && (
-        <IncomingTransferModal
-          isOpen={!!incomingRequest}
-          fromUserName={incomingRequest.fromUserName ?? 'Unknown'}
-          fileInfo={incomingRequest.fileInfo}
-          onAccept={handleAcceptTransfer}
-          onReject={handleRejectTransfer}
-        />
-      )}
     </div>
   )
 }
