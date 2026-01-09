@@ -1,15 +1,24 @@
+import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
-import { Schedule, Service } from '@minc-hub/shared/types'
+import { Schedule, Service, Team, Person } from '@minc-hub/shared/types'
+import { ScheduleDetailsModal } from './ScheduleDetailsModal'
 
 interface UpcomingServicesMobileProps {
   readonly schedules: readonly Schedule[]
   readonly services: readonly Service[]
+  readonly teams: readonly Team[]
+  readonly people: readonly Person[]
 }
 
 export function UpcomingServicesMobile({
   schedules,
   services,
+  teams,
+  people,
 }: Readonly<UpcomingServicesMobileProps>) {
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   const upcomingSchedules = schedules
     .filter(schedule => {
       const scheduleDate = new Date(schedule.date)
@@ -21,6 +30,20 @@ export function UpcomingServicesMobile({
   if (upcomingSchedules.length === 0) {
     return null
   }
+
+  const handleScheduleClick = (schedule: Schedule) => {
+    setSelectedSchedule(schedule)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedSchedule(null)
+  }
+
+  const selectedService = selectedSchedule
+    ? services.find(s => s.id === selectedSchedule.serviceId) || null
+    : null
 
   return (
     <div className="mb-6">
@@ -41,31 +64,43 @@ export function UpcomingServicesMobile({
           })
 
           return (
-            <Card
+            <button
               key={schedule.id}
-              className="flex flex-row items-center p-4 w-[280px] gap-4 flex-shrink-0"
+              onClick={() => handleScheduleClick(schedule)}
+              className="text-left focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-xl"
             >
-              <div className="p-3 rounded-lg bg-primary-500/15 text-center min-w-[50px]">
-                <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
-                  {day}
+              <Card className="flex flex-row items-center p-4 w-[280px] gap-4 flex-shrink-0 active:scale-95 transition-transform cursor-pointer hover:shadow-md">
+                <div className="p-3 rounded-lg bg-primary-500/15 text-center min-w-[50px]">
+                  <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
+                    {day}
+                  </div>
+                  <div className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase">
+                    {month}
+                  </div>
                 </div>
-                <div className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase">
-                  {month}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-dark-900 dark:text-dark-50 truncate mb-0.5">
+                    {service?.name ?? 'Culto'}
+                  </div>
+                  <div className="text-xs text-dark-900 dark:text-dark-50 truncate mb-1">
+                    {service?.time ?? time}
+                  </div>
+                  <div className="text-xs text-dark-600 dark:text-dark-400">{time}</div>
                 </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold text-dark-900 dark:text-dark-50 truncate mb-0.5">
-                  {service?.name ?? 'Culto'}
-                </div>
-                <div className="text-xs text-dark-900 dark:text-dark-50 truncate mb-1">
-                  {service?.time ?? time}
-                </div>
-                <div className="text-xs text-dark-600 dark:text-dark-400">{time}</div>
-              </div>
-            </Card>
+              </Card>
+            </button>
           )
         })}
       </div>
+
+      <ScheduleDetailsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        schedule={selectedSchedule}
+        service={selectedService}
+        teams={[...teams]}
+        people={[...people]}
+      />
     </div>
   )
 }

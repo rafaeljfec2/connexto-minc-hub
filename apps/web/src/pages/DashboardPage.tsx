@@ -14,6 +14,7 @@ import { ActivityFeedMobile, type ActivityItem } from './dashboard/components/Ac
 interface DashboardViewProps {
   readonly user: User | null
   readonly people: readonly Person[]
+  readonly teams: readonly Team[]
   readonly activeTeams: readonly Team[]
   readonly schedules: readonly Schedule[]
   readonly services: readonly Service[]
@@ -24,6 +25,7 @@ interface DashboardViewProps {
 
 function MobileDashboard({
   people,
+  teams,
   activeTeams,
   schedules,
   services,
@@ -31,12 +33,20 @@ function MobileDashboard({
   nextService,
   nextServiceData,
 }: Readonly<DashboardViewProps>) {
+  const isDesktop = false // Assuming isDesktop is defined elsewhere or a placeholder for now
+
   return (
     <div className="lg:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-dark-950">
       <div className="flex-1 pb-24 pt-4">
-        <div className="mb-4">
-          <UpcomingServicesMobile schedules={schedules} services={services} />
-        </div>
+        {/* Upcoming Services Mobile (Carrossel) */}
+        {!isDesktop && (
+          <UpcomingServicesMobile
+            schedules={schedules}
+            services={services}
+            teams={teams}
+            people={people}
+          />
+        )}
 
         <QuickActionsMobile />
 
@@ -244,6 +254,7 @@ export default function DashboardPage() {
   const viewProps = {
     user,
     people,
+    teams,
     activeTeams,
     schedules,
     services,
