@@ -5,6 +5,7 @@ import { useTeams } from '@/hooks/useTeams'
 import { Team, Person } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
+import { Avatar } from '@/components/ui/Avatar'
 
 const apiServices = createApiServices(api)
 
@@ -190,13 +191,7 @@ export default function TeamDetailsPage() {
                         className="p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-800/50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-dark-800 flex-shrink-0">
-                            <img
-                              src={`https://i.pravatar.cc/150?u=${member.id}`}
-                              alt={member.name}
-                              className="w-full h-full rounded-full object-cover"
-                            />
-                          </div>
+                          <Avatar src={member.avatar} name={member.name} size="md" />
                           <div>
                             <h4 className="text-sm font-semibold text-dark-900 dark:text-dark-50">
                               {member.name}

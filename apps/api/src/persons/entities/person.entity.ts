@@ -9,11 +9,14 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
+import { Expose } from 'class-transformer';
 import { MinistryEntity } from '../../ministries/entities/ministry.entity';
 import { TeamEntity } from '../../teams/entities/team.entity';
 import { TeamMemberEntity } from '../../teams/entities/team-member.entity';
 import { AttendanceEntity } from '../../attendances/entities/attendance.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 
 @Entity('persons')
 @Index(['ministryId'], { where: '"deleted_at" IS NULL' })
@@ -62,12 +65,20 @@ export class PersonEntity {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-
   @OneToMany(() => TeamMemberEntity, (teamMember) => teamMember.person)
   teamMembers: TeamMemberEntity[];
 
   @OneToMany(() => AttendanceEntity, (attendance) => attendance.person)
   attendances: AttendanceEntity[];
+
+  @OneToOne(() => UserEntity, (user) => user.person, { nullable: true })
+  user: UserEntity | null;
+
+  // Virtual property to get avatar from associated user
+  @Expose()
+  get avatar(): string | null {
+    return this.user?.avatar ?? null;
+  }
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt: Date | null;

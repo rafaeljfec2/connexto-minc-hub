@@ -3,6 +3,7 @@ import { usePeople } from '@/hooks/usePeople'
 import { useState, useEffect, useMemo } from 'react'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
+import { Avatar } from '@/components/ui/Avatar'
 
 interface TeamItemCardProps {
   readonly team: Team
@@ -201,16 +202,21 @@ export function TeamItemCard({ team, ministryName, onMenuClick, onClick }: TeamI
                   {members.slice(0, 3).map((member, index) => (
                     <div
                       key={member.id}
-                      className="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-semibold border-2 border-white dark:border-dark-900 overflow-hidden"
+                      className="relative"
                       style={{ marginLeft: index > 0 ? '-8px' : '0', zIndex: 10 - index }}
                     >
-                      <span className="text-xs">{member.name.charAt(0).toUpperCase()}</span>
+                      <Avatar
+                        src={member.avatar}
+                        name={member.name}
+                        size="sm"
+                        className="border-2 border-gray-100 dark:border-dark-800"
+                      />
                     </div>
                   ))}
                   {/* Badge "+X" - círculo cinza claro com texto branco */}
                   {additionalMembers > 0 && (
                     <div
-                      className="w-8 h-8 rounded-full bg-gray-300 dark:bg-dark-700 flex items-center justify-center text-white text-xs font-semibold border-2 border-white dark:border-dark-900"
+                      className="w-8 h-8 rounded-full bg-gray-300 dark:bg-dark-700 flex items-center justify-center text-white text-xs font-semibold border-2 border-gray-100 dark:border-dark-800"
                       style={{ marginLeft: '-8px', zIndex: 1 }}
                     >
                       +{additionalMembers}

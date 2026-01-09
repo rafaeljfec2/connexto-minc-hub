@@ -40,6 +40,7 @@ export interface Person {
   birthDate?: string
   address?: string
   notes?: string
+  avatar?: string | null
   ministryId?: string
   teamId?: string
   teamMembers?: TeamMember[]

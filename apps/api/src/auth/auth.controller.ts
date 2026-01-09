@@ -308,6 +308,8 @@ export class AuthController {
       role: user.role,
       isActive: user.isActive,
       personId: user.personId,
+      avatar: user.avatar,
+      canCheckIn: user.canCheckIn,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
