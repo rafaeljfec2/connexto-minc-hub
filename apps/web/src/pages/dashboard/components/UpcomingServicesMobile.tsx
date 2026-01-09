@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Schedule, Service, Team, Person, Ministry } from '@minc-hub/shared/types'
 import { ScheduleDetailsModal } from './ScheduleDetailsModal'
+import { parseLocalDate } from '@/lib/utils'
 
 interface UpcomingServicesMobileProps {
   readonly schedules: readonly Schedule[]
@@ -23,10 +24,10 @@ export function UpcomingServicesMobile({
 
   const upcomingSchedules = schedules
     .filter(schedule => {
-      const scheduleDate = new Date(schedule.date)
-      return scheduleDate >= new Date()
+      const scheduleDate = parseLocalDate(schedule.date)
+      return scheduleDate >= new Date(new Date().setHours(0, 0, 0, 0))
     })
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())
     .slice(0, 5)
 
   if (upcomingSchedules.length === 0) {
@@ -55,7 +56,7 @@ export function UpcomingServicesMobile({
       <div className="flex gap-4 overflow-x-auto px-4 pb-2 scrollbar-hide">
         {upcomingSchedules.map(schedule => {
           const service = services.find(s => s.id === schedule.serviceId)
-          const scheduleDate = new Date(schedule.date)
+          const scheduleDate = parseLocalDate(schedule.date)
           const day = scheduleDate.getDate().toString()
           const month = scheduleDate
             .toLocaleDateString('pt-BR', { month: 'short' })

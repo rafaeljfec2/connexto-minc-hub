@@ -1,5 +1,6 @@
 import { Modal } from '@/components/ui/Modal'
 import { Schedule, Service, Team, Person, Ministry } from '@minc-hub/shared/types'
+import { parseLocalDate } from '@/lib/utils'
 
 interface ScheduleDetailsModalProps {
   isOpen: boolean
@@ -22,7 +23,7 @@ export function ScheduleDetailsModal({
 }: ScheduleDetailsModalProps) {
   if (!schedule) return null
 
-  const scheduleDate = new Date(schedule.date)
+  const scheduleDate = parseLocalDate(schedule.date)
   const scheduledTeams = teams.filter(team => schedule.teamIds.includes(team.id))
 
   const day = scheduleDate.getDate().toString()

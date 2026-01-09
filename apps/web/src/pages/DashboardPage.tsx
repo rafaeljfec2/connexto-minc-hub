@@ -5,18 +5,19 @@ import { usePeople } from '@/hooks/usePeople'
 import { useTeams } from '@/hooks/useTeams'
 import { useSchedules } from '@/hooks/useSchedules'
 import { useServices } from '@/hooks/useServices'
-import { useMinistries } from '@/hooks/useMinistries' // Added import
+import { useMinistries } from '@/hooks/useMinistries'
 import { QuickActionsMobile } from './dashboard/components/QuickActionsMobile'
 import { StatsCardMobile } from './dashboard/components/StatsCardMobile'
 import { UpcomingServicesMobile } from './dashboard/components/UpcomingServicesMobile'
-import { User, Person, Team, Schedule, Service, Ministry } from '@minc-hub/shared/types' // Added Ministry type
+import { User, Person, Team, Schedule, Service, Ministry } from '@minc-hub/shared/types'
 import { ActivityFeedMobile, type ActivityItem } from './dashboard/components/ActivityFeedMobile'
+import { parseLocalDate } from '@/lib/utils'
 
 interface DashboardViewProps {
   readonly user: User | null
   readonly people: readonly Person[]
   readonly teams: readonly Team[]
-  readonly ministries: readonly Ministry[] // Added interface prop
+  readonly ministries: readonly Ministry[]
   readonly activeTeams: readonly Team[]
   readonly schedules: readonly Schedule[]
   readonly services: readonly Service[]
@@ -28,7 +29,7 @@ interface DashboardViewProps {
 function MobileDashboard({
   people,
   teams,
-  ministries, // Added prop
+  ministries,
   activeTeams,
   schedules,
   services,
@@ -47,7 +48,7 @@ function MobileDashboard({
             schedules={schedules}
             services={services}
             teams={teams}
-            ministries={ministries} // Passed prop
+            ministries={ministries}
             people={people}
           />
         )}
@@ -91,7 +92,7 @@ function MobileDashboard({
               title="Próx. Culto"
               value={
                 nextService && nextServiceData
-                  ? new Date(nextService.date).toLocaleDateString('pt-BR', {
+                  ? parseLocalDate(nextService.date).toLocaleDateString('pt-BR', {
                       weekday: 'short',
                       hour: '2-digit',
                       minute: '2-digit',
@@ -183,7 +184,7 @@ function DesktopDashboard({
           <CardContent>
             <div className="text-3xl font-bold text-dark-900 dark:text-dark-50">
               {nextService && nextServiceData
-                ? new Date(nextService.date).toLocaleDateString('pt-BR', {
+                ? parseLocalDate(nextService.date).toLocaleDateString('pt-BR', {
                     weekday: 'short',
                     hour: '2-digit',
                     minute: '2-digit',
@@ -236,7 +237,7 @@ export default function DashboardPage() {
   const { teams } = useTeams()
   const { schedules } = useSchedules()
   const { services } = useServices()
-  const { ministries } = useMinistries() // Call hook
+  const { ministries } = useMinistries()
 
   const activeTeams = useMemo(() => teams.filter(t => t.isActive), [teams])
 
@@ -246,10 +247,10 @@ export default function DashboardPage() {
   const upcomingSchedules = useMemo(() => {
     return schedules
       .filter(schedule => {
-        const scheduleDate = new Date(schedule.date)
-        return scheduleDate >= new Date()
+        const scheduleDate = parseLocalDate(schedule.date)
+        return scheduleDate >= new Date(new Date().setHours(0, 0, 0, 0)) // Compare with today midnight
       })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())
       .slice(0, 1)
   }, [schedules])
 
@@ -260,7 +261,7 @@ export default function DashboardPage() {
     user,
     people,
     teams,
-    ministries, // Add to viewProps
+    ministries,
     activeTeams,
     schedules,
     services,
