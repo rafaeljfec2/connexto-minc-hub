@@ -60,6 +60,12 @@ export interface AvatarUploadResponse {
   avatarUrl: string
 }
 
+interface ApiResponse<T> {
+  statusCode: number
+  route: string
+  data: T
+}
+
 export async function uploadAvatar(
   file: File,
   onProgress?: (progress: UploadProgress) => void
@@ -67,7 +73,7 @@ export async function uploadAvatar(
   const formData = new FormData()
   formData.append('avatar', file)
 
-  const response = await api.post<AvatarUploadResponse>('/users/avatar', formData, {
+  const response = await api.post<ApiResponse<AvatarUploadResponse>>('/users/avatar', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -82,7 +88,7 @@ export async function uploadAvatar(
     },
   })
 
-  return response.data
+  return response.data.data
 }
 
 export interface UpdateProfileData {
@@ -91,5 +97,5 @@ export interface UpdateProfileData {
 }
 
 export async function updateProfile(data: UpdateProfileData): Promise<void> {
-  await api.patch('/users/profile', data)
+  await api.patch<ApiResponse<unknown>>('/users/profile', data)
 }
