@@ -1,7 +1,25 @@
 import { useState, useCallback } from 'react'
-import { Download, FileText, Play, ExternalLink, X } from 'lucide-react'
+import { Download, FileText, Play, ExternalLink, X, Loader2 } from 'lucide-react'
 
 type MessageStatus = 'sending' | 'sent' | 'read'
+
+async function downloadFile(url: string, filename: string): Promise<void> {
+  try {
+    const response = await fetch(url)
+    const blob = await response.blob()
+    const blobUrl = globalThis.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    globalThis.URL.revokeObjectURL(blobUrl)
+  } catch (error) {
+    console.error('Download failed:', error)
+    globalThis.open(url, '_blank')
+  }
+}
 
 export interface MessageAttachment {
   url: string
@@ -214,48 +232,76 @@ interface MediaActionsProps {
 }
 
 function MediaActions({ attachment, mediaType, isMe }: Readonly<MediaActionsProps>) {
-  const handleDownload = useCallback(() => window.open(attachment.url, '_blank'), [attachment.url])
-
-  if (mediaType === 'image') {
-    return (
-      <div className="flex items-center gap-2">
-        <a
-          href={attachment.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`flex items-center gap-1 text-xs ${
-            isMe ? 'text-white/80 hover:text-white' : 'text-primary-500 hover:text-primary-600'
-          }`}
-        >
-          <ExternalLink className="h-3 w-3" />
-          <span>Abrir imagem</span>
-        </a>
-      </div>
-    )
+  switch (mediaType) {
+    case 'image':
+      return <ImageAction url={attachment.url} isMe={isMe} />
+    case 'video':
+    case 'audio':
+      return <MediaInfoAction name={attachment.name} size={attachment.size} isMe={isMe} />
+    default:
+      return <DownloadAction attachment={attachment} isMe={isMe} />
   }
+}
 
-  if (mediaType === 'video' || mediaType === 'audio') {
-    return (
-      <div className="flex items-center justify-between">
-        <span
-          className={`text-xs truncate max-w-[70%] ${isMe ? 'text-white/80' : 'text-dark-600 dark:text-dark-400'}`}
-        >
-          {attachment.name}
-        </span>
-        <span className={`text-xs ${isMe ? 'text-white/60' : 'text-dark-500'}`}>
-          {formatFileSize(attachment.size)}
-        </span>
-      </div>
-    )
-  }
+function ImageAction({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
+  return (
+    <div className="flex items-center gap-2">
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`flex items-center gap-1 text-xs ${
+          isMe ? 'text-white/80 hover:text-white' : 'text-primary-500 hover:text-primary-600'
+        }`}
+      >
+        <ExternalLink className="h-3 w-3" />
+        <span>Abrir imagem</span>
+      </a>
+    </div>
+  )
+}
+
+function MediaInfoAction({
+  name,
+  size,
+  isMe,
+}: Readonly<{ name: string; size: number; isMe: boolean }>) {
+  return (
+    <div className="flex items-center justify-between">
+      <span
+        className={`text-xs truncate max-w-[70%] ${isMe ? 'text-white/80' : 'text-dark-600 dark:text-dark-400'}`}
+      >
+        {name}
+      </span>
+      <span className={`text-xs ${isMe ? 'text-white/60' : 'text-dark-500'}`}>
+        {formatFileSize(size)}
+      </span>
+    </div>
+  )
+}
+
+function DownloadAction({
+  attachment,
+  isMe,
+}: Readonly<{ attachment: MessageAttachment; isMe: boolean }>) {
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  const handleDownload = useCallback(async () => {
+    setIsDownloading(true)
+    await downloadFile(attachment.url, attachment.name)
+    setIsDownloading(false)
+  }, [attachment.url, attachment.name])
+
+  const iconClass = `h-5 w-5 flex-shrink-0 ${isMe ? 'text-white/80' : 'text-primary-500'}`
 
   return (
     <button
       type="button"
       onClick={handleDownload}
+      disabled={isDownloading}
       className={`flex items-center gap-3 w-full p-2 rounded-lg transition-colors ${
         isMe ? 'hover:bg-white/10' : 'hover:bg-dark-300 dark:hover:bg-dark-700'
-      }`}
+      } ${isDownloading ? 'opacity-70 cursor-wait' : ''}`}
     >
       <div
         className={`flex-shrink-0 p-2 rounded-lg ${isMe ? 'bg-white/20' : 'bg-dark-300 dark:bg-dark-700'}`}
@@ -268,9 +314,11 @@ function MediaActions({ attachment, mediaType, isMe }: Readonly<MediaActionsProp
           {formatFileSize(attachment.size)}
         </p>
       </div>
-      <Download
-        className={`h-5 w-5 flex-shrink-0 ${isMe ? 'text-white/80' : 'text-primary-500'}`}
-      />
+      {isDownloading ? (
+        <Loader2 className={`${iconClass} animate-spin`} />
+      ) : (
+        <Download className={iconClass} />
+      )}
     </button>
   )
 }
