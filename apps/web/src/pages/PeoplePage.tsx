@@ -531,7 +531,7 @@ export default function PeoplePage() {
         <TableCell className="text-right">
           <div className="flex justify-end gap-2">
             <Button
-              variant="ghost"
+              variant="action-edit"
               size="sm"
               onClick={() => handleOpenPersonModal(person)}
               title="Editar"
@@ -549,7 +549,7 @@ export default function PeoplePage() {
               </Button>
             )}
             <Button
-              variant="ghost"
+              variant="action-delete"
               size="sm"
               onClick={() => handleDeleteClick(person.id)}
               title="Excluir"

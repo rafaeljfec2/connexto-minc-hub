@@ -323,7 +323,11 @@ export default function SchedulePlanningConfigPage() {
                       <TableCell>{team.name}</TableCell>
                       <TableCell>{getTeamConfigDisplay()}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleOpenTeamModal(team)}>
+                        <Button
+                          variant="action-edit"
+                          size="sm"
+                          onClick={() => handleOpenTeamModal(team)}
+                        >
                           <EditIcon className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -384,7 +388,7 @@ export default function SchedulePlanningConfigPage() {
                     </Button>
                     {!template.isSystemTemplate && (
                       <Button
-                        variant="ghost"
+                        variant="action-delete"
                         size="sm"
                         onClick={() => {
                           setDeletingTemplateId(template.id)
