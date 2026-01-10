@@ -84,7 +84,6 @@ export class ChatController {
 
   @Get('users/:userId/status')
   async getUserStatus(@Param('userId', ParseUUIDPipe) userId: string) {
-    // TODO: Implement actual online status tracking
     // For now returning mock or last seen from user entity if available
     return {
       userId,

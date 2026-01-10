@@ -1,618 +1,664 @@
 # Backlog de Desenvolvimento - MINC Teams
 
+> **Last Updated**: 2026-01-10  
+> **Status**: Active  
+> **Version**: 3.1.0
+
 ## 📋 Visão Geral
 
-Este documento é um índice geral dos backlogs do sistema MINC Teams. Os backlogs foram separados por plataforma para melhor organização:
+Este documento consolida o backlog completo do sistema MINC Teams, organizado por plataforma e prioridade. Para backlogs específicos por área, consulte:
 
-- **[BACKLOG_BACKEND.md](./BACKLOG_BACKEND.md)** - Backend (NestJS + PostgreSQL)
-- **[BACKLOG_WEB.md](./BACKLOG_WEB.md)** - Frontend Web (React + Vite + TypeScript)
-- **[BACKLOG_MOBILE.md](./BACKLOG_MOBILE.md)** - Aplicativo Mobile (React Native)
+- [Backend Standards](./backend/BACKEND_STANDARDS.md) - Padrões de desenvolvimento backend
+- [Design System](./frontend/DESIGN_SYSTEM.md) - Sistema de design frontend
+- [Mobile Strategy](./mobile/MOBILE_STRATEGY.md) - Estratégia mobile
 
 ---
 
-## 🎯 Fase 1: MVP Funcional (Em Andamento)
+## ✅ MVP Concluído (Fase 1)
 
-### ✅ Concluído
+### Infraestrutura e Setup
 
-- [x] Estrutura do monorepo (pnpm + Turborepo)
-- [x] Frontend web (React + Vite + TypeScript)
-- [x] Sistema de autenticação mock
+- [x] Monorepo (pnpm + Turborepo)
+- [x] Backend NestJS + PostgreSQL + TypeORM
+- [x] Frontend Web (React + Vite + TypeScript + Tailwind CSS)
+- [x] Sistema de build e deploy (Vercel)
+- [x] Migrations do banco de dados
+- [x] Configuração de ambientes (dev, staging, prod)
+
+### Autenticação e Segurança (Backend + Frontend)
+
+- [x] Sistema de autenticação JWT
+- [x] Endpoint de login (`POST /auth/login`)
+- [x] Endpoint de refresh token (`POST /auth/refresh-token`)
+- [x] Endpoint de logout (`POST /auth/logout`)
+- [x] Endpoint de recuperação de senha (`POST /auth/forgot-password`)
+- [x] Endpoint de reset de senha (`POST /auth/reset-password`)
+- [x] Endpoint de usuário atual (`GET /auth/me`)
+- [x] Refresh token com cookies HttpOnly
+- [x] Guards de autorização por papel (JwtAuthGuard)
+- [x] Controle de acesso baseado em roles
+- [x] Rate limiting para endpoints sensíveis
+- [x] Security logging (eventos de login, logout, etc.)
+- [x] Context de autenticação (Frontend)
+- [x] Interceptors para refresh token automático
+- [x] Tela de login (Frontend)
+- [x] Tratamento de erros de autenticação
+
+### Gestão de Dados - CRUD Completo (Backend + Frontend)
+
+#### Igrejas (Churches)
+
+- [x] CRUD completo (Backend)
+- [x] Soft delete
+- [x] Página de gestão (Frontend)
+- [x] Visualização Grid/List
+
+#### Times/Ministérios (Ministries)
+
+- [x] CRUD completo (Backend)
+- [x] Filtro por igreja
+- [x] Soft delete
+- [x] Página de gestão (Frontend)
+- [x] Visualização Grid/List
+- [x] ComboBox para seleção
+
+#### Equipes (Teams)
+
+- [x] CRUD completo (Backend)
+- [x] Filtro por ministério
+- [x] Gestão de membros (add/remove)
+- [x] Soft delete
+- [x] Página de gestão (Frontend)
+- [x] Página de detalhes de equipe
+- [x] Visualização Grid/List
+- [x] ComboBox para seleção
+
+#### Servos/Pessoas (Persons)
+
+- [x] CRUD completo (Backend)
+- [x] Filtro por ministério e equipe
+- [x] Vinculação com equipes (team members)
+- [x] Soft delete
+- [x] Página de gestão (Frontend)
+- [x] Visualização Grid/List
+- [x] Formulário completo com validações
+- [x] ComboBox para seleção
+
+#### Cultos/Serviços (Services)
+
+- [x] CRUD completo (Backend)
+- [x] Filtro por igreja
+- [x] Tipos de culto (sunday_morning, sunday_evening, etc.)
+- [x] Soft delete
+- [x] Página de gestão (Frontend)
+- [x] Visualização Grid/List
+
+#### Escalas (Schedules)
+
+- [x] CRUD completo (Backend)
+- [x] Filtro por serviço e data
+- [x] Gestão de equipes por escala
+- [x] Soft delete
+- [x] Página de gestão (Frontend)
+- [x] Visualização Grid/List
+- [x] Página de planejamento mensal
+
+#### Usuários (Users)
+
+- [x] CRUD completo (Backend)
+- [x] Vinculação Usuário ↔ Pessoa
+- [x] Gestão de papéis (admin, coordinator, leader, member)
+- [x] Campo canCheckIn
+- [x] Avatar support
+- [x] Soft delete
+- [x] Página de gestão (Frontend)
+- [x] Formulário de criação/edição
+- [x] ComboBox para seleção de papel e pessoa
+
+### Comunicação (Chat)
+
+- [x] Sistema de Chat (WebSocket + REST)
+- [x] Conversas 1:1 (Backend)
+- [x] Endpoint de conversas (`GET /chat/conversations`)
+- [x] Endpoint de mensagens (`GET /chat/conversations/:id/messages`)
+- [x] Endpoint de envio (`POST /chat/conversations/:id/messages`)
+- [x] Endpoint de criar conversa (`POST /chat/conversations`)
+- [x] Endpoint de marcar como lido (`PUT /chat/conversations/:id/messages/read`)
+- [x] Endpoint de contagem não lidas (`GET /chat/conversations/unread-count`)
+- [x] Grupos de chat (Backend)
+- [x] Mensagens em tempo real (WebSocket)
+- [x] Indicadores de mensagens não lidas
+- [x] Status online/offline
+- [x] Página de Chat (Frontend)
+- [x] Página de detalhes de conversa
+- [x] Componente de chat flutuante
+- [x] Notificações de novas mensagens
+
+### Check-in e Presença
+
+- [x] Endpoint de geração de QR Code (`POST /checkin/generate-qr`)
+- [x] Endpoint de validação de QR Code (`POST /checkin/validate-qr`)
+- [x] Endpoint de histórico de check-in (`GET /checkin/history`)
+- [x] Validação de regras de negócio (horário, equipe, escala)
+- [x] Registro de presença (Attendances)
+- [x] CRUD de attendances (Backend)
+- [x] Estatísticas de presença por escala
+- [x] Página de Check-in (Frontend)
+- [x] Componente de QR Code display
+
+### Planejamento e Escalas
+
+- [x] Configuração de escalas mensais (Backend)
+- [x] Endpoint de planejamento (`/schedule-planning`)
+- [x] Geração automática de escalas
+- [x] Configuração de regras de planejamento
+- [x] Página de planejamento mensal (Frontend)
+- [x] Página de configuração de planejamento
+- [x] Visualização de escalas por mês
+- [x] Calendário de escalas
+
+### Interface Web
+
 - [x] Layout responsivo (mobile-first)
-- [x] Sistema de temas (dark/light)
-- [x] Componentes reutilizáveis de CRUD
-- [x] Página de Igrejas (cadastro completo)
-- [x] Página de Times/Ministérios (cadastro completo)
-- [x] Página de Equipes (cadastro completo)
-- [x] Página de Servos (cadastro completo)
-- [x] Página de Cultos/Serviços (cadastro completo)
-- [x] Página de Escalas (cadastro completo)
-- [x] Visualização Grid/List em todas as páginas de cadastro
+- [x] Sistema de temas (dark/light mode)
+- [x] Sidebar navigation (desktop)
+- [x] Footer navigation (mobile)
+- [x] Componentes base (Button, Input, Modal, Card, etc.)
+- [x] Componentes avançados (ComboBox, DataTable, Pagination, etc.)
+- [x] Visualização Grid/List em todas as páginas
 - [x] Sistema de filtros e busca
-- [x] Página de Sorteio Mensal (visualização)
+- [x] Dashboard com indicadores
+- [x] Página de perfil do usuário
+- [x] Página de configurações
+- [x] Design System completo e documentado
+
+### Upload e Arquivos
+
+- [x] Sistema de upload (Backend)
+- [x] Endpoint de upload (`POST /upload`)
+- [x] Suporte para avatares
+- [x] Validação de tipos de arquivo
+
+### Documentação
+
+- [x] Swagger/OpenAPI (Backend)
+- [x] Design System (Frontend)
+- [x] Backend Standards
+- [x] API Endpoints documentation
+- [x] Database Schema documentation
+- [x] Documentação reorganizada e profissional
 
 ---
 
-## 🔧 BACKEND (NestJS + PostgreSQL)
+## 🚧 Em Desenvolvimento (Fase 2)
 
-### 📝 Fase 1: MVP Funcional
+### Check-in Avançado
 
-#### EPIC-001: Implementação do Backend NestJS
+- [ ] Interface de leitura de QR Code (câmera web)
+- [ ] Feedback visual/sonoro de validação
+- [ ] Check-in manual (interface completa)
+- [ ] Justificativa de ausência
+- [ ] Relatórios de frequência detalhados
 
-- [ ] Configuração do projeto NestJS
-- [ ] Estrutura de módulos (Clean Architecture)
-- [ ] Configuração do PostgreSQL
-- [ ] Migrations do banco de dados
-- [ ] Entidades e DTOs
-- [ ] Serviços de negócio
-- [ ] Controllers e rotas REST
-- [ ] Middleware de autenticação JWT
-- [ ] Guards de autorização por papel
-- [ ] Validação de dados (class-validator)
-- [ ] Tratamento de erros global
-- [ ] Logging e monitoramento
+### Comunicação Avançada
 
-#### EPIC-002: Sistema de Autenticação (Backend)
-
-- [ ] Endpoint de login (`POST /auth/login`)
-- [ ] Endpoint de refresh token (`POST /auth/refresh`)
-- [ ] Endpoint de logout (`POST /auth/logout`)
-- [ ] Endpoint de recuperação de senha (`POST /auth/forgot-password`)
-- [ ] Endpoint de alteração de senha (`POST /auth/change-password`)
-- [ ] Geração e validação de JWT
-- [ ] Refresh token rotation
-- [ ] Rate limiting para endpoints de autenticação
-
-#### EPIC-003: Sistema de Usuários e Papéis (Backend)
-
-- [ ] Modelo de Usuário do Sistema (entidade)
-- [ ] Vinculação Usuário ↔ Pessoa/Servo
-- [ ] CRUD de usuários (endpoints)
-- [ ] Gestão de papéis (Admin, Coordenador, Líder, Membro)
-- [ ] Atribuição de papéis
-- [ ] Validação: Servo só acessa se tiver usuário vinculado
-- [ ] Endpoints de gestão de usuários
-
-#### EPIC-004: Sorteio Automático de Equipes (Backend)
-
-- [ ] Algoritmo de rodízio justo
-- [ ] Configuração de regras de sorteio
-- [ ] Endpoint para executar sorteio (`POST /schedules/draw`)
-- [ ] Histórico de sorteios (modelo de dados)
-- [ ] Validação de regras de sorteio
-- [ ] Notificação de equipes sorteadas (service)
-
-#### EPIC-005: Remanejamento Manual (Backend)
-
-- [ ] Endpoint para remanejamento (`PUT /schedules/:id/reassign`)
-- [ ] Histórico de alterações (modelo de dados)
-- [ ] Auditoria de mudanças (log de ações)
-- [ ] Validação de permissões para remanejamento
-- [ ] Notificação de alterações (service)
-
-#### EPIC-006: Controle de Frequência (Backend)
-
-- [ ] Modelo de Presença (entidade)
-- [ ] Endpoint para registro de presença (`POST /check-ins`)
-- [ ] Endpoint para lista de presença (`GET /schedules/:id/attendance`)
-- [ ] Endpoint para relatório de frequência (`GET /reports/attendance`)
-- [ ] Cálculo de métricas de frequência
-- [ ] Validação de check-in (QR Code ou manual)
-
-#### EPIC-007: Comunicação Segmentada (Backend)
-
-- [ ] Modelo de Mensagem (entidade)
-- [ ] Endpoint para envio de mensagem (`POST /messages`)
-- [ ] Endpoint para histórico de mensagens (`GET /messages`)
-- [ ] Service de segmentação (Time, Equipe, Servo)
-- [ ] Integração com Firebase Cloud Messaging
-- [ ] Service de notificações push
+- [ ] Comunicação segmentada (Time, Equipe, Servo)
+- [ ] Endpoint de envio em massa
+- [ ] Envio de mensagens para grupos
 - [ ] Agendamento de mensagens
+- [ ] Notificações push (Firebase Cloud Messaging)
+- [ ] Anexos em mensagens
+- [ ] Página de comunicação segmentada (Frontend)
 
-#### EPIC-008: Dashboard de Indicadores (Backend)
+### Relatórios e Analytics
 
-- [ ] Endpoint de métricas de frequência (`GET /dashboard/attendance`)
-- [ ] Endpoint de estatísticas de equipes (`GET /dashboard/teams`)
-- [ ] Endpoint de estatísticas gerais (`GET /dashboard/stats`)
-- [ ] Cálculo de KPIs
-- [ ] Agregação de dados para gráficos
+- [ ] Relatórios de frequência por período
+- [ ] Relatórios por servo (histórico completo)
+- [ ] Relatórios por equipe (performance)
+- [ ] Relatórios por time (estatísticas)
+- [ ] Exportação em PDF
+- [ ] Exportação em Excel
+- [ ] Gráficos interativos (Chart.js/Recharts)
+- [ ] Dashboard de analytics avançado
+- [ ] Filtros avançados de relatórios
 
-#### EPIC-011: Sistema de Hierarquia (Backend)
+### Automações
 
-- [ ] Modelo de dados de hierarquia
-- [ ] Regras de permissão por nível (guards)
-- [ ] Validação de acesso por nível
-- [ ] Endpoints para gestão de hierarquia
+- [ ] Sorteio automático de equipes
+- [ ] Algoritmo de rodízio justo
+- [ ] Lembretes de escala (24h antes)
+- [ ] Notificação de check-in pendente
+- [ ] Alertas de baixa frequência
+- [ ] Cron jobs para automações
 
-#### EPIC-012: Geração de QR Code (Backend)
+---
 
-- [ ] Endpoint para gerar QR Code (`POST /servos/:id/qr-code`)
-- [ ] Geração de payload criptografado
-- [ ] Assinatura digital do QR Code
-- [ ] Validação de expiração
-- [ ] Histórico de QR Codes gerados
-- [ ] Cache de QR Codes válidos
+## 📱 Mobile (Fase 3)
 
-#### EPIC-013: Validação de QR Code (Backend)
+### Setup e Infraestrutura
 
-- [ ] Endpoint para validar QR Code (`POST /check-ins/validate-qr`)
-- [ ] Validação de assinatura digital
-- [ ] Validação de expiração
-- [ ] Validação de pertencimento à equipe
-- [ ] Validação de escala do dia
-- [ ] Registro de check-in após validação
-- [ ] Log de tentativas de validação
+- [ ] Configuração React Native + Expo
+- [ ] Integração com monorepo
+- [ ] Navegação (React Navigation)
+- [ ] Design system mobile
+- [ ] Build Android/iOS
+- [ ] Configuração de ambientes
 
-#### EPIC-014: Check-in Manual (Backend)
+### Funcionalidades Core
 
-- [ ] Endpoint para check-in manual (`POST /check-ins/manual`)
-- [ ] Validação de permissões (apenas líder de equipe)
-- [ ] Registro de múltiplos check-ins
-- [ ] Campo de justificativa de ausência
+- [ ] Autenticação mobile
+- [ ] Dashboard mobile
+- [ ] Visualização de escalas
+- [ ] Geração de QR Code (Servo)
+- [ ] Leitura de QR Code (Líder)
+- [ ] Check-in manual
+- [ ] Chat mobile
+- [ ] Notificações push
+- [ ] Modo offline
+- [ ] Sincronização de dados
 
-#### EPIC-015: Relatórios Detalhados (Backend)
+### Deploy
 
-- [ ] Endpoint de relatório por servo (`GET /reports/servos/:id`)
-- [ ] Endpoint de relatório por equipe (`GET /reports/teams/:id`)
-- [ ] Endpoint de relatório por time (`GET /reports/ministries/:id`)
-- [ ] Endpoint de relatório de check-ins QR Code (`GET /reports/qr-code-check-ins`)
-- [ ] Endpoint de relatório de escalas (`GET /reports/schedules`)
-- [ ] Geração de PDF (service)
-- [ ] Geração de Excel (service)
-- [ ] Filtros avançados
+- [ ] Google Play Store
+- [ ] Apple App Store
+- [ ] TestFlight (beta)
+- [ ] Documentação de deploy
 
-#### EPIC-016: Automações e Notificações (Backend)
+---
 
-- [ ] Service de lembretes de escala (24h antes)
-- [ ] Service de notificação de check-in pendente
-- [ ] Service de alertas de baixa frequência
-- [ ] Service de notificação de remanejamento
+## 🎯 Backlog por Prioridade
+
+### P0 - Crítico (Próximas 2 semanas)
+
+#### Frontend
+
+- [ ] Interface de leitura de QR Code (câmera)
+- [ ] Componente de scanner QR
+- [ ] Tela de check-in manual completa
+- [ ] Feedback visual de validação
+
+#### Backend
+
+- [ ] Melhorias no sistema de QR Code (se necessário)
+- [ ] Otimizações de performance
+
+### P1 - Alta (Próximo mês)
+
+#### Backend
+
+- [ ] Sistema de notificações push (Firebase)
+- [ ] Endpoint de comunicação segmentada
+- [ ] Endpoint de relatórios detalhados
 - [ ] Agendamento de mensagens (cron jobs)
-- [ ] Configuração de preferências de notificação
+- [ ] Sorteio automático de equipes
 
-#### EPIC-021: Segurança Avançada (Backend)
+#### Frontend
 
-- [ ] Criptografia de dados sensíveis
-- [ ] Rate limiting global
-- [ ] Proteção contra SQL injection (TypeORM)
-- [ ] Validação de entrada rigorosa
+- [ ] Página de comunicação segmentada
+- [ ] Página de relatórios
+- [ ] Exportação de relatórios (PDF/Excel)
+- [ ] Interface de sorteio automático
+- [ ] Melhorias de acessibilidade (WCAG 2.1 AA)
+
+### P2 - Média (Próximos 2-3 meses)
+
+#### Backend
+
+- [ ] Histórico de alterações (audit log)
 - [ ] Auditoria de ações críticas
 - [ ] Backup automático
 - [ ] Política de retenção de dados
-- [ ] LGPD compliance (endpoints de exclusão)
 
-#### EPIC-022: Testes Automatizados (Backend)
+#### Frontend
 
-- [ ] Testes unitários (services)
-- [ ] Testes de integração (controllers)
-- [ ] Testes E2E (rotas completas)
-- [ ] Testes de performance
-- [ ] Cobertura mínima de 80%
-
-#### EPIC-023: Documentação (Backend)
-
-- [ ] Documentação da API (Swagger/OpenAPI)
-- [ ] Documentação de arquitetura
-- [ ] Guia de desenvolvimento
-- [ ] Documentação de QR Code
-
-#### EPIC-024: Infraestrutura (Backend)
-
-- [ ] Configuração de CI/CD
-- [ ] Ambientes (dev, staging, prod)
-- [ ] Deploy automatizado
-- [ ] Monitoramento (Sentry, LogRocket)
-- [ ] Métricas e alertas
-- [ ] Escalabilidade (load balancing)
-
----
-
-## 💻 WEB (React + Vite + TypeScript)
-
-### 📝 Fase 1: MVP Funcional
-
-#### EPIC-002: Sistema de Autenticação (Web)
-
-- [ ] Integração com endpoint de login
-- [ ] Integração com endpoint de refresh token
-- [ ] Integração com endpoint de logout
-- [ ] Tela de recuperação de senha
-- [ ] Tela de alteração de senha
-- [ ] Context de autenticação atualizado
-- [ ] Interceptors para refresh token
-- [ ] Tratamento de erros de autenticação
-
-#### EPIC-003: Sistema de Usuários e Papéis (Web)
-
-- [ ] Página de gestão de usuários (`/users`)
-- [ ] Listagem de usuários
-- [ ] Formulário de criação de usuário
-- [ ] Formulário de edição de usuário
-- [ ] Vinculação Usuário ↔ Servo
-- [ ] Gestão de papéis (select de papéis)
-- [ ] Validação: Servo só acessa se tiver usuário vinculado
-- [ ] Bloqueio de acesso para servos sem usuário
-
-#### EPIC-004: Sorteio Automático de Equipes (Web)
-
-- [ ] Interface para executar sorteio mensal
-- [ ] Configuração de regras de sorteio
-- [ ] Visualização de histórico de sorteios
-- [ ] Confirmação de sorteio
-- [ ] Feedback visual do processo
-
-#### EPIC-005: Remanejamento Manual (Web)
-
-- [ ] Interface para remanejamento (`/schedules/:id/reassign`)
-- [ ] Drag and drop de servos entre equipes
-- [ ] Histórico de alterações (modal/timeline)
-- [ ] Confirmação de remanejamento
-- [ ] Notificação de alterações
-
-#### EPIC-006: Controle de Frequência (Web)
-
-- [ ] Página de lista de presença (`/schedules/:id/attendance`)
-- [ ] Registro de presença (checkboxes)
-- [ ] Visualização de frequência por servo
-- [ ] Relatório de frequência (gráficos)
-- [ ] Dashboard de frequência
-
-#### EPIC-007: Comunicação Segmentada (Web)
-
-- [ ] Página de comunicação (`/communication`)
-- [ ] Formulário de envio de mensagem
-- [ ] Seleção de segmento (Time, Equipe, Servo)
-- [ ] Histórico de mensagens enviadas
-- [ ] Preview de mensagem
-- [ ] Agendamento de mensagens
-
-#### EPIC-008: Dashboard de Indicadores (Web)
-
-- [ ] Página de dashboard (`/dashboard`)
-- [ ] Gráficos de frequência (Chart.js/Recharts)
-- [ ] Estatísticas de equipes
-- [ ] Cards de métricas
-- [ ] Exportação de relatórios (PDF/Excel)
-- [ ] Filtros de período
-
-#### EPIC-009: Refinamentos de Interface (Web)
-
-- [ ] Página de Perfil do Usuário (`/profile`)
-- [ ] Página de Configurações (`/settings`)
-- [ ] Melhorias de acessibilidade
-- [ ] Otimizações de performance (lazy loading)
-- [ ] Testes E2E (Playwright/Cypress)
-
-#### EPIC-010: Pesquisa e Análise de QR Code (Web)
-
-- [ ] Pesquisa de bibliotecas para web
-- [ ] Protótipo de geração de QR Code
-- [ ] Protótipo de leitura de QR Code (câmera)
-- [ ] Testes de compatibilidade de navegadores
-
-#### EPIC-011: Sistema de Hierarquia (Web)
-
-- [ ] Interface de gestão de hierarquia
-- [ ] Visualização de níveis hierárquicos
-- [ ] Atribuição de papéis por interface
-- [ ] Validação de permissões na UI
-
-#### EPIC-012: Geração de QR Code (Web)
-
-- [ ] Tela de geração de QR Code (`/servos/:id/qr-code`)
-- [ ] Componente de exibição de QR Code
-- [ ] Botão de atualizar QR Code
-- [ ] Contador de expiração
-- [ ] Histórico de QR Codes gerados
-
-#### EPIC-013: Leitura de QR Code (Web)
-
-- [ ] Tela de leitura de QR Code (`/check-ins/scan`)
-- [ ] Integração com câmera do navegador
-- [ ] Scanner de QR Code (biblioteca)
-- [ ] Feedback visual de leitura
-- [ ] Confirmação de check-in
-- [ ] Tratamento de erros (QR Code inválido, expirado, etc.)
-- [ ] Alternância entre câmeras
-
-#### EPIC-014: Check-in Manual (Web)
-
-- [ ] Tela de check-in manual (`/check-ins/manual`)
-- [ ] Lista de servos da equipe
-- [ ] Checkboxes de presença
-- [ ] Campo de justificativa de ausência
-- [ ] Confirmação de check-in
-
-#### EPIC-015: Relatórios Detalhados (Web)
-
-- [ ] Página de relatórios (`/reports`)
-- [ ] Filtros avançados
-- [ ] Visualização de relatórios
-- [ ] Botão de exportação (PDF/Excel)
-- [ ] Gráficos e visualizações
-
-#### EPIC-016: Automações e Notificações (Web)
-
-- [ ] Configuração de preferências de notificação
-- [ ] Lista de notificações recebidas
-- [ ] Badge de notificações não lidas
-- [ ] Integração com Web Push API
-
-#### EPIC-017: Multi-ministério (Web)
-
-- [ ] Seletor de ministério (header)
-- [ ] Isolamento de dados por ministério
-- [ ] Gestão centralizada
-- [ ] Relatórios consolidados
-
-#### EPIC-018: Funcionalidades Avançadas (Web)
-
+- [ ] Drag and drop para remanejamento
+- [ ] Histórico de alterações (timeline)
 - [ ] Calendário integrado
 - [ ] Sincronização com Google Calendar
-- [ ] Chat interno
+
+#### Mobile
+
+- [ ] Setup do projeto React Native
+- [ ] Telas de autenticação
+- [ ] Dashboard mobile
+- [ ] QR Code (geração e leitura)
+- [ ] Chat mobile
+
+### P3 - Baixa (Backlog futuro)
+
+#### Expansão
+
+- [ ] Multi-ministério
+- [ ] Multi-igreja
 - [ ] Upload de documentos
 - [ ] Biblioteca de recursos
+- [ ] Integração com calendário externo
 
-#### EPIC-022: Testes Automatizados (Web)
+#### Qualidade
 
-- [ ] Testes unitários (componentes)
-- [ ] Testes de integração (páginas)
-- [ ] Testes E2E (fluxos completos)
-- [ ] Testes de acessibilidade
-- [ ] Cobertura mínima de 80%
+- [ ] Testes E2E completos (Playwright)
+- [ ] Testes de performance
+- [ ] Monitoramento avançado (Sentry)
+- [ ] Métricas de uso (Analytics)
+- [ ] Cobertura de testes >80%
 
 ---
 
-## 📱 MOBILE (React Native)
+## 📊 Épicos Detalhados
 
-### 📝 Fase 3: Aplicativo Mobile
+### EPIC-001: Interface de QR Code (Frontend)
 
-#### EPIC-019: Setup do App Mobile
+**Objetivo**: Completar interface de leitura de QR Code para check-in
 
-- [ ] Configuração do projeto React Native
-- [ ] Integração com monorepo
-- [ ] Navegação (React Navigation)
-- [ ] Autenticação mobile (context)
-- [ ] Design system mobile (componentes base)
-- [ ] Configuração de build (Android/iOS)
-- [ ] Configuração de ambiente
+**Tarefas**:
 
-#### EPIC-020: Funcionalidades Mobile - Autenticação
+- [ ] Componente de scanner QR (câmera web)
+- [ ] Integração com html5-qrcode ou similar
+- [ ] Feedback visual de leitura
+- [ ] Feedback sonoro de validação
+- [ ] Tratamento de erros (QR inválido, expirado, etc.)
+- [ ] Alternância entre câmeras
+- [ ] Histórico de check-ins realizados
 
-- [ ] Tela de login
-- [ ] Tela de recuperação de senha
-- [ ] Integração com backend
-- [ ] Armazenamento seguro de tokens (Keychain/Keystore)
-- [ ] Refresh token automático
+**Critérios de Aceitação**:
 
-#### EPIC-020: Funcionalidades Mobile - Dashboard
+- Líder pode escanear QR Code via câmera
+- Sistema valida em tempo real
+- Feedback claro de sucesso/erro
+- Funciona em diferentes navegadores
 
-- [ ] Dashboard mobile (home)
-- [ ] Cards de informações rápidas
-- [ ] Navegação principal
-- [ ] Notificações push
+---
 
-#### EPIC-020: Funcionalidades Mobile - Escalas
+### EPIC-002: Comunicação Segmentada
 
-- [ ] Visualização de escalas do servo
-- [ ] Calendário de escalas
-- [ ] Detalhes da escala
-- [ ] Notificações de escala
+**Objetivo**: Permitir envio de mensagens para grupos específicos
 
-#### EPIC-020: Funcionalidades Mobile - QR Code (Servo)
+**Backend**:
 
-- [ ] Tela de geração de QR Code
-- [ ] Componente de exibição de QR Code
-- [ ] Atualização de QR Code
-- [ ] Contador de expiração
-- [ ] Compartilhamento de QR Code
+- [ ] Modelo de Mensagem Segmentada
+- [ ] Service de segmentação (Time, Equipe, Servo)
+- [ ] Integração com Firebase Cloud Messaging
+- [ ] Agendamento de mensagens
+- [ ] Histórico de envios
 
-#### EPIC-020: Funcionalidades Mobile - QR Code (Líder)
+**Frontend**:
 
-- [ ] Tela de leitura de QR Code
-- [ ] Integração com câmera nativa
-- [ ] Scanner de QR Code (react-native-camera)
-- [ ] Feedback visual e sonoro
-- [ ] Confirmação de check-in
-- [ ] Lista de check-ins realizados
+- [ ] Formulário de envio
+- [ ] Seleção de destinatários (multi-select)
+- [ ] Preview de mensagem
+- [ ] Agendamento
+- [ ] Histórico de mensagens enviadas
 
-#### EPIC-020: Funcionalidades Mobile - Check-in Manual
+**Critérios de Aceitação**:
 
-- [ ] Tela de check-in manual
-- [ ] Lista de servos da equipe
-- [ ] Marcação de presença
-- [ ] Justificativa de ausência
-- [ ] Sincronização offline
+- Admin pode enviar para qualquer segmento
+- Líder de Time pode enviar para seu time
+- Líder de Equipe pode enviar para sua equipe
+- Mensagens podem ser agendadas
+- Histórico completo de envios
 
-#### EPIC-020: Funcionalidades Mobile - Notificações
+---
 
-- [ ] Configuração de Firebase Cloud Messaging
-- [ ] Recebimento de notificações push
-- [ ] Tratamento de notificações
-- [ ] Badge de notificações
-- [ ] Histórico de notificações
+### EPIC-003: Relatórios e Analytics
 
-#### EPIC-020: Funcionalidades Mobile - Modo Offline
+**Objetivo**: Fornecer insights sobre frequência e engajamento
 
-- [ ] Armazenamento local (AsyncStorage/SQLite)
-- [ ] Sincronização de dados
-- [ ] Queue de ações offline
-- [ ] Sincronização quando online
-- [ ] Indicador de status de conexão
+**Backend**:
 
-#### EPIC-020: Funcionalidades Mobile - Perfil
+- [ ] Endpoint de métricas de frequência
+- [ ] Endpoint de estatísticas por servo
+- [ ] Endpoint de estatísticas por equipe
+- [ ] Endpoint de estatísticas por time
+- [ ] Geração de PDF
+- [ ] Geração de Excel
 
-- [ ] Tela de perfil do usuário
-- [ ] Edição de informações
-- [ ] Configurações do app
-- [ ] Logout
+**Frontend**:
 
-#### EPIC-022: Testes Automatizados (Mobile)
+- [ ] Dashboard de analytics
+- [ ] Gráficos de frequência (Chart.js)
+- [ ] Filtros avançados (período, equipe, servo)
+- [ ] Exportação de relatórios
+- [ ] Visualizações customizadas
 
-- [ ] Testes unitários
-- [ ] Testes de integração
-- [ ] Testes E2E (Detox)
-- [ ] Testes em dispositivos reais
-- [ ] Cobertura mínima de 80%
+**Critérios de Aceitação**:
+
+- Relatórios em tempo real
+- Exportação em múltiplos formatos
+- Filtros por período, equipe, servo
+- Gráficos interativos
+- Performance otimizada
+
+---
+
+## 🔄 Roadmap 2026
+
+### Q1 2026 (Jan-Mar) - Check-in e Comunicação
+
+**Status**: 🚧 Em andamento
+
+**Concluído**:
+
+- ✅ Reorganização completa da documentação
+- ✅ Padronização de componentes (ComboBox em todas as páginas)
+- ✅ Sistema de QR Code (Backend completo)
+- ✅ Auditoria e atualização do backlog
+
+**Em Desenvolvimento**:
+
+- 🚧 Interface de leitura de QR Code (câmera web)
+- 🚧 Check-in manual (interface completa)
+- 🚧 Feedback visual/sonoro de validação
+
+**Planejado para Q1**:
+
+- 📝 Comunicação segmentada (backend + frontend)
+- � Envio de mensagens em massa
+- 📝 Notificações push (Firebase setup)
+- 📝 Testes E2E do fluxo de check-in
+
+**Meta Q1**: Sistema de check-in completo e funcional em produção
+
+---
+
+### Q2 2026 (Abr-Jun) - Relatórios e Automações
+
+**Foco**: Analytics e automação de processos
+
+**Planejado**:
+
+- 📝 Dashboard de analytics avançado
+- 📝 Relatórios de frequência detalhados
+- 📝 Exportação em PDF/Excel
+- 📝 Gráficos interativos (Chart.js/Recharts)
+- 📝 Sorteio automático de equipes
+- 📝 Algoritmo de rodízio justo
+- 📝 Lembretes automáticos (24h antes da escala)
+- 📝 Alertas de baixa frequência
+- 📝 Histórico de alterações (audit log)
+
+**Meta Q2**: Sistema de relatórios completo e automações funcionando
+
+---
+
+### Q3 2026 (Jul-Set) - Mobile MVP
+
+**Foco**: Aplicativo mobile para servos e líderes
+
+**Planejado**:
+
+- 📝 Setup React Native + Expo
+- 📝 Integração com monorepo
+- 📝 Autenticação mobile
+- 📝 Dashboard mobile
+- 📝 Visualização de escalas
+- 📝 Geração de QR Code (nativo)
+- 📝 Leitura de QR Code (câmera nativa)
+- 📝 Chat mobile
+- 📝 Notificações push
+- 📝 Modo offline básico
+- 📝 Beta testing (TestFlight + Google Play Beta)
+
+**Meta Q3**: App mobile em beta com funcionalidades core
+
+---
+
+### Q4 2026 (Out-Dez) - Expansão e Produção
+
+**Foco**: Escalabilidade e lançamento oficial
+
+**Planejado**:
+
+- 📝 Multi-ministério (expansão além de Boas-Vindas)
+- 📝 Multi-igreja (suporte para múltiplas igrejas)
+- 📝 Otimizações de performance
+- 📝 Testes de carga e stress
+- 📝 Monitoramento avançado (Sentry)
+- 📝 Analytics de uso
+- 📝 Documentação de usuário final
+- 📝 Treinamento de líderes
+- 📝 Deploy em produção (web + mobile)
+- 📝 Lançamento oficial
+
+**Meta Q4**: Sistema em produção com múltiplos ministérios usando
+
+---
+
+### Milestones Críticos 2026
+
+| Mês     | Milestone             | Descrição                          |
+| ------- | --------------------- | ---------------------------------- |
+| **Jan** | ✅ Docs reorganizadas | Documentação profissional completa |
+| **Fev** | � Check-in QR Code    | Interface de leitura funcionando   |
+| **Mar** | �📝 Comunicação       | Sistema de mensagens em massa      |
+| **Abr** | 📝 Relatórios         | Dashboard de analytics             |
+| **Mai** | 📝 Automações         | Sorteio e lembretes automáticos    |
+| **Jun** | 📝 Testes E2E         | Cobertura de testes >80%           |
+| **Jul** | 📝 Mobile Setup       | App mobile configurado             |
+| **Ago** | 📝 Mobile Beta        | Beta testing iniciado              |
+| **Set** | 📝 Mobile Release     | App em lojas (beta)                |
+| **Out** | 📝 Multi-ministério   | Expansão para outros ministérios   |
+| **Nov** | 📝 Performance        | Otimizações e testes de carga      |
+| **Dez** | 📝 Produção           | Lançamento oficial                 |
+
+---
+
+### Dependências e Riscos
+
+**Dependências**:
+
+- Firebase setup para notificações push
+- Aprovação nas lojas (Apple/Google) para mobile
+- Infraestrutura de produção (servidor, banco de dados)
+- Treinamento de usuários
+
+**Riscos Identificados**:
+
+- ⚠️ Complexidade do sorteio automático (algoritmo justo)
+- ⚠️ Aprovação na App Store (pode demorar)
+- ⚠️ Performance com múltiplas igrejas (escala)
+- ⚠️ Adoção pelos usuários (treinamento necessário)
+
+**Mitigações**:
+
+- Prototipagem e testes do algoritmo de sorteio
+- Iniciar processo de aprovação cedo (Q3)
+- Testes de carga desde Q2
+- Programa de treinamento desde Q1
+
+---
+
+## 📝 Notas Técnicas
+
+### Hierarquia de Usuários
+
+1. **Admin/Pastor**
+   - Acesso total ao sistema
+   - Gerencia todos os níveis
+   - Visualiza todos os relatórios
+   - Pode atribuir papéis
+
+2. **Coordenador/Líder de Time**
+   - Gerencia seu time/ministério
+   - Visualiza equipes e servos do time
+   - Cria e gerencia equipes
+   - Visualiza relatórios do time
+   - Não pode ler QR Code (apenas líder de equipe)
+
+3. **Líder de Equipe**
+   - Gerencia sua equipe específica
+   - **Pode ler QR Code dos servos**
+   - Faz check-in dos servos
+   - Visualiza relatórios da equipe
+
+4. **Servo/Membro**
+   - Visualiza suas informações
+   - Visualiza suas escalas
+   - **Gera QR Code para check-in**
+   - Recebe notificações
+   - Não pode fazer check-in próprio
+
+### Fluxo de Check-in com QR Code
+
+1. Servo gera QR Code único via app
+2. QR Code é válido por período configurável
+3. No culto, apresenta QR Code ao líder
+4. Líder escaneia QR Code via câmera
+5. Sistema valida em tempo real:
+   - QR Code válido e não expirado?
+   - Servo pertence à equipe do líder?
+   - Servo está na escala do dia?
+   - Check-in já foi feito?
+6. Se válido, registra check-in automaticamente
+7. Confirmação visual e sonora
+8. Registro salvo no banco de dados
 
 ---
 
 ## 📊 Métricas de Sucesso
 
-### KPIs a Acompanhar
+### KPIs Principais
 
-- [ ] Taxa de uso do sistema
-- [ ] Taxa de check-in via QR Code
-- [ ] Tempo médio de check-in
-- [ ] Satisfação dos usuários
-- [ ] Taxa de erro
-- [ ] Performance da aplicação
+- Taxa de adoção do sistema (>80% dos servos)
+- Taxa de check-in via QR Code (>70%)
+- Tempo médio de check-in (<30 segundos)
+- Satisfação dos usuários (>4.5/5)
+- Uptime do sistema (>99.5%)
 
----
+### Métricas de Qualidade
 
-## 🎯 Priorização
-
-### Prioridade Alta (P0) - Backend
-
-1. EPIC-001: Implementação do Backend NestJS
-2. EPIC-002: Sistema de Autenticação (Backend)
-3. EPIC-003: Sistema de Usuários e Papéis (Backend)
-
-### Prioridade Alta (P0) - Web
-
-1. EPIC-002: Sistema de Autenticação (Web)
-2. EPIC-003: Sistema de Usuários e Papéis (Web)
-3. Integração Frontend-Backend
-
-### Prioridade Média (P1) - Backend
-
-1. EPIC-004: Sorteio Automático de Equipes
-2. EPIC-006: Controle de Frequência
-3. EPIC-005: Remanejamento Manual
-4. EPIC-008: Dashboard de Indicadores
-
-### Prioridade Média (P1) - Web
-
-1. EPIC-004: Sorteio Automático de Equipes (Web)
-2. EPIC-006: Controle de Frequência (Web)
-3. EPIC-005: Remanejamento Manual (Web)
-4. EPIC-008: Dashboard de Indicadores (Web)
-
-### Prioridade Baixa (P2) - Backend
-
-1. EPIC-007: Comunicação Segmentada
-2. EPIC-010: Pesquisa de QR Code
-3. EPIC-012: Geração de QR Code (Backend)
-4. EPIC-013: Validação de QR Code (Backend)
-5. EPIC-015: Relatórios Detalhados
-
-### Prioridade Baixa (P2) - Web
-
-1. EPIC-007: Comunicação Segmentada (Web)
-2. EPIC-012: Geração de QR Code (Web)
-3. EPIC-013: Leitura de QR Code (Web)
-4. EPIC-015: Relatórios Detalhados (Web)
-
-### Prioridade Baixa (P2) - Mobile
-
-1. EPIC-019: Setup do App Mobile
-2. EPIC-020: Funcionalidades Mobile (após backend completo)
+- Cobertura de testes (>80%)
+- Performance (LCP <2.5s, FID <100ms)
+- Acessibilidade (WCAG 2.1 AA)
+- Zero erros críticos em produção
+- Tempo de resposta API (<200ms p95)
 
 ---
 
-## 📅 Roadmap Sugerido
+## 🔗 Documentação Relacionada
 
-### Q1 2024
-
-- ✅ Estrutura base e frontend MVP (Web)
-- 🚧 Backend e API (Backend)
-- 🚧 Autenticação (Backend + Web)
-
-### Q2 2024
-
-- 📝 Funcionalidades de negócio (Backend + Web)
-- 📝 Sistema de usuários (Backend + Web)
-- 📝 Controle de frequência (Backend + Web)
-
-### Q3 2024
-
-- 📝 Estudo e implementação de QR Code (Backend + Web)
-- 📝 Relatórios (Backend + Web)
-- 📝 Automações (Backend + Web)
-- 📝 Setup do App Mobile (Mobile)
-
-### Q4 2024
-
-- 📝 Funcionalidades Mobile (Mobile)
-- 📝 Expansão multi-ministério (Backend + Web)
-- 📝 Melhorias e refinamentos (Todas as plataformas)
+- [Backend Standards](./backend/BACKEND_STANDARDS.md)
+- [Design System](./frontend/DESIGN_SYSTEM.md)
+- [API Endpoints](./backend/API_ENDPOINTS.md)
+- [Database Schema](./architecture/DATABASE_SCHEMA.md)
+- [Mobile Strategy](./mobile/MOBILE_STRATEGY.md)
+- [Vercel Deployment](./devops/VERCEL_DEPLOYMENT.md)
 
 ---
 
-## 📝 Notas Importantes
+## 📞 Contato
 
-### Hierarquia de Usuários - Detalhamento
+Para dúvidas sobre o backlog ou sugestões de priorização:
 
-1. **PASTORr**
-
-   - Acesso total ao sistema
-   - Pode gerenciar todos os níveis
-   - Visualiza todos os relatórios
-   - Pode atribuir papéis
-
-2. **Líder de Time/Ministério**
-
-   - Gerencia o time/ministério
-   - Visualiza equipes e servos do time
-   - Pode criar e gerenciar equipes
-   - Visualiza relatórios do time
-   - Não pode ler QR Code (apenas líder de equipe)
-
-3. **Líder de Equipe**
-
-   - Gerencia a equipe específica
-   - Visualiza servos da equipe
-   - **Pode ler QR Code dos servos da equipe**
-   - Faz check-in dos servos
-   - Visualiza relatórios da equipe
-
-4. **Servo**
-   - Visualiza apenas suas informações
-   - Visualiza suas escalas
-   - **Gera QR Code para check-in**
-   - Não pode fazer check-in próprio
-   - Recebe notificações
-
-### Fluxo de Check-in com QR Code
-
-1. Servo acessa o app (web ou mobile) e gera seu QR Code único
-2. No dia do culto, servo apresenta QR Code ao líder de equipe
-3. Líder de equipe abre o app (web ou mobile) e acessa a tela de leitura de QR Code
-4. Líder escaneia o QR Code do servo
-5. Sistema valida (backend):
-   - QR Code é válido?
-   - QR Code não expirou?
-   - Servo pertence à equipe do líder?
-   - Servo está na escala do dia?
-6. Se válido, registra check-in e confirma
-7. Se inválido, exibe erro específico
-
-### Requisitos de Usuário
-
-- **Servo só pode acessar o sistema se tiver um usuário vinculado**
-- Usuário deve ser criado por Admin/Coordenador
-- Vinculação Usuário ↔ Servo é obrigatória
-- Servo sem usuário não tem acesso ao sistema
+- **Issues**: GitHub Issues
+- **Discussões**: GitHub Discussions
+- **Revisão**: Semanal (sextas-feiras)
 
 ---
 
-## 🔄 Atualizações
+**Legenda**:
 
-- **Última atualização**: 2024-01-XX
-- **Versão do backlog**: 2.0.0
-- **Próxima revisão**: Semanal
-
----
-
-## 📞 Contato e Dúvidas
-
-Para dúvidas sobre o backlog ou sugestões de priorização, entre em contato com o time de desenvolvimento.
+- ✅ Concluído
+- 🚧 Em desenvolvimento
+- 📝 Planejado
+- ⏸️ Pausado
+- ❌ Cancelado

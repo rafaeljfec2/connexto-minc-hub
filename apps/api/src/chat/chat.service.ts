@@ -342,7 +342,6 @@ export class ChatService {
     }
 
     if (data.name) conversation.name = data.name;
-    // conversation.avatar = data.avatar; // Assuming entity has avatar if needed, otherwise ignore
 
     await this.conversationRepository.save(conversation);
 
