@@ -10,13 +10,7 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { SchedulesService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
@@ -35,7 +29,10 @@ export class SchedulesController {
   @Post()
   @ApiOperation({ summary: 'Create a new schedule' })
   @ApiResponse({ status: 201, description: 'Schedule created successfully', type: ScheduleEntity })
-  @ApiResponse({ status: 409, description: 'A schedule already exists for this service on this date' })
+  @ApiResponse({
+    status: 409,
+    description: 'A schedule already exists for this service on this date',
+  })
   create(@Body() createScheduleDto: CreateScheduleDto): Promise<ScheduleEntity> {
     return this.schedulesService.create(createScheduleDto);
   }

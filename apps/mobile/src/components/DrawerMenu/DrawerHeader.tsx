@@ -2,23 +2,17 @@ import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { themeSpacing, themeTypography } from '@/theme'
 import { useTheme } from '@/contexts/ThemeContext'
+import { UserAvatar } from '@/components/Header/UserAvatar'
+import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface DrawerHeaderProps {
   readonly onClose: () => void
 }
 
-import { UserAvatar } from '@/components/Header/UserAvatar'
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle'
-import { useAuth } from '@/contexts/AuthContext'
-
-import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import type { RootStackParamList } from '@/navigator/navigator.types'
-
 export function DrawerHeader({ onClose }: DrawerHeaderProps) {
   const { colors } = useTheme()
   const { user } = useAuth()
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   const handleProfilePress = () => {
     onClose()

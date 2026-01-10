@@ -1,10 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ApiResponseDto } from '../dto/api-response.dto';
 
@@ -16,16 +10,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
     let message = 'Internal server error';
     let errors: Record<string, string[]> | string[] | undefined;
 
     if (exception instanceof HttpException) {
       const exceptionResponse = exception.getResponse();
-      
+
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
       } else if (typeof exceptionResponse === 'object') {
@@ -84,8 +76,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       'Recurso não encontrado': 'Resource not found',
       'Erro interno do servidor': 'Internal server error',
       'Erro de validação': 'Validation error',
-      'Conflito': 'Conflict',
-      'Já existe uma escala para este culto nesta data': 'A schedule already exists for this service on this date',
+      Conflito: 'Conflict',
+      'Já existe uma escala para este culto nesta data':
+        'A schedule already exists for this service on this date',
       'Membro já está na equipe': 'Member is already in the team',
       'Equipe já está na escala': 'Team is already in the schedule',
     };
@@ -93,4 +86,3 @@ export class AllExceptionsFilter implements ExceptionFilter {
     return translations[message] ?? message;
   }
 }
-

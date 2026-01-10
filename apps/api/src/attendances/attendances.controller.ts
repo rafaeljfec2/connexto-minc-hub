@@ -10,13 +10,7 @@ import {
   UseGuards,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AttendancesService } from './attendances.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { UpdateAttendanceDto } from './dto/update-attendance.dto';
@@ -34,8 +28,15 @@ export class AttendancesController {
 
   @Post()
   @ApiOperation({ summary: 'Register attendance/check-in' })
-  @ApiResponse({ status: 201, description: 'Attendance registered successfully', type: AttendanceEntity })
-  @ApiResponse({ status: 409, description: 'Attendance already registered for this person in this schedule' })
+  @ApiResponse({
+    status: 201,
+    description: 'Attendance registered successfully',
+    type: AttendanceEntity,
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Attendance already registered for this person in this schedule',
+  })
   create(
     @Body() createAttendanceDto: CreateAttendanceDto,
     @GetUser() user: UserEntity,
@@ -89,7 +90,11 @@ export class AttendancesController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update an attendance' })
-  @ApiResponse({ status: 200, description: 'Attendance updated successfully', type: AttendanceEntity })
+  @ApiResponse({
+    status: 200,
+    description: 'Attendance updated successfully',
+    type: AttendanceEntity,
+  })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAttendanceDto: UpdateAttendanceDto,

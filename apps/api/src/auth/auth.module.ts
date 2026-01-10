@@ -31,13 +31,7 @@ import { PasswordResetService } from './services/password-reset.service';
     ]),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    LocalStrategy,
-    JwtStrategy,
-    RefreshTokenService,
-    PasswordResetService,
-  ],
+  providers: [AuthService, LocalStrategy, JwtStrategy, RefreshTokenService, PasswordResetService],
   exports: [AuthService],
 })
 export class AuthModule {}

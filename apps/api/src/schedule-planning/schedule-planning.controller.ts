@@ -3,19 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
   ParseUUIDPipe,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { SchedulePlanningService } from './schedule-planning.service';
 import { CreateSchedulePlanningConfigDto } from './dto/create-schedule-planning-config.dto';
 import { UpdateSchedulePlanningConfigDto } from './dto/update-schedule-planning-config.dto';

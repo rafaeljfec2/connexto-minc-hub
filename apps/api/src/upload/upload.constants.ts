@@ -27,11 +27,7 @@ export const ALLOWED_MIME_TYPES = [
   'audio/wav',
 ] as const;
 
-export const AVATAR_ALLOWED_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-] as const;
+export const AVATAR_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
 
 export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 export type AvatarAllowedMimeType = (typeof AVATAR_ALLOWED_MIME_TYPES)[number];

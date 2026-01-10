@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsUUID,
-  IsEnum,
-  IsOptional,
-  IsObject,
-  IsString,
-  MaxLength,
-} from 'class-validator';
+import { IsUUID, IsEnum, IsOptional, IsObject, IsString, MaxLength } from 'class-validator';
 import { AttendanceMethod } from '../entities/attendance.entity';
 
 export class CreateAttendanceDto {

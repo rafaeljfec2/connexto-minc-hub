@@ -178,10 +178,7 @@ export class AttendancesService {
     return attendance;
   }
 
-  async update(
-    id: string,
-    updateAttendanceDto: UpdateAttendanceDto,
-  ): Promise<AttendanceEntity> {
+  async update(id: string, updateAttendanceDto: UpdateAttendanceDto): Promise<AttendanceEntity> {
     const attendance = await this.findOne(id);
     Object.assign(attendance, updateAttendanceDto);
     return this.attendancesRepository.save(attendance);

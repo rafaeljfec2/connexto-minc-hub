@@ -48,7 +48,7 @@ function obscureSensitiveValue(value: unknown): string {
  */
 function isSensitiveField(key: string): boolean {
   const lowerKey = key.toLowerCase();
-  return SENSITIVE_FIELDS.some(field => lowerKey.includes(field.toLowerCase()));
+  return SENSITIVE_FIELDS.some((field) => lowerKey.includes(field.toLowerCase()));
 }
 
 /**
@@ -57,11 +57,11 @@ function isSensitiveField(key: string): boolean {
 function processArray(obj: any[], depth: number): any[] {
   if (obj.length > 100) {
     return [
-      ...obj.slice(0, 100).map(item => obscureSensitiveFields(item, depth + 1)),
+      ...obj.slice(0, 100).map((item) => obscureSensitiveFields(item, depth + 1)),
       `...[${obj.length - 100} more items]`,
     ];
   }
-  return obj.map(item => obscureSensitiveFields(item, depth + 1));
+  return obj.map((item) => obscureSensitiveFields(item, depth + 1));
 }
 
 /**
@@ -143,7 +143,7 @@ export class LogPayloadInterceptor implements NestInterceptor {
     // Log response payload
     return next.handle().pipe(
       tap({
-        next: data => {
+        next: (data) => {
           const responsePayload = {
             statusCode: response.statusCode,
             route: `${controller}.${route}`,
@@ -157,7 +157,7 @@ export class LogPayloadInterceptor implements NestInterceptor {
             `[Response] ${method} ${url} | Status: ${response.statusCode} | Payload: ${truncatedResponsePayload}`,
           );
         },
-        error: error => {
+        error: (error) => {
           const errorPayload = {
             statusCode: error.status || response.statusCode || 500,
             route: `${controller}.${route}`,

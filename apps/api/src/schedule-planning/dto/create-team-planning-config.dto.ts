@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsBoolean,
-  IsOptional,
-  Min,
-} from 'class-validator';
+import { IsInt, IsBoolean, IsOptional, Min } from 'class-validator';
 
 export class CreateTeamPlanningConfigDto {
   @ApiProperty({
@@ -31,7 +26,8 @@ export class CreateTeamPlanningConfigDto {
 
   @ApiProperty({
     example: true,
-    description: 'Se deve sortear equipes para servir mais de uma vez quando necessário (null para usar configuração global)',
+    description:
+      'Se deve sortear equipes para servir mais de uma vez quando necessário (null para usar configuração global)',
     nullable: true,
     required: false,
   })
@@ -41,7 +37,8 @@ export class CreateTeamPlanningConfigDto {
 
   @ApiProperty({
     example: true,
-    description: 'Se deve fazer rotação de horários mensalmente (null para usar configuração global)',
+    description:
+      'Se deve fazer rotação de horários mensalmente (null para usar configuração global)',
     nullable: true,
     required: false,
   })

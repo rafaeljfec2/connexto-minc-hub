@@ -14,7 +14,7 @@ interface AccordionProps {
   defaultValue?: string
 }
 
-export function Accordion({ children, className, defaultValue }: AccordionProps) {
+export function Accordion({ children, className, defaultValue }: Readonly<AccordionProps>) {
   const [openItem, setOpenItem] = useState<string | null>(defaultValue ?? null)
 
   const toggleItem = (value: string) => {
@@ -36,7 +36,7 @@ interface AccordionItemProps {
   className?: string
 }
 
-export function AccordionItem({ children, value, className }: AccordionItemProps) {
+export function AccordionItem({ children, value, className }: Readonly<AccordionItemProps>) {
   return (
     <div
       className={cn(
@@ -61,7 +61,7 @@ interface AccordionTriggerProps {
   value?: string // injected by AccordionItem
 }
 
-export function AccordionTrigger({ children, className, value }: AccordionTriggerProps) {
+export function AccordionTrigger({ children, className, value }: Readonly<AccordionTriggerProps>) {
   const context = useContext(AccordionContext)
   if (!context) throw new Error('AccordionTrigger must be used within Accordion')
 
@@ -98,7 +98,7 @@ interface AccordionContentProps {
   value?: string // injected by AccordionItem
 }
 
-export function AccordionContent({ children, className, value }: AccordionContentProps) {
+export function AccordionContent({ children, className, value }: Readonly<AccordionContentProps>) {
   const context = useContext(AccordionContext)
   if (!context) throw new Error('AccordionContent must be used within Accordion')
 

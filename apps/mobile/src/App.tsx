@@ -1,4 +1,8 @@
 import React from 'react'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import 'intl'
+import 'intl/locale-data/jsonp/pt-BR'
+
 import { NavigationContainer } from '@react-navigation/native'
 import { StatusBar } from 'expo-status-bar'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -37,8 +41,6 @@ function AppContent() {
     </BackgroundGradient>
   )
 }
-
-import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 // ... existing imports
 

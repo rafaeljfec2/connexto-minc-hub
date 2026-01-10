@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsBoolean,
-  IsOptional,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsInt, IsBoolean, IsOptional, Min } from 'class-validator';
 
 export class CreateSchedulePlanningConfigDto {
   @ApiProperty({

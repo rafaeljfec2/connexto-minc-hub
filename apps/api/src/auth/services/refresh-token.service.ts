@@ -61,16 +61,10 @@ export class RefreshTokenService {
   }
 
   async revokeRefreshToken(token: string): Promise<void> {
-    await this.refreshTokenRepository.update(
-      { token },
-      { isRevoked: true },
-    );
+    await this.refreshTokenRepository.update({ token }, { isRevoked: true });
   }
 
   async revokeAllUserTokens(userId: string): Promise<void> {
-    await this.refreshTokenRepository.update(
-      { userId, isRevoked: false },
-      { isRevoked: true },
-    );
+    await this.refreshTokenRepository.update({ userId, isRevoked: false }, { isRevoked: true });
   }
 }

@@ -14,7 +14,6 @@ import { TeamMemberEntity } from '../teams/entities/team-member.entity';
 import { TeamEntity } from '../teams/entities/team.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { UsersModule } from '../users/users.module';
-import { UsersService } from '../users/users.service';
 
 @Module({
   imports: [

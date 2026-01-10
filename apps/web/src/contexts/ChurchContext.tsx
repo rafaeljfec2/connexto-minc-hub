@@ -1,11 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-  type ReactNode,
-} from 'react'
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { Church } from '@minc-hub/shared/types'
 import { useChurches } from '@/hooks/useChurches'
 

@@ -30,7 +30,9 @@ export class UploadController {
 
   @Post('chat-file')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: UPLOAD_CONSTANTS.MAX_FILE_SIZE } }))
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: UPLOAD_CONSTANTS.MAX_FILE_SIZE } }),
+  )
   @ApiOperation({ summary: 'Upload a file for chat attachment' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({

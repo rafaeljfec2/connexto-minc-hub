@@ -108,7 +108,9 @@ export class CreateSchedulePlanningTables1767662429000 implements MigrationInter
     }
 
     // Check if schedule_planning_templates table exists
-    const schedulePlanningTemplatesExists = await queryRunner.hasTable('schedule_planning_templates');
+    const schedulePlanningTemplatesExists = await queryRunner.hasTable(
+      'schedule_planning_templates',
+    );
 
     if (!schedulePlanningTemplatesExists) {
       // Create schedule_planning_templates table
@@ -163,8 +165,12 @@ export class CreateSchedulePlanningTables1767662429000 implements MigrationInter
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP INDEX IF EXISTS idx_schedule_planning_templates_created_by_church_id;`);
-    await queryRunner.query(`DROP INDEX IF EXISTS idx_schedule_planning_templates_is_system_template;`);
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS idx_schedule_planning_templates_created_by_church_id;`,
+    );
+    await queryRunner.query(
+      `DROP INDEX IF EXISTS idx_schedule_planning_templates_is_system_template;`,
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS schedule_planning_templates;`);
     await queryRunner.query(`DROP INDEX IF EXISTS uk_team_planning_config_team;`);
     await queryRunner.query(`DROP INDEX IF EXISTS idx_team_planning_configs_team_id;`);

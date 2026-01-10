@@ -9,7 +9,7 @@ import { UpdateChurchDto } from './dto/update-church.dto';
 export class ChurchesService {
   constructor(
     @InjectRepository(ChurchEntity)
-    private churchesRepository: Repository<ChurchEntity>,
+    private readonly churchesRepository: Repository<ChurchEntity>,
   ) {}
 
   async create(createChurchDto: CreateChurchDto): Promise<ChurchEntity> {
@@ -44,7 +44,6 @@ export class ChurchesService {
   }
 
   async remove(id: string): Promise<void> {
-    const church = await this.findOne(id);
     await this.churchesRepository.softDelete(id);
   }
 }

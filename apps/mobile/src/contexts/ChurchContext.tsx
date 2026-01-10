@@ -12,7 +12,7 @@ interface ChurchContextType {
 
 const ChurchContext = createContext<ChurchContextType | undefined>(undefined)
 
-export function ChurchProvider({ children }: { children: ReactNode }) {
+export function ChurchProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [churches, setChurches] = useState<Option[]>([])
   const [selectedChurchId, setSelectedChurchId] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -36,12 +36,12 @@ export function ChurchProvider({ children }: { children: ReactNode }) {
             if (options.length > 0) {
               setSelectedChurchId(options[0].value)
             }
-          } catch (e) {
-            console.log('Error fetching churches in context', e)
+          } catch {
+            // console.log('Error fetching churches in context', e)
           }
         }
-      } catch (error) {
-        console.error('Failed to load churches:', error)
+      } catch {
+        // console.error('Failed to load churches:', error)
       } finally {
         setIsLoading(false)
       }

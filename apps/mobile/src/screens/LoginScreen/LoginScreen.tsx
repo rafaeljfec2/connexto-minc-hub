@@ -16,14 +16,9 @@ import { BackgroundGradient } from '@/components/BackgroundGradient'
 import { FadeInView } from '@/components/Animations'
 import { useLoginForm } from './useLoginForm'
 import { themeColors, themeSpacing, themeTypography } from '@/theme'
-import { API_CONFIG } from '@/constants/config'
-
-const BRAND_NAME = 'MINC Teams'
-const BRAND_SUBTITLE = 'Sistema de gestão dos times da MINC'
 
 export default function LoginScreen() {
   const { email, password, error, setEmail, setPassword, handleLogin } = useLoginForm()
-  const isMockMode = API_CONFIG.MOCK_MODE
 
   return (
     <BackgroundGradient>
@@ -41,7 +36,7 @@ export default function LoginScreen() {
               email={email}
               password={password}
               error={error}
-              isMockMode={isMockMode}
+              isMockMode={false}
               onEmailChange={setEmail}
               onPasswordChange={setPassword}
               onLogin={handleLogin}

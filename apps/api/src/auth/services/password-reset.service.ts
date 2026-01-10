@@ -75,10 +75,7 @@ export class PasswordResetService {
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await this.usersService.updatePassword(resetToken.userId, passwordHash);
 
-    await this.passwordResetTokenRepository.update(
-      { id: resetToken.id },
-      { usedAt: new Date() },
-    );
+    await this.passwordResetTokenRepository.update({ id: resetToken.id }, { usedAt: new Date() });
 
     await this.usersService.updateLastLogin(resetToken.userId);
 

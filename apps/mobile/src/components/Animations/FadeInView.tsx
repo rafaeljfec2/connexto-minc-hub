@@ -8,7 +8,12 @@ interface FadeInViewProps {
   delay?: number
 }
 
-export function FadeInView({ children, style, duration = 500, delay = 0 }: FadeInViewProps) {
+export function FadeInView({
+  children,
+  style,
+  duration = 500,
+  delay = 0,
+}: Readonly<FadeInViewProps>) {
   const fadeAnim = useRef(new Animated.Value(0)).current
   const translateY = useRef(new Animated.Value(20)).current
 
@@ -16,14 +21,14 @@ export function FadeInView({ children, style, duration = 500, delay = 0 }: FadeI
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: duration,
-        delay: delay,
+        duration,
+        delay,
         useNativeDriver: true,
       }),
       Animated.timing(translateY, {
         toValue: 0,
-        duration: duration,
-        delay: delay,
+        duration,
+        delay,
         useNativeDriver: true,
       }),
     ]).start()

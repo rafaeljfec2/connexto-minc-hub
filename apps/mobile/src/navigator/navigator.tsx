@@ -27,11 +27,11 @@ import CommunicationScreen from '@/screens/CommunicationScreen'
 
 import { DashboardHeader } from '@/screens/DashboardScreen/DashboardHeader'
 
+import { useDrawer } from '@/contexts/DrawerContext'
+
 const Stack = createNativeStackNavigator<RootStackParamList>()
 const Tab = createBottomTabNavigator<MainTabParamList>()
 const HomeStack = createNativeStackNavigator<RootStackParamList>()
-
-import { useDrawer } from '@/contexts/DrawerContext'
 
 const DashboardHeaderWrapper = () => {
   const { openDrawer } = useDrawer()

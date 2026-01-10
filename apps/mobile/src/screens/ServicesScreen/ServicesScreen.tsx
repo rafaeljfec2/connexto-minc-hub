@@ -46,28 +46,31 @@ export default function ServicesScreen() {
     searchTerm,
   })
 
-  function handleOpenModal(service?: Service) {
-    if (service) {
-      setEditingService(service)
-      setFormData({
-        name: service.name,
-        type: service.type,
-        dayOfWeek: service.dayOfWeek.toString(),
-        time: service.time,
-        isActive: service.isActive,
-      })
-    } else {
-      setEditingService(null)
-      setFormData({
-        name: '',
-        type: ServiceType.SUNDAY_MORNING,
-        dayOfWeek: '0',
-        time: '09:00',
-        isActive: true,
-      })
-    }
-    modal.open()
-  }
+  const handleOpenModal = React.useCallback(
+    (service?: Service) => {
+      if (service) {
+        setEditingService(service)
+        setFormData({
+          name: service.name,
+          type: service.type,
+          dayOfWeek: service.dayOfWeek.toString(),
+          time: service.time,
+          isActive: service.isActive,
+        })
+      } else {
+        setEditingService(null)
+        setFormData({
+          name: '',
+          type: ServiceType.SUNDAY_MORNING,
+          dayOfWeek: '0',
+          time: '09:00',
+          isActive: true,
+        })
+      }
+      modal.open()
+    },
+    [modal]
+  )
 
   function handleCloseModal() {
     modal.close()
@@ -95,10 +98,13 @@ export default function ServicesScreen() {
     handleCloseModal()
   }
 
-  function handleDeleteClick(id: string) {
-    setDeletingId(id)
-    deleteModal.open()
-  }
+  const handleDeleteClick = React.useCallback(
+    (id: string) => {
+      setDeletingId(id)
+      deleteModal.open()
+    },
+    [deleteModal]
+  )
 
   async function handleDeleteConfirm() {
     if (deletingId) {

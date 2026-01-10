@@ -2,7 +2,6 @@ import React from 'react'
 import { View, StyleSheet, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { themeColors, themeSpacing } from '@/theme'
 import { Select } from '@/components/Select/Select'
@@ -17,7 +16,6 @@ export function DashboardHeader({
   onMenuPress,
   onNotificationPress,
 }: Readonly<DashboardHeaderProps>) {
-  const { user } = useAuth()
   const { colors } = useTheme()
   const { churches, selectedChurchId, setSelectedChurchId } = useChurch()
 

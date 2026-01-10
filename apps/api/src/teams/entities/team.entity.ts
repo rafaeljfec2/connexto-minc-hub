@@ -9,13 +9,10 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
-  ManyToMany,
-  JoinTable,
   AfterLoad,
 } from 'typeorm';
 import { MinistryEntity } from '../../ministries/entities/ministry.entity';
 import { UserEntity } from '../../users/entities/user.entity';
-import { PersonEntity } from '../../persons/entities/person.entity';
 import { TeamMemberEntity } from './team-member.entity';
 import { ScheduleTeamEntity } from '../../schedules/entities/schedule-team.entity';
 

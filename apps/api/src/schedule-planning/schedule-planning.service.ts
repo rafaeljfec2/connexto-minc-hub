@@ -84,7 +84,8 @@ export class SchedulePlanningService {
 
     if (existing) {
       Object.assign(existing, {
-        maxTeamMembers: dto.maxTeamMembers !== undefined ? dto.maxTeamMembers : existing.maxTeamMembers,
+        maxTeamMembers:
+          dto.maxTeamMembers !== undefined ? dto.maxTeamMembers : existing.maxTeamMembers,
         teamsServeOncePerMonth:
           dto.teamsServeOncePerMonth !== undefined
             ? dto.teamsServeOncePerMonth
@@ -94,7 +95,9 @@ export class SchedulePlanningService {
             ? dto.enableLotteryForExtraServices
             : existing.enableLotteryForExtraServices,
         enableTimeRotation:
-          dto.enableTimeRotation !== undefined ? dto.enableTimeRotation : existing.enableTimeRotation,
+          dto.enableTimeRotation !== undefined
+            ? dto.enableTimeRotation
+            : existing.enableTimeRotation,
       });
       return this.teamConfigRepository.save(existing);
     }

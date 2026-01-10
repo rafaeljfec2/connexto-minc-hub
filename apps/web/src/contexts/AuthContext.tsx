@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
@@ -132,7 +133,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error('Erro ao verificar autenticação:', error)
       // Verifica se é erro 401 (não autorizado)
       // Check if it's an unauthorized error (401)
-      const status = (error as any)?.response?.status
+      const status = (error as { response?: { status?: number } })?.response?.status
       const isUnauthorized = status === 401
 
       // Só limpa o usuário se for realmente não autorizado
@@ -208,17 +209,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [user]
   )
 
-  const updateUser = useCallback(
-    (updates: Partial<User>) => {
-      setUser(prevUser => {
-        if (!prevUser) return null
-        const updatedUser = { ...prevUser, ...updates }
-        saveUserToStorage(updatedUser)
-        return updatedUser
-      })
-    },
-    []
-  )
+  const updateUser = useCallback((updates: Partial<User>) => {
+    setUser(prevUser => {
+      if (!prevUser) return null
+      const updatedUser = { ...prevUser, ...updates }
+      saveUserToStorage(updatedUser)
+      return updatedUser
+    })
+  }, [])
 
   const contextValue = useMemo(
     () => ({

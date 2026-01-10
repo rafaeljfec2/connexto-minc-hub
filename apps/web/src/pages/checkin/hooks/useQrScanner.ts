@@ -240,7 +240,6 @@ export function useQrScanner({ onScanSuccess, enabled = true }: UseQrScannerOpti
       // currentScanner is also managed internally by initializeScannerWithRetry, and setScanner updates the state.
       // The cleanup for the *state* scanner is handled by the `if (!enabled)` block.
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, scanner])
 
   return {
