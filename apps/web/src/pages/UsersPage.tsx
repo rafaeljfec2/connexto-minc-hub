@@ -193,10 +193,10 @@ export default function UsersPage() {
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(user)}>
+          <Button variant="action-edit" size="sm" onClick={() => handleOpenModal(user)}>
             <EditIcon className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(user.id)}>
+          <Button variant="action-delete" size="sm" onClick={() => handleDeleteClick(user.id)}>
             <TrashIcon className="h-4 w-4" />
           </Button>
         </div>

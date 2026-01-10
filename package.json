@@ -19,7 +19,7 @@
     "typecheck:web": "pnpm --filter @minc-hub/web type-check",
     "typecheck:api": "pnpm --filter @minc-teams/api type-check",
     "clean": "turbo run clean",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "husky": "^9.1.7",

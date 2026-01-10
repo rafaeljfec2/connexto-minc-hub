@@ -367,7 +367,7 @@ export default function TeamsPage() {
         </TableCell>
         <TableCell className="text-right">
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={() => handleOpenModal(team)}>
+            <Button variant="action-edit" size="sm" onClick={() => handleOpenModal(team)}>
               <EditIcon className="h-4 w-4" />
             </Button>
             <Button size="sm" onClick={() => handleDeleteClick(team.id)}>

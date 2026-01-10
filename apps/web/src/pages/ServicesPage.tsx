@@ -180,7 +180,7 @@ export default function ServicesPage() {
       </TableCell>
       <TableCell className="text-right">
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(service)}>
+          <Button variant="action-edit" size="sm" onClick={() => handleOpenModal(service)}>
             <EditIcon className="h-4 w-4" />
           </Button>
           <Button size="sm" onClick={() => handleDeleteClick(service.id)}>
