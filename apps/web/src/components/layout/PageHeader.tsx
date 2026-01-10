@@ -7,11 +7,14 @@ interface PageHeaderProps {
   icon?: ReactNode
 }
 
-export function PageHeader({ description, action, icon }: Readonly<PageHeaderProps>) {
+export function PageHeader({ title, description, action, icon }: Readonly<PageHeaderProps>) {
   return (
     <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
-        <div className="flex items-center gap-3 mb-2">{icon && <div>{icon}</div>}</div>
+        <div className="flex items-center gap-3 mb-2">
+          {icon && <div>{icon}</div>}
+          <h1 className="text-2xl font-bold text-dark-900 dark:text-dark-50">{title}</h1>
+        </div>
         {description && <p className="text-sm text-dark-600 dark:text-dark-400">{description}</p>}
       </div>
       {action && <div>{action}</div>}
