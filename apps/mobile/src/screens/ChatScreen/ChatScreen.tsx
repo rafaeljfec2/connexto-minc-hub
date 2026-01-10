@@ -8,7 +8,7 @@ import { ConversationItem } from './components/ConversationItem'
 interface Participant {
   id: string
   name: string
-  avatar: string
+  avatar: string | null
 }
 
 export default function ChatScreen() {
@@ -30,7 +30,7 @@ export default function ChatScreen() {
       conversationId,
       otherUserId,
       otherUserName: otherParticipant?.name,
-      otherUserAvatar: otherParticipant?.avatar,
+      otherUserAvatar: otherParticipant?.avatar || undefined,
       isGroup,
       groupName,
       participants: participantIds,

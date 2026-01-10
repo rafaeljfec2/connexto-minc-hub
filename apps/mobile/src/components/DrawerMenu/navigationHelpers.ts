@@ -1,7 +1,10 @@
 import type { RootStackParamList } from '@/navigator/navigator.types'
 import type { MenuItem } from './menuItems'
 
-type NavigableScreens = Exclude<keyof RootStackParamList, 'Login' | 'Main' | 'ChatDetail'>
+export type NavigableScreens = Exclude<
+  keyof RootStackParamList,
+  'Login' | 'Main' | 'ChatDetail' | 'GroupDetails'
+>
 
 export function getScreenNameForMenuItem(item: MenuItem): NavigableScreens | null {
   if (item.screen) {

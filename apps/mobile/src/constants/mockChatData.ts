@@ -9,8 +9,9 @@ export interface Message {
 export interface User {
   id: string
   name: string
-  avatar: string
+  avatar: string | null
   isOnline: boolean
+  role?: string
 }
 
 export interface Conversation {
@@ -25,26 +26,30 @@ export const MOCK_USERS: Record<string, User> = {
   me: {
     id: 'me',
     name: 'Rafael',
-    avatar: 'https://i.pravatar.cc/150?u=rafael',
+    avatar: 'https://github.com/rafael.png',
+    role: 'admin',
     isOnline: true,
   },
   user1: {
     id: 'user1',
-    name: 'Ana Silva',
-    avatar: 'https://i.pravatar.cc/150?u=ana',
+    name: 'João Silva',
+    avatar: 'https://github.com/shadcn.png',
     isOnline: true,
+    role: 'member',
   },
   user2: {
     id: 'user2',
-    name: 'Carlos Oliveira',
-    avatar: 'https://i.pravatar.cc/150?u=carlos',
+    name: 'Maria Santos',
+    avatar: 'https://github.com/maykbrito.png',
     isOnline: false,
+    role: 'admin',
   },
   user3: {
     id: 'user3',
-    name: 'Equipe de Louvor',
-    avatar: 'https://ui-avatars.com/api/?name=Equipe+Louvor&background=random',
+    name: 'Pedro Costa',
+    avatar: null,
     isOnline: true,
+    role: 'member',
   },
 }
 

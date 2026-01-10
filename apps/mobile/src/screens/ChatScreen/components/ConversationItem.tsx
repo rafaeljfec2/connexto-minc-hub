@@ -32,7 +32,7 @@ export function ConversationItem({ conversation, onPress }: ConversationItemProp
     >
       <View style={styles.avatarContainer}>
         <Image
-          source={{ uri: otherUser.avatar }}
+          source={{ uri: otherUser.avatar || undefined }}
           style={[styles.avatar, { backgroundColor: colors.card.border }]}
         />
         {otherUser.isOnline && (

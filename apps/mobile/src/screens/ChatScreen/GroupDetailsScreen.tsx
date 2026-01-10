@@ -1,9 +1,16 @@
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native'
-import { useNavigation, useRoute } from '@react-navigation/native'
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  SafeAreaView,
+  Alert,
+  Image,
+} from 'react-native'
+import { useRoute, useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { themeSpacing, themeTypography } from '@/theme'
 import { useTheme } from '@/contexts/ThemeContext'
 import { MOCK_USERS } from '@/constants/mockChatData'
 
@@ -11,10 +18,33 @@ export default function GroupDetailsScreen() {
   const navigation = useNavigation()
   const route = useRoute()
   const { colors } = useTheme()
-  const { groupName, participants } = route.params as {
-    conversationId: string
-    groupName: string
-    participants: string[] // User IDs
+  // Generic params or fallbacks
+  const params =
+    (route.params as {
+      conversationId?: string
+      groupName?: string
+      participants?: string[]
+    }) || {}
+
+  const groupName = params.groupName || 'Grupo'
+  const participants = params.participants || []
+
+  // Mock current user ID for checking admin status
+  const currentUserId = 'me'
+
+  // Mock admin status
+  const isAdmin = true
+
+  const handlePromoteToAdmin = (_participantId: string) => {
+    Alert.alert('Promover a Admin', 'Deseja promover este participante a administrador do grupo?', [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Promover',
+        onPress: () => {
+          Alert.alert('Sucesso', 'Participante promovido a admin!')
+        },
+      },
+    ])
   }
 
   const handleLeaveGroup = () => {
@@ -24,7 +54,6 @@ export default function GroupDetailsScreen() {
         text: 'Sair',
         style: 'destructive',
         onPress: () => {
-          // Mock leave action
           navigation.navigate('ChatList' as never)
         },
       },
@@ -32,23 +61,52 @@ export default function GroupDetailsScreen() {
   }
 
   const handleAddParticipant = () => {
-    // Placeholder for adding participant feature
-    Alert.alert('Info', 'Funcionalidade de adicionar participants em breve')
+    Alert.alert('Funcionalidade', 'Adicionar participante (Apenas Admin)')
+  }
+
+  const renderParticipant = ({ item }: { item: string }) => {
+    // In real app 'item' would be a user object with role
+    // We'll mock finding the user from MOCK_USERS if possible, or just string
+    const user = Object.values(MOCK_USERS).find(u => u.id === item || u.name === item)
+    const name = user ? user.name : item
+    const avatar = user ? user.avatar : null
+    const role = user?.role // Mock role
+
+    return (
+      <View style={styles.participantItem}>
+        <Image
+          source={{ uri: avatar || `https://ui-avatars.com/api/?name=${name}&background=random` }}
+          style={styles.participantAvatar}
+        />
+        <View style={styles.participantInfo}>
+          <Text style={[styles.participantName, { color: colors.text.default }]}>
+            {name} {item === currentUserId && '(Você)'}
+          </Text>
+          <Text style={[styles.participantRole, { color: colors.text.light }]}>
+            {role === 'admin' ? 'Admin' : 'Membro'}
+          </Text>
+        </View>
+        {isAdmin && role !== 'admin' && item !== currentUserId && (
+          <TouchableOpacity onPress={() => handlePromoteToAdmin(item)}>
+            <Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        )}
+      </View>
+    )
   }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background.default }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.card.border }]}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.text.default} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text.default }]}>Dados do Grupo</Text>
+        <Text style={[styles.title, { color: colors.text.default }]}>Detalhes do Grupo</Text>
+        <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Group Info */}
-        <View style={[styles.groupInfoCard, { backgroundColor: colors.card.background }]}>
+      <View style={styles.content}>
+        <View style={styles.groupInfo}>
           <View style={[styles.groupAvatarContainer, { backgroundColor: `${colors.primary}20` }]}>
             <Ionicons name="people" size={40} color={colors.primary} />
           </View>
@@ -58,49 +116,27 @@ export default function GroupDetailsScreen() {
           </Text>
         </View>
 
-        {/* Actions */}
-        <TouchableOpacity
-          style={[styles.actionButton, { borderColor: colors.card.border }]}
-          onPress={handleAddParticipant}
-        >
-          <Ionicons name="person-add-outline" size={20} color={colors.primary} />
-          <Text style={[styles.actionButtonText, { color: colors.primary }]}>
-            Adicionar Participante
-          </Text>
-        </TouchableOpacity>
+        {isAdmin && (
+          <TouchableOpacity
+            style={[styles.actionButton, { borderColor: colors.card.border }]}
+            onPress={handleAddParticipant}
+          >
+            <Ionicons name="person-add-outline" size={20} color={colors.primary} />
+            <Text style={[styles.actionButtonText, { color: colors.primary }]}>
+              Adicionar Participante
+            </Text>
+          </TouchableOpacity>
+        )}
 
-        {/* Participants List */}
-        <Text style={[styles.sectionTitle, { color: colors.text.light }]}>PARTICIPANTES</Text>
-        <View style={[styles.listContainer, { backgroundColor: colors.card.background }]}>
-          {participants.map((userId, index) => {
-            const user = MOCK_USERS[userId]
-            if (!user) return null
-            return (
-              <View
-                key={userId}
-                style={[
-                  styles.participantItem,
-                  index < participants.length - 1 && {
-                    borderBottomWidth: 1,
-                    borderBottomColor: colors.card.border,
-                  },
-                ]}
-              >
-                <Image source={{ uri: user.avatar }} style={styles.participantAvatar} />
-                <View style={styles.participantInfo}>
-                  <Text style={[styles.participantName, { color: colors.text.default }]}>
-                    {user.name}
-                  </Text>
-                  <Text style={[styles.participantStatus, { color: colors.text.light }]}>
-                    {user.isOnline ? 'Online' : 'Offline'}
-                  </Text>
-                </View>
-              </View>
-            )
-          })}
-        </View>
+        <Text style={[styles.sectionTitle, { color: colors.text.default }]}>Participantes</Text>
 
-        {/* Leave Group */}
+        <FlatList
+          data={participants}
+          keyExtractor={item => item}
+          renderItem={renderParticipant}
+          style={styles.list}
+        />
+
         <TouchableOpacity
           style={[styles.leaveButton, { backgroundColor: '#fee2e2' }]} // Red-100
           onPress={handleLeaveGroup}
@@ -108,7 +144,7 @@ export default function GroupDetailsScreen() {
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
           <Text style={[styles.leaveButtonText, { color: '#ef4444' }]}>Sair do Grupo</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   )
 }
@@ -120,25 +156,25 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: themeSpacing.md,
-    borderBottomWidth: 1,
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ccc',
   },
   backButton: {
-    padding: 8,
-    marginRight: 8,
+    padding: 4,
   },
-  headerTitle: {
-    fontSize: themeTypography.sizes.lg,
-    fontWeight: themeTypography.weights.bold,
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   content: {
-    padding: themeSpacing.md,
+    flex: 1,
+    padding: 16,
   },
-  groupInfoCard: {
+  groupInfo: {
     alignItems: 'center',
-    padding: themeSpacing.xl,
-    borderRadius: 12,
-    marginBottom: themeSpacing.md,
+    marginBottom: 24,
   },
   groupAvatarContainer: {
     width: 80,
@@ -146,70 +182,74 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: themeSpacing.md,
+    marginBottom: 12,
   },
   groupName: {
-    fontSize: themeTypography.sizes.xl,
-    fontWeight: themeTypography.weights.bold,
+    fontSize: 24,
+    fontWeight: 'bold',
     marginBottom: 4,
   },
   participantCount: {
-    fontSize: themeTypography.sizes.sm,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: themeSpacing.md,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: themeSpacing.lg,
-    gap: 8,
-  },
-  actionButtonText: {
-    fontWeight: themeTypography.weights.medium,
+    fontSize: 14,
   },
   sectionTitle: {
-    fontSize: themeTypography.sizes.sm,
-    fontWeight: themeTypography.weights.semibold,
-    marginBottom: themeSpacing.sm,
-    paddingLeft: themeSpacing.xs,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 8,
   },
-  listContainer: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: themeSpacing.lg,
+  list: {
+    flex: 1,
   },
   participantItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: themeSpacing.md,
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#ccc',
   },
   participantAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: themeSpacing.md,
+    marginRight: 12,
   },
   participantInfo: {
     flex: 1,
   },
   participantName: {
-    fontSize: themeTypography.sizes.md,
-    fontWeight: themeTypography.weights.medium,
+    fontSize: 16,
+    fontWeight: '500',
   },
-  participantStatus: {
-    fontSize: themeTypography.sizes.xs,
+  participantRole: {
+    fontSize: 12,
   },
   leaveButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: themeSpacing.md,
+    padding: 16,
     borderRadius: 12,
+    marginTop: 20,
+    marginBottom: 20,
     gap: 8,
   },
   leaveButtonText: {
-    fontWeight: themeTypography.weights.bold,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 20,
+    gap: 8,
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 })

@@ -78,6 +78,16 @@ export class ChatApiService {
     return response.data.data || []
   }
 
+  async promoteToAdmin(conversationId: string, participantId: string): Promise<Conversation> {
+    const response = await this.client.post<ApiResponse<Conversation>>(
+      `/chat/groups/${conversationId}/participants/${participantId}/promote`
+    )
+    if (!response.data.data) {
+      throw new Error('Failed to promote participant')
+    }
+    return response.data.data
+  }
+
   async sendMessage(conversationId: string, text: string): Promise<Message> {
     const response = await this.client.post<ApiResponse<Message>>(
       `/chat/conversations/${conversationId}/messages`,

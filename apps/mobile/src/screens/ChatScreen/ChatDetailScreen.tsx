@@ -22,14 +22,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 export default function ChatDetailScreen() {
   const route = useRoute()
   const navigation = useNavigation()
-  const { 
-    conversationId, 
-    otherUserId, 
+  const {
+    conversationId,
+    otherUserId,
     otherUserName,
     otherUserAvatar,
-    isGroup, 
-    groupName, 
-    participants 
+    isGroup,
+    groupName,
+    participants,
   } = route.params as {
     conversationId: string
     otherUserId?: string
@@ -134,7 +134,7 @@ export default function ChatDetailScreen() {
             </View>
           ) : (
             <Image
-              source={{ uri: headerAvatar }}
+              source={{ uri: headerAvatar || undefined }}
               style={[styles.avatar, { backgroundColor: colors.card.border }]}
             />
           )}
@@ -154,9 +154,9 @@ export default function ChatDetailScreen() {
             <Ionicons name="notifications-outline" size={24} color={colors.text.default} />
           </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionButton} onPress={handleInfoPress}>
-              <Ionicons name="information-circle-outline" size={24} color={colors.text.default} />
-            </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={handleInfoPress}>
+            <Ionicons name="information-circle-outline" size={24} color={colors.text.default} />
+          </TouchableOpacity>
         </View>
       </View>
 

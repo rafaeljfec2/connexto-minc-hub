@@ -26,6 +26,7 @@ export interface ChatContextType {
   loadMoreMessages: () => Promise<void>
   createGroup: (name: string, members: string[]) => Promise<Conversation>
   addParticipant: (conversationId: string, userId: string) => Promise<void>
+  promoteToAdmin: (conversationId: string, userId: string) => Promise<void>
 }
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined)

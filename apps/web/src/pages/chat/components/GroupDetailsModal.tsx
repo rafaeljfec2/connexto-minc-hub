@@ -16,7 +16,7 @@ interface GroupDetailsModalProps {
 
 export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetailsModalProps) {
   const { user: currentUser } = useAuth()
-  const { leaveConversation, addParticipant } = useChat()
+  const { leaveConversation, addParticipant, promoteToAdmin } = useChat()
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -24,6 +24,9 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
   const otherParticipant = !isGroup
     ? conversation.participants.find(p => p.id !== currentUser?.id)
     : null
+
+  const isAdmin =
+    isGroup && conversation.participants.find(p => p.id === currentUser?.id)?.role === 'admin'
 
   const modalTitle = isGroup ? 'Dados do Grupo' : 'Dados da Conversa'
   const displayName = isGroup ? conversation.name || 'Grupo' : otherParticipant?.name || 'Usuário'
@@ -55,6 +58,17 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
     }
   }
 
+  const handlePromoteToAdmin = async (userId: string) => {
+    setIsLoading(true)
+    try {
+      await promoteToAdmin(conversation.id, userId)
+    } catch (error) {
+      console.error('Failed to promote member:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} size="md">
@@ -80,8 +94,8 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
             </p>
           </div>
 
-          {/* Actions - Only for groups */}
-          {isGroup && (
+          {/* Actions - Only for groups and admins */}
+          {isGroup && isAdmin && (
             <div className="flex justify-center">
               <Button
                 variant="outline"
@@ -120,6 +134,18 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
                       <p className="text-xs text-dark-500">{participant.role || 'Membro'}</p>
                     </div>
                   </div>
+
+                  {isGroup && isAdmin && participant.role !== 'admin' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handlePromoteToAdmin(participant.id)}
+                      disabled={isLoading}
+                      className="text-xs text-blue-500 hover:text-blue-700"
+                    >
+                      Promover
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>

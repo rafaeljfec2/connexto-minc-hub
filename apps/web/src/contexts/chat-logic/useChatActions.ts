@@ -271,6 +271,18 @@ export function useChatActions({
     [chatApi, setConversations, setActiveConversation, activeConversationRef]
   )
 
+  const promoteToAdmin = useCallback(
+    async (conversationId: string, userId: string) => {
+      const updatedConversation = await chatApi.promoteToAdmin(conversationId, userId)
+      setConversations(prev => prev.map(c => (c.id === conversationId ? updatedConversation : c)))
+      // If valid, also update active conversation if it matches
+      if (activeConversationRef.current?.id === conversationId) {
+        setActiveConversation(updatedConversation)
+      }
+    },
+    [chatApi, setConversations, setActiveConversation, activeConversationRef]
+  )
+
   const joinConversation = useCallback(
     (conversationId: string) => {
       chatSocket.joinConversation(conversationId)
@@ -294,5 +306,6 @@ export function useChatActions({
     leaveConversation,
     createGroup,
     addParticipant,
+    promoteToAdmin,
   }
 }
