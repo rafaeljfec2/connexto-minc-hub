@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardHeaderMobile } from '@/pages/dashboard/components/DashboardHeaderMobile'
@@ -15,7 +15,6 @@ import { ChatProvider } from '@/contexts/ChatContext'
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
-  const navigate = useNavigate()
   const isChatPage = location.pathname.startsWith('/chat')
   const isProfilePage = location.pathname === '/profile'
 
@@ -26,16 +25,17 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Fixed Navigation Elements - Outside animation to preserve fixed positioning */}
       <Sidebar />
 
-      <div className="lg:hidden">
-        <DashboardHeaderMobile
-          onNotificationPress={() => {
-            // Handle notifications
-          }}
-          onBack={isChatConversation ? () => navigate('/chat') : undefined}
-          title={isChatConversation ? 'Chat' : undefined}
-          showChurchSelector={!isChatPage}
-        />
-      </div>
+      {/* Hide mobile header when inside a chat conversation - ChatWindow has its own header */}
+      {!isChatConversation && (
+        <div className="lg:hidden">
+          <DashboardHeaderMobile
+            onNotificationPress={() => {
+              // Handle notifications
+            }}
+            showChurchSelector={!isChatPage}
+          />
+        </div>
+      )}
 
       {/* Mobile Footer - Fixed for all mobile screens */}
       {!isChatConversation && (
@@ -59,11 +59,13 @@ export function AppLayout({ children }: AppLayoutProps) {
             )}
             <main
               className={`flex-1 overflow-y-auto overscroll-y-contain animate-fade-in-up scroll-smooth ${
-                isChatPage
-                  ? 'p-0 pt-[env(safe-area-inset-top)] overflow-hidden'
-                  : isProfilePage
-                    ? 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pt-16 lg:pb-0 lg:px-8'
-                    : 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-16 lg:pb-0 lg:px-8'
+                isChatConversation
+                  ? 'p-0 overflow-hidden' // Chat conversation fullscreen on mobile
+                  : isChatPage
+                    ? 'p-0 pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-0 overflow-hidden'
+                    : isProfilePage
+                      ? 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pt-16 lg:pb-0 lg:px-8'
+                      : 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-16 lg:pb-0 lg:px-8'
               }`}
             >
               {children}

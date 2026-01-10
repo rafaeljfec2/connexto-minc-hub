@@ -25,6 +25,7 @@ export interface ChatContextType {
   isLoadingMoreMessages: boolean
   loadMoreMessages: () => Promise<void>
   createGroup: (name: string, members: string[]) => Promise<Conversation>
+  addParticipant: (conversationId: string, userId: string) => Promise<void>
 }
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined)

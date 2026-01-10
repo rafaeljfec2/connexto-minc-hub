@@ -320,7 +320,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     <>
       <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-950">
         {/* Header */}
-        <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 flex items-center justify-between gap-3">
+        <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 pt-[calc(0.75rem+env(safe-area-inset-top))] lg:pt-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 overflow-hidden">
             {onBack && (
               <button
@@ -365,15 +365,13 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             </div>
           </div>
 
-          {isGroup && (
-            <button
-              onClick={() => setIsGroupDetailsOpen(true)}
-              className="p-2 text-dark-500 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-full transition-colors flex-shrink-0"
-              aria-label="Dados do grupo"
-            >
-              <Info className="h-5 w-5" />
-            </button>
-          )}
+          <button
+            onClick={() => setIsGroupDetailsOpen(true)}
+            className="p-2 text-dark-500 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-full transition-colors flex-shrink-0"
+            aria-label="Dados da conversa"
+          >
+            <Info className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Messages */}

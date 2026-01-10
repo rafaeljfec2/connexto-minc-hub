@@ -194,6 +194,7 @@ export interface ChatUser {
   name: string
   avatar?: string | null
   isOnline?: boolean
+  role?: string
 }
 
 export interface MessageAttachment {

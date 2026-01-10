@@ -59,6 +59,17 @@ export class ChatApiService {
     return response.data.data
   }
 
+  async addParticipant(conversationId: string, participantId: string): Promise<Conversation> {
+    const response = await this.client.post<ApiResponse<Conversation>>(
+      `/chat/groups/${conversationId}/participants`,
+      { participantId }
+    )
+    if (!response.data.data) {
+      throw new Error('Failed to add participant')
+    }
+    return response.data.data
+  }
+
   async getMessages(conversationId: string, params?: GetMessagesParams): Promise<Message[]> {
     const response = await this.client.get<ApiResponse<Message[]>>(
       `/chat/conversations/${conversationId}/messages`,

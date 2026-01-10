@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
@@ -16,16 +16,25 @@ interface GroupDetailsModalProps {
 
 export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetailsModalProps) {
   const { user: currentUser } = useAuth()
-  const { leaveGroup, addParticipant } = useChat()
+  const { leaveConversation, addParticipant } = useChat()
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  const isGroup = conversation.type === 'group'
+  const otherParticipant = !isGroup
+    ? conversation.participants.find(p => p.id !== currentUser?.id)
+    : null
+
+  const modalTitle = isGroup ? 'Dados do Grupo' : 'Dados da Conversa'
+  const displayName = isGroup ? conversation.name || 'Grupo' : otherParticipant?.name || 'Usuário'
+  const displayAvatar = isGroup ? undefined : otherParticipant?.avatar
 
   const handleLeaveGroup = async () => {
     if (!confirm('Tem certeza que deseja sair do grupo?')) return
 
     setIsLoading(true)
     try {
-      await leaveGroup(conversation.id)
+      await leaveConversation(conversation.id)
       onClose()
     } catch (error) {
       console.error('Failed to leave group:', error)
@@ -48,35 +57,42 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title="Dados do Grupo" size="md">
+      <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} size="md">
         <div className="space-y-6">
           {/* Header / Info */}
           <div className="flex flex-col items-center justify-center p-4 bg-dark-50 dark:bg-dark-900 rounded-xl">
             <Avatar
-              src={undefined} // Group avatar if available
-              name={conversation.name || 'Grupo'}
+              src={displayAvatar}
+              name={displayName}
+              isOnline={!isGroup && otherParticipant?.isOnline}
               size="xl"
               className="mb-3"
             />
             <h3 className="text-lg font-bold text-dark-900 dark:text-dark-50 text-center">
-              {conversation.name || 'Grupo Sem Nome'}
+              {displayName}
             </h3>
             <p className="text-sm text-dark-500 dark:text-dark-400">
-              {conversation.participants.length} participantes
+              {isGroup
+                ? `${conversation.participants.length} participantes`
+                : otherParticipant?.isOnline
+                  ? 'Online'
+                  : 'Offline'}
             </p>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setIsAddMemberOpen(true)}
-              className="flex items-center gap-2"
-            >
-              <UserPlus className="h-4 w-4" />
-              Adicionar Participante
-            </Button>
-          </div>
+          {/* Actions - Only for groups */}
+          {isGroup && (
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                onClick={() => setIsAddMemberOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Adicionar Participante
+              </Button>
+            </div>
+          )}
 
           {/* Members List */}
           <div>
@@ -109,18 +125,20 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
             </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className="pt-4 border-t border-dark-100 dark:border-dark-800">
-            <Button
-              variant="ghost"
-              className="w-full text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center justify-center gap-2"
-              onClick={handleLeaveGroup}
-              disabled={isLoading}
-            >
-              <LogOut className="h-4 w-4" />
-              Sair do Grupo
-            </Button>
-          </div>
+          {/* Footer Actions - Only for groups */}
+          {isGroup && (
+            <div className="pt-4 border-t border-dark-100 dark:border-dark-800">
+              <Button
+                variant="ghost"
+                className="w-full text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center justify-center gap-2"
+                onClick={handleLeaveGroup}
+                disabled={isLoading}
+              >
+                <LogOut className="h-4 w-4" />
+                Sair do Grupo
+              </Button>
+            </div>
+          )}
         </div>
       </Modal>
 

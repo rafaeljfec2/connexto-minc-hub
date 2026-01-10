@@ -52,7 +52,7 @@ export function DrawerMenu({ visible, onClose }: Readonly<DrawerMenuProps>) {
       // Navigate to a hidden tab screen
       const screenName = getScreenNameForMenuItem(item)
       if (screenName) {
-        navigation.navigate(screenName)
+        navigation.navigate(screenName as any)
       }
     }
   }
