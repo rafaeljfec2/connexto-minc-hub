@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
+import { ComboBox } from '@/components/ui/ComboBox'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
@@ -66,6 +66,13 @@ export default function UsersPage() {
         (item.personId ? people.find(p => p.id === item.personId)?.name : '')?.toLowerCase() ?? '',
     })
   }, [users, searchTerm, sortData, people])
+
+  const personOptions = useMemo(() => {
+    return people.map(person => ({
+      value: person.id,
+      label: person.name,
+    }))
+  }, [people])
 
   const renderHeader = (key: string, label: string) => (
     <SortableColumn key={key} sortKey={key} currentSort={sortConfig} onSort={handleSort}>
@@ -279,24 +286,23 @@ export default function UsersPage() {
               />
             )}
           </div>
-          <Select
+          <ComboBox
             label="Papel *"
             value={formData.role}
-            onChange={e => setFormData({ ...formData, role: e.target.value as UserRole })}
+            onValueChange={val => val && setFormData({ ...formData, role: val as UserRole })}
             options={ROLE_OPTIONS}
+            searchable={false}
           />
-          <Select
+          <ComboBox
             label="Servo Vinculado (Opcional)"
             value={formData.personId}
-            onChange={e => setFormData({ ...formData, personId: e.target.value })}
-            options={[
-              { value: '', label: 'Nenhum' },
-              ...people.map(person => ({
-                value: person.id,
-                label: person.name,
-              })),
-            ]}
+            onValueChange={val => setFormData({ ...formData, personId: val || '' })}
+            options={personOptions}
+            placeholder="Selecione um servo"
+            searchable
+            searchPlaceholder="Buscar servo..."
             disabled={people.length === 0}
+            emptyMessage="Nenhum servo encontrado"
           />
           <div className="pt-2">
             <Checkbox
