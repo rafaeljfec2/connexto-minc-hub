@@ -1,13 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { User } from '@minc-hub/shared/types'
+import { User, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { AxiosError } from 'axios'
-import { ApiResponse } from '@minc-hub/shared/types'
 import { getCachedFetch } from './utils/fetchCache'
 
-type CreateUser = Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password: string }
+type CreateUser = Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'canCheckIn'> & { password: string }
 
 interface UseUsersReturn {
   users: User[]
@@ -42,19 +41,16 @@ export function useUsers(): UseUsersReturn {
 
   const fetchUsers = useCallback(async (): Promise<void> => {
     const cacheKey = 'users-all'
-    
+
     try {
       setIsLoading(true)
       setError(null)
-      
-      const data = await getCachedFetch(
-        cacheKey,
-        async () => {
-          const fetchedData = await apiServices.usersService.getAll()
-          return fetchedData
-        }
-      )
-      
+
+      const data = await getCachedFetch(cacheKey, async () => {
+        const fetchedData = await apiServices.usersService.getAll()
+        return fetchedData
+      })
+
       // Always update state with the data, whether from cache or new fetch
       if (data && Array.isArray(data)) {
         setUsers(data)

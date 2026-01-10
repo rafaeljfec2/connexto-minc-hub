@@ -59,6 +59,22 @@ export class UsersService {
     role?: UserRole;
     personId?: string | null;
   }): Promise<UserEntity> {
+    // Check if user already exists
+    const existingUser = await this.usersRepository.findOne({
+      where: { email: userData.email },
+    });
+
+    if (existingUser) {
+      // If user exists and we have a personId to link
+      if (userData.personId) {
+        existingUser.personId = userData.personId;
+        return await this.usersRepository.save(existingUser);
+      }
+      // If just creating user but it exists (duplicate), strictly speaking we should probably throw or return existing.
+      // Given the requirement "se o usuario ja existe... vincular", returning the existing one linked seems correct.
+      return existingUser;
+    }
+
     try {
       const user = this.usersRepository.create({
         ...userData,

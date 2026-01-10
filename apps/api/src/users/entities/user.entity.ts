@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Index,
-  ManyToOne,
+  OneToOne,
   JoinColumn,
 } from 'typeorm';
 import { PersonEntity } from '../../persons/entities/person.entity';
@@ -30,7 +30,7 @@ export class UserEntity {
   @Column({ type: 'uuid', nullable: true, name: 'person_id' })
   personId: string | null;
 
-  @ManyToOne(() => PersonEntity, { nullable: true, onDelete: 'SET NULL' })
+  @OneToOne(() => PersonEntity, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'person_id' })
   person: PersonEntity | null;
 

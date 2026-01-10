@@ -125,7 +125,6 @@ export default function UsersPage() {
         email: formData.email,
         role: formData.role,
         personId: formData.personId || undefined,
-        canCheckIn: formData.canCheckIn,
       })
     } else {
       await createUser({
@@ -134,7 +133,6 @@ export default function UsersPage() {
         password: formData.password,
         role: formData.role,
         personId: formData.personId || undefined,
-        canCheckIn: formData.canCheckIn,
       })
     }
     handleCloseModal()
