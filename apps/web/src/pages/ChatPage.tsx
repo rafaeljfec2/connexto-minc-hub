@@ -2,8 +2,8 @@ import { ChatList } from './chat/components/ChatList'
 import { ChatLayout } from './chat/components/ChatLayout'
 import { useState, useEffect } from 'react'
 import { UserSelectionModal } from './chat/components/UserSelectionModal'
+import { CreateGroupModal } from './chat/components/CreateGroupModal'
 import { NewConversationDropdown } from './chat/components/NewConversationDropdown'
-import { Alert } from '@/components/ui/Alert'
 import { useChat } from '@/hooks/useChat'
 import { useNavigate } from 'react-router-dom'
 
@@ -47,7 +47,7 @@ const EmptyState = ({ onStartNewChat }: { onStartNewChat: () => void }) => (
 
 export default function ChatPage() {
   const navigate = useNavigate()
-  const { startConversation, conversations } = useChat()
+  const { startConversation, conversations, createGroup } = useChat()
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
   const [isGroupChatModalOpen, setIsGroupChatModalOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -105,22 +105,18 @@ export default function ChatPage() {
         onSelectUser={handleSelectUser}
       />
 
-      <Alert
+      <CreateGroupModal
         isOpen={isGroupChatModalOpen}
         onClose={() => setIsGroupChatModalOpen(false)}
-        type="info"
-        title="Em Breve!"
-        message="A funcionalidade de conversas em grupo está em desenvolvimento e estará disponível em breve."
-        icon={
-          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-        }
+        onCreateGroup={async (name, selectedUserIds) => {
+          try {
+            const newGroup = await createGroup(name, selectedUserIds)
+            navigate(`/chat/${newGroup.id}`)
+            setIsGroupChatModalOpen(false)
+          } catch (error) {
+            console.error('Failed to create group', error)
+          }
+        }}
       />
     </>
   )

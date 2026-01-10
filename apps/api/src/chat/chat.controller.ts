@@ -11,10 +11,12 @@ import {
   ParseUUIDPipe,
   ParseIntPipe,
   DefaultValuePipe,
+  Delete,
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
+import { CreateGroupDto } from './dto/create-group.dto';
 import { MarkMessagesReadDto } from './dto/mark-messages-read.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserEntity } from '../users/entities/user.entity';
@@ -89,5 +91,27 @@ export class ChatController {
       isOnline: false,
       lastSeen: new Date(),
     };
+  }
+  @Post('groups')
+  async createGroup(@Req() req: { user: UserEntity }, @Body() createGroupDto: CreateGroupDto) {
+    return this.chatService.createGroup(req.user.id, createGroupDto.name, createGroupDto.members);
+  }
+
+  @Post('groups/:id/members')
+  async addMember(
+    @Req() req: { user: UserEntity },
+    @Param('id', ParseUUIDPipe) conversationId: string,
+    @Body('userId', ParseUUIDPipe) newMemberId: string,
+  ) {
+    return this.chatService.addParticipant(conversationId, req.user.id, newMemberId);
+  }
+
+  @Delete('groups/:id/members/:userId')
+  async removeMember(
+    @Req() req: { user: UserEntity },
+    @Param('id', ParseUUIDPipe) conversationId: string,
+    @Param('userId', ParseUUIDPipe) memberIdToRemove: string,
+  ) {
+    return this.chatService.removeParticipant(conversationId, req.user.id, memberIdToRemove);
   }
 }

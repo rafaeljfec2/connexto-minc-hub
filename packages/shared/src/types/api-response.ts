@@ -1,7 +1,7 @@
 /**
  * Standard API Response Wrapper
  * Follows REST API best practices for consistent response structure
- * 
+ *
  * This type is shared between backend, web, and mobile applications
  * to ensure consistent API response handling.
  */

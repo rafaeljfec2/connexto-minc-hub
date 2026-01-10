@@ -81,11 +81,16 @@ export function createApiServices(api: AxiosInstance) {
           .then(res => extractEntityData<Team>(res.data, 'Team not found')),
       getMembers: (id: string) =>
         api
-          .get<ApiResponse<Array<{ id: string; teamId: string; personId: string; person: Person }>>>(
-            `/teams/${id}/members`,
-          )
+          .get<
+            ApiResponse<Array<{ id: string; teamId: string; personId: string; person: Person }>>
+          >(`/teams/${id}/members`)
           .then(res => {
-            const members = extractArrayData<{ id: string; teamId: string; personId: string; person: Person }>(res.data)
+            const members = extractArrayData<{
+              id: string
+              teamId: string
+              personId: string
+              person: Person
+            }>(res.data)
             // Retornar array de personIds
             return members.map(m => m.personId)
           }),
@@ -111,17 +116,17 @@ export function createApiServices(api: AxiosInstance) {
           })
           .then(res => extractArrayData<Service>(res.data)),
       getById: (id: string) =>
-        api.get<ApiResponse<Service>>(`/services/${id}`).then(res =>
-          extractEntityData<Service>(res.data, 'Service not found')
-        ),
+        api
+          .get<ApiResponse<Service>>(`/services/${id}`)
+          .then(res => extractEntityData<Service>(res.data, 'Service not found')),
       create: (data: CreateEntity<Service>) =>
-        api.post<ApiResponse<Service>>('/services', data).then(res =>
-          extractEntityData<Service>(res.data, 'Failed to create service')
-        ),
+        api
+          .post<ApiResponse<Service>>('/services', data)
+          .then(res => extractEntityData<Service>(res.data, 'Failed to create service')),
       update: (id: string, data: Partial<Service>) =>
-        api.patch<ApiResponse<Service>>(`/services/${id}`, data).then(res =>
-          extractEntityData<Service>(res.data, 'Failed to update service')
-        ),
+        api
+          .patch<ApiResponse<Service>>(`/services/${id}`, data)
+          .then(res => extractEntityData<Service>(res.data, 'Failed to update service')),
       delete: (id: string) =>
         api.delete<ApiResponse<void>>(`/services/${id}`).then(() => {
           // Delete doesn't return data
@@ -145,7 +150,9 @@ export function createApiServices(api: AxiosInstance) {
               if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
                 return {
                   ...schedule,
-                  teamIds: (schedule as any).scheduleTeams.map((st: any) => st.teamId || st.team?.id).filter(Boolean),
+                  teamIds: (schedule as any).scheduleTeams
+                    .map((st: any) => st.teamId || st.team?.id)
+                    .filter(Boolean),
                 }
               }
               return schedule
@@ -158,7 +165,9 @@ export function createApiServices(api: AxiosInstance) {
           if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
             return {
               ...schedule,
-              teamIds: (schedule as any).scheduleTeams.map((st: any) => st.teamId || st.team?.id).filter(Boolean),
+              teamIds: (schedule as any).scheduleTeams
+                .map((st: any) => st.teamId || st.team?.id)
+                .filter(Boolean),
             }
           }
           return schedule
@@ -170,7 +179,9 @@ export function createApiServices(api: AxiosInstance) {
           if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
             return {
               ...schedule,
-              teamIds: (schedule as any).scheduleTeams.map((st: any) => st.teamId || st.team?.id).filter(Boolean),
+              teamIds: (schedule as any).scheduleTeams
+                .map((st: any) => st.teamId || st.team?.id)
+                .filter(Boolean),
             }
           }
           return schedule
@@ -182,7 +193,9 @@ export function createApiServices(api: AxiosInstance) {
           if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
             return {
               ...schedule,
-              teamIds: (schedule as any).scheduleTeams.map((st: any) => st.teamId || st.team?.id).filter(Boolean),
+              teamIds: (schedule as any).scheduleTeams
+                .map((st: any) => st.teamId || st.team?.id)
+                .filter(Boolean),
             }
           }
           return schedule
@@ -288,10 +301,15 @@ export function createApiServices(api: AxiosInstance) {
             }
             return (res.data as SchedulePlanningConfig | null) ?? null
           }),
-      createOrUpdateConfig: (churchId: string, data: Partial<CreateEntity<SchedulePlanningConfig>>) =>
+      createOrUpdateConfig: (
+        churchId: string,
+        data: Partial<CreateEntity<SchedulePlanningConfig>>
+      ) =>
         api
           .post<ApiResponse<SchedulePlanningConfig>>(`/schedule-planning/config/${churchId}`, data)
-          .then(res => extractEntityData<SchedulePlanningConfig>(res.data, 'Failed to save config')),
+          .then(res =>
+            extractEntityData<SchedulePlanningConfig>(res.data, 'Failed to save config')
+          ),
       getTeamConfig: (teamId: string) =>
         api
           .get<ApiResponse<TeamPlanningConfig | null>>(`/schedule-planning/team/${teamId}/config`)
@@ -305,7 +323,9 @@ export function createApiServices(api: AxiosInstance) {
       createOrUpdateTeamConfig: (teamId: string, data: Partial<CreateEntity<TeamPlanningConfig>>) =>
         api
           .post<ApiResponse<TeamPlanningConfig>>(`/schedule-planning/team/${teamId}/config`, data)
-          .then(res => extractEntityData<TeamPlanningConfig>(res.data, 'Failed to save team config')),
+          .then(res =>
+            extractEntityData<TeamPlanningConfig>(res.data, 'Failed to save team config')
+          ),
       getTemplates: (churchId?: string) =>
         api
           .get<ApiResponse<SchedulePlanningTemplate[]>>('/schedule-planning/templates', {
@@ -315,13 +335,20 @@ export function createApiServices(api: AxiosInstance) {
       createTemplate: (data: CreateEntity<SchedulePlanningTemplate> & { churchId: string }) =>
         api
           .post<ApiResponse<SchedulePlanningTemplate>>('/schedule-planning/templates', data)
-          .then(res => extractEntityData<SchedulePlanningTemplate>(res.data, 'Failed to create template')),
+          .then(res =>
+            extractEntityData<SchedulePlanningTemplate>(res.data, 'Failed to create template')
+          ),
       applyTemplate: (templateId: string, churchId: string) =>
         api
-          .post<ApiResponse<SchedulePlanningConfig>>(`/schedule-planning/templates/${templateId}/apply`, {
-            churchId,
-          })
-          .then(res => extractEntityData<SchedulePlanningConfig>(res.data, 'Failed to apply template')),
+          .post<ApiResponse<SchedulePlanningConfig>>(
+            `/schedule-planning/templates/${templateId}/apply`,
+            {
+              churchId,
+            }
+          )
+          .then(res =>
+            extractEntityData<SchedulePlanningConfig>(res.data, 'Failed to apply template')
+          ),
       deleteTemplate: (templateId: string, churchId: string) =>
         api
           .delete<ApiResponse<void>>(`/schedule-planning/templates/${templateId}`, {
@@ -335,15 +362,14 @@ export function createApiServices(api: AxiosInstance) {
     checkinService: {
       generateQrCode: (date?: string) =>
         api
-          .post<ApiResponse<{ qrCode: string; schedule: Schedule; expiresAt: string }>>(
-            '/checkin/generate-qr',
-            date ? { date } : {},
-          )
+          .post<
+            ApiResponse<{ qrCode: string; schedule: Schedule; expiresAt: string }>
+          >('/checkin/generate-qr', date ? { date } : {})
           .then(res =>
             extractEntityData<{ qrCode: string; schedule: Schedule; expiresAt: string }>(
               res.data,
-              'Failed to generate QR code',
-            ),
+              'Failed to generate QR code'
+            )
           ),
       validateQrCode: (qrCodeData: string) =>
         api

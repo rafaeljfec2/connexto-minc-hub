@@ -250,6 +250,15 @@ export function useChatActions({
     [chatApi, conversations, setConversations]
   )
 
+  const createGroup = useCallback(
+    async (name: string, members: string[]) => {
+      const conversation = await chatApi.createGroup(name, members)
+      setConversations(prev => [conversation, ...prev])
+      return conversation
+    },
+    [chatApi, setConversations]
+  )
+
   const joinConversation = useCallback(
     (conversationId: string) => {
       chatSocket.joinConversation(conversationId)
@@ -271,5 +280,6 @@ export function useChatActions({
     startConversation,
     joinConversation,
     leaveConversation,
+    createGroup,
   }
 }

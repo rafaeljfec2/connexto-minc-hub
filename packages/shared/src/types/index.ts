@@ -217,10 +217,14 @@ export interface Message {
   attachmentName?: string | null
   attachmentType?: string | null
   attachmentSize?: number | null
+  sender?: ChatUser
 }
 
 export interface Conversation {
   id: string
+  type: 'private' | 'group'
+  name?: string
+  createdBy?: string
   participants: ChatUser[]
   lastMessage: Message | null
   unreadCount: number

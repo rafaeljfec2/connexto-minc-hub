@@ -9,7 +9,13 @@ interface SidebarNavItemProps {
   onClick?: () => void
 }
 
-export function SidebarNavItem({ href, icon, label, isActive, onClick }: SidebarNavItemProps) {
+export function SidebarNavItem({
+  href,
+  icon,
+  label,
+  isActive,
+  onClick,
+}: Readonly<SidebarNavItemProps>) {
   const handleClick = (e: React.MouseEvent) => {
     // If the item is already active, force a reload to refresh data
     if (isActive) {

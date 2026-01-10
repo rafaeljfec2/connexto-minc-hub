@@ -1,4 +1,12 @@
-import { Entity, CreateDateColumn, ManyToOne, JoinColumn, PrimaryColumn, Index } from 'typeorm';
+import {
+  Entity,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  PrimaryColumn,
+  Index,
+  Column,
+} from 'typeorm';
 import { UserEntity } from '../../users/entities/user.entity';
 import { ConversationEntity } from './conversation.entity';
 
@@ -14,6 +22,13 @@ export class ConversationParticipantEntity {
 
   @CreateDateColumn({ name: 'joined_at' })
   joinedAt: Date;
+
+  @Column({
+    type: 'enum',
+    enum: ['admin', 'member'],
+    default: 'member',
+  })
+  role: 'admin' | 'member';
 
   @ManyToOne(() => ConversationEntity, (conversation) => conversation.participants, {
     onDelete: 'CASCADE',

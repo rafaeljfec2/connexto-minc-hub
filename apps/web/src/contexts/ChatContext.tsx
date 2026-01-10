@@ -88,6 +88,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     startConversation,
     joinConversation,
     leaveConversation,
+    createGroup,
   } = useChatActions({
     chatSocket,
     chatApi,
@@ -125,6 +126,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       hasMoreMessages,
       isLoadingMoreMessages,
       loadMoreMessages,
+      createGroup,
     }),
     [
       conversations,
@@ -142,6 +144,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       hasMoreMessages,
       isLoadingMoreMessages,
       loadMoreMessages,
+      createGroup,
     ]
   )
 

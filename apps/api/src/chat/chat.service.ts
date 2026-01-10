@@ -99,13 +99,15 @@ export class ChatService {
       throw new NotFoundException('Participant not found');
     }
 
-    // Check if conversation exists
+    // Check if PRIVATE conversation exists
     // Find conversation IDs shared by both users
     const conversationIds = await this.participantRepository
       .createQueryBuilder('p1')
       .innerJoin(ConversationParticipantEntity, 'p2', 'p1.conversationId = p2.conversationId')
+      .innerJoin(ConversationEntity, 'c', 'p1.conversationId = c.id')
       .where('p1.userId = :userId', { userId })
       .andWhere('p2.userId = :participantId', { participantId })
+      .andWhere('c.type = :type', { type: 'private' })
       .select('p1.conversationId')
       .getRawMany();
 
@@ -116,16 +118,117 @@ export class ChatService {
     }
 
     // Create new conversation
-    const conversation = this.conversationRepository.create();
+    const conversation = this.conversationRepository.create({
+      type: 'private',
+      createdBy: userId,
+    });
     await this.conversationRepository.save(conversation);
 
     // Add participants
     await this.participantRepository.save([
-      { conversationId: conversation.id, userId },
-      { conversationId: conversation.id, userId: participantId },
+      { conversationId: conversation.id, userId, role: 'admin' },
+      { conversationId: conversation.id, userId: participantId, role: 'member' },
     ]);
 
     return this.findOneConversation(conversation.id, userId);
+  }
+
+  async createGroup(userId: string, name: string, memberIds: string[]) {
+    // Validate members exist
+    const members = await Promise.all(memberIds.map((id) => this.usersService.findOne(id)));
+
+    if (members.some((m) => !m)) {
+      throw new NotFoundException('One or more members not found');
+    }
+
+    const conversation = this.conversationRepository.create({
+      type: 'group',
+      name,
+      createdBy: userId,
+    });
+
+    await this.conversationRepository.save(conversation);
+
+    // Add creator as admin
+    const participantsToSave = [{ conversationId: conversation.id, userId, role: 'admin' }];
+
+    // Add other members
+    memberIds.forEach((id) => {
+      // Avoid duplicate if creator is in list
+      if (id !== userId) {
+        participantsToSave.push({
+          conversationId: conversation.id,
+          userId: id,
+          role: 'member',
+        });
+      }
+    });
+
+    // @ts-expect-error - Role enum compatible string
+    await this.participantRepository.save(participantsToSave);
+
+    return this.findOneConversation(conversation.id, userId);
+  }
+
+  async addParticipant(conversationId: string, adminId: string, newMemberId: string) {
+    const conversation = await this.conversationRepository.findOne({
+      where: { id: conversationId },
+    });
+    if (!conversation) throw new NotFoundException('Conversation not found');
+    if (conversation.type !== 'group')
+      throw new BadRequestException('Cannot add members to private chat');
+
+    // Check if requester is admin
+    const adminPart = await this.participantRepository.findOne({
+      where: { conversationId, userId: adminId },
+    });
+
+    // Allow any member to add? or only admin? User prompt says "Indicar quem é admin", usually implies permissions.
+    // For now, let's enforce admin or at least membership. Let's start with admin-only add.
+    if (adminPart?.role !== 'admin') {
+      throw new ForbiddenException('Only admins can add members');
+    }
+
+    const startMember = await this.usersService.findOne(newMemberId);
+    if (!startMember) throw new NotFoundException('User not found');
+
+    const existing = await this.participantRepository.findOne({
+      where: { conversationId, userId: newMemberId },
+    });
+    if (existing) throw new BadRequestException('User already in group');
+
+    await this.participantRepository.save({
+      conversationId,
+      userId: newMemberId,
+      role: 'member',
+    });
+
+    return this.findOneConversation(conversationId, adminId);
+  }
+
+  async removeParticipant(conversationId: string, adminId: string, memberIdToRemove: string) {
+    const conversation = await this.conversationRepository.findOne({
+      where: { id: conversationId },
+    });
+    if (!conversation) throw new NotFoundException('Conversation not found');
+    if (conversation.type !== 'group')
+      throw new BadRequestException('Cannot remove members from private chat');
+
+    // Check if requester is admin
+    const adminPart = await this.participantRepository.findOne({
+      where: { conversationId, userId: adminId },
+    });
+
+    if (!adminPart) throw new ForbiddenException('Not a participant');
+
+    // Admin can remove anyone. Member can remove themselves (leave).
+    if (adminId !== memberIdToRemove && adminPart.role !== 'admin') {
+      throw new ForbiddenException('Only admins can remove other members');
+    }
+
+    await this.participantRepository.delete({ conversationId, userId: memberIdToRemove });
+
+    return { success: true };
   }
 
   async findOneConversation(conversationId: string, userId: string) {
@@ -164,6 +267,7 @@ export class ChatService {
 
     const query = this.messageRepository
       .createQueryBuilder('message')
+      .leftJoinAndSelect('message.sender', 'sender')
       .where('message.conversationId = :conversationId', { conversationId })
       .orderBy('message.createdAt', 'DESC')
       .take(limit)
@@ -207,7 +311,13 @@ export class ChatService {
     // Update conversation timestamp
     await this.conversationRepository.update(conversationId, { updatedAt: new Date() });
 
-    return savedMessage;
+    // Return with sender info for immediate display
+    const msgWithSender = await this.messageRepository.findOne({
+      where: { id: savedMessage.id },
+      relations: ['sender'],
+    });
+
+    return msgWithSender;
   }
 
   async markMessagesAsRead(conversationId: string, userId: string, messageIds?: string[]) {

@@ -380,6 +380,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         attachmentSize: data.attachmentSize,
       });
 
+      if (!message) {
+        throw new Error('Failed to create message');
+      }
+
       // Get conversation with participants
       const conversation = await this.chatService.findOneConversation(
         data.conversationId,

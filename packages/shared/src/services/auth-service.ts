@@ -175,9 +175,10 @@ export function createAuthService(config: AuthServiceConfig): AuthService {
     },
 
     async refreshToken(): Promise<LoginResponse> {
-      const response = await api.post<
-        ApiResponse<{ user: User; token?: string; refreshToken?: string }>
-      >('/auth/refresh-token')
+      const response =
+        await api.post<ApiResponse<{ user: User; token?: string; refreshToken?: string }>>(
+          '/auth/refresh-token'
+        )
 
       // Handle ApiResponse format
       if (response.data.success && response.data.data) {

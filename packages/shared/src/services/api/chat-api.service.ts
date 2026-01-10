@@ -48,6 +48,17 @@ export class ChatApiService {
     return response.data.data
   }
 
+  async createGroup(name: string, members: string[]): Promise<Conversation> {
+    const response = await this.client.post<ApiResponse<Conversation>>('/chat/groups', {
+      name,
+      members,
+    })
+    if (!response.data.data) {
+      throw new Error('Failed to create group')
+    }
+    return response.data.data
+  }
+
   async getMessages(conversationId: string, params?: GetMessagesParams): Promise<Message[]> {
     const response = await this.client.get<ApiResponse<Message[]>>(
       `/chat/conversations/${conversationId}/messages`,
