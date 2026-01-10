@@ -1,0 +1,89 @@
+import { Button } from '@/components/ui/Button'
+import { EditIcon } from '@/components/icons'
+import { AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/Accordion'
+import { Schedule, Team, Ministry } from '@minc-hub/shared/types'
+import { formatDate } from '@minc-hub/shared/utils'
+import { getDayLabel } from '@/lib/constants'
+import { ScheduleCard } from './ScheduleCard'
+
+// Helper to group schedules - Imported locally or redefined
+// Ideally, this should be shared, but re-defining interface for props is fine if simple
+// Or import from a shared types location if it existed.
+// Given it was in SchedulesPage, let's redefine it here or move it to shared.
+// For now, I'll redefine it to match what's expected.
+
+export interface GroupedSchedule {
+  key: string
+  date: Date
+  serviceId: string
+  serviceName: string
+  serviceDay: number
+  serviceTime: string
+  schedules: Schedule[]
+}
+
+interface ScheduleGroupItemProps {
+  group: GroupedSchedule
+  teams: Team[]
+  ministries: Ministry[]
+  onEdit: (s: Schedule) => void
+  onDelete: (id: string) => void
+}
+
+export function ScheduleGroupItem({
+  group,
+  teams,
+  ministries,
+  onEdit,
+  onDelete,
+}: ScheduleGroupItemProps) {
+  return (
+    <AccordionItem value={group.key}>
+      <AccordionTrigger>
+        <div className="flex flex-1 items-center justify-between mr-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-left">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-lg text-dark-900 dark:text-dark-50">
+                {formatDate(group.date.toISOString())}
+              </span>
+              <span className="text-sm px-2 py-0.5 rounded-full bg-dark-100 dark:bg-dark-800 text-dark-600 dark:text-dark-400">
+                {getDayLabel(group.serviceDay)}
+              </span>
+            </div>
+            <span className="text-base text-dark-600 dark:text-dark-300">
+              {group.serviceName} - {group.serviceTime}
+            </span>
+          </div>
+          <div>
+            <Button
+              variant="action-edit"
+              size="sm"
+              onClick={e => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (group.schedules.length > 0) {
+                  onEdit(group.schedules[0])
+                }
+              }}
+            >
+              <EditIcon className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent>
+        <div className="space-y-3">
+          {group.schedules.map(schedule => (
+            <ScheduleCard
+              key={schedule.id}
+              schedule={schedule}
+              teams={teams}
+              ministries={ministries}
+              onDelete={onDelete}
+            />
+          ))}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  )
+}

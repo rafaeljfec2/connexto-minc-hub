@@ -5,15 +5,10 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Alert } from '@/components/ui/Alert'
 import { ComboBox } from '@/components/ui/ComboBox'
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from '@/components/ui/Accordion'
+import { Accordion } from '@/components/ui/Accordion'
 import { MonthNavigator } from '@/components/ui/MonthNavigator'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { PlusIcon, EditIcon, TrashIcon } from '@/components/icons'
+import { PlusIcon } from '@/components/icons'
 import { useModal } from '@/hooks/useModal'
 import { useSchedules } from '@/hooks/useSchedules'
 import { useServices } from '@/hooks/useServices'
@@ -22,18 +17,8 @@ import { useMinistries } from '@/hooks/useMinistries'
 import { useChurch } from '@/contexts/ChurchContext'
 import { Schedule } from '@minc-hub/shared/types'
 import { formatDate } from '@minc-hub/shared/utils'
-import { getDayLabel } from '@/lib/constants'
 
-// Helper to group schedules
-interface GroupedSchedule {
-  key: string
-  date: Date
-  serviceId: string
-  serviceName: string
-  serviceDay: number
-  serviceTime: string
-  schedules: Schedule[]
-}
+import { ScheduleGroupItem, GroupedSchedule } from '@/components/schedules/ScheduleGroupItem'
 
 export default function SchedulesPage() {
   const { schedules, isLoading, createSchedule, updateSchedule, deleteSchedule } = useSchedules()
@@ -280,79 +265,14 @@ export default function SchedulesPage() {
         ) : (
           <Accordion className="space-y-4">
             {groupedSchedules.map(group => (
-              <AccordionItem key={group.key} value={group.key}>
-                <AccordionTrigger>
-                  <div className="flex flex-1 items-center justify-between mr-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-lg text-dark-900 dark:text-dark-50">
-                          {formatDate(group.date.toISOString())}
-                        </span>
-                        <span className="text-sm px-2 py-0.5 rounded-full bg-dark-100 dark:bg-dark-800 text-dark-600 dark:text-dark-400">
-                          {getDayLabel(group.serviceDay)}
-                        </span>
-                      </div>
-                      <span className="text-base text-dark-600 dark:text-dark-300">
-                        {group.serviceName} - {group.serviceTime}
-                      </span>
-                    </div>
-                    {/* Edit Action - Stops Propagation to allow clicking without toggling accordion */}
-                    <div onClick={e => e.stopPropagation()}>
-                      <Button
-                        variant="action-edit"
-                        size="sm"
-                        onClick={() => {
-                          if (group.schedules.length > 0) {
-                            handleOpenModal(group.schedules[0])
-                          }
-                        }}
-                      >
-                        <EditIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div className="space-y-3">
-                    {group.schedules.map(schedule => (
-                      <div
-                        key={schedule.id}
-                        className="flex items-start justify-between p-3 bg-white dark:bg-dark-950 rounded-lg border border-dark-200 dark:border-dark-800"
-                      >
-                        <div className="space-y-1">
-                          <div className="flex flex-wrap gap-2">
-                            {schedule.teamIds && schedule.teamIds.length > 0 ? (
-                              schedule.teamIds.map(teamId => {
-                                const team = teams.find(t => t.id === teamId)
-                                const ministry = ministries.find(m => m.id === team?.ministryId)
-                                return (
-                                  <span
-                                    key={teamId}
-                                    className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                                  >
-                                    {ministry?.name} - {team?.name}
-                                  </span>
-                                )
-                              })
-                            ) : (
-                              <span className="text-dark-500 text-sm">Sem equipes</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <Button
-                            variant="action-delete"
-                            size="sm"
-                            onClick={() => handleDeleteClick(schedule.id)}
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+              <ScheduleGroupItem
+                key={group.key}
+                group={group}
+                teams={teams}
+                ministries={ministries}
+                onEdit={handleOpenModal}
+                onDelete={handleDeleteClick}
+              />
             ))}
           </Accordion>
         )}
