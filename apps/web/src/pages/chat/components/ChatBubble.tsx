@@ -34,6 +34,8 @@ interface ChatBubbleProps {
   readonly timestamp: string
   readonly status?: MessageStatus
   readonly attachment?: MessageAttachment
+  readonly senderName?: string
+  readonly senderColor?: string
 }
 
 type MediaType = 'image' | 'video' | 'audio' | 'pdf' | 'document'
@@ -78,11 +80,22 @@ export function ChatBubble({
   timestamp,
   status,
   attachment,
+  senderName,
+  senderColor,
 }: Readonly<ChatBubbleProps>) {
   const time = formatTime(timestamp)
 
   if (attachment) {
-    return <AttachmentBubble attachment={attachment} isMe={isMe} time={time} status={status} />
+    return (
+      <AttachmentBubble
+        attachment={attachment}
+        isMe={isMe}
+        time={time}
+        status={status}
+        senderName={senderName}
+        senderColor={senderColor}
+      />
+    )
   }
 
   return (
@@ -93,6 +106,13 @@ export function ChatBubble({
           : 'mr-auto bg-dark-200 dark:bg-dark-800 text-dark-900 dark:text-dark-50 rounded-bl-sm'
       }`}
     >
+      {!isMe && senderName && (
+        <p
+          className={`text-xs font-bold mb-1 ${senderColor ?? 'text-primary-600 dark:text-primary-400'}`}
+        >
+          {senderName}
+        </p>
+      )}
       <p className="text-sm leading-relaxed mb-1 break-words whitespace-pre-wrap">{message}</p>
       <BubbleFooter time={time} isMe={isMe} status={status} />
     </div>
@@ -104,9 +124,18 @@ interface AttachmentBubbleProps {
   readonly isMe: boolean
   readonly time: string
   readonly status?: MessageStatus
+  readonly senderName?: string
+  readonly senderColor?: string
 }
 
-function AttachmentBubble({ attachment, isMe, time, status }: Readonly<AttachmentBubbleProps>) {
+function AttachmentBubble({
+  attachment,
+  isMe,
+  time,
+  status,
+  senderName,
+  senderColor,
+}: Readonly<AttachmentBubbleProps>) {
   const mediaType = getMediaType(attachment.type)
 
   const bubbleClass = `mb-3 max-w-[80%] rounded-2xl overflow-hidden ${
@@ -117,6 +146,15 @@ function AttachmentBubble({ attachment, isMe, time, status }: Readonly<Attachmen
 
   return (
     <div className={bubbleClass}>
+      {!isMe && senderName && (
+        <div className="px-3 pt-2">
+          <p
+            className={`text-xs font-bold mb-1 ${senderColor ?? 'text-primary-600 dark:text-primary-400'}`}
+          >
+            {senderName}
+          </p>
+        </div>
+      )}
       <MediaPreview attachment={attachment} mediaType={mediaType} isMe={isMe} />
       <div className="p-3">
         <MediaActions attachment={attachment} mediaType={mediaType} isMe={isMe} />

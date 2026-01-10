@@ -7,9 +7,10 @@ interface ChatBubbleProps {
   message: string
   isMe: boolean
   timestamp: string
+  senderName?: string
 }
 
-export function ChatBubble({ message, isMe, timestamp }: Readonly<ChatBubbleProps>) {
+export function ChatBubble({ message, isMe, timestamp, senderName }: Readonly<ChatBubbleProps>) {
   const { colors } = useTheme()
   const time = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
@@ -32,6 +33,9 @@ export function ChatBubble({ message, isMe, timestamp }: Readonly<ChatBubbleProp
 
   return (
     <View style={[styles.container, bubbleStyle]}>
+      {!isMe && senderName && (
+        <Text style={[styles.senderName, { color: colors.primary }]}>{senderName}</Text>
+      )}
       <Text style={[styles.message, messageColor]}>{message}</Text>
       <View style={styles.footer}>
         <Text style={[styles.time, timeColor]}>{time}</Text>
@@ -59,5 +63,10 @@ const styles = StyleSheet.create({
   },
   time: {
     fontSize: 10,
+  },
+  senderName: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginBottom: 4,
   },
 })

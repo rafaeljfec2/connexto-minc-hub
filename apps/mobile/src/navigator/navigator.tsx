@@ -14,6 +14,7 @@ import SchedulesScreen from '@/screens/SchedulesScreen'
 import { CheckinScreen } from '@/screens/QRCodeScannerScreen'
 import ChatScreen from '@/screens/ChatScreen'
 import ChatDetailScreen from '@/screens/ChatScreen/ChatDetailScreen'
+import GroupDetailsScreen from '@/screens/ChatScreen/GroupDetailsScreen'
 import ProfileScreen from '@/screens/ProfileScreen'
 
 import ChurchesScreen from '@/screens/ChurchesScreen'
@@ -61,7 +62,6 @@ function HomeStackNavigator() {
       <HomeStack.Screen name="Services" component={ServicesScreen} />
       <HomeStack.Screen name="MonthlySchedule" component={MonthlyScheduleScreen} />
       <HomeStack.Screen name="Communication" component={CommunicationScreen} />
-      {/* Messages/Chat could also be here if we want tabs visible, but Chat has its own tab */}
     </HomeStack.Navigator>
   )
 }
@@ -159,6 +159,7 @@ export function RootNavigator() {
         <>
           <Stack.Screen name="Main" component={MainTabs} />
           <Stack.Screen name="ChatDetail" component={ChatDetailScreen} />
+          <Stack.Screen name="GroupDetails" component={GroupDetailsScreen} />
         </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />

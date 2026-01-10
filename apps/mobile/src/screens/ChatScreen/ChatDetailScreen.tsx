@@ -22,16 +22,62 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 export default function ChatDetailScreen() {
   const route = useRoute()
   const navigation = useNavigation()
-  const { conversationId, otherUserId } = route.params as {
+  const { 
+    conversationId, 
+    otherUserId, 
+    otherUserName,
+    otherUserAvatar,
+    isGroup, 
+    groupName, 
+    participants 
+  } = route.params as {
     conversationId: string
-    otherUserId: string
+    otherUserId?: string
+    otherUserName?: string
+    otherUserAvatar?: string
+    isGroup?: boolean
+    groupName?: string
+    participants?: string[]
   }
   const { colors } = useTheme()
   const insets = useSafeAreaInsets()
 
-  const otherUser = MOCK_USERS[otherUserId]
+  // Try to get user from params first, fallback to mock
+  const mockUser = otherUserId ? MOCK_USERS[otherUserId] : undefined
+  const otherUser = {
+    id: otherUserId ?? '',
+    name: otherUserName ?? mockUser?.name ?? 'Usuário',
+    avatar: otherUserAvatar ?? mockUser?.avatar,
+    isOnline: mockUser?.isOnline ?? false,
+  }
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES[conversationId] || [])
   const flatListRef = useRef<FlatList>(null)
+
+  // Header Data Logic
+  const headerTitle = isGroup ? (groupName ?? 'Grupo') : otherUser.name
+  const headerSubtitle = isGroup
+    ? `${participants?.length ?? 0} participantes`
+    : otherUser.isOnline
+      ? 'Online'
+      : ''
+  const headerAvatar = isGroup ? undefined : otherUser.avatar
+
+  const handleInfoPress = () => {
+    if (isGroup && participants && groupName) {
+      navigation.navigate('GroupDetails', {
+        conversationId,
+        groupName,
+        participants,
+      })
+    } else if (otherUserId) {
+      // For 1:1 conversations, navigate with user info
+      navigation.navigate('GroupDetails', {
+        conversationId,
+        groupName: otherUser.name,
+        participants: ['me', otherUserId],
+      })
+    }
+  }
 
   useEffect(() => {
     // Scroll to bottom on mount
@@ -71,33 +117,66 @@ export default function ChatDetailScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.text.default} />
         </TouchableOpacity>
 
-        <View style={styles.headerContent}>
-          <Image
-            source={{ uri: otherUser?.avatar }}
-            style={[styles.avatar, { backgroundColor: colors.card.border }]}
-          />
-          <View>
-            <Text style={[styles.name, { color: colors.text.default }]}>{otherUser?.name}</Text>
-            {otherUser?.isOnline && <Text style={styles.status}>Online</Text>}
-          </View>
-        </View>
+        <TouchableOpacity
+          style={styles.headerContent}
+          onPress={handleInfoPress}
+          activeOpacity={0.7}
+        >
+          {isGroup ? (
+            <View
+              style={[
+                styles.avatar,
+                styles.groupAvatar,
+                { backgroundColor: `${colors.primary}20` },
+              ]}
+            >
+              <Ionicons name="people" size={20} color={colors.primary} />
+            </View>
+          ) : (
+            <Image
+              source={{ uri: headerAvatar }}
+              style={[styles.avatar, { backgroundColor: colors.card.border }]}
+            />
+          )}
 
-        <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="ellipsis-vertical" size={24} color={colors.text.default} />
+          <View>
+            <Text style={[styles.name, { color: colors.text.default }]}>{headerTitle}</Text>
+            {headerSubtitle && (
+              <Text style={[styles.status, isGroup && { color: colors.text.light }]}>
+                {headerSubtitle}
+              </Text>
+            )}
+          </View>
         </TouchableOpacity>
+
+        <View style={styles.headerActions}>
+          <TouchableOpacity style={styles.actionButton} onPress={() => {}}>
+            <Ionicons name="notifications-outline" size={24} color={colors.text.default} />
+          </TouchableOpacity>
+
+            <TouchableOpacity style={styles.actionButton} onPress={handleInfoPress}>
+              <Ionicons name="information-circle-outline" size={24} color={colors.text.default} />
+            </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
         ref={flatListRef}
         data={messages}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <ChatBubble
-            message={item.text}
-            isMe={item.senderId === 'me'}
-            timestamp={item.timestamp}
-          />
-        )}
+        renderItem={({ item }) => {
+          const isMe = item.senderId === 'me'
+          const sender = !isMe && isGroup && item.senderId ? MOCK_USERS[item.senderId] : undefined
+
+          return (
+            <ChatBubble
+              message={item.text}
+              isMe={isMe}
+              timestamp={item.timestamp}
+              senderName={sender?.name}
+            />
+          )
+        }}
         style={styles.list}
         contentContainerStyle={styles.listContent}
       />
@@ -132,6 +211,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: themeSpacing.sm,
   },
+  groupAvatar: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   name: {
     fontSize: themeTypography.sizes.md,
     fontWeight: themeTypography.weights.semibold,
@@ -140,7 +223,12 @@ const styles = StyleSheet.create({
     fontSize: themeTypography.sizes.xs,
     color: '#22c55e',
   },
-  menuButton: {
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  actionButton: {
     padding: 8,
   },
   list: {

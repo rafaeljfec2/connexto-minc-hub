@@ -16,12 +16,24 @@ export default function ChatScreen() {
   const [conversations] = useState(MOCK_CONVERSATIONS)
 
   function handleConversationPress(conversationId: string, participants: Participant[]) {
-    const otherUserId = participants.find(p => p.id !== 'me')?.id || ''
-    // TypeScript will complain because we haven't updated params yet, we'll fix that next
+    const otherParticipant = participants.find(p => p.id !== 'me')
+    const otherUserId = otherParticipant?.id ?? ''
+
+    // Simple logic for mock: if conversation is conv3, treat as group
+    const isGroup = conversationId === 'conv3'
+    const groupName = isGroup ? participants[0].name : undefined // Mock: user3 is group
+    const participantIds = isGroup
+      ? ['me', 'user1', 'user2'] // Mock participants for group
+      : undefined
 
     navigation.navigate('ChatDetail', {
       conversationId,
       otherUserId,
+      otherUserName: otherParticipant?.name,
+      otherUserAvatar: otherParticipant?.avatar,
+      isGroup,
+      groupName,
+      participants: participantIds,
     })
   }
 

@@ -1,7 +1,9 @@
-import { useRef, useEffect, useLayoutEffect, useCallback, useState } from 'react'
+import { useRef, useEffect, useLayoutEffect, useCallback, useState, useMemo } from 'react'
+import { Info, Users } from 'lucide-react'
 
 import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
+import { GroupDetailsModal } from './GroupDetailsModal'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 import { Avatar } from '@/components/ui/Avatar'
@@ -12,6 +14,23 @@ interface ChatWindowProps {
   conversationId: string
   onBack?: () => void
 }
+
+const SENDER_COLORS = [
+  'text-red-500',
+  'text-orange-500',
+  'text-amber-500',
+  'text-green-500',
+  'text-emerald-500',
+  'text-teal-500',
+  'text-cyan-500',
+  'text-blue-500',
+  'text-indigo-500',
+  'text-violet-500',
+  'text-purple-500',
+  'text-fuchsia-500',
+  'text-pink-500',
+  'text-rose-500',
+]
 
 export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -36,6 +55,18 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
   // Upload state
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [isGroupDetailsOpen, setIsGroupDetailsOpen] = useState(false)
+
+  // Memoize sender colors
+  const senderColors = useMemo(() => {
+    const colors = new Map<string, string>()
+    if (activeConversation?.type === 'group') {
+      activeConversation.participants.forEach((p, index) => {
+        colors.set(p.id, SENDER_COLORS[index % SENDER_COLORS.length])
+      })
+    }
+    return colors
+  }, [activeConversation])
 
   // Common scroll logic
   const forceScroll = useCallback(() => {
@@ -180,8 +211,25 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
   // Fallback: If activeConversation is missing, try to find it in the list
   const currentConversation = activeConversation || conversations.find(c => c.id === conversationId)
-  const otherUser = currentConversation?.participants.find(p => p.id !== user?.id)
-  const otherUserName = otherUser?.name || 'Desconhecido'
+
+  // Header Info Logic
+  const isGroup = currentConversation?.type === 'group'
+  let headerTitle = 'Conversa'
+  let headerSubtitle = ''
+  let headerAvatar: string | undefined = undefined
+
+  if (currentConversation) {
+    if (isGroup) {
+      headerTitle = currentConversation.name || 'Grupo'
+      headerSubtitle = `${currentConversation.participants.length} participantes`
+      // headerAvatar could be group image if supported in future
+    } else {
+      const otherUser = currentConversation.participants.find(p => p.id !== user?.id)
+      headerTitle = otherUser?.name || 'Desconhecido'
+      headerSubtitle = otherUser?.isOnline ? 'Online' : ''
+      headerAvatar = otherUser?.avatar ?? undefined
+    }
+  }
 
   const renderMessages = () => {
     if (isLoadingMessages && messages.length === 0) {
@@ -219,6 +267,11 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
                 : 'sent'
             : undefined
 
+          const sender =
+            isGroup && !isMe
+              ? currentConversation?.participants.find(p => p.id === message.senderId)
+              : undefined
+
           return (
             <ChatBubble
               key={message.id}
@@ -226,6 +279,8 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
               isMe={isMe}
               timestamp={message.createdAt}
               status={status}
+              senderName={sender?.name}
+              senderColor={sender ? senderColors.get(sender.id) : undefined}
               attachment={
                 message.attachmentUrl
                   ? {
@@ -246,7 +301,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     )
   }
 
-  if (!currentConversation || !otherUser) {
+  if (!currentConversation) {
     if (isLoadingMessages) {
       return (
         <div className="flex items-center justify-center h-full">
@@ -262,71 +317,105 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-950">
-      {/* Header */}
-      <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 flex items-center gap-3">
-        {onBack && (
-          <button
-            onClick={handleBackClick}
-            className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg lg:hidden flex-shrink-0"
-          >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
+    <>
+      <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-950">
+        {/* Header */}
+        <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 overflow-hidden">
+            {onBack && (
+              <button
+                onClick={handleBackClick}
+                className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-lg lg:hidden flex-shrink-0"
+              >
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+            )}
+
+            {isGroup ? (
+              <div className="h-10 w-10 rounded-full bg-primary-100 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
+                <Users className="h-5 w-5" />
+              </div>
+            ) : (
+              <Avatar
+                src={headerAvatar}
+                name={headerTitle}
+                isOnline={currentConversation?.participants.find(p => p.id !== user?.id)?.isOnline}
+                size="md"
               />
-            </svg>
-          </button>
+            )}
+
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50 truncate">
+                {headerTitle}
+              </h2>
+              {headerSubtitle && (
+                <p
+                  className={`text-xs ${headerSubtitle === 'Online' ? 'text-green-500' : 'text-dark-500'} truncate`}
+                >
+                  {headerSubtitle}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {isGroup && (
+            <button
+              onClick={() => setIsGroupDetailsOpen(true)}
+              className="p-2 text-dark-500 hover:bg-dark-100 dark:hover:bg-dark-800 rounded-full transition-colors flex-shrink-0"
+              aria-label="Dados do grupo"
+            >
+              <Info className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+
+        {/* Messages */}
+        <div
+          ref={messagesContainerRef}
+          onScroll={handleScroll}
+          className="flex-1 overflow-y-auto px-4"
+        >
+          <div className="py-4 min-h-full flex flex-col justify-end">{renderMessages()}</div>
+        </div>
+
+        {/* Upload Progress */}
+        {isUploading && (
+          <div className="flex-shrink-0 bg-white dark:bg-dark-900 border-t border-dark-200 dark:border-dark-800 px-4 py-2">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
+              <div className="flex-1">
+                <div className="h-2 bg-dark-200 dark:bg-dark-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary-500 transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+              <span className="text-xs text-dark-500">{uploadProgress}%</span>
+            </div>
+          </div>
         )}
 
-        <Avatar
-          src={otherUser.avatar}
-          name={otherUserName}
-          isOnline={otherUser.isOnline}
-          size="md"
+        {/* Input */}
+        <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom)]">
+          <ChatInput onSend={handleSend} onAttachment={handleAttachment} disabled={isUploading} />
+        </div>
+      </div>
+
+      {isGroup && currentConversation && (
+        <GroupDetailsModal
+          isOpen={isGroupDetailsOpen}
+          onClose={() => setIsGroupDetailsOpen(false)}
+          conversation={currentConversation}
         />
-
-        <div>
-          <h2 className="text-base font-semibold text-dark-900 dark:text-dark-50">
-            {otherUserName}
-          </h2>
-          {otherUser.isOnline && <p className="text-xs text-green-500">Online</p>}
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div
-        ref={messagesContainerRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4"
-      >
-        <div className="py-4 min-h-full flex flex-col justify-end">{renderMessages()}</div>
-      </div>
-
-      {/* Upload Progress */}
-      {isUploading && (
-        <div className="flex-shrink-0 bg-white dark:bg-dark-900 border-t border-dark-200 dark:border-dark-800 px-4 py-2">
-          <div className="flex items-center gap-3">
-            <Loader2 className="h-4 w-4 animate-spin text-primary-500" />
-            <div className="flex-1">
-              <div className="h-2 bg-dark-200 dark:bg-dark-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary-500 transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-            <span className="text-xs text-dark-500">{uploadProgress}%</span>
-          </div>
-        </div>
       )}
-
-      {/* Input */}
-      <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom)]">
-        <ChatInput onSend={handleSend} onAttachment={handleAttachment} disabled={isUploading} />
-      </div>
-    </div>
+    </>
   )
 }

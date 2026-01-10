@@ -11,7 +11,20 @@ export type RootStackParamList = {
   Services: undefined
   MonthlySchedule: undefined
   Communication: undefined
-  ChatDetail: { conversationId: string; otherUserId: string }
+  ChatDetail: {
+    conversationId: string
+    otherUserId?: string
+    otherUserName?: string
+    otherUserAvatar?: string
+    isGroup?: boolean
+    groupName?: string
+    participants?: string[]
+  }
+  GroupDetails: {
+    conversationId: string
+    groupName: string
+    participants: string[]
+  }
   Dashboard: undefined
 }
 
