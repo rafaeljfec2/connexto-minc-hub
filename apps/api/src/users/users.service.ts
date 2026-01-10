@@ -11,17 +11,13 @@ const USER_SELECT_FIELDS = [
   'user.isActive',
   'user.personId',
   'user.avatar',
+  'user.canCheckIn',
   'user.lastLoginAt',
   'user.createdAt',
   'user.updatedAt',
 ] as const;
 
-const PERSON_SELECT_FIELDS = [
-  'person.id',
-  'person.name',
-  'person.email',
-  'person.phone',
-] as const;
+const PERSON_SELECT_FIELDS = ['person.id', 'person.name', 'person.email', 'person.phone'] as const;
 
 @Injectable()
 export class UsersService {

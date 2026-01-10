@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -21,6 +15,8 @@ export interface LoginResponse {
     role: string;
     isActive: boolean;
     personId: string | null;
+    avatar: string | null;
+    canCheckIn: boolean;
     createdAt: string;
     updatedAt: string;
   };
@@ -75,6 +71,8 @@ export class AuthService {
       role: user.role,
       isActive: user.isActive,
       personId: user.personId,
+      avatar: user.avatar,
+      canCheckIn: user.canCheckIn,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     };
@@ -118,9 +116,7 @@ export class AuthService {
   }
 
   async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ message: string }> {
-    const isValid = await this.passwordResetService.validateResetToken(
-      resetPasswordDto.token,
-    );
+    const isValid = await this.passwordResetService.validateResetToken(resetPasswordDto.token);
     if (!isValid) {
       throw new UnauthorizedException('Invalid or expired reset token');
     }

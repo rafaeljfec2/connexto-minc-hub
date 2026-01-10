@@ -21,6 +21,10 @@ import {
 } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthService, LoginResponse } from './auth.service';
+
+function getEndpoint(req: Request, fallback: string): string {
+  return req.route?.path ?? req.url ?? fallback;
+}
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -67,7 +71,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
-    const endpoint = (req as any)?.route?.path || req?.url || '/auth/login';
+    const endpoint = getEndpoint(req, '/auth/login');
 
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) {
@@ -123,7 +127,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
-    const endpoint = (req as any)?.route?.path || req?.url || '/auth/refresh-token';
+    const endpoint = getEndpoint(req, '/auth/refresh-token');
 
     const refreshToken = req.cookies?.refresh_token ?? refreshTokenBody;
 
@@ -175,7 +179,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
-    const endpoint = (req as any)?.route?.path || req?.url || '/auth/logout';
+    const endpoint = getEndpoint(req, '/auth/logout');
 
     try {
       const result = await this.authService.logout(user);
@@ -228,7 +232,7 @@ export class AuthController {
   })
   async forgotPassword(@Body('email') email: string, @Req() req: Request) {
     const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
-    const endpoint = (req as any)?.route?.path || req?.url || '/auth/forgot-password';
+    const endpoint = getEndpoint(req, '/auth/forgot-password');
 
     try {
       const result = await this.authService.forgotPassword(email);
@@ -273,7 +277,7 @@ export class AuthController {
   })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto, @Req() req: Request) {
     const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
-    const endpoint = (req as any)?.route?.path || req?.url || '/auth/reset-password';
+    const endpoint = getEndpoint(req, '/auth/reset-password');
 
     try {
       const result = await this.authService.resetPassword(resetPasswordDto);
@@ -302,16 +306,18 @@ export class AuthController {
   @Get('me')
   getCurrentUser(@GetUser() user: UserEntity) {
     return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      isActive: user.isActive,
-      personId: user.personId,
-      avatar: user.avatar,
-      canCheckIn: user.canCheckIn,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+        personId: user.personId,
+        avatar: user.avatar,
+        canCheckIn: user.canCheckIn,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
     };
   }
 
