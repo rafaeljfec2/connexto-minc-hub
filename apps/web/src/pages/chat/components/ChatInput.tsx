@@ -1,9 +1,13 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Fragment } from 'react'
 import { Camera, Image, FileText, MapPin, X } from 'lucide-react'
+import { Alert, AlertType } from '@/components/ui/Alert'
 
 interface ChatInputProps {
   readonly onSend: (text: string) => void
-  readonly onAttachment?: (type: 'camera' | 'gallery' | 'document' | 'location', file?: File) => void
+  readonly onAttachment?: (
+    type: 'camera' | 'gallery' | 'document' | 'location',
+    file?: File
+  ) => void
   readonly disabled?: boolean
 }
 
@@ -53,6 +57,12 @@ export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const [currentAccept, setCurrentAccept] = useState<string>('')
   const [currentAttachType, setCurrentAttachType] = useState<AttachmentOption['id'] | null>(null)
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean
+    type: AlertType
+    title: string
+    message: string
+  } | null>(null)
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -106,11 +116,22 @@ export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
           },
           error => {
             console.error('Error getting location:', error)
-            alert('Não foi possível obter sua localização. Verifique as permissões.')
+            setAlertConfig({
+              isOpen: true,
+              type: 'error',
+              title: 'Erro de Localização',
+              message:
+                'Não foi possível obter sua localização. Verifique as permissões do navegador.',
+            })
           }
         )
       } else {
-        alert('Geolocalização não é suportada neste navegador.')
+        setAlertConfig({
+          isOpen: true,
+          type: 'error',
+          title: 'Recurso Não Suportado',
+          message: 'Geolocalização não é suportada neste navegador.',
+        })
       }
       return
     }
@@ -150,98 +171,118 @@ export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
   }
 
   return (
-    <div className="relative flex items-end gap-2 p-4 border-t border-dark-200 dark:border-dark-800 bg-transparent">
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={currentAccept}
-        onChange={handleFileChange}
-        className="hidden"
-      />
-
-      {/* Attachment Menu */}
-      {showAttachMenu && (
-        <div
-          ref={menuRef}
-          className="absolute bottom-full left-2 mb-2 bg-white dark:bg-dark-800 rounded-2xl shadow-xl border border-dark-200 dark:border-dark-700 p-3 animate-in slide-in-from-bottom-2 fade-in duration-200"
-        >
-          <div className="flex gap-4">
-            {attachmentOptions.map(option => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => handleAttachmentClick(option)}
-                className="flex flex-col items-center gap-1.5 group"
-              >
-                <div
-                  className={`${option.color} p-3 rounded-full text-white shadow-lg group-hover:scale-110 transition-transform`}
-                >
-                  {option.icon}
-                </div>
-                <span className="text-xs text-dark-600 dark:text-dark-400 font-medium">
-                  {option.label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Attach Button */}
-      <button
-        type="button"
-        onClick={() => setShowAttachMenu(!showAttachMenu)}
-        className={`p-2.5 rounded-full transition-all mb-0.5 ${
-          showAttachMenu
-            ? 'bg-primary-500 text-white rotate-45'
-            : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800'
-        }`}
-        aria-label="Anexar"
-      >
-        {showAttachMenu ? (
-          <X className="h-6 w-6" />
-        ) : (
-          <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        )}
-      </button>
-
-      <div className={`flex-1 bg-dark-100 dark:bg-dark-800 rounded-2xl px-4 py-3 min-h-[44px] ${disabled ? 'opacity-50' : ''}`}>
-        <textarea
-          ref={textareaRef}
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={disabled ? 'Enviando arquivo...' : 'Digite uma mensagem...'}
-          className="w-full bg-transparent text-dark-900 dark:text-dark-50 placeholder:text-dark-500 dark:placeholder:text-dark-400 text-sm resize-none outline-none max-h-[120px] overflow-y-auto block"
-          rows={1}
-          maxLength={500}
-          disabled={disabled}
+    <Fragment>
+      <div className="relative flex items-end gap-2 p-4 border-t border-dark-200 dark:border-dark-800 bg-transparent">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={currentAccept}
+          onChange={handleFileChange}
+          className="hidden"
         />
+
+        {/* Attachment Menu */}
+        {showAttachMenu && (
+          <div
+            ref={menuRef}
+            className="absolute bottom-full left-2 mb-2 bg-white dark:bg-dark-800 rounded-2xl shadow-xl border border-dark-200 dark:border-dark-700 p-3 animate-in slide-in-from-bottom-2 fade-in duration-200"
+          >
+            <div className="flex gap-4">
+              {attachmentOptions.map(option => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => handleAttachmentClick(option)}
+                  className="flex flex-col items-center gap-1.5 group"
+                >
+                  <div
+                    className={`${option.color} p-3 rounded-full text-white shadow-lg group-hover:scale-110 transition-transform`}
+                  >
+                    {option.icon}
+                  </div>
+                  <span className="text-xs text-dark-600 dark:text-dark-400 font-medium">
+                    {option.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Attach Button */}
+        <button
+          type="button"
+          onClick={() => setShowAttachMenu(!showAttachMenu)}
+          className={`p-2.5 rounded-full transition-all mb-0.5 ${
+            showAttachMenu
+              ? 'bg-primary-500 text-white rotate-45'
+              : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800'
+          }`}
+          aria-label="Anexar"
+        >
+          {showAttachMenu ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          )}
+        </button>
+
+        <div
+          className={`flex-1 bg-dark-100 dark:bg-dark-800 rounded-2xl px-4 py-3 min-h-[44px] ${disabled ? 'opacity-50' : ''}`}
+        >
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={e => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={disabled ? 'Enviando arquivo...' : 'Digite uma mensagem...'}
+            className="w-full bg-transparent text-dark-900 dark:text-dark-50 placeholder:text-dark-500 dark:placeholder:text-dark-400 text-sm resize-none outline-none max-h-[120px] overflow-y-auto block"
+            rows={1}
+            maxLength={500}
+            disabled={disabled}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSend}
+          disabled={!text.trim() || disabled}
+          className={`p-2.5 rounded-full transition-colors mb-0.5 ${
+            text.trim() && !disabled
+              ? 'bg-primary-500 text-white hover:bg-primary-600'
+              : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-not-allowed'
+          }`}
+          aria-label="Enviar"
+        >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+            />
+          </svg>
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={handleSend}
-        disabled={!text.trim() || disabled}
-        className={`p-2.5 rounded-full transition-colors mb-0.5 ${
-          text.trim() && !disabled
-            ? 'bg-primary-500 text-white hover:bg-primary-600'
-            : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-not-allowed'
-        }`}
-        aria-label="Enviar"
-      >
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-          />
-        </svg>
-      </button>
-    </div>
+      {/* Alert Component */}
+      {alertConfig && (
+        <Alert
+          isOpen={alertConfig.isOpen}
+          onClose={() => setAlertConfig(null)}
+          type={alertConfig.type}
+          title={alertConfig.title}
+          message={alertConfig.message}
+        />
+      )}
+    </Fragment>
   )
 }

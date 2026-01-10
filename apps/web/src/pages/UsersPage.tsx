@@ -4,7 +4,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useViewMode } from '@/hooks/useViewMode'
@@ -314,14 +314,12 @@ export default function UsersPage() {
             <Button type="button" variant="outline" onClick={handleCloseModal}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              {editingUser ? 'Salvar Alterações' : 'Criar Usuário'}
-            </Button>
+            <Button type="submit">{editingUser ? 'Salvar Alterações' : 'Criar Usuário'}</Button>
           </div>
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <Alert
         isOpen={deleteModal.isOpen}
         onClose={() => {
           deleteModal.close()

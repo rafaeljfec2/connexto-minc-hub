@@ -5,11 +5,18 @@ import { ProfileSection } from './profile/components/ProfileSection'
 import { EditableField } from './profile/components/EditableField'
 import { Button } from '@/components/ui/Button'
 import { uploadAvatar, updateProfile } from '@/services/upload.service'
+import { Alert, AlertType } from '@/components/ui/Alert'
 
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth()
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [avatarError, setAvatarError] = useState<string | null>(null)
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean
+    type: AlertType
+    title: string
+    message: string
+  } | null>(null)
 
   const handleAvatarChange = useCallback(
     async (file: File) => {
@@ -120,7 +127,15 @@ export default function ProfilePage() {
                 <Button
                   variant="primary"
                   className="w-full lg:w-auto"
-                  onClick={() => alert('Funcionalidade em desenvolvimento')}
+                  onClick={() =>
+                    setAlertConfig({
+                      isOpen: true,
+                      type: 'info',
+                      title: 'Em Breve!',
+                      message:
+                        'A funcionalidade de alteração de senha está em desenvolvimento e estará disponível em breve.',
+                    })
+                  }
                 >
                   Alterar Senha
                 </Button>
@@ -240,6 +255,17 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Alert Component */}
+      {alertConfig && (
+        <Alert
+          isOpen={alertConfig.isOpen}
+          onClose={() => setAlertConfig(null)}
+          type={alertConfig.type}
+          title={alertConfig.title}
+          message={alertConfig.message}
+        />
+      )}
     </div>
   )
 }

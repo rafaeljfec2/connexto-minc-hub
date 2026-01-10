@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Alert } from '@/components/ui/Alert'
 import { ComboBox } from '@/components/ui/ComboBox'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
@@ -364,7 +364,7 @@ export default function SchedulesPage() {
             <Button variant="ghost" size="sm" onClick={() => handleOpenModal(schedule)}>
               <EditIcon className="h-4 w-4" />
             </Button>
-            <Button variant="danger" size="sm" onClick={() => handleDeleteClick(schedule.id)}>
+            <Button size="sm" onClick={() => handleDeleteClick(schedule.id)}>
               <TrashIcon className="h-4 w-4" />
             </Button>
           </div>
@@ -549,14 +549,14 @@ export default function SchedulesPage() {
             <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading}>
               {editingSchedule ? 'Salvar Alterações' : 'Criar Escala'}
             </Button>
           </div>
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <Alert
         isOpen={deleteModal.isOpen}
         onClose={() => {
           deleteModal.close()
@@ -567,7 +567,8 @@ export default function SchedulesPage() {
         message="Tem certeza que deseja excluir esta escala? Esta ação não pode ser desfeita."
         confirmText="Excluir"
         cancelText="Cancelar"
-        variant="danger"
+        type="error"
+        showCancel={true}
       />
     </>
   )

@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from 'react'
+import { Alert, AlertType } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Checkbox } from '@/components/ui/Checkbox'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -48,6 +48,12 @@ export default function SchedulePlanningConfigPage() {
     name: '',
     description: '',
   })
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean
+    type: AlertType
+    title: string
+    message: string
+  } | null>(null)
 
   const [globalFormData, setGlobalFormData] = useState({
     maxTeamMembers: 10,
@@ -150,7 +156,12 @@ export default function SchedulePlanningConfigPage() {
   async function handleCreateTemplate(e: React.FormEvent) {
     e.preventDefault()
     if (!config) {
-      alert('Configure primeiro a configuração global antes de criar um template')
+      setAlertConfig({
+        isOpen: true,
+        type: 'warning',
+        title: 'Configuração Necessária',
+        message: 'Configure primeiro a configuração global antes de criar um template.',
+      })
       return
     }
 
@@ -237,7 +248,7 @@ export default function SchedulePlanningConfigPage() {
         {activeTab === 'global' && (
           <div className="space-y-6">
             <div className="flex justify-end">
-              <Button variant="primary" onClick={globalModal.open}>
+              <Button onClick={globalModal.open}>
                 <PlusIcon className="h-4 w-4 mr-2" />
                 {config ? 'Editar Configuração' : 'Criar Configuração'}
               </Button>
@@ -328,7 +339,7 @@ export default function SchedulePlanningConfigPage() {
         {activeTab === 'templates' && (
           <div className="space-y-6">
             <div className="flex justify-end">
-              <Button variant="primary" onClick={templateModal.open}>
+              <Button onClick={templateModal.open}>
                 <PlusIcon className="h-4 w-4 mr-2" />
                 Criar Template
               </Button>
@@ -363,7 +374,6 @@ export default function SchedulePlanningConfigPage() {
                   </div>
                   <div className="flex gap-2">
                     <Button
-                      variant="primary"
                       size="sm"
                       onClick={() => {
                         setApplyingTemplateId(template.id)
@@ -462,9 +472,7 @@ export default function SchedulePlanningConfigPage() {
             <Button type="button" variant="secondary" onClick={globalModal.close}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              Salvar
-            </Button>
+            <Button type="submit">Salvar</Button>
           </div>
         </form>
       </Modal>
@@ -561,9 +569,7 @@ export default function SchedulePlanningConfigPage() {
             <Button type="button" variant="secondary" onClick={handleCloseTeamModal}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              Salvar
-            </Button>
+            <Button type="submit">Salvar</Button>
           </div>
         </form>
       </Modal>
@@ -604,15 +610,13 @@ export default function SchedulePlanningConfigPage() {
             >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              Criar
-            </Button>
+            <Button type="submit">Criar</Button>
           </div>
         </form>
       </Modal>
 
       {/* Apply Template Modal */}
-      <ConfirmDialog
+      <Alert
         isOpen={applyTemplateModal.isOpen}
         onClose={() => {
           applyTemplateModal.close()
@@ -626,7 +630,7 @@ export default function SchedulePlanningConfigPage() {
       />
 
       {/* Delete Template Modal */}
-      <ConfirmDialog
+      <Alert
         isOpen={deleteTemplateModal.isOpen}
         onClose={() => {
           deleteTemplateModal.close()
@@ -638,6 +642,17 @@ export default function SchedulePlanningConfigPage() {
         confirmText="Excluir"
         cancelText="Cancelar"
       />
+
+      {/* Alert Component */}
+      {alertConfig && (
+        <Alert
+          isOpen={alertConfig.isOpen}
+          onClose={() => setAlertConfig(null)}
+          type={alertConfig.type}
+          title={alertConfig.title}
+          message={alertConfig.message}
+        />
+      )}
     </div>
   )
 }

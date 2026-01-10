@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useViewMode } from '@/hooks/useViewMode'
@@ -183,7 +183,7 @@ export default function ServicesPage() {
           <Button variant="ghost" size="sm" onClick={() => handleOpenModal(service)}>
             <EditIcon className="h-4 w-4" />
           </Button>
-          <Button variant="danger" size="sm" onClick={() => handleDeleteClick(service.id)}>
+          <Button size="sm" onClick={() => handleDeleteClick(service.id)}>
             <TrashIcon className="h-4 w-4" />
           </Button>
         </div>
@@ -284,14 +284,14 @@ export default function ServicesPage() {
             <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading}>
               {editingService ? 'Salvar Alterações' : 'Criar Culto'}
             </Button>
           </div>
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <Alert
         isOpen={deleteModal.isOpen}
         onClose={() => {
           deleteModal.close()
@@ -302,7 +302,8 @@ export default function ServicesPage() {
         message="Tem certeza que deseja excluir este culto? Esta ação não pode ser desfeita."
         confirmText="Excluir"
         cancelText="Cancelar"
-        variant="danger"
+        type="error"
+        showCancel={true}
       />
     </>
   )

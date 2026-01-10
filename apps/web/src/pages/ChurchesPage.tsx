@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useChurches } from '@/hooks/useChurches'
@@ -161,7 +161,7 @@ export default function ChurchesPage() {
           <Button variant="ghost" size="sm" onClick={() => handleOpenModal(church)}>
             <EditIcon className="h-4 w-4" />
           </Button>
-          <Button variant="danger" size="sm" onClick={() => handleDeleteClick(church.id)}>
+          <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(church.id)}>
             <TrashIcon className="h-4 w-4" />
           </Button>
         </div>
@@ -257,7 +257,7 @@ export default function ChurchesPage() {
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <Alert
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.close}
         onConfirm={handleDeleteConfirm}
@@ -265,7 +265,8 @@ export default function ChurchesPage() {
         message="Tem certeza que deseja excluir esta igreja? Esta ação não pode ser desfeita."
         confirmText="Excluir"
         cancelText="Cancelar"
-        variant="danger"
+        type="error"
+        showCancel={true}
       />
     </>
   )

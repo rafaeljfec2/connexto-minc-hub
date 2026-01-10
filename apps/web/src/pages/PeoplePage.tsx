@@ -4,7 +4,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useViewMode } from '@/hooks/useViewMode'
@@ -549,7 +549,7 @@ export default function PeoplePage() {
               </Button>
             )}
             <Button
-              variant="danger"
+              variant="ghost"
               size="sm"
               onClick={() => handleDeleteClick(person.id)}
               title="Excluir"
@@ -779,7 +779,7 @@ export default function PeoplePage() {
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <Alert
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.close}
         onConfirm={handleDeleteConfirm}
@@ -787,7 +787,8 @@ export default function PeoplePage() {
         message="Tem certeza que deseja excluir este servo? Esta ação não pode ser desfeita."
         confirmText="Excluir"
         cancelText="Cancelar"
-        variant="danger"
+        type="error"
+        showCancel={true}
       />
 
       <Modal

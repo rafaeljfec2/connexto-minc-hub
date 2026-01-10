@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useMinistries } from '@/hooks/useMinistries'
@@ -254,7 +254,7 @@ export default function MinistriesPage() {
           <Button variant="ghost" size="sm" onClick={() => handleOpenModal(ministry)}>
             <EditIcon className="h-4 w-4" />
           </Button>
-          <Button variant="danger" size="sm" onClick={() => handleDeleteClick(ministry.id)}>
+          <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(ministry.id)}>
             <TrashIcon className="h-4 w-4" />
           </Button>
         </div>
@@ -357,7 +357,7 @@ export default function MinistriesPage() {
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <Alert
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.close}
         onConfirm={handleDeleteConfirm}
@@ -365,7 +365,7 @@ export default function MinistriesPage() {
         message="Tem certeza que deseja excluir este time? Esta ação não pode ser desfeita."
         confirmText="Excluir"
         cancelText="Cancelar"
-        variant="danger"
+        showCancel={true}
       />
     </>
   )

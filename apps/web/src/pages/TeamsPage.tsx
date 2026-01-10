@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { StatusBadge } from '@/components/ui/StatusBadge'
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
+import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useTeams } from '@/hooks/useTeams'
@@ -370,7 +370,7 @@ export default function TeamsPage() {
             <Button variant="ghost" size="sm" onClick={() => handleOpenModal(team)}>
               <EditIcon className="h-4 w-4" />
             </Button>
-            <Button variant="danger" size="sm" onClick={() => handleDeleteClick(team.id)}>
+            <Button size="sm" onClick={() => handleDeleteClick(team.id)}>
               <TrashIcon className="h-4 w-4" />
             </Button>
           </div>
@@ -523,14 +523,12 @@ export default function TeamsPage() {
             <Button type="button" variant="secondary" onClick={handleCloseModal}>
               Cancelar
             </Button>
-            <Button type="submit" variant="primary">
-              {editingTeam ? 'Salvar Alterações' : 'Criar Equipe'}
-            </Button>
+            <Button type="submit">{editingTeam ? 'Salvar Alterações' : 'Criar Equipe'}</Button>
           </div>
         </form>
       </Modal>
 
-      <ConfirmDialog
+      <Alert
         isOpen={deleteModal.isOpen}
         onClose={deleteModal.close}
         onConfirm={handleDeleteConfirm}
@@ -538,7 +536,8 @@ export default function TeamsPage() {
         message="Tem certeza que deseja excluir esta equipe? Esta ação não pode ser desfeita."
         confirmText="Excluir"
         cancelText="Cancelar"
-        variant="danger"
+        type="error"
+        showCancel={true}
       />
     </>
   )
