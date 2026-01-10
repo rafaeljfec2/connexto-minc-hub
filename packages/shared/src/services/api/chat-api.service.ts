@@ -61,8 +61,8 @@ export class ChatApiService {
 
   async addParticipant(conversationId: string, participantId: string): Promise<Conversation> {
     const response = await this.client.post<ApiResponse<Conversation>>(
-      `/chat/groups/${conversationId}/participants`,
-      { participantId }
+      `/chat/groups/${conversationId}/members`,
+      { userId: participantId }
     )
     if (!response.data.data) {
       throw new Error('Failed to add participant')
@@ -124,6 +124,17 @@ export class ChatApiService {
     )
     if (!response.data.data) {
       throw new Error('Failed to update group')
+    }
+    return response.data.data
+  }
+
+  async createGroupFromTeam(teamId: string, customName?: string): Promise<Conversation> {
+    const response = await this.client.post<ApiResponse<Conversation>>(
+      `/chat/groups/from-team/${teamId}`,
+      { customName }
+    )
+    if (!response.data.data) {
+      throw new Error('Failed to create group from team')
     }
     return response.data.data
   }

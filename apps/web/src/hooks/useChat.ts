@@ -25,6 +25,7 @@ export interface ChatContextType {
   isLoadingMoreMessages: boolean
   loadMoreMessages: () => Promise<void>
   createGroup: (name: string, members: string[]) => Promise<Conversation>
+  createGroupFromTeam: (teamId: string, customName?: string) => Promise<Conversation>
   addParticipant: (conversationId: string, userId: string) => Promise<void>
   promoteToAdmin: (conversationId: string, userId: string) => Promise<void>
   removeParticipant: (conversationId: string, userId: string) => Promise<void>

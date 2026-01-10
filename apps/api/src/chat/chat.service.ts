@@ -10,6 +10,7 @@ import { ConversationEntity } from './entities/conversation.entity';
 import { ConversationParticipantEntity } from './entities/conversation-participant.entity';
 import { MessageEntity } from './entities/message.entity';
 import { UsersService } from '../users/users.service';
+import { TeamsService } from '../teams/teams.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 
@@ -23,6 +24,7 @@ export class ChatService {
     @InjectRepository(MessageEntity)
     private readonly messageRepository: Repository<MessageEntity>,
     private readonly usersService: UsersService,
+    private readonly teamsService: TeamsService,
   ) {}
 
   async findConversations(userId: string, limit = 20, offset = 0) {
@@ -156,6 +158,55 @@ export class ChatService {
     // Add other members
     memberIds.forEach((id) => {
       // Avoid duplicate if creator is in list
+      if (id !== userId) {
+        participantsToSave.push({
+          conversationId: conversation.id,
+          userId: id,
+          role: 'member',
+        });
+      }
+    });
+
+    // @ts-expect-error - Role enum compatible string
+    await this.participantRepository.save(participantsToSave);
+
+    return this.findOneConversation(conversation.id, userId);
+  }
+
+  async createGroupFromTeam(userId: string, teamId: string, customName?: string) {
+    const team = await this.teamsService.findOne(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const teamMembers = await this.teamsService.getMembers(teamId);
+    const memberPersonIds = teamMembers.map((member) => member.personId);
+
+    // Find users by personId
+    const users = await Promise.all(
+      memberPersonIds.map((personId) =>
+        this.usersService.findByPersonId(personId).catch(() => null),
+      ),
+    );
+    const validUserIds = users.filter((u) => u !== null).map((u) => u!.id);
+
+    if (validUserIds.length === 0) {
+      throw new BadRequestException('No valid users found in team');
+    }
+
+    const groupName = customName || `Grupo ${team.name}`;
+
+    const conversation = this.conversationRepository.create({
+      type: 'group',
+      name: groupName,
+      createdBy: userId,
+    });
+
+    await this.conversationRepository.save(conversation);
+
+    const participantsToSave = [{ conversationId: conversation.id, userId, role: 'admin' }];
+
+    validUserIds.forEach((id) => {
       if (id !== userId) {
         participantsToSave.push({
           conversationId: conversation.id,

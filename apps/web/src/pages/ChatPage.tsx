@@ -47,7 +47,7 @@ const EmptyState = ({ onStartNewChat }: { onStartNewChat: () => void }) => (
 
 export default function ChatPage() {
   const navigate = useNavigate()
-  const { startConversation, conversations, createGroup } = useChat()
+  const { startConversation, conversations, createGroup, createGroupFromTeam } = useChat()
   const [isNewChatModalOpen, setIsNewChatModalOpen] = useState(false)
   const [isGroupChatModalOpen, setIsGroupChatModalOpen] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -115,6 +115,15 @@ export default function ChatPage() {
             setIsGroupChatModalOpen(false)
           } catch (error) {
             console.error('Failed to create group', error)
+          }
+        }}
+        onCreateGroupFromTeam={async (teamId, customName) => {
+          try {
+            const newGroup = await createGroupFromTeam(teamId, customName)
+            navigate(`/chat/${newGroup.id}`)
+            setIsGroupChatModalOpen(false)
+          } catch (error) {
+            console.error('Failed to create group from team', error)
           }
         }}
       />

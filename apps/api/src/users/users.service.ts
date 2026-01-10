@@ -45,6 +45,13 @@ export class UsersService {
     return this.findAuthUser(email);
   }
 
+  async findByPersonId(personId: string): Promise<UserEntity | null> {
+    return this.createBaseQuery()
+      .where('user.personId = :personId', { personId })
+      .andWhere('user.deletedAt IS NULL')
+      .getOne();
+  }
+
   async create(userData: {
     email: string;
     passwordHash: string;

@@ -97,6 +97,15 @@ export class ChatController {
     return this.chatService.createGroup(req.user.id, createGroupDto.name, createGroupDto.members);
   }
 
+  @Post('groups/from-team/:teamId')
+  async createGroupFromTeam(
+    @Req() req: { user: UserEntity },
+    @Param('teamId', ParseUUIDPipe) teamId: string,
+    @Body() body: { customName?: string },
+  ) {
+    return this.chatService.createGroupFromTeam(req.user.id, teamId, body.customName);
+  }
+
   @Post('groups/:id/members')
   async addMember(
     @Req() req: { user: UserEntity },

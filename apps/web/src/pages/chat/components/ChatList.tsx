@@ -37,7 +37,13 @@ function ChatListEmpty({ onNewChat }: Readonly<{ onNewChat: () => void }>) {
 export function ChatList({ className, onConversationClick }: Readonly<ChatListProps>) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { conversations, isLoadingConversations, startConversation, createGroup } = useChat()
+  const {
+    conversations,
+    isLoadingConversations,
+    startConversation,
+    createGroup,
+    createGroupFromTeam,
+  } = useChat()
   const { user } = useAuth()
   const { showError } = useToast()
 
@@ -249,6 +255,17 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
           } catch (error) {
             console.error('Failed to create group', error)
             showError('Falha ao criar grupo.')
+          }
+        }}
+        onCreateGroupFromTeam={async (teamId, customName) => {
+          try {
+            const newGroup = await createGroupFromTeam(teamId, customName)
+            navigate(`/chat/${newGroup.id}`)
+            onConversationClick?.()
+            setIsGroupChatModalOpen(false)
+          } catch (error) {
+            console.error('Failed to create group from team', error)
+            showError('Falha ao criar grupo a partir da equipe.')
           }
         }}
       />

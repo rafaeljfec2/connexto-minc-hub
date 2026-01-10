@@ -9,11 +9,13 @@ import { ConversationEntity } from './entities/conversation.entity';
 import { ConversationParticipantEntity } from './entities/conversation-participant.entity';
 import { MessageEntity } from './entities/message.entity';
 import { UsersModule } from '../users/users.module';
+import { TeamsModule } from '../teams/teams.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ConversationEntity, ConversationParticipantEntity, MessageEntity]),
     UsersModule,
+    TeamsModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

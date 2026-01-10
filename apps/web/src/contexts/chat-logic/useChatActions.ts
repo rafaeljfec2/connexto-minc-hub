@@ -259,6 +259,15 @@ export function useChatActions({
     [chatApi, setConversations]
   )
 
+  const createGroupFromTeam = useCallback(
+    async (teamId: string, customName?: string) => {
+      const conversation = await chatApi.createGroupFromTeam(teamId, customName)
+      setConversations(prev => [conversation, ...prev])
+      return conversation
+    },
+    [chatApi, setConversations]
+  )
+
   const addParticipant = useCallback(
     async (conversationId: string, userId: string) => {
       const updatedConversation = await chatApi.addParticipant(conversationId, userId)
@@ -345,6 +354,7 @@ export function useChatActions({
     joinConversation,
     leaveConversation,
     createGroup,
+    createGroupFromTeam,
     addParticipant,
     promoteToAdmin,
     removeParticipant,
