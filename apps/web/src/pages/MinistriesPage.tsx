@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
-import { Select } from '@/components/ui/Select'
+import { ComboBox } from '@/components/ui/ComboBox'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Alert } from '@/components/ui/Alert'
@@ -318,15 +318,17 @@ export default function MinistriesPage() {
         size="lg"
       >
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Select
+          <ComboBox
             label="Igreja *"
-            value={formData.churchId}
-            onChange={e => setFormData({ ...formData, churchId: e.target.value })}
+            value={formData.churchId || null}
+            onValueChange={val => setFormData({ ...formData, churchId: val || '' })}
             options={churches.map(church => ({
               value: church.id,
               label: church.name,
             }))}
-            required
+            placeholder="Selecione uma igreja"
+            searchable
+            searchPlaceholder="Buscar igreja..."
           />
           <Input
             label="Nome do Time *"

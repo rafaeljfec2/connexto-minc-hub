@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { Select } from '@/components/ui/Select'
+import { ComboBox } from '@/components/ui/ComboBox'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Alert } from '@/components/ui/Alert'
@@ -490,15 +491,17 @@ export default function TeamsPage() {
             required
             disabled
           />
-          <Select
+          <ComboBox
             label="Time *"
-            value={formData.ministryId}
-            onChange={e => setFormData({ ...formData, ministryId: e.target.value })}
+            value={formData.ministryId || null}
+            onValueChange={val => setFormData({ ...formData, ministryId: val || '' })}
             options={filteredMinistries.map(ministry => ({
               value: ministry.id,
               label: ministry.name,
             }))}
-            required
+            placeholder="Selecione um time"
+            searchable
+            searchPlaceholder="Buscar time..."
             disabled={!selectedChurch || filteredMinistries.length === 0}
           />
           <Input

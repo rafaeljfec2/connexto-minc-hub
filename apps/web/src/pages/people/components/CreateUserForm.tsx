@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
+import { ComboBox } from '@/components/ui/ComboBox'
 import { Person, UserRole } from '@minc-hub/shared/types'
 import { ROLE_OPTIONS } from '@/lib/userUtils'
 
@@ -40,21 +40,22 @@ export function CreateUserForm({
         label="Email *"
         type="email"
         value={email}
-        onChange={(e) => onEmailChange(e.target.value)}
+        onChange={e => onEmailChange(e.target.value)}
         required
       />
       <Input
         label="Senha *"
         type="password"
         value={password}
-        onChange={(e) => onPasswordChange(e.target.value)}
+        onChange={e => onPasswordChange(e.target.value)}
         required
       />
-      <Select
+      <ComboBox
         label="Papel *"
         value={role}
-        onChange={(e) => onRoleChange(e.target.value as UserRole)}
+        onValueChange={val => val && onRoleChange(val as UserRole)}
         options={ROLE_OPTIONS}
+        searchable={false}
       />
       <div className="flex justify-end gap-3 pt-4">
         <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>

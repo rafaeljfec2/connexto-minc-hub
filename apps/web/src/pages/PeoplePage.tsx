@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
-import { Select } from '@/components/ui/Select'
+
+import { ComboBox } from '@/components/ui/ComboBox'
 import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
@@ -685,14 +686,14 @@ export default function PeoplePage() {
             <h3 className="text-sm font-semibold text-dark-800 dark:text-dark-200 pb-2 border-b border-dark-200 dark:border-dark-700">
               Time e Equipes
             </h3>
-            <Select
+            <ComboBox
               label="Time"
-              value={personFormData.ministryId}
-              onChange={e => handlePersonMinistryChange(e.target.value)}
-              options={[
-                { value: '', label: 'Selecione um time' },
-                ...filteredMinistries.map(m => ({ value: m.id, label: m.name })),
-              ]}
+              value={personFormData.ministryId || null}
+              onValueChange={val => handlePersonMinistryChange(val || '')}
+              options={filteredMinistries.map(m => ({ value: m.id, label: m.name }))}
+              placeholder="Selecione um time"
+              searchable
+              searchPlaceholder="Buscar time..."
             />
             <div className="bg-dark-50 dark:bg-dark-900/30 p-4 rounded-lg border border-dark-200 dark:border-dark-700">
               <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-3">
