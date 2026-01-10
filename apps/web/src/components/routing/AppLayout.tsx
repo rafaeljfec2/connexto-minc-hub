@@ -60,7 +60,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <main
               className={`flex-1 overflow-y-auto overscroll-y-contain animate-fade-in-up scroll-smooth ${
                 isChatConversation
-                  ? 'p-0 overflow-hidden' // Chat conversation fullscreen on mobile
+                  ? 'p-0 overflow-hidden'
                   : isChatPage
                     ? 'p-0 pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-0 overflow-hidden'
                     : isProfilePage

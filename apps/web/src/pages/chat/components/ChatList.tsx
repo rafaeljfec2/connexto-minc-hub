@@ -92,7 +92,7 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
 
   return (
     <div
-      className={`flex flex-col h-full bg-white dark:bg-dark-900 border-r border-dark-200 dark:border-dark-800 pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-0 ${className}`}
+      className={`flex flex-col h-full bg-white dark:bg-dark-900 border-r border-dark-200 dark:border-dark-800 ${className}`}
     >
       {/* Header */}
       <div className="p-4 border-b border-dark-200 dark:border-dark-800">
