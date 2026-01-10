@@ -13,12 +13,35 @@ import { ChatProvider } from '@/contexts/ChatContext'
 
 // ... existing imports
 
+function getMainClassName(
+  isChatConversation: boolean,
+  isChatPage: boolean,
+  isProfilePage: boolean
+): string {
+  const baseClasses = 'flex-1 overflow-y-auto overscroll-y-contain animate-fade-in-up scroll-smooth'
+
+  if (isChatConversation) {
+    return `${baseClasses} p-0 overflow-hidden`
+  }
+
+  if (isChatPage) {
+    return `${baseClasses} p-0 pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-0 overflow-hidden`
+  }
+
+  if (isProfilePage) {
+    return `${baseClasses} pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pt-16 lg:pb-0 lg:px-8`
+  }
+
+  return `${baseClasses} pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-16 lg:pb-0 lg:px-8`
+}
+
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation()
   const isChatPage = location.pathname.startsWith('/chat')
   const isProfilePage = location.pathname === '/profile'
-
   const isChatConversation = location.pathname.startsWith('/chat/')
+
+  const mainClassName = getMainClassName(isChatConversation, isChatPage, isProfilePage)
 
   return (
     <ChatProvider>
@@ -57,19 +80,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <Header />
               </div>
             )}
-            <main
-              className={`flex-1 overflow-y-auto overscroll-y-contain animate-fade-in-up scroll-smooth ${
-                isChatConversation
-                  ? 'p-0 overflow-hidden'
-                  : isChatPage
-                    ? 'p-0 pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-0 overflow-hidden'
-                    : isProfilePage
-                      ? 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pt-16 lg:pb-0 lg:px-8'
-                      : 'pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-16 lg:pb-0 lg:px-8'
-              }`}
-            >
-              {children}
-            </main>
+            <main className={mainClassName}>{children}</main>
           </div>
         </div>
       </div>
