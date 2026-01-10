@@ -16,17 +16,22 @@ interface GroupDetailsModalProps {
 
 export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetailsModalProps) {
   const { user: currentUser } = useAuth()
-  const { leaveConversation, addParticipant, promoteToAdmin } = useChat()
+  const { leaveConversation, addParticipant, promoteToAdmin, removeParticipant, updateGroup } =
+    useChat()
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [newName, setNewName] = useState('')
 
   const isGroup = conversation.type === 'group'
   const otherParticipant = !isGroup
     ? conversation.participants.find(p => p.id !== currentUser?.id)
     : null
 
-  const isAdmin =
-    isGroup && conversation.participants.find(p => p.id === currentUser?.id)?.role === 'admin'
+  const currentUserPart = isGroup
+    ? conversation.participants.find(p => p.id === currentUser?.id)
+    : null
+  const isAdmin = currentUserPart?.role === 'admin'
 
   const modalTitle = isGroup ? 'Dados do Grupo' : 'Dados da Conversa'
   const displayName = isGroup ? conversation.name || 'Grupo' : otherParticipant?.name || 'Usuário'
@@ -39,8 +44,9 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
     try {
       await leaveConversation(conversation.id)
       onClose()
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to leave group:', error)
+      alert(error || 'Falha ao sair do grupo')
     } finally {
       setIsLoading(false)
     }
@@ -53,17 +59,47 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
       setIsAddMemberOpen(false)
     } catch (error) {
       console.error('Failed to add member:', error)
+      alert('Falha ao adicionar membro')
     } finally {
       setIsLoading(false)
     }
   }
 
   const handlePromoteToAdmin = async (userId: string) => {
+    if (!confirm('Promover este membro a administrador?')) return
     setIsLoading(true)
     try {
       await promoteToAdmin(conversation.id, userId)
     } catch (error) {
       console.error('Failed to promote member:', error)
+      alert('Falha ao promover membro')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleRemoveMember = async (userId: string) => {
+    if (!confirm('Remover este participante do grupo?')) return
+    setIsLoading(true)
+    try {
+      await removeParticipant(conversation.id, userId)
+    } catch (error) {
+      console.error('Failed to remove member:', error)
+      alert('Falha ao remover membro')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSaveName = async () => {
+    if (!newName.trim()) return
+    setIsLoading(true)
+    try {
+      await updateGroup(conversation.id, { name: newName })
+      setIsEditingName(false)
+    } catch (error) {
+      console.error('Failed to update group name:', error)
+      alert('Falha ao atualizar nome do grupo')
     } finally {
       setIsLoading(false)
     }
@@ -74,7 +110,7 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
       <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} size="md">
         <div className="space-y-6">
           {/* Header / Info */}
-          <div className="flex flex-col items-center justify-center p-4 bg-dark-50 dark:bg-dark-900 rounded-xl">
+          <div className="flex flex-col items-center justify-center p-4 bg-dark-50 dark:bg-dark-900 rounded-xl relative">
             <Avatar
               src={displayAvatar}
               name={displayName}
@@ -82,10 +118,43 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
               size="xl"
               className="mb-3"
             />
-            <h3 className="text-lg font-bold text-dark-900 dark:text-dark-50 text-center">
-              {displayName}
-            </h3>
-            <p className="text-sm text-dark-500 dark:text-dark-400">
+
+            {isGroup && isAdmin && isEditingName ? (
+              <div className="flex items-center gap-2 w-full max-w-xs">
+                <input
+                  autoFocus
+                  className="flex-1 px-2 py-1 text-center bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded text-dark-900 dark:text-dark-50"
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  placeholder="Nome do grupo"
+                />
+                <Button size="sm" onClick={handleSaveName} disabled={isLoading}>
+                  Salvar
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}>
+                  X
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-dark-900 dark:text-dark-50 text-center">
+                  {displayName}
+                </h3>
+                {isGroup && isAdmin && (
+                  <button
+                    onClick={() => {
+                      setNewName(conversation.name || '')
+                      setIsEditingName(true)
+                    }}
+                    className="text-xs text-primary-500 hover:underline"
+                  >
+                    Editar
+                  </button>
+                )}
+              </div>
+            )}
+
+            <p className="text-sm text-dark-500 dark:text-dark-400 mt-1">
               {isGroup
                 ? `${conversation.participants.length} participantes`
                 : otherParticipant?.isOnline
@@ -135,17 +204,34 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
                     </div>
                   </div>
 
-                  {isGroup && isAdmin && participant.role !== 'admin' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handlePromoteToAdmin(participant.id)}
-                      disabled={isLoading}
-                      className="text-xs text-blue-500 hover:text-blue-700"
-                    >
-                      Promover
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {/* Promote Button */}
+                    {isGroup && isAdmin && participant.role !== 'admin' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handlePromoteToAdmin(participant.id)}
+                        disabled={isLoading}
+                        className="text-xs text-blue-500 hover:text-blue-700 px-2 h-7"
+                      >
+                        Promover
+                      </Button>
+                    )}
+
+                    {/* Remove Button - Cannot remove self (use Leave instead) */}
+                    {isGroup && isAdmin && participant.id !== currentUser?.id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveMember(participant.id)}
+                        disabled={isLoading}
+                        className="text-xs text-red-500 hover:text-red-700 px-2 h-7"
+                        title="Remover do grupo"
+                      >
+                        Remover
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

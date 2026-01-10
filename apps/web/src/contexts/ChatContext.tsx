@@ -91,6 +91,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     createGroup,
     addParticipant,
     promoteToAdmin,
+    removeParticipant,
+    updateGroup,
   } = useChatActions({
     chatSocket,
     chatApi,
@@ -131,6 +133,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       createGroup,
       addParticipant,
       promoteToAdmin,
+      removeParticipant,
+      updateGroup,
     }),
     [
       conversations,
@@ -151,6 +155,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       createGroup,
       addParticipant,
       promoteToAdmin,
+      removeParticipant,
+      updateGroup,
     ]
   )
 

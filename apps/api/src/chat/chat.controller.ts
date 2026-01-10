@@ -106,6 +106,24 @@ export class ChatController {
     return this.chatService.addParticipant(conversationId, req.user.id, newMemberId);
   }
 
+  @Post('groups/:id/participants/:userId/promote')
+  async promoteToAdmin(
+    @Req() req: { user: UserEntity },
+    @Param('id', ParseUUIDPipe) conversationId: string,
+    @Param('userId', ParseUUIDPipe) targetUserId: string,
+  ) {
+    return this.chatService.promoteToAdmin(conversationId, req.user.id, targetUserId);
+  }
+
+  @Put('groups/:id')
+  async updateGroup(
+    @Req() req: { user: UserEntity },
+    @Param('id', ParseUUIDPipe) conversationId: string,
+    @Body() body: { name?: string; avatar?: string },
+  ) {
+    return this.chatService.updateGroup(conversationId, req.user.id, body);
+  }
+
   @Delete('groups/:id/members/:userId')
   async removeMember(
     @Req() req: { user: UserEntity },

@@ -75,6 +75,7 @@ export class ChatService {
             id: p.userId,
             name: p.user?.name,
             avatar: p.user?.avatar ?? null,
+            role: p.role, // ✅ Adicionado campo role
             timestamp: p.joinedAt,
           })),
           lastMessage,
@@ -209,26 +210,92 @@ export class ChatService {
   async removeParticipant(conversationId: string, adminId: string, memberIdToRemove: string) {
     const conversation = await this.conversationRepository.findOne({
       where: { id: conversationId },
+      relations: ['participants'],
     });
     if (!conversation) throw new NotFoundException('Conversation not found');
     if (conversation.type !== 'group')
       throw new BadRequestException('Cannot remove members from private chat');
 
-    // Check if requester is admin
-    const adminPart = await this.participantRepository.findOne({
-      where: { conversationId, userId: adminId },
-    });
+    // Check if requester is admin or if they are removing themselves (leaving)
+    const requestorPart = conversation.participants.find((p) => p.userId === adminId);
+    if (!requestorPart) throw new ForbiddenException('Not a participant');
 
-    if (!adminPart) throw new ForbiddenException('Not a participant');
-
-    // Admin can remove anyone. Member can remove themselves (leave).
-    if (adminId !== memberIdToRemove && adminPart.role !== 'admin') {
+    if (adminId !== memberIdToRemove && requestorPart.role !== 'admin') {
       throw new ForbiddenException('Only admins can remove other members');
+    }
+
+    const participantToRemove = conversation.participants.find(
+      (p) => p.userId === memberIdToRemove,
+    );
+    if (!participantToRemove) throw new NotFoundException('Participant not found');
+
+    // Rule: Admin only leaves if there is at least one other admin
+    if (participantToRemove.role === 'admin') {
+      const otherAdmins = conversation.participants.filter(
+        (p) => p.role === 'admin' && p.userId !== memberIdToRemove,
+      );
+      const otherMembers = conversation.participants.filter((p) => p.userId !== memberIdToRemove);
+
+      // If there are other members but no other admins, prevent exit
+      if (otherAdmins.length === 0 && otherMembers.length > 0) {
+        throw new BadRequestException(
+          'You are the only admin. Please promote another member to admin before leaving.',
+        );
+      }
     }
 
     await this.participantRepository.delete({ conversationId, userId: memberIdToRemove });
 
     return { success: true };
+  }
+
+  async promoteToAdmin(conversationId: string, adminId: string, targetUserId: string) {
+    const conversation = await this.conversationRepository.findOne({
+      where: { id: conversationId },
+      relations: ['participants'],
+    });
+
+    if (!conversation) throw new NotFoundException('Conversation not found');
+    if (conversation.type !== 'group') throw new BadRequestException('Not a group');
+
+    const adminPart = conversation.participants.find((p) => p.userId === adminId);
+    if (adminPart?.role !== 'admin') {
+      throw new ForbiddenException('Only admins can promote members');
+    }
+
+    const targetPart = conversation.participants.find((p) => p.userId === targetUserId);
+    if (!targetPart) throw new NotFoundException('Target user not in group');
+
+    targetPart.role = 'admin';
+    await this.participantRepository.save(targetPart);
+
+    return this.findOneConversation(conversationId, adminId);
+  }
+
+  async updateGroup(
+    conversationId: string,
+    adminId: string,
+    data: { name?: string; avatar?: string },
+  ) {
+    const conversation = await this.conversationRepository.findOne({
+      where: { id: conversationId },
+      relations: ['participants'],
+    });
+
+    if (!conversation) throw new NotFoundException('Conversation not found');
+    if (conversation.type !== 'group') throw new BadRequestException('Not a group');
+
+    const adminPart = conversation.participants.find((p) => p.userId === adminId);
+    if (adminPart?.role !== 'admin') {
+      throw new ForbiddenException('Only admins can update group details');
+    }
+
+    if (data.name) conversation.name = data.name;
+    // conversation.avatar = data.avatar; // Assuming entity has avatar if needed, otherwise ignore
+
+    await this.conversationRepository.save(conversation);
+
+    return this.findOneConversation(conversationId, adminId);
   }
 
   async findOneConversation(conversationId: string, userId: string) {

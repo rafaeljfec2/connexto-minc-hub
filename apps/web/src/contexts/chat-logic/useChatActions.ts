@@ -297,6 +297,46 @@ export function useChatActions({
     [chatSocket]
   )
 
+  const removeParticipant = useCallback(
+    async (conversationId: string, memberId: string) => {
+      await chatApi.removeParticipant(conversationId, memberId)
+      // Manually remove from local state to reflect immediately
+      setConversations(prev =>
+        prev.map(c => {
+          if (c.id === conversationId) {
+            return {
+              ...c,
+              participants: c.participants.filter(p => p.id !== memberId),
+            }
+          }
+          return c
+        })
+      )
+      // If it's the active conversation, we update that too
+      if (activeConversationRef.current?.id === conversationId) {
+        setActiveConversation(prev => {
+          if (!prev) return null
+          return {
+            ...prev,
+            participants: prev.participants.filter(p => p.id !== memberId),
+          }
+        })
+      }
+    },
+    [chatApi, setConversations, setActiveConversation, activeConversationRef]
+  )
+
+  const updateGroup = useCallback(
+    async (conversationId: string, data: { name?: string; avatar?: string }) => {
+      const updatedConversation = await chatApi.updateGroup(conversationId, data)
+      setConversations(prev => prev.map(c => (c.id === conversationId ? updatedConversation : c)))
+      if (activeConversationRef.current?.id === conversationId) {
+        setActiveConversation(updatedConversation)
+      }
+    },
+    [chatApi, setConversations, setActiveConversation, activeConversationRef]
+  )
+
   return {
     sendMessage,
     handleSetActiveConversation,
@@ -307,5 +347,7 @@ export function useChatActions({
     createGroup,
     addParticipant,
     promoteToAdmin,
+    removeParticipant,
+    updateGroup,
   }
 }
