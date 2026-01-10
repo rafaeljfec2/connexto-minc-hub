@@ -179,62 +179,120 @@ export function GroupDetailsModal({ isOpen, onClose, conversation }: GroupDetail
 
           {/* Members List */}
           <div>
-            <h4 className="text-sm font-medium text-dark-600 dark:text-dark-300 mb-3 px-1">
-              Participantes
-            </h4>
-            <div className="max-h-60 overflow-y-auto space-y-1">
-              {conversation.participants.map(participant => (
-                <div
-                  key={participant.id}
-                  className="flex items-center justify-between p-2 rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      src={participant.avatar}
-                      name={participant.name}
-                      isOnline={participant.isOnline}
-                      size="sm"
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-dark-900 dark:text-dark-50">
-                        {participant.name}
-                        {participant.id === currentUser?.id && ' (Você)'}
-                      </p>
-                      <p className="text-xs text-dark-500">{participant.role || 'Membro'}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {/* Promote Button */}
-                    {isGroup && isAdmin && participant.role !== 'admin' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handlePromoteToAdmin(participant.id)}
-                        disabled={isLoading}
-                        className="text-xs text-blue-500 hover:text-blue-700 px-2 h-7"
+            {/* Admins Section */}
+            {conversation.participants.filter(p => p.role === 'admin').length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-dark-600 dark:text-dark-300 mb-3 px-1">
+                  Administradores
+                </h4>
+                <div className="space-y-1">
+                  {conversation.participants
+                    .filter(p => p.role === 'admin')
+                    .map(participant => (
+                      <div
+                        key={participant.id}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"
                       >
-                        Promover
-                      </Button>
-                    )}
+                        <div className="flex items-center gap-3">
+                          <Avatar
+                            src={participant.avatar}
+                            name={participant.name}
+                            isOnline={participant.isOnline}
+                            size="sm"
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-dark-900 dark:text-dark-50">
+                              {participant.name}
+                              {participant.id === currentUser?.id && ' (Você)'}
+                            </p>
+                            <p className="text-xs text-primary-600 dark:text-primary-400">Admin</p>
+                          </div>
+                        </div>
 
-                    {/* Remove Button - Cannot remove self (use Leave instead) */}
-                    {isGroup && isAdmin && participant.id !== currentUser?.id && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveMember(participant.id)}
-                        disabled={isLoading}
-                        className="text-xs text-red-500 hover:text-red-700 px-2 h-7"
-                        title="Remover do grupo"
-                      >
-                        Remover
-                      </Button>
-                    )}
-                  </div>
+                        <div className="flex items-center gap-2">
+                          {/* Remove Button - Cannot remove self (use Leave instead) */}
+                          {isGroup && isAdmin && participant.id !== currentUser?.id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveMember(participant.id)}
+                              disabled={isLoading}
+                              className="text-xs text-red-500 hover:text-red-700 px-2 h-7"
+                              title="Remover do grupo"
+                            >
+                              Remover
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
+
+            {/* Members Section */}
+            {conversation.participants.filter(p => p.role !== 'admin').length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium text-dark-600 dark:text-dark-300 mb-3 px-1">
+                  Membros
+                </h4>
+                <div className="space-y-1">
+                  {conversation.participants
+                    .filter(p => p.role !== 'admin')
+                    .map(participant => (
+                      <div
+                        key={participant.id}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-dark-100 dark:hover:bg-dark-800 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar
+                            src={participant.avatar}
+                            name={participant.name}
+                            isOnline={participant.isOnline}
+                            size="sm"
+                          />
+                          <div>
+                            <p className="text-sm font-medium text-dark-900 dark:text-dark-50">
+                              {participant.name}
+                              {participant.id === currentUser?.id && ' (Você)'}
+                            </p>
+                            <p className="text-xs text-dark-500">Membro</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {/* Promote Button */}
+                          {isGroup && isAdmin && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handlePromoteToAdmin(participant.id)}
+                              disabled={isLoading}
+                              className="text-xs text-blue-500 hover:text-blue-700 px-2 h-7"
+                            >
+                              Promover
+                            </Button>
+                          )}
+
+                          {/* Remove Button - Cannot remove self (use Leave instead) */}
+                          {isGroup && isAdmin && participant.id !== currentUser?.id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveMember(participant.id)}
+                              disabled={isLoading}
+                              className="text-xs text-red-500 hover:text-red-700 px-2 h-7"
+                              title="Remover do grupo"
+                            >
+                              Remover
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer Actions - Only for groups */}
