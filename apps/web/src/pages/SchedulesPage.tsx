@@ -427,39 +427,52 @@ export default function SchedulesPage() {
                 searchable
                 searchPlaceholder="Buscar equipe..."
               />
-              <div className="mt-3 flex flex-wrap gap-2">
-                {formData.teamIds.map(teamId => {
-                  const team = teams.find(t => t.id === teamId)
-                  return (
-                    <div
-                      key={teamId}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-950/20 border border-primary-200 dark:border-primary-800 rounded-lg"
-                    >
-                      <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
-                        {team?.name}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => toggleTeam(teamId)}
-                        className="text-primary-600 hover:text-primary-700"
-                      >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+              <div className="mt-4 p-4 rounded-xl bg-dark-50 dark:bg-dark-900/50 border border-dark-100 dark:border-dark-800 space-y-3">
+                <span className="text-xs font-medium text-dark-500 uppercase tracking-wider">
+                  Equipes Selecionadas
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {formData.teamIds.length === 0 ? (
+                    <span className="text-sm text-dark-500 italic">Nenhuma equipe selecionada</span>
+                  ) : (
+                    formData.teamIds.map(teamId => {
+                      const team = teams.find(t => t.id === teamId)
+                      const ministry = ministries.find(m => m.id === team?.ministryId)
+                      return (
+                        <div
+                          key={teamId}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-sm"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  )
-                })}
+                          <span className="text-sm font-medium text-dark-700 dark:text-dark-200">
+                            <span className="text-dark-500 font-normal mr-1">
+                              {ministry?.name}:
+                            </span>
+                            {team?.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => toggleTeam(teamId)}
+                            className="text-dark-400 hover:text-red-500 transition-colors"
+                          >
+                            <svg
+                              className="h-4 w-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
               </div>
             </div>
           )}
