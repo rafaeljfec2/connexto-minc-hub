@@ -45,4 +45,13 @@ export class CreateUserDto {
   @IsUUID('4', { message: 'ID do servo deve ser um UUID válido' })
   @IsOptional()
   personId?: string | null;
+
+  @ApiProperty({
+    example: true,
+    description: 'Permitir realizar check-in (Scan QR Code)',
+    required: false,
+    default: false,
+  })
+  @IsOptional()
+  canCheckIn?: boolean;
 }

@@ -276,7 +276,9 @@ export function createApiServices(api: AxiosInstance) {
         api
           .get<ApiResponse<User>>(`/users/${id}`)
           .then(res => extractEntityData<User>(res.data, 'User not found')),
-      create: (data: Omit<CreateEntity<User>, 'canCheckIn'> & { password: string }) =>
+      create: (
+        data: Omit<CreateEntity<User>, 'canCheckIn'> & { password: string; canCheckIn?: boolean }
+      ) =>
         api
           .post<ApiResponse<User>>('/users', data)
           .then(res => extractEntityData<User>(res.data, 'Failed to create user')),

@@ -55,6 +55,7 @@ export class UsersController {
       passwordHash,
       role: createUserDto.role,
       personId: createUserDto.personId ?? null,
+      canCheckIn: createUserDto.canCheckIn,
     });
   }
 
@@ -145,6 +146,7 @@ export class UsersController {
       email: updateUserDto.email,
       role: updateUserDto.role,
       personId: updateUserDto.personId ?? null,
+      canCheckIn: updateUserDto.canCheckIn,
     };
 
     // Only update password if provided

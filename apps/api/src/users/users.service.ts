@@ -58,6 +58,7 @@ export class UsersService {
     name: string;
     role?: UserRole;
     personId?: string | null;
+    canCheckIn?: boolean;
   }): Promise<UserEntity> {
     // Check if user already exists
     const existingUser = await this.usersRepository.findOne({

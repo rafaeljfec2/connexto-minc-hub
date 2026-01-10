@@ -6,7 +6,10 @@ import { useToast } from '@/contexts/ToastContext'
 import { AxiosError } from 'axios'
 import { getCachedFetch } from './utils/fetchCache'
 
-type CreateUser = Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'canCheckIn'> & { password: string }
+type CreateUser = Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'canCheckIn'> & {
+  password: string
+  canCheckIn?: boolean
+}
 
 interface UseUsersReturn {
   users: User[]
