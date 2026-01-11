@@ -49,7 +49,7 @@ export function DashboardHeaderMobile({
 
   return (
     <div className="fixed top-0 left-0 right-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950 transition-all duration-300 safe-area-top pt-[env(safe-area-inset-top)]">
-      <div className="flex items-center justify-between px-4 py-3 gap-2">
+      <div className="flex items-center justify-between px-2 py-1.5 gap-1.5">
         {onBack ? (
           <button
             onClick={onBack}

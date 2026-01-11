@@ -41,16 +41,16 @@ export function ScheduleGroupItem({
     <AccordionItem value={group.key}>
       <AccordionTrigger>
         <div className="flex flex-1 items-center justify-between mr-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-left">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-lg text-dark-900 dark:text-dark-50">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-3 text-left">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-base text-dark-900 dark:text-dark-50">
                 {formatDate(group.date.toISOString())}
               </span>
-              <span className="text-sm px-2 py-0.5 rounded-full bg-dark-100 dark:bg-dark-800 text-dark-600 dark:text-dark-400">
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-dark-100 dark:bg-dark-800 text-dark-600 dark:text-dark-400">
                 {getDayLabel(group.serviceDay)}
               </span>
             </div>
-            <span className="text-base text-dark-600 dark:text-dark-300">
+            <span className="text-sm text-dark-600 dark:text-dark-300">
               {group.serviceName} - {group.serviceTime}
             </span>
           </div>
@@ -72,7 +72,7 @@ export function ScheduleGroupItem({
         </div>
       </AccordionTrigger>
       <AccordionContent>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {group.schedules.map(schedule => (
             <ScheduleCard
               key={schedule.id}

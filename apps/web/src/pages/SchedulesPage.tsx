@@ -214,7 +214,7 @@ export default function SchedulesPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <main className="container mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-8 space-y-3 sm:space-y-6">
       <PageHeader
         title="Escalas"
         description="Gerencie as escalas dos cultos e equipes"

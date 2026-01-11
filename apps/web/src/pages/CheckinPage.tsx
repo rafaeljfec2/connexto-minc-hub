@@ -154,10 +154,10 @@ export default function CheckinPage() {
     <>
       {/* Mobile View */}
       <div className="lg:hidden flex flex-col min-h-screen">
-        <div className="flex-1 overflow-y-auto pb-20 pt-4">
-          <div className="px-4 mb-4">
-            <h1 className="text-2xl font-bold text-dark-900 dark:text-dark-50 mb-1">Check-in</h1>
-            <p className="text-sm text-dark-600 dark:text-dark-400">
+        <div className="flex-1 overflow-y-auto pb-20 pt-2">
+          <div className="px-2 mb-2">
+            <h1 className="text-lg font-bold text-dark-900 dark:text-dark-50 mb-0.5">Check-in</h1>
+            <p className="text-xs text-dark-600 dark:text-dark-400">
               {mode === 'generate'
                 ? 'Gere seu QR Code para check-in'
                 : 'Escaneie o QR code para registrar presença'}
@@ -165,12 +165,12 @@ export default function CheckinPage() {
           </div>
 
           {/* Toggle Segments */}
-          <div className="px-4 mb-4">
+          <div className="px-2 mb-2">
             <div className="flex bg-dark-900 dark:bg-dark-900 rounded-xl p-1 border border-dark-800">
               <button
                 type="button"
                 onClick={() => handleModeChange('generate')}
-                className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors ${
                   mode === 'generate'
                     ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 font-bold'
                     : 'text-dark-400 dark:text-dark-400'
@@ -183,7 +183,7 @@ export default function CheckinPage() {
                 disabled={!canScan}
                 title={!canScan ? 'Você não tem permissão para ler códigos' : ''}
                 onClick={() => handleModeChange('scan')}
-                className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors ${
                   mode === 'scan'
                     ? 'bg-white dark:bg-dark-800 text-dark-900 dark:text-dark-50 font-bold'
                     : 'text-dark-400 dark:text-dark-400'
@@ -195,9 +195,9 @@ export default function CheckinPage() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 px-4">
+          <div className="flex-1 px-2">
             {mode === 'generate' ? (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div className="flex items-center justify-center min-h-[400px]">
                   <QrCodeDisplay
                     isLoading={isLoading}
