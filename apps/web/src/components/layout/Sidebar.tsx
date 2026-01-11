@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserRole } from '@minc-hub/shared/types'
@@ -193,6 +193,16 @@ export function Sidebar() {
   const { user, hasAnyRole } = useAuth()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const isChatPage = location.pathname.startsWith('/chat')
+
+  // Listen for toggleSidebar event from ChatList
+  useEffect(() => {
+    const handleToggleSidebar = () => {
+      setIsMobileOpen(prev => !prev)
+    }
+
+    globalThis.addEventListener('toggleSidebar', handleToggleSidebar)
+    return () => globalThis.removeEventListener('toggleSidebar', handleToggleSidebar)
+  }, [])
 
   const visibleItems = navItems.filter(item => {
     if (!item.roles) return true

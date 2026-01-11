@@ -65,7 +65,7 @@ export function QuickActionsMobile({ onActionPress }: Readonly<QuickActionsMobil
     },
     {
       id: 'chat',
-      label: 'Chat',
+      label: 'Comunicados',
       icon: (
         <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

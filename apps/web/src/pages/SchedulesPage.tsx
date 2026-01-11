@@ -16,7 +16,7 @@ import { useTeams } from '@/hooks/useTeams'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useChurch } from '@/contexts/ChurchContext'
 import { Schedule } from '@minc-hub/shared/types'
-import { formatDate } from '@minc-hub/shared/utils'
+import { formatDate, parseLocalDate } from '@/lib/utils'
 
 import { ScheduleGroupItem, GroupedSchedule } from '@/components/schedules/ScheduleGroupItem'
 
@@ -79,7 +79,7 @@ export default function SchedulesPage() {
   // Filter Schedules by Month/Year and Search
   const filteredSchedules = useMemo(() => {
     return schedules.filter(schedule => {
-      const scheduleDate = new Date(schedule.date)
+      const scheduleDate = parseLocalDate(schedule.date)
       const matchesMonth =
         scheduleDate.getMonth() + 1 === selectedMonth && scheduleDate.getFullYear() === selectedYear
 
@@ -100,7 +100,7 @@ export default function SchedulesPage() {
     const groups = new Map<string, GroupedSchedule>()
 
     filteredSchedules.forEach(schedule => {
-      const date = new Date(schedule.date)
+      const date = parseLocalDate(schedule.date)
       const dateKey = date.toISOString().split('T')[0]
       const key = `${dateKey}-${schedule.serviceId}`
 
