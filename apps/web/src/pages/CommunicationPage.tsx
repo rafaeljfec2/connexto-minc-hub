@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -92,6 +93,7 @@ const MOCK_MESSAGES: Message[] = [
 ]
 
 export default function CommunicationPage() {
+  const navigate = useNavigate()
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES)
   const modal = useModal()
   const [formData, setFormData] = useState({
@@ -105,6 +107,13 @@ export default function CommunicationPage() {
   })
 
   function handleOpenModal() {
+    // Check if mobile view
+    const isMobile = window.innerWidth < 1024 // lg breakpoint
+    if (isMobile) {
+      navigate('/communication/new')
+      return
+    }
+
     setFormData({
       title: '',
       content: '',

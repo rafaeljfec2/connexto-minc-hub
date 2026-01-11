@@ -16,11 +16,12 @@ import { ChatProvider } from '@/contexts/ChatContext'
 function getMainClassName(
   isChatConversation: boolean,
   isChatPage: boolean,
-  isProfilePage: boolean
+  isProfilePage: boolean,
+  isNewMessagePage: boolean
 ): string {
   const baseClasses = 'flex-1 overflow-y-auto overscroll-y-contain animate-fade-in-up scroll-smooth'
 
-  if (isChatConversation) {
+  if (isChatConversation || isNewMessagePage) {
     return `${baseClasses} p-0 overflow-hidden`
   }
 
@@ -40,16 +41,22 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isChatPage = location.pathname.startsWith('/chat')
   const isProfilePage = location.pathname === '/profile'
   const isChatConversation = location.pathname.startsWith('/chat/')
+  const isNewMessagePage = location.pathname === '/communication/new'
 
-  const mainClassName = getMainClassName(isChatConversation, isChatPage, isProfilePage)
+  const mainClassName = getMainClassName(
+    isChatConversation,
+    isChatPage,
+    isProfilePage,
+    isNewMessagePage
+  )
 
   return (
     <ChatProvider>
       {/* Fixed Navigation Elements - Outside animation to preserve fixed positioning */}
       <Sidebar />
 
-      {/* Hide mobile header when inside a chat conversation - ChatWindow has its own header */}
-      {!isChatConversation && (
+      {/* Hide mobile header when inside a chat conversation or new message page - they have their own headers */}
+      {!isChatConversation && !isNewMessagePage && (
         <div className="lg:hidden">
           <DashboardHeaderMobile
             onNotificationPress={() => {
@@ -60,7 +67,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       )}
 
-      {/* Mobile Footer - Fixed for all mobile screens */}
+      {/* Mobile Footer - Fixed for all mobile screens except chat conversations */}
       {!isChatConversation && (
         <div className="lg:hidden">
           <FooterMobile />

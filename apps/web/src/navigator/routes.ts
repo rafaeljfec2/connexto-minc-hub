@@ -18,6 +18,7 @@ const SchedulePlanningConfigPage = lazy(() => import('@/pages/SchedulePlanningCo
 const CheckinPage = lazy(() => import('@/pages/CheckinPage'))
 const ChatPage = lazy(() => import('@/pages/ChatPage'))
 const ChatDetailPage = lazy(() => import('@/pages/ChatDetailPage'))
+const NewMessagePage = lazy(() => import('@/pages/NewMessagePage'))
 
 const TeamDetailsPage = lazy(() => import('@/pages/TeamDetailsPage'))
 
@@ -59,6 +60,16 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/communication',
     component: CommunicationPage,
+    allowedRoles: [
+      UserRole.PASTOR,
+      UserRole.LIDER_DE_TIME,
+      UserRole.LIDER_DE_EQUIPE,
+      UserRole.SERVO,
+    ],
+  },
+  {
+    path: '/communication/new',
+    component: NewMessagePage,
     allowedRoles: [
       UserRole.PASTOR,
       UserRole.LIDER_DE_TIME,
