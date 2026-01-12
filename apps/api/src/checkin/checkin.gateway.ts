@@ -24,7 +24,24 @@ interface AuthenticatedSocket extends Socket {
 @WebSocketGateway({
   namespace: '/checkin',
   cors: {
-    origin: '*',
+    origin: (requestOrigin, callback) => {
+      const corsOrigin = process.env.FRONTEND_URL ?? process.env.CORS_ORIGIN;
+      const allowedOrigins = corsOrigin
+        ? corsOrigin.split(',').map((origin) => origin.trim())
+        : [
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'http://localhost:5173',
+            'https://www.mincteams.com.br',
+            'https://mincteams.com.br',
+          ];
+
+      if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   },
 })
