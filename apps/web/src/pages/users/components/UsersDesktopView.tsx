@@ -71,13 +71,17 @@ export function UsersDesktopView({
     <TableRow key={user.id}>
       <TableCell>
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-medium">
-            {user.name
-              .split(' ')
-              .filter((_, i) => i < 2)
-              .map(part => part[0])
-              .join('')
-              .toUpperCase()}
+          <div className="h-8 w-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm font-medium overflow-hidden">
+            {user.avatar ? (
+              <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+            ) : (
+              user.name
+                .split(' ')
+                .filter((_, i) => i < 2)
+                .map(part => part[0])
+                .join('')
+                .toUpperCase()
+            )}
           </div>
           <span className="font-medium">{user.name}</span>
         </div>
