@@ -1,0 +1,299 @@
+name: Deploy API to Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/api/**'
+      - 'packages/**'
+      - '.github/workflows/deploy-api.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-api
+  CONTAINER_NAME: connexto-minc-hub-api
+
+jobs:
+  validate-environment:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Validate required variables
+        run: |
+          required_vars=(
+            "NODE_ENV"
+            "PORT"
+            "SERVER_USER"
+            "SERVER_HOST"
+            "SERVER_PORT"
+            "GHCR_USER"
+            "DATABASE_URL"
+            "JWT_SECRET"
+            "JWT_EXPIRATION"
+            "REFRESH_TOKEN_EXPIRATION_DAYS"
+            "RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES"
+            "FRONTEND_URL"
+            "CORS_ORIGIN"
+            "CLOUDINARY_CLOUD_NAME"
+            "CLOUDINARY_API_KEY"
+            "CLOUDINARY_API_SECRET"
+          )
+
+          missing_vars=()
+          for var in "${required_vars[@]}"; do
+            if [ -z "${!var}" ]; then
+              missing_vars+=("$var")
+            fi
+          done
+
+          if [ ${#missing_vars[@]} -gt 0 ]; then
+            echo "❌ Missing required variables:"
+            printf '  - %s\n' "${missing_vars[@]}"
+            exit 1
+          fi
+
+          echo "✅ All required variables are set"
+        env:
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          PORT: ${{ vars.PORT }}
+          SERVER_USER: ${{ vars.SERVER_USER }}
+          SERVER_HOST: ${{ vars.SERVER_HOST }}
+          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          GHCR_USER: ${{ vars.GHCR_USER }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
+          REFRESH_TOKEN_EXPIRATION_DAYS: ${{ vars.REFRESH_TOKEN_EXPIRATION_DAYS }}
+          RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES: ${{ vars.RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+          CLOUDINARY_CLOUD_NAME: ${{ vars.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+
+  build-and-push:
+    needs: validate-environment
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Bump API package version
+        id: bump-version
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const path = 'apps/api/package.json';
+
+          if (!fs.existsSync(path)) {
+            console.error(`File not found: ${path}`);
+            process.exit(1);
+          }
+
+          const packageJson = JSON.parse(fs.readFileSync(path, 'utf8'));
+          const currentVersion = packageJson.version;
+          console.log(`Current version: ${currentVersion}`);
+
+          const versionParts = currentVersion.split('.').map(Number);
+          if (versionParts.length !== 3) {
+            throw new Error(`Invalid version format: ${currentVersion}`);
+          }
+
+          versionParts[2] += 1;
+          const newVersion = versionParts.join('.');
+
+          console.log(`New version: ${newVersion}`);
+
+          packageJson.version = newVersion;
+          fs.writeFileSync(path, JSON.stringify(packageJson, null, 2) + '\n');
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${newVersion}\n`);
+          EOF
+
+      - name: Commit and push version bump
+        run: |
+          git add apps/api/package.json
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          git commit -m "chore(api): bump version to ${{ steps.bump-version.outputs.version }} [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=short
+            type=ref,event=branch
+            latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y expect
+
+      - name: Prepare deployment script
+        run: |
+          cat > deploy.exp << 'DEPLOY_SCRIPT'
+          #!/usr/bin/expect -f
+          set timeout 300
+
+          # Server connection
+          set user $env(SERVER_USER)
+          set password $env(SERVER_PASSWORD)
+          set host $env(SERVER_HOST)
+          set port $env(SERVER_PORT)
+
+          # Docker
+          set registry $env(REGISTRY)
+          set image $env(IMAGE_NAME)
+          set ghcr_user $env(GHCR_USER)
+          set ghcr_pat $env(GHCR_PAT)
+          set container_name $env(CONTAINER_NAME)
+
+          # App Environment
+          set node_env $env(NODE_ENV)
+          set port_app $env(PORT)
+          set database_url $env(DATABASE_URL)
+          set jwt_secret $env(JWT_SECRET)
+          set jwt_expiration $env(JWT_EXPIRATION)
+          set refresh_token_expiration_days $env(REFRESH_TOKEN_EXPIRATION_DAYS)
+          set reset_password_token_expiration_minutes $env(RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES)
+          set frontend_url $env(FRONTEND_URL)
+          set cors_origin $env(CORS_ORIGIN)
+          set cloudinary_cloud_name $env(CLOUDINARY_CLOUD_NAME)
+          set cloudinary_api_key $env(CLOUDINARY_API_KEY)
+          set cloudinary_api_secret $env(CLOUDINARY_API_SECRET)
+
+          puts "🚀 Starting deployment to $host:$port"
+          puts "📦 Image: $registry/$image:latest"
+
+          spawn ssh -p $port $user@$host
+
+          expect {
+            "yes/no" {
+              send "yes\r"
+              exp_continue
+            }
+            "password:" {
+              send "$password\r"
+            }
+            timeout {
+              puts "❌ Connection timeout"
+              exit 1
+            }
+          }
+
+          expect "$ "
+
+          # Login to registry
+          send "echo $ghcr_pat | docker login $registry -u $ghcr_user --password-stdin\r"
+          expect "Login Succeeded"
+          expect "$ "
+
+          # Update image
+          send "docker pull $registry/$image:latest\r"
+          expect "$ "
+
+          # Stop old container
+          send "docker stop $container_name 2>/dev/null || true\r"
+          expect "$ "
+          send "docker rm $container_name 2>/dev/null || true\r"
+          expect "$ "
+
+          # Run new container
+          send "docker run -d --name $container_name --restart unless-stopped -p $port_app:3000 \\
+            -e NODE_ENV=$node_env \\
+            -e PORT=3000 \\
+            -e DATABASE_URL='$database_url' \\
+            -e JWT_SECRET='$jwt_secret' \\
+            -e JWT_EXPIRATION=$jwt_expiration \\
+            -e REFRESH_TOKEN_EXPIRATION_DAYS=$refresh_token_expiration_days \\
+            -e RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES=$reset_password_token_expiration_minutes \\
+            -e FRONTEND_URL='$frontend_url' \\
+            -e CORS_ORIGIN='$cors_origin' \\
+            -e CLOUDINARY_CLOUD_NAME='$cloudinary_cloud_name' \\
+            -e CLOUDINARY_API_KEY='$cloudinary_api_key' \\
+            -e CLOUDINARY_API_SECRET='$cloudinary_api_secret' \\
+            $registry/$image:latest\r"
+
+          expect -re {([0-9a-f]{64}|[0-9a-f]{12})}
+          puts "✅ Container started"
+          expect "$ "
+
+          send "exit\r"
+          expect eof
+          DEPLOY_SCRIPT
+
+          chmod +x deploy.exp
+
+      - name: Execute deployment
+        run: ./deploy.exp
+        env:
+          SERVER_USER: ${{ vars.SERVER_USER }}
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          SERVER_HOST: ${{ vars.SERVER_HOST }}
+          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          REGISTRY: ${{ env.REGISTRY }}
+          IMAGE_NAME: ${{ env.IMAGE_NAME }}
+          CONTAINER_NAME: ${{ env.CONTAINER_NAME }}
+          GHCR_USER: ${{ vars.GHCR_USER }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          PORT: ${{ vars.PORT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
+          REFRESH_TOKEN_EXPIRATION_DAYS: ${{ vars.REFRESH_TOKEN_EXPIRATION_DAYS }}
+          RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES: ${{ vars.RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
+          CLOUDINARY_CLOUD_NAME: ${{ vars.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
