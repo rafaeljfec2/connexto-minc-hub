@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Schedule, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -39,7 +39,6 @@ export function useSchedules(): UseSchedulesReturn {
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
-  const hasFetchedRef = useRef<string | null>(null)
 
   const fetchSchedules = useCallback(
     async (serviceId?: string, startDate?: string, endDate?: string) => {
@@ -177,21 +176,11 @@ export function useSchedules(): UseSchedulesReturn {
 
   // Auto-fetch on mount and when church changes
   useEffect(() => {
-    const churchId = selectedChurch?.id
-    // Prevent duplicate calls for the same church
-    if (hasFetchedRef.current === churchId) {
-      return
-    }
-
     if (selectedChurch) {
-      hasFetchedRef.current = churchId ?? null
       fetchSchedules().catch(() => {
         // Error already handled in fetchSchedules
-        // Reset Ref so we can retry on next effect run or manual retry
-        hasFetchedRef.current = null
       })
     } else {
-      hasFetchedRef.current = null
       setSchedules([])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

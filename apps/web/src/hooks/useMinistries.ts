@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Ministry, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -39,7 +39,6 @@ export function useMinistries(): UseMinistriesReturn {
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
-  const hasFetchedRef = useRef<string | null>(null)
 
   const fetchMinistries = useCallback(async (): Promise<void> => {
     if (!selectedChurch) {
@@ -163,20 +162,10 @@ export function useMinistries(): UseMinistriesReturn {
   useEffect(() => {
     if (!selectedChurch) {
       setMinistries([])
-      hasFetchedRef.current = null
       return
     }
 
-    const churchId = selectedChurch.id
-    // Prevent duplicate calls for the same church
-    if (hasFetchedRef.current === churchId) {
-      return
-    }
-
-    hasFetchedRef.current = churchId
     fetchMinistries().catch(_error => {
-      // Reset ref on error so it can retry
-      hasFetchedRef.current = null
       // Error already handled in fetchMinistries
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { Team, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -41,8 +41,6 @@ export function useTeams(): UseTeamsReturn {
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
   const { ministries } = useMinistries()
-  const hasFetchedRef = useRef<string | null>(null)
-  const lastMinistryIdsLengthRef = useRef<number>(0)
 
   // Get ministry IDs for the selected church
   const ministryIds = useMemo(() => {
@@ -188,29 +186,11 @@ export function useTeams(): UseTeamsReturn {
   useEffect(() => {
     if (!selectedChurch) {
       setTeams([])
-      hasFetchedRef.current = null
-      lastMinistryIdsLengthRef.current = 0
-      return
-    }
-
-    const churchId = selectedChurch.id
-    const ministryIdsLength = ministryIds.length
-
-    // Prevent duplicate calls for the same church and ministry count
-    if (
-      hasFetchedRef.current === churchId &&
-      lastMinistryIdsLengthRef.current === ministryIdsLength
-    ) {
       return
     }
 
     // Always fetch when church changes or ministries change
-    hasFetchedRef.current = churchId
-    lastMinistryIdsLengthRef.current = ministryIdsLength
-
     fetchTeams().catch(_error => {
-      // Reset ref on error so it can retry
-      hasFetchedRef.current = null
       // Error already handled in fetchTeams
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps

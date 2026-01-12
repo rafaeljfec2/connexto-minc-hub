@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Church } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -38,7 +38,6 @@ export function useChurches(): UseChurchesReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
-  const hasFetchedRef = useRef<boolean>(false)
 
   const fetchChurches = useCallback(async (): Promise<void> => {
     const cacheKey = 'churches-all'
@@ -159,25 +158,15 @@ export function useChurches(): UseChurchesReturn {
 
   // Auto-fetch on mount and when authentication status changes
   useEffect(() => {
-    // If not authenticated, clear churches and reset fetched flag
+    // If not authenticated, clear churches
     if (!isAuthenticated) {
       setChurches([])
-      hasFetchedRef.current = false
       return
     }
 
-    // Prevent duplicate calls if already fetched during this session
-    // But allow if we are just becoming authenticated
-    if (hasFetchedRef.current) {
-      return
-    }
-
-    hasFetchedRef.current = true
     fetchChurches().catch(err => {
       // Log error for debugging but don't show toast to avoid spam
       console.error('Failed to fetch churches:', err)
-      // Reset fetched flag so it can try again
-      hasFetchedRef.current = false
     })
   }, [isAuthenticated, fetchChurches])
 

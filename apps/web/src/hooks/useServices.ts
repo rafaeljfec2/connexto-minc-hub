@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Service, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -39,7 +39,6 @@ export function useServices(): UseServicesReturn {
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
   const { selectedChurch } = useChurch()
-  const hasFetchedRef = useRef<string | null>(null)
 
   const fetchServices = useCallback(async () => {
     if (!selectedChurch) {
@@ -153,19 +152,11 @@ export function useServices(): UseServicesReturn {
 
   // Auto-fetch on mount and when church changes
   useEffect(() => {
-    const churchId = selectedChurch?.id
-    // Prevent duplicate calls for the same church
-    if (hasFetchedRef.current === churchId) {
-      return
-    }
-
     if (selectedChurch) {
-      hasFetchedRef.current = churchId ?? null
       fetchServices().catch(() => {
         // Error already handled in fetchServices
       })
     } else {
-      hasFetchedRef.current = null
       setServices([])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

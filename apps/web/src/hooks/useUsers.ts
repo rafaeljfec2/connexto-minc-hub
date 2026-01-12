@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { User, ApiResponse } from '@minc-hub/shared/types'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -40,7 +40,6 @@ export function useUsers(): UseUsersReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const { showSuccess, showError } = useToast()
-  const hasFetchedRef = useRef<boolean>(false)
 
   const fetchUsers = useCallback(async (): Promise<void> => {
     const cacheKey = 'users-all'
@@ -152,14 +151,8 @@ export function useUsers(): UseUsersReturn {
     await fetchUsers()
   }, [fetchUsers])
 
-  // Auto-fetch on mount (only once)
+  // Auto-fetch on mount
   useEffect(() => {
-    // Prevent duplicate calls
-    if (hasFetchedRef.current) {
-      return
-    }
-
-    hasFetchedRef.current = true
     fetchUsers().catch(() => {
       // Error already handled in fetchUsers
     })
