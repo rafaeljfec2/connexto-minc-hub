@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError } from 'axios'
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios'
 
 export interface ApiClientConfig {
   baseURL: string
@@ -33,6 +33,136 @@ export class ApiClient {
     this.setupInterceptors()
   }
 
+  private setupInterceptors(): void {
+    this.setupRequestInterceptor()
+    this.setupResponseInterceptor()
+  }
+
+  private setupRequestInterceptor(): void {
+    this.client.interceptors.request.use(
+      config => this.handleRequest(config),
+      error => Promise.reject(error)
+    )
+  }
+
+  private setupResponseInterceptor(): void {
+    this.client.interceptors.response.use(
+      response => response,
+      (error: AxiosError) => this.handleResponseError(error)
+    )
+  }
+
+  private handleRequest(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+    // Only add token to header if not using cookies
+    if (!this.config.useCookies) {
+      const token = this.config.getToken()
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    }
+    return config
+  }
+
+  private async handleResponseError(error: AxiosError): Promise<any> {
+    const originalRequest = error.config as any
+    const enrichedError = this.enrichError(error)
+
+    if (error.response?.status === 401 && originalRequest) {
+      return this.handle401(error, originalRequest, enrichedError)
+    }
+
+    return Promise.reject(enrichedError)
+  }
+
+  private enrichError(error: AxiosError): AxiosError {
+    if (error.response?.data) {
+      const data = error.response.data as any
+      if (data.message) {
+        const apiError = new Error(data.message) as AxiosError
+        Object.assign(apiError, {
+          config: error.config,
+          code: error.code,
+          request: error.request,
+          response: error.response,
+          status: error.response.status,
+          statusText: error.response.statusText,
+          isAxiosError: true,
+          toJSON: error.toJSON,
+        })
+        return apiError
+      }
+    }
+    return error
+  }
+
+  private async handle401(
+    error: AxiosError,
+    originalRequest: any,
+    apiError: AxiosError
+  ): Promise<any> {
+    // Fail immediately if error is from auth endpoints
+    if (
+      originalRequest.url?.includes('/auth/login') ||
+      originalRequest.url?.includes('/auth/refresh-token')
+    ) {
+      this.handleAuthFailure(error)
+      return Promise.reject(apiError)
+    }
+
+    // Fail if already retried
+    if (originalRequest._retry) {
+      this.handleAuthFailure(error)
+      return Promise.reject(apiError)
+    }
+
+    if (this.isRefreshing) {
+      return this.addToQueue(originalRequest)
+    }
+
+    originalRequest._retry = true
+    this.isRefreshing = true
+
+    try {
+      return await this.performRefreshToken(originalRequest)
+    } catch (refreshError) {
+      this.processQueue(refreshError as Error)
+      this.handleAuthFailure(error)
+      return Promise.reject(refreshError)
+    } finally {
+      this.isRefreshing = false
+    }
+  }
+
+  private addToQueue(originalRequest: any): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.failedQueue.push({ resolve, reject })
+    })
+      .then(() => {
+        return this.client(originalRequest)
+      })
+      .catch(err => {
+        return Promise.reject(err)
+      })
+  }
+
+  private async performRefreshToken(originalRequest: any): Promise<AxiosResponse> {
+    const refreshResponse = await this.client.post(
+      '/auth/refresh-token',
+      {},
+      {
+        headers: { 'X-Request-Token-Body': 'true' },
+      }
+    )
+
+    const newToken = refreshResponse.data?.token
+    if (newToken) {
+      this.setToken(newToken)
+    }
+
+    this.processQueue(null, newToken)
+    return this.client(originalRequest)
+  }
+
   private processQueue(error: Error | null, token: string | null = null) {
     this.failedQueue.forEach(prom => {
       if (error) {
@@ -45,130 +175,20 @@ export class ApiClient {
     this.failedQueue = []
   }
 
-  private handle401Error(error: AxiosError): void {
-    // Only clear token from storage if not using cookies
-    // When using cookies, the token is managed by the server
+  private handleAuthFailure(error: AxiosError): void {
     if (!this.config.useCookies) {
       this.config.clearToken()
     }
 
-    // Evita chamar onUnauthorized se já estamos na tela de login
-    // ou se a requisição é para /auth/me (verificação inicial)
     if (this.config.onUnauthorized && globalThis.window !== undefined) {
       const currentPath = globalThis.window.location.pathname
       const requestUrl = error.config?.url ?? ''
       const isAuthCheck = requestUrl.includes('/auth/me')
 
-      // Não chama onUnauthorized durante verificação inicial
-      // Deixa o AuthContext decidir se deve limpar o usuário
       if (!currentPath.includes('/login') && !isAuthCheck) {
         this.config.onUnauthorized()
       }
     }
-  }
-
-  private setupInterceptors(): void {
-    this.client.interceptors.request.use(
-      config => {
-        // Só adiciona token no header se não estiver usando cookies
-        // Quando usa cookies, o token é enviado automaticamente via withCredentials
-        if (!this.config.useCookies) {
-          const token = this.config.getToken()
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-          }
-        }
-        return config
-      },
-      error => Promise.reject(error)
-    )
-
-    this.client.interceptors.response.use(
-      response => response,
-      async (error: AxiosError) => {
-        const originalRequest = error.config as any
-
-        // Extract error message from API response body
-        let apiError = error
-        if (error.response?.data) {
-          const data = error.response.data as any
-          if (data.message) {
-            // Create a new error with the API message
-            apiError = new Error(data.message) as AxiosError
-            // Preserve original error properties for debugging
-            Object.assign(apiError, {
-              config: error.config,
-              code: error.code,
-              request: error.request,
-              response: error.response,
-              status: error.response.status,
-              statusText: error.response.statusText,
-              isAxiosError: true,
-              toJSON: error.toJSON,
-            })
-          }
-        }
-
-        // Handle 401 Unauthorized
-        if (error.response?.status === 401 && originalRequest) {
-          // If the error comes from login or refresh-token endpoint, simply fail
-          if (
-            originalRequest.url?.includes('/auth/login') ||
-            originalRequest.url?.includes('/auth/refresh-token')
-          ) {
-            this.handle401Error(error)
-            return Promise.reject(apiError)
-          }
-
-          // If retry flag is set, it means we already tried to refresh and failed
-          if (originalRequest._retry) {
-            this.handle401Error(error)
-            return Promise.reject(apiError)
-          }
-
-          if (this.isRefreshing) {
-            return new Promise((resolve, reject) => {
-              this.failedQueue.push({ resolve, reject })
-            })
-              .then(() => {
-                return this.client(originalRequest)
-              })
-              .catch(err => {
-                return Promise.reject(err)
-              })
-          }
-
-          originalRequest._retry = true
-          this.isRefreshing = true
-
-          try {
-            const refreshResponse = await this.client.post(
-              '/auth/refresh-token',
-              {},
-              {
-                headers: { 'X-Request-Token-Body': 'true' },
-              }
-            )
-
-            const newToken = refreshResponse.data?.token
-            if (newToken) {
-              this.setToken(newToken)
-            }
-
-            this.processQueue(null, newToken)
-            return this.client(originalRequest)
-          } catch (refreshError) {
-            this.processQueue(refreshError as Error)
-            this.handle401Error(error)
-            return Promise.reject(refreshError)
-          } finally {
-            this.isRefreshing = false
-          }
-        }
-
-        return Promise.reject(apiError)
-      }
-    )
   }
 
   setToken(token: string): void {
