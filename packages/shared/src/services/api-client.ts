@@ -71,7 +71,7 @@ export class ApiClient {
       return this.handle401(error, originalRequest, enrichedError)
     }
 
-    return Promise.reject(enrichedError)
+    throw enrichedError
   }
 
   private enrichError(error: AxiosError): AxiosError {
@@ -96,13 +96,13 @@ export class ApiClient {
       originalRequest.url?.includes('/auth/refresh-token')
     ) {
       this.handleAuthFailure(error)
-      return Promise.reject(apiError)
+      throw apiError
     }
 
     // Fail if already retried
     if (originalRequest._retry) {
       this.handleAuthFailure(error)
-      return Promise.reject(apiError)
+      throw apiError
     }
 
     if (this.isRefreshing) {
@@ -117,7 +117,7 @@ export class ApiClient {
     } catch (refreshError) {
       this.processQueue(refreshError as Error)
       this.handleAuthFailure(error)
-      return Promise.reject(refreshError)
+      throw refreshError
     } finally {
       this.isRefreshing = false
     }
@@ -127,11 +127,9 @@ export class ApiClient {
     return new Promise((resolve, reject) => {
       this.failedQueue.push({ resolve, reject })
     })
-      .then(() => {
-        return this.client(originalRequest)
-      })
+      .then(() => this.client(originalRequest))
       .catch(err => {
-        return Promise.reject(err)
+        throw err
       })
   }
 

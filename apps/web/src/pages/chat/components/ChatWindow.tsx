@@ -1,5 +1,5 @@
 import { useRef, useEffect, useLayoutEffect, useCallback, useState, useMemo } from 'react'
-import { Info, Users } from 'lucide-react'
+import { Info, Users, Loader2 } from 'lucide-react'
 
 import { ChatBubble } from './ChatBubble'
 import { ChatInput } from './ChatInput'
@@ -8,11 +8,22 @@ import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 import { Avatar } from '@/components/ui/Avatar'
 import { uploadChatFile, UploadProgress } from '@/services/upload.service'
-import { Loader2 } from 'lucide-react'
 
 interface ChatWindowProps {
-  conversationId: string
-  onBack?: () => void
+  readonly conversationId: string
+  readonly onBack?: () => void
+}
+
+// Helper to get message status
+function getMessageStatus(
+  isMe: boolean,
+  messageId: string,
+  isRead: boolean
+): 'sending' | 'sent' | 'read' | undefined {
+  if (!isMe) return undefined
+  if (messageId.startsWith('temp-')) return 'sending'
+  if (isRead) return 'read'
+  return 'sent'
 }
 
 const SENDER_COLORS = [
@@ -308,13 +319,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
           .filter(message => !message.deletedBy?.includes(user?.id || ''))
           .map(message => {
             const isMe = message.senderId === user?.id
-            const status = isMe
-              ? message.id.startsWith('temp-')
-                ? 'sending'
-                : message.read
-                  ? 'read'
-                  : 'sent'
-              : undefined
+            const status = getMessageStatus(isMe, message.id, message.read)
 
             const sender =
               isGroup && !isMe

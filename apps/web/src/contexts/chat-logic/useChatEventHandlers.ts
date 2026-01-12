@@ -12,6 +12,101 @@ interface UseChatEventHandlersProps {
   loadConversations?: () => Promise<void>
 }
 
+// Helper function to calculate new unread count
+function calculateUnreadCount(
+  isActive: boolean,
+  isSelf: boolean,
+  isNewMessage: boolean,
+  currentUnreadCount: number
+): number {
+  const shouldIncrement = !isActive && !isSelf && isNewMessage
+  if (shouldIncrement) {
+    return currentUnreadCount + 1
+  }
+  if (isActive || isSelf) {
+    return 0
+  }
+  return currentUnreadCount
+}
+
+// Helper to process messages array for new message insertion
+function processNewMessage(
+  prev: Message[],
+  message: Message,
+  isOptimisticUpdateRef: MutableRefObject<boolean>
+): Message[] {
+  if (prev.some(m => m.id === message.id)) return prev
+
+  const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
+  if (tempIndex !== -1) {
+    const newMessages = [...prev]
+    newMessages[tempIndex] = message
+    isOptimisticUpdateRef.current = false
+    return newMessages
+  }
+
+  return [...prev, message]
+}
+
+// Helper to update conversation with new message
+function updateConversationWithMessage(
+  conversation: Conversation,
+  message: Message,
+  userId: string | undefined,
+  isActiveConversation: boolean
+): Conversation {
+  const isSelf = message.senderId === userId
+  const isNewMessage = conversation.lastMessage?.id !== message.id
+  const newUnreadCount = calculateUnreadCount(
+    isActiveConversation,
+    isSelf,
+    isNewMessage,
+    conversation.unreadCount ?? 0
+  )
+
+  return {
+    ...conversation,
+    lastMessage: message,
+    unreadCount: newUnreadCount,
+    updatedAt: message.createdAt,
+  }
+}
+
+// Helper to mark messages as read
+function markMessagesAsRead(
+  messages: Message[],
+  messageIds: string[] | undefined,
+  currentUserId: string | undefined
+): Message[] {
+  return messages.map(msg => {
+    if (messageIds && messageIds.length > 0) {
+      return messageIds.includes(msg.id) ? { ...msg, read: true } : msg
+    }
+    if (msg.senderId === currentUserId && !msg.read) {
+      return { ...msg, read: true }
+    }
+    return msg
+  })
+}
+
+// Helper to update last message in conversations
+function updateLastMessageInConversations(
+  conversations: Conversation[],
+  message: Message
+): Conversation[] {
+  return conversations.map(c => {
+    if (c.id === message.conversationId && c.lastMessage?.id === message.id) {
+      return { ...c, lastMessage: message }
+    }
+    return c
+  })
+}
+
+// Helper to replace a message in messages array
+function replaceMessageInArray(messages: Message[], newMessage: Message): Message[] {
+  return messages.map(msg => (msg.id === newMessage.id ? newMessage : msg))
+}
+
 export function useChatEventHandlers({
   chatSocket,
   user,
@@ -53,87 +148,56 @@ export function useChatEventHandlers({
   // Register listeners only once when chatSocket changes
   useEffect(() => {
     const updateMessagesState = (message: Message) => {
-      setMessagesRef.current(prev => {
-        if (prev.some(m => m.id === message.id)) return prev
-
-        const tempIndex = prev.findIndex(m => m.id.startsWith('temp-') && m.text === message.text)
-
-        if (tempIndex !== -1) {
-          const newMessages = [...prev]
-          newMessages[tempIndex] = message
-          isOptimisticUpdateRef.current = false
-          return newMessages
-        }
-
-        return [...prev, message]
-      })
+      setMessagesRef.current(prev => processNewMessage(prev, message, isOptimisticUpdateRef))
     }
 
     const syncActiveConversation = (message: Message) => {
       setActiveConversationRef.current(prev => {
-        if (!prev) return null
-        if (prev.id === message.conversationId) {
-          const updated = {
-            ...prev,
-            lastMessage: message,
-            unreadCount: 0,
-            updatedAt: message.createdAt,
-          }
-          activeConversationRef.current = updated
-          return updated
+        if (!prev || prev.id !== message.conversationId) return prev
+        const updated: Conversation = {
+          ...prev,
+          lastMessage: message,
+          unreadCount: 0,
+          updatedAt: message.createdAt,
         }
-        return prev
+        activeConversationRef.current = updated
+        return updated
       })
     }
 
-    const updateConversationList = (message: Message) => {
-      setConversationsRef.current(prev => {
-        const existingConv = prev.find(c => c.id === message.conversationId)
+    const handleConversationListUpdate = (
+      prev: Conversation[],
+      message: Message
+    ): Conversation[] => {
+      const existingConv = prev.find(c => c.id === message.conversationId)
 
-        // If conversation doesn't exist, reload the list to get it
-        if (!existingConv && loadConversationsRef.current) {
-          loadConversationsRef.current().catch(error => {
-            console.error('Failed to reload conversations after new message', error)
-          })
-          return prev
-        }
-
-        // Skip if this message is already the last message (avoid duplicate updates)
-        if (existingConv?.lastMessage?.id === message.id) {
-          return prev
-        }
-
-        // Update existing conversation
+      if (!existingConv && loadConversationsRef.current) {
+        loadConversationsRef.current().catch(error => {
+          console.error('Failed to reload conversations after new message', error)
+        })
         return prev
-          .map(c => {
-            if (c.id === message.conversationId) {
-              const isSelf = message.senderId === userRef.current?.id
-              const currentActive = activeConversationRef.current
-              const isActive = currentActive?.id === c.id
+      }
 
-              // Only increment if not active, not self, and message is new
-              const shouldIncrement = !isActive && !isSelf && c.lastMessage?.id !== message.id
-              const newUnreadCount = shouldIncrement
-                ? (c.unreadCount ?? 0) + 1
-                : isActive || isSelf
-                  ? 0
-                  : (c.unreadCount ?? 0)
+      if (existingConv?.lastMessage?.id === message.id) {
+        return prev
+      }
 
-              return {
-                ...c,
-                lastMessage: message,
-                unreadCount: newUnreadCount,
-                updatedAt: message.createdAt,
-              }
-            }
-            return c
-          })
-          .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-      })
+      const activeId = activeConversationRef.current?.id
+      const userId = userRef.current?.id
 
-      // Sync active conversation to prevent stale state
+      return prev
+        .map(c => {
+          if (c.id !== message.conversationId) return c
+          return updateConversationWithMessage(c, message, userId, activeId === c.id)
+        })
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    }
+
+    const updateConversationList = (message: Message) => {
+      setConversationsRef.current(prev => handleConversationListUpdate(prev, message))
+
       const currentActive = activeConversationRef.current
-      if (currentActive && currentActive.id === message.conversationId) {
+      if (currentActive?.id === message.conversationId) {
         syncActiveConversation(message)
       }
     }
@@ -141,20 +205,16 @@ export function useChatEventHandlers({
     const handleNewMessage = (message: Message) => {
       const currentActive = activeConversationRef.current
 
-      // If message belongs to active conversation, append or swap it
-      if (currentActive && message.conversationId === currentActive.id) {
+      if (currentActive?.id === message.conversationId) {
         updateMessagesState(message)
 
-        // If we are active, we read it immediately via WebSocket
         if (message.senderId !== userRef.current?.id) {
           chatSocket.markAsRead(currentActive.id, [message.id])
         }
 
-        // SYNC ACTIVE CONVERSATION STATE
         syncActiveConversation(message)
       }
 
-      // Always update conversation list
       updateConversationList(message)
     }
 
@@ -169,70 +229,25 @@ export function useChatEventHandlers({
     }) => {
       const currentActive = activeConversationRef.current
 
-      // Only update if we're viewing this conversation and the reader is not us
       if (currentActive?.id === data.conversationId && data.readBy !== userRef.current?.id) {
         setMessagesRef.current(prev =>
-          prev.map(msg => {
-            // If messageIds are provided, only mark those specific messages
-            if (data.messageIds && data.messageIds.length > 0) {
-              if (data.messageIds.includes(msg.id)) {
-                return { ...msg, read: true }
-              }
-              return msg
-            }
-            // If no messageIds, mark all messages from current user as read
-            if (msg.senderId === userRef.current?.id && !msg.read) {
-              return { ...msg, read: true }
-            }
-            return msg
-          })
+          markMessagesAsRead(prev, data.messageIds, userRef.current?.id)
         )
       }
     }
 
-    const handleMessageEdited = (message: Message) => {
+    const handleMessageUpdate = (message: Message) => {
       const currentActive = activeConversationRef.current
 
-      // Update message in active conversation
-      if (currentActive && message.conversationId === currentActive.id) {
-        setMessagesRef.current(prev => prev.map(msg => (msg.id === message.id ? message : msg)))
+      if (currentActive?.id === message.conversationId) {
+        setMessagesRef.current(prev => replaceMessageInArray(prev, message))
       }
 
-      // Update last message in conversation list if it's the edited message
-      setConversationsRef.current(prev =>
-        prev.map(c => {
-          if (c.id === message.conversationId && c.lastMessage?.id === message.id) {
-            return {
-              ...c,
-              lastMessage: message,
-            }
-          }
-          return c
-        })
-      )
+      setConversationsRef.current(prev => updateLastMessageInConversations(prev, message))
     }
 
-    const handleMessageDeleted = (message: Message) => {
-      const currentActive = activeConversationRef.current
-
-      // Update message in active conversation
-      if (currentActive && message.conversationId === currentActive.id) {
-        setMessagesRef.current(prev => prev.map(msg => (msg.id === message.id ? message : msg)))
-      }
-
-      // Update last message in conversation list
-      setConversationsRef.current(prev =>
-        prev.map(c => {
-          if (c.id === message.conversationId && c.lastMessage?.id === message.id) {
-            return {
-              ...c,
-              lastMessage: message,
-            }
-          }
-          return c
-        })
-      )
-    }
+    const handleMessageEdited = handleMessageUpdate
+    const handleMessageDeleted = handleMessageUpdate
 
     const onReconnected = () => {
       const currentActive = activeConversationRef.current

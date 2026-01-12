@@ -187,7 +187,9 @@ export class ChatService {
         this.usersService.findByPersonId(personId).catch(() => null),
       ),
     );
-    const validUserIds = users.filter((u) => u !== null).map((u) => u!.id);
+    const validUserIds = users
+      .filter((u): u is NonNullable<typeof u> => u !== null)
+      .map((u) => u.id);
 
     if (validUserIds.length === 0) {
       throw new BadRequestException('No valid users found in team');

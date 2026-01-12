@@ -157,12 +157,19 @@ export function ChatBubble({
         )}
         <div
           ref={bubbleRef}
+          role="button"
+          tabIndex={0}
           className={`relative max-w-[85%] sm:max-w-[75%] px-4 py-2 rounded-2xl text-sm italic border ${
             isMe
               ? 'bg-primary-50 border-primary-200 text-gray-500 rounded-tr-none'
               : 'bg-gray-50 border-gray-200 text-gray-500 rounded-tl-none'
           }`}
           onContextMenu={handleContextMenu}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleContextMenu(e as unknown as React.MouseEvent)
+            }
+          }}
         >
           <div className="flex items-center gap-2">
             <X size={14} />
@@ -172,12 +179,18 @@ export function ChatBubble({
           {/* Context Menu for deleted message (only delete for me) */}
           {showContextMenu && (
             <div
+              role="menu"
+              tabIndex={-1}
               className="fixed z-[9999] min-w-[160px] bg-white rounded-lg shadow-xl border border-gray-100 py-1"
               style={{ top: contextMenuPosition.y, left: contextMenuPosition.x }}
               onClick={e => e.stopPropagation()}
+              onKeyDown={e => {
+                if (e.key === 'Escape') setShowContextMenu(false)
+              }}
             >
               <button
                 type="button"
+                role="menuitem"
                 onClick={() => handleDelete('me')}
                 className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
               >
@@ -208,7 +221,14 @@ export function ChatBubble({
     <>
       <div
         ref={bubbleRef}
+        role="button"
+        tabIndex={0}
         onContextMenu={handleContextMenu}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleContextMenu(e as unknown as React.MouseEvent)
+          }
+        }}
         className={`mb-3 max-w-[80%] px-4 py-2 rounded-2xl cursor-pointer ${
           isMe
             ? 'ml-auto bg-primary-500 text-white rounded-br-sm'
@@ -227,13 +247,19 @@ export function ChatBubble({
       </div>
       {showContextMenu && (
         <div
+          role="menu"
+          tabIndex={-1}
           className="fixed z-50 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 py-1 min-w-[160px]"
           style={{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }}
           onClick={e => e.stopPropagation()}
+          onKeyDown={e => {
+            if (e.key === 'Escape') setShowContextMenu(false)
+          }}
         >
           {isMe && onEdit && (
             <button
               type="button"
+              role="menuitem"
               onClick={handleEditClick}
               className="w-full px-4 py-2 text-left text-sm hover:bg-dark-100 dark:hover:bg-dark-700 flex items-center gap-2 text-dark-900 dark:text-dark-50"
             >
@@ -242,18 +268,17 @@ export function ChatBubble({
             </button>
           )}
 
-          <div className="relative group/delete">
-            <button
-              type="button"
-              onClick={handleDeleteClick}
-              className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <Trash2 className="h-4 w-4" />
-                Excluir
-              </div>
-            </button>
-          </div>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={handleDeleteClick}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Trash2 className="h-4 w-4" />
+              Excluir
+            </div>
+          </button>
         </div>
       )}
 

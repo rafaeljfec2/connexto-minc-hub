@@ -23,6 +23,12 @@ interface AttachmentOption {
   accept?: string
 }
 
+function getPlaceholderText(disabled?: boolean, editMode?: boolean): string {
+  if (disabled) return 'Enviando arquivo...'
+  if (editMode) return 'Edite a mensagem...'
+  return 'Digite uma mensagem...'
+}
+
 const attachmentOptions: AttachmentOption[] = [
   {
     id: 'camera',
@@ -281,13 +287,7 @@ export function ChatInput({
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={
-              disabled
-                ? 'Enviando arquivo...'
-                : editMode
-                  ? 'Edite a mensagem...'
-                  : 'Digite uma mensagem...'
-            }
+            placeholder={getPlaceholderText(disabled, editMode)}
             className="w-full bg-transparent text-dark-900 dark:text-dark-50 placeholder:text-dark-500 dark:placeholder:text-dark-400 text-sm resize-none outline-none max-h-[120px] overflow-y-auto block"
             rows={1}
             maxLength={500}
