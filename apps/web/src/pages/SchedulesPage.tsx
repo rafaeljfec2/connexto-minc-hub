@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Alert } from '@/components/ui/Alert'
 import { ComboBox } from '@/components/ui/ComboBox'
-import { Accordion } from '@/components/ui/Accordion'
 import { MonthNavigator } from '@/components/ui/MonthNavigator'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { PlusIcon } from '@/components/icons'
@@ -18,7 +17,9 @@ import { useChurch } from '@/contexts/ChurchContext'
 import { Schedule } from '@minc-hub/shared/types'
 import { formatDate, parseLocalDate } from '@/lib/utils'
 
-import { ScheduleGroupItem, GroupedSchedule } from '@/components/schedules/ScheduleGroupItem'
+import { GroupedSchedule } from '@/components/schedules/ScheduleGroupItem'
+import { SchedulesMobileView } from './schedules/components/SchedulesMobileView'
+import { SchedulesDesktopList } from './schedules/components/SchedulesDesktopList'
 
 export default function SchedulesPage() {
   const { schedules, isLoading, createSchedule, updateSchedule, deleteSchedule } = useSchedules()
@@ -215,68 +216,73 @@ export default function SchedulesPage() {
 
   return (
     <main className="container mx-auto px-2 sm:px-6 lg:px-8 py-3 sm:py-8 space-y-3 sm:space-y-6">
-      <PageHeader
-        title="Escalas"
-        description="Gerencie as escalas dos cultos e equipes"
-        action={
-          <Button onClick={() => handleOpenModal()}>
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Nova Escala
-          </Button>
-        }
+      {/* Desktop View */}
+      <div className="hidden lg:block space-y-6">
+        <PageHeader
+          title="Escalas"
+          description="Gerencie as escalas dos cultos e equipes"
+          action={
+            <Button onClick={() => handleOpenModal()}>
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Nova Escala
+            </Button>
+          }
+        />
+
+        {/* Filters Base Container */}
+        <div className="bg-white dark:bg-dark-900 rounded-xl border border-dark-200 dark:border-dark-800 p-4 space-y-4 shadow-sm">
+          {/* Search Input */}
+          <div className="relative">
+            <Input
+              placeholder="Buscar por culto ou data..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full"
+            />
+          </div>
+
+          {/* Month Filter */}
+          <div className="flex justify-center border-t border-dark-100 dark:border-dark-800 pt-4">
+            <MonthNavigator
+              month={selectedMonth.toString().padStart(2, '0')}
+              year={selectedYear.toString()}
+              onChange={(m, y) => {
+                setSelectedMonth(Number(m))
+                setSelectedYear(Number(y))
+              }}
+              className="w-full max-w-sm"
+            />
+          </div>
+        </div>
+
+        {/* Accordion List */}
+        <SchedulesDesktopList
+          groupedSchedules={groupedSchedules}
+          isLoading={isLoading}
+          teams={teams}
+          ministries={ministries}
+          onEdit={handleOpenModal}
+          onDelete={handleDeleteClick}
+        />
+      </div>
+
+      {/* Mobile View */}
+      <SchedulesMobileView
+        groupedSchedules={groupedSchedules}
+        isLoading={isLoading}
+        teams={teams}
+        ministries={ministries}
+        searchTerm={searchTerm}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+        onSearchChange={setSearchTerm}
+        onMonthChange={(m: string, y: string) => {
+          setSelectedMonth(Number(m))
+          setSelectedYear(Number(y))
+        }}
+        onEdit={handleOpenModal}
+        onDelete={handleDeleteClick}
       />
-
-      {/* Filters Base Container */}
-      <div className="bg-white dark:bg-dark-900 rounded-xl border border-dark-200 dark:border-dark-800 p-4 space-y-4 shadow-sm">
-        {/* Search Input */}
-        <div className="relative">
-          <Input
-            placeholder="Buscar por culto ou data..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full"
-          />
-        </div>
-
-        {/* Month Filter */}
-        <div className="flex justify-center border-t border-dark-100 dark:border-dark-800 pt-4">
-          <MonthNavigator
-            month={selectedMonth.toString().padStart(2, '0')}
-            year={selectedYear.toString()}
-            onChange={(m, y) => {
-              setSelectedMonth(Number(m))
-              setSelectedYear(Number(y))
-            }}
-            className="w-full max-w-sm"
-          />
-        </div>
-      </div>
-
-      {/* Accordion List */}
-      <div className="space-y-4">
-        {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-          </div>
-        ) : groupedSchedules.length === 0 ? (
-          <div className="text-center py-12 text-dark-500 dark:text-dark-400 bg-white dark:bg-dark-900 rounded-xl border border-dark-200 dark:border-dark-800">
-            Nenhuma escala encontrada para este período.
-          </div>
-        ) : (
-          <Accordion className="space-y-4">
-            {groupedSchedules.map(group => (
-              <ScheduleGroupItem
-                key={group.key}
-                group={group}
-                teams={teams}
-                ministries={ministries}
-                onEdit={handleOpenModal}
-                onDelete={handleDeleteClick}
-              />
-            ))}
-          </Accordion>
-        )}
-      </div>
 
       <Modal
         isOpen={modal.isOpen}
@@ -306,7 +312,10 @@ export default function SchedulesPage() {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-dark-600 dark:text-dark-300 mb-2">
+            <label
+              htmlFor="ministryId"
+              className="block text-sm font-medium text-dark-600 dark:text-dark-300 mb-2"
+            >
               Time *
             </label>
             <ComboBox
@@ -326,7 +335,10 @@ export default function SchedulesPage() {
           {formData.ministryId && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium text-dark-600 dark:text-dark-300">
+                <label
+                  htmlFor="teamIds"
+                  className="block text-sm font-medium text-dark-600 dark:text-dark-300"
+                >
                   Equipes *
                 </label>
                 <Button type="button" variant="ghost" size="sm" onClick={handleAutoAssign}>
