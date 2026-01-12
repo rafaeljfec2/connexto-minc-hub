@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/contexts/ThemeContext'
 import { ProfileHeader } from './profile/components/ProfileHeader'
 import { ProfileSection } from './profile/components/ProfileSection'
 import { EditableField } from './profile/components/EditableField'
@@ -9,6 +10,7 @@ import { Alert, AlertType } from '@/components/ui/Alert'
 
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth()
+  const { theme, setTheme } = useTheme()
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [avatarError, setAvatarError] = useState<string | null>(null)
   const [alertConfig, setAlertConfig] = useState<{
@@ -209,10 +211,12 @@ export default function ProfilePage() {
                   <select
                     id="theme-select"
                     className="w-full px-3 py-2 bg-white dark:bg-dark-900 border border-dark-300 dark:border-dark-700 rounded-lg text-dark-900 dark:text-dark-50 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    value={theme}
+                    onChange={e => setTheme(e.target.value as 'light' | 'dark' | 'system')}
                   >
-                    <option>Claro</option>
-                    <option>Escuro</option>
-                    <option>Automático</option>
+                    <option value="light">Claro</option>
+                    <option value="dark">Escuro</option>
+                    <option value="system">Automático</option>
                   </select>
                 </div>
 
