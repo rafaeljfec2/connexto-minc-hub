@@ -15,7 +15,7 @@ interface QuickActionsProps {
   onActionPress: (actionId: string) => void
 }
 
-export function QuickActions({ onActionPress }: QuickActionsProps) {
+export function QuickActions({ onActionPress }: Readonly<QuickActionsProps>) {
   const { colors } = useTheme()
 
   const actions: ActionItem[] = [

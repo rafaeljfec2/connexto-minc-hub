@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
-import { ConversationItem } from './ConversationItem'
 import { UserSelectionModal } from './UserSelectionModal'
 import { CreateGroupModal } from './CreateGroupModal'
+import { ConversationItem } from './ConversationItem'
 
 interface ChatListProps {
   className?: string
@@ -96,9 +96,39 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
     }
   }
 
+  function renderConversationList() {
+    if (isLoadingConversations) {
+      return <ChatListLoading />
+    }
+
+    if (filteredConversations.length === 0) {
+      return <ChatListEmpty onNewChat={() => setIsNewChatModalOpen(true)} />
+    }
+
+    return (
+      <div>
+        {filteredConversations.map(conversation => {
+          const isActive = location.pathname === `/chat/${conversation.id}`
+          return (
+            <div
+              key={conversation.id}
+              className={isActive ? 'bg-primary-50 dark:bg-primary-900/10' : ''}
+            >
+              <ConversationItem
+                conversation={conversation}
+                onPress={handleConversationPress}
+                currentUserId={user?.id}
+              />
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div
-      className={`flex flex-col h-full bg-white dark:bg-dark-900 border-r border-dark-200 dark:border-dark-800 ${className}`}
+      className={`flex flex-col h-full bg-white dark:bg-dark-950 border-r border-dark-200 dark:border-dark-800 ${className}`}
     >
       {/* Header */}
       <div className="p-4 border-b border-dark-200 dark:border-dark-800">
@@ -211,31 +241,7 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto">
-        {isLoadingConversations ? (
-          <ChatListLoading />
-        ) : filteredConversations.length === 0 ? (
-          <ChatListEmpty onNewChat={() => setIsNewChatModalOpen(true)} />
-        ) : (
-          <div>
-            {filteredConversations.map(conversation => {
-              const isActive = location.pathname === `/chat/${conversation.id}`
-              return (
-                <div
-                  key={conversation.id}
-                  className={isActive ? 'bg-primary-50 dark:bg-primary-900/10' : ''}
-                >
-                  <ConversationItem
-                    conversation={conversation}
-                    onPress={handleConversationPress}
-                    currentUserId={user?.id}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+      <div className="flex-1 overflow-y-auto">{renderConversationList()}</div>
 
       <UserSelectionModal
         isOpen={isNewChatModalOpen}

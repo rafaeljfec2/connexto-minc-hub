@@ -125,7 +125,10 @@ export default function NewMessagePage() {
         <form onSubmit={handleSubmit} className="p-3 space-y-3">
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1"
+            >
               Título <span className="text-red-500">*</span>
             </label>
             <Input
@@ -138,7 +141,10 @@ export default function NewMessagePage() {
 
           {/* Message */}
           <div>
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+            <label
+              htmlFor="content"
+              className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1"
+            >
               Mensagem <span className="text-red-500">*</span>
             </label>
             <Textarea
@@ -152,7 +158,10 @@ export default function NewMessagePage() {
 
           {/* Attachment */}
           <div>
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+            <label
+              htmlFor="attachment"
+              className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1"
+            >
               Anexo (opcional)
             </label>
             <div className="flex flex-col gap-2">
@@ -164,6 +173,7 @@ export default function NewMessagePage() {
                     setFormData({ ...formData, attachment: e.target.files?.[0] || null })
                   }
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.txt"
+                  id="attachment"
                 />
                 Escolher arquivo
               </label>
@@ -181,7 +191,10 @@ export default function NewMessagePage() {
 
           {/* Recipients */}
           <div>
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1">
+            <label
+              htmlFor="recipientType"
+              className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-1"
+            >
               Destinatários <span className="text-red-500">*</span>
             </label>
             <ComboBox
@@ -215,7 +228,10 @@ export default function NewMessagePage() {
 
           {/* Communication Type */}
           <div>
-            <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2">
+            <label
+              htmlFor="sendViaEmail"
+              className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2"
+            >
               Tipo de Comunicação <span className="text-red-500">*</span>
             </label>
             <div className="space-y-2">

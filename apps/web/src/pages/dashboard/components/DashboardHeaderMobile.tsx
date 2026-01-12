@@ -82,7 +82,7 @@ export function DashboardHeaderMobile({
           </button>
         )}
 
-        <div className="flex items-center justify-center flex-1 min-w-0 px-2">
+        <div className="flex items-center justify-start flex-1 min-w-0 px-2">
           {title ? (
             <h1 className="text-base font-semibold text-dark-900 dark:text-dark-50 truncate">
               {title}

@@ -16,7 +16,7 @@ export function CreateGroupModal({
   onClose,
   onCreateGroup,
   onCreateGroupFromTeam,
-}: CreateGroupModalProps) {
+}: Readonly<CreateGroupModalProps>) {
   const { users, isLoading } = useUsers()
   const { user: currentUser } = useAuth()
   const [groupName, setGroupName] = useState('')
@@ -68,7 +68,10 @@ export function CreateGroupModal({
     <div className="flex flex-col h-full">
       {/* Group Name Input */}
       <div className="mb-2 flex-shrink-0">
-        <label className="block text-xs font-medium text-dark-700 dark:text-dark-300 mb-1">
+        <label
+          htmlFor="groupName"
+          className="block text-xs font-medium text-dark-700 dark:text-dark-300 mb-1"
+        >
           Nome do Grupo
         </label>
         <input
@@ -82,7 +85,10 @@ export function CreateGroupModal({
 
       {/* Search Input */}
       <div className="relative mb-2 flex-shrink-0">
-        <label className="block text-xs font-medium text-dark-700 dark:text-dark-300 mb-1">
+        <label
+          htmlFor="searchQuery"
+          className="block text-xs font-medium text-dark-700 dark:text-dark-300 mb-1"
+        >
           Selecionar Membros
         </label>
         <div className="relative">
