@@ -233,7 +233,7 @@ jobs:
           expect "$ "
 
           # Login to registry
-          send "echo $ghcr_pat | docker login $registry -u $ghcr_user --password-stdin\r"
+          send "docker login $registry -u $ghcr_user -p $ghcr_pat\r"
           expect "Login Succeeded"
           expect "$ "
 
