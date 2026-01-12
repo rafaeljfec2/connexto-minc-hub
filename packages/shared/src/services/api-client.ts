@@ -13,6 +13,11 @@ export interface ApiClientConfig {
 export class ApiClient {
   private readonly client: AxiosInstance
   private readonly config: ApiClientConfig
+  private isRefreshing = false
+  private failedQueue: Array<{
+    resolve: (value?: unknown) => void
+    reject: (reason?: unknown) => void
+  }> = []
 
   constructor(config: ApiClientConfig) {
     this.config = config
@@ -26,6 +31,18 @@ export class ApiClient {
     })
 
     this.setupInterceptors()
+  }
+
+  private processQueue(error: Error | null, token: string | null = null) {
+    this.failedQueue.forEach(prom => {
+      if (error) {
+        prom.reject(error)
+      } else {
+        prom.resolve(token)
+      }
+    })
+
+    this.failedQueue = []
   }
 
   private handle401Error(error: AxiosError): void {
@@ -68,34 +85,88 @@ export class ApiClient {
 
     this.client.interceptors.response.use(
       response => response,
-      (error: AxiosError) => {
+      async (error: AxiosError) => {
+        const originalRequest = error.config as any
+
         // Extract error message from API response body
+        let apiError = error
         if (error.response?.data) {
           const data = error.response.data as any
           if (data.message) {
             // Create a new error with the API message
-            const apiError = new Error(data.message)
+            apiError = new Error(data.message) as AxiosError
             // Preserve original error properties for debugging
             Object.assign(apiError, {
+              config: error.config,
+              code: error.code,
+              request: error.request,
               response: error.response,
               status: error.response.status,
               statusText: error.response.statusText,
+              isAxiosError: true,
+              toJSON: error.toJSON,
             })
-
-            // Handle 401 before rejecting
-            if (error.response.status === 401) {
-              this.handle401Error(error)
-            }
-
-            return Promise.reject(apiError)
           }
         }
 
-        // Fallback to original error handling if no message in response
-        if (error.response?.status === 401) {
-          this.handle401Error(error)
+        // Handle 401 Unauthorized
+        if (error.response?.status === 401 && originalRequest) {
+          // If the error comes from login or refresh-token endpoint, simply fail
+          if (
+            originalRequest.url?.includes('/auth/login') ||
+            originalRequest.url?.includes('/auth/refresh-token')
+          ) {
+            this.handle401Error(error)
+            return Promise.reject(apiError)
+          }
+
+          // If retry flag is set, it means we already tried to refresh and failed
+          if (originalRequest._retry) {
+            this.handle401Error(error)
+            return Promise.reject(apiError)
+          }
+
+          if (this.isRefreshing) {
+            return new Promise((resolve, reject) => {
+              this.failedQueue.push({ resolve, reject })
+            })
+              .then(() => {
+                return this.client(originalRequest)
+              })
+              .catch(err => {
+                return Promise.reject(err)
+              })
+          }
+
+          originalRequest._retry = true
+          this.isRefreshing = true
+
+          try {
+            const refreshResponse = await this.client.post(
+              '/auth/refresh-token',
+              {},
+              {
+                headers: { 'X-Request-Token-Body': 'true' },
+              }
+            )
+
+            const newToken = refreshResponse.data?.token
+            if (newToken) {
+              this.setToken(newToken)
+            }
+
+            this.processQueue(null, newToken)
+            return this.client(originalRequest)
+          } catch (refreshError) {
+            this.processQueue(refreshError as Error)
+            this.handle401Error(error)
+            return Promise.reject(refreshError)
+          } finally {
+            this.isRefreshing = false
+          }
         }
-        return Promise.reject(error)
+
+        return Promise.reject(apiError)
       }
     )
   }
