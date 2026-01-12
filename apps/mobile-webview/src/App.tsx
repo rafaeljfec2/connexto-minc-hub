@@ -91,7 +91,8 @@ export default function App() {
 
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.logoText}>MINC Teams</Text>
+          <ActivityIndicator size="large" color="#f97316" />
           <Text style={styles.loadingText}>Carregando...</Text>
         </View>
       )}
@@ -138,13 +139,19 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#18181b', // Dark background matching splash
     zIndex: 1,
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 20,
     fontSize: 16,
-    color: '#666',
+    color: '#a1a1aa', // zinc-400
+  },
+  logoText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#f97316', // Brand orange
+    marginBottom: 40,
   },
   errorContainer: {
     flex: 1,

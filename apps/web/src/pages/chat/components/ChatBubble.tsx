@@ -127,7 +127,27 @@ export function ChatBubble({
         clientY = (e as React.MouseEvent).clientY
       }
 
-      setContextMenuPosition({ x: clientX, y: clientY })
+      const MENU_WIDTH = 180 // Approximate width (min-w-[160px] + padding)
+      const MENU_HEIGHT = 120 // Approximate height
+      const SCREEN_MARGIN = 16
+
+      // Adjust X position
+      let x = clientX
+      if (globalThis.innerWidth && x + MENU_WIDTH > globalThis.innerWidth) {
+        x = globalThis.innerWidth - MENU_WIDTH - SCREEN_MARGIN
+      }
+      // Ensure it doesn't go off left screen either
+      if (x < SCREEN_MARGIN) {
+        x = SCREEN_MARGIN
+      }
+
+      // Adjust Y position
+      let y = clientY
+      if (globalThis.innerHeight && y + MENU_HEIGHT > globalThis.innerHeight) {
+        y = globalThis.innerHeight - MENU_HEIGHT - SCREEN_MARGIN
+      }
+
+      setContextMenuPosition({ x, y })
       setShowContextMenu(true)
     },
     [isMe, onDelete]
