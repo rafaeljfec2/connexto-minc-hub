@@ -65,9 +65,9 @@ jobs:
           PORT: ${{ vars.PORT }}
           SERVER_USER: ${{ vars.SERVER_USER }}
           SERVER_HOST: ${{ vars.SERVER_HOST }}
-          SERVER_PORT: ${{ vars.SERVER_PORT }}
-          GHCR_USER: ${{ vars.GHCR_USER }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SERVER_PORT: ${{ vars.SERVER_PORT || '22' }}
+          GHCR_USER: ${{ vars.GHCR_USER || github.repository_owner }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || vars.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
           REFRESH_TOKEN_EXPIRATION_DAYS: ${{ vars.REFRESH_TOKEN_EXPIRATION_DAYS }}
@@ -279,15 +279,15 @@ jobs:
           SERVER_USER: ${{ vars.SERVER_USER }}
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
           SERVER_HOST: ${{ vars.SERVER_HOST }}
-          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          SERVER_PORT: ${{ vars.SERVER_PORT || '22' }}
           REGISTRY: ${{ env.REGISTRY }}
           IMAGE_NAME: ${{ env.IMAGE_NAME }}
           CONTAINER_NAME: ${{ env.CONTAINER_NAME }}
-          GHCR_USER: ${{ vars.GHCR_USER }}
+          GHCR_USER: ${{ vars.GHCR_USER || github.repository_owner }}
           GHCR_PAT: ${{ secrets.GHCR_PAT }}
           NODE_ENV: ${{ vars.NODE_ENV }}
           PORT: ${{ vars.PORT }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || vars.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
           REFRESH_TOKEN_EXPIRATION_DAYS: ${{ vars.REFRESH_TOKEN_EXPIRATION_DAYS }}
