@@ -1,42 +1,22 @@
 import { useState, useMemo } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useChat } from '@/hooks/useChat'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/contexts/ToastContext'
 import { UserSelectionModal } from './UserSelectionModal'
 import { CreateGroupModal } from './CreateGroupModal'
-import { ConversationItem } from './ConversationItem'
+import { ChatListHeader } from './ChatListHeader'
+import { ChatListSearch } from './ChatListSearch'
+import { ChatListContent } from './ChatListContent'
+import { ChatListDropdown } from './ChatListDropdown'
 
 interface ChatListProps {
   className?: string
   onConversationClick?: () => void
 }
 
-function ChatListLoading() {
-  return (
-    <div className="flex flex-col items-center justify-center p-8">
-      <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-    </div>
-  )
-}
-
-function ChatListEmpty({ onNewChat }: Readonly<{ onNewChat: () => void }>) {
-  return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
-      <p className="text-dark-500 dark:text-dark-400 text-sm">Nenhuma conversa ainda</p>
-      <button
-        onClick={onNewChat}
-        className="mt-4 text-primary-500 text-sm font-medium hover:underline"
-      >
-        Iniciar conversa
-      </button>
-    </div>
-  )
-}
-
 export function ChatList({ className, onConversationClick }: Readonly<ChatListProps>) {
   const navigate = useNavigate()
-  const location = useLocation()
   const {
     conversations,
     isLoadingConversations,
@@ -52,7 +32,7 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Filtrar conversas baseado no termo de busca
+  // Filter conversations based on search term
   const filteredConversations = useMemo(() => {
     if (!searchTerm.trim()) return conversations
 
@@ -61,17 +41,17 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
       const otherParticipant = conversation.participants.find(p => p.id !== user?.id)
       if (!otherParticipant) return false
 
-      // Buscar pelo nome do participante
+      // Search by participant name
       if (otherParticipant.name?.toLowerCase().includes(term)) return true
 
-      // Buscar pelo texto da última mensagem
+      // Search by last message text
       if (conversation.lastMessage?.text.toLowerCase().includes(term)) return true
 
       return false
     })
   }, [conversations, searchTerm, user?.id])
 
-  function handleConversationPress(conversationId: string, otherUserId: string) {
+  const handleConversationPress = (conversationId: string, otherUserId: string) => {
     navigate(`/chat/${conversationId}`, { state: { otherUserId } })
     onConversationClick?.()
   }
@@ -96,34 +76,28 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
     }
   }
 
-  function renderConversationList() {
-    if (isLoadingConversations) {
-      return <ChatListLoading />
+  const handleCreateGroup = async (name: string, selectedUserIds: string[]) => {
+    try {
+      const newGroup = await createGroup(name, selectedUserIds)
+      navigate(`/chat/${newGroup.id}`)
+      onConversationClick?.()
+      setIsGroupChatModalOpen(false)
+    } catch (error) {
+      console.error('Failed to create group', error)
+      showError('Falha ao criar grupo.')
     }
+  }
 
-    if (filteredConversations.length === 0) {
-      return <ChatListEmpty onNewChat={() => setIsNewChatModalOpen(true)} />
+  const handleCreateGroupFromTeam = async (teamId: string, customName?: string) => {
+    try {
+      const newGroup = await createGroupFromTeam(teamId, customName)
+      navigate(`/chat/${newGroup.id}`)
+      onConversationClick?.()
+      setIsGroupChatModalOpen(false)
+    } catch (error) {
+      console.error('Failed to create group from team', error)
+      showError('Falha ao criar grupo a partir da equipe.')
     }
-
-    return (
-      <div>
-        {filteredConversations.map(conversation => {
-          const isActive = location.pathname === `/chat/${conversation.id}`
-          return (
-            <div
-              key={conversation.id}
-              className={isActive ? 'bg-primary-50 dark:bg-primary-900/10' : ''}
-            >
-              <ConversationItem
-                conversation={conversation}
-                onPress={handleConversationPress}
-                currentUserId={user?.id}
-              />
-            </div>
-          )
-        })}
-      </div>
-    )
   }
 
   return (
@@ -132,142 +106,28 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
     >
       {/* Header */}
       <div className="p-4 border-b border-dark-200 dark:border-dark-800">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors lg:hidden"
-              aria-label="Voltar"
-            >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <h2 className="text-xl font-bold text-dark-900 dark:text-dark-50">Conversas</h2>
-          </div>
-          <div className="relative">
-            <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="p-2 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors"
-              title="Nova conversa"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </button>
-
-            {/* Dropdown Menu */}
-            {isDropdownOpen && (
-              <>
-                <button
-                  type="button"
-                  className="fixed inset-0 z-10 cursor-default"
-                  onClick={() => setIsDropdownOpen(false)}
-                  onKeyDown={e => {
-                    if (e.key === 'Escape' || e.key === 'Enter') {
-                      setIsDropdownOpen(false)
-                    }
-                  }}
-                  aria-label="Fechar menu"
-                />
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 z-50 overflow-hidden">
-                  <button
-                    onClick={() => {
-                      setIsNewChatModalOpen(true)
-                      setIsDropdownOpen(false)
-                    }}
-                    className="w-full px-4 py-3 text-left text-dark-900 dark:text-dark-50 hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-3"
-                  >
-                    <svg
-                      className="w-5 h-5 text-dark-500 dark:text-dark-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      />
-                    </svg>
-                    <div>
-                      <p className="font-medium">Nova Conversa</p>
-                      <p className="text-xs text-dark-500 dark:text-dark-400">
-                        Conversa individual
-                      </p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsGroupChatModalOpen(true)
-                      setIsDropdownOpen(false)
-                    }}
-                    className="w-full px-4 py-3 text-left text-dark-900 dark:text-dark-50 hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-3 border-t border-dark-200 dark:border-dark-700"
-                  >
-                    <svg
-                      className="w-5 h-5 text-dark-500 dark:text-dark-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    <div>
-                      <p className="font-medium">Nova Conversa em Grupo</p>
-                      <p className="text-xs text-dark-500 dark:text-dark-400">
-                        Conversa com múltiplas pessoas
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative mt-4">
-          <input
-            type="text"
-            placeholder="Buscar..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-dark-50 dark:bg-dark-800 border-none rounded-lg text-sm focus:ring-1 focus:ring-primary-500"
+        <div className="relative">
+          <ChatListHeader onNewConversationClick={() => setIsDropdownOpen(!isDropdownOpen)} />
+          <ChatListDropdown
+            isOpen={isDropdownOpen}
+            onClose={() => setIsDropdownOpen(false)}
+            onNewChat={() => setIsNewChatModalOpen(true)}
+            onNewGroupChat={() => setIsGroupChatModalOpen(true)}
           />
-          <svg
-            className="absolute left-3 top-2.5 w-4 h-4 text-dark-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
         </div>
+        <ChatListSearch value={searchTerm} onChange={setSearchTerm} />
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto">{renderConversationList()}</div>
+      <div className="flex-1 overflow-y-auto">
+        <ChatListContent
+          conversations={filteredConversations}
+          isLoading={isLoadingConversations}
+          currentUserId={user?.id}
+          onConversationPress={handleConversationPress}
+          onNewChat={() => setIsNewChatModalOpen(true)}
+        />
+      </div>
 
       <UserSelectionModal
         isOpen={isNewChatModalOpen}
@@ -278,28 +138,8 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
       <CreateGroupModal
         isOpen={isGroupChatModalOpen}
         onClose={() => setIsGroupChatModalOpen(false)}
-        onCreateGroup={async (name, selectedUserIds) => {
-          try {
-            const newGroup = await createGroup(name, selectedUserIds)
-            navigate(`/chat/${newGroup.id}`)
-            onConversationClick?.()
-            setIsGroupChatModalOpen(false)
-          } catch (error) {
-            console.error('Failed to create group', error)
-            showError('Falha ao criar grupo.')
-          }
-        }}
-        onCreateGroupFromTeam={async (teamId, customName) => {
-          try {
-            const newGroup = await createGroupFromTeam(teamId, customName)
-            navigate(`/chat/${newGroup.id}`)
-            onConversationClick?.()
-            setIsGroupChatModalOpen(false)
-          } catch (error) {
-            console.error('Failed to create group from team', error)
-            showError('Falha ao criar grupo a partir da equipe.')
-          }
-        }}
+        onCreateGroup={handleCreateGroup}
+        onCreateGroupFromTeam={handleCreateGroupFromTeam}
       />
     </div>
   )
