@@ -53,8 +53,28 @@ export default function App() {
     setHasError(false)
   }
 
+  const isInitialLoadRef = useRef(true)
+  const mountTimeRef = useRef(Date.now())
+
+  // ... existing back handler code ...
+
   const handleLoadEnd = () => {
-    setIsLoading(false)
+    if (isInitialLoadRef.current) {
+      const elapsedTime = Date.now() - mountTimeRef.current
+      const MIN_SPLASH_TIME = 2500 // 2.5 seconds
+
+      if (elapsedTime < MIN_SPLASH_TIME) {
+        setTimeout(() => {
+          setIsLoading(false)
+          isInitialLoadRef.current = false
+        }, MIN_SPLASH_TIME - elapsedTime)
+      } else {
+        setIsLoading(false)
+        isInitialLoadRef.current = false
+      }
+    } else {
+      setIsLoading(false)
+    }
   }
 
   const handleError = () => {
@@ -89,14 +109,6 @@ export default function App() {
     <View style={styles.container}>
       <StatusBar style="auto" />
 
-      {isLoading && (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.logoText}>MINC Teams</Text>
-          <ActivityIndicator size="large" color="#f97316" />
-          <Text style={styles.loadingText}>Carregando...</Text>
-        </View>
-      )}
-
       <WebView
         ref={webViewRef}
         source={{ uri: WEBSITE_URL }}
@@ -119,6 +131,14 @@ export default function App() {
           return isAllowed
         }}
       />
+
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.logoText}>MINC Teams</Text>
+          <ActivityIndicator size="large" color="#f97316" />
+          <Text style={styles.loadingText}>Carregando...</Text>
+        </View>
+      )}
     </View>
   )
 }
