@@ -14,8 +14,10 @@ interface TeamsMobileViewProps {
   readonly onSearchChange: (value: string) => void
   readonly onMinistryFilterChange: (ministryId: string) => void
   readonly getMinistryName: (ministryId: string) => string
-  readonly onTeamMenuClick: (team: Team) => void
+  readonly onTeamEdit: (team: Team) => void
+  readonly onTeamDelete: (team: Team) => void
   readonly onTeamClick: (team: Team) => void
+  readonly onCreateClick: () => void
 }
 
 export function TeamsMobileView({
@@ -28,8 +30,10 @@ export function TeamsMobileView({
   onSearchChange,
   onMinistryFilterChange,
   getMinistryName,
-  onTeamMenuClick,
+  onTeamEdit,
+  onTeamDelete,
   onTeamClick,
+  onCreateClick,
 }: TeamsMobileViewProps) {
   return (
     <div className="lg:hidden fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950">
@@ -41,7 +45,7 @@ export function TeamsMobileView({
         onSelect={onMinistryFilterChange}
       />
 
-      <TeamsSectionHeader />
+      <TeamsSectionHeader onCreateClick={onCreateClick} />
 
       <div className="bg-dark-50 dark:bg-dark-950 flex-1 overflow-y-auto px-4 py-4">
         <TeamsMobileListContent
@@ -49,7 +53,8 @@ export function TeamsMobileView({
           isLoading={isLoading}
           hasFilters={hasFilters}
           getMinistryName={getMinistryName}
-          onTeamMenuClick={onTeamMenuClick}
+          onTeamEdit={onTeamEdit}
+          onTeamDelete={onTeamDelete}
           onTeamClick={onTeamClick}
         />
       </div>

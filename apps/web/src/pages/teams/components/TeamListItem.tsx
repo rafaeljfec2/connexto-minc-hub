@@ -4,11 +4,12 @@ import { CompactListItem } from '@/components/ui/CompactListItem'
 interface TeamListItemProps {
   readonly team: Team
   readonly ministryName: string
-  readonly onMenuClick?: (team: Team) => void
+  readonly onEdit?: (team: Team) => void
+  readonly onDelete?: (team: Team) => void
   readonly onClick?: (team: Team) => void
 }
 
-export function TeamListItem({ team, ministryName, onMenuClick, onClick }: TeamListItemProps) {
+export function TeamListItem({ team, ministryName, onEdit, onDelete, onClick }: TeamListItemProps) {
   const memberCount = team.memberIds?.length ?? 0
 
   return (
@@ -29,7 +30,8 @@ export function TeamListItem({ team, ministryName, onMenuClick, onClick }: TeamL
       }
       badge={team.isActive ? { text: 'Ativa', variant: 'success' } : undefined}
       onClick={() => onClick?.(team)}
-      onMenuClick={onMenuClick ? () => onMenuClick(team) : undefined}
+      onEdit={onEdit ? () => onEdit(team) : undefined}
+      onDelete={onDelete ? () => onDelete(team) : undefined}
     />
   )
 }

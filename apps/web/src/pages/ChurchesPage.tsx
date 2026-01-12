@@ -7,16 +7,19 @@ import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
 import { useChurches } from '@/hooks/useChurches'
 import { useViewMode } from '@/hooks/useViewMode'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
 import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
 import { Church } from '@minc-hub/shared/types'
 import { ChurchCard } from './churches/components/ChurchCard'
+import { ChurchesMobileView } from './churches/components/ChurchesMobileView'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { useSort } from '@/hooks/useSort'
 import { SortableColumn } from '@/components/ui/SortableColumn'
 
 export default function ChurchesPage() {
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
   const { churches, isLoading, createChurch, updateChurch, deleteChurch } = useChurches()
   const modal = useModal()
   const deleteModal = useModal()
@@ -169,48 +172,73 @@ export default function ChurchesPage() {
     </TableRow>
   ))
 
+  const handleChurchEdit = (church: Church) => {
+    handleOpenModal(church)
+  }
+
+  const handleChurchDelete = (church: Church) => {
+    handleDeleteClick(church.id)
+  }
+
   return (
     <>
-      <CrudPageLayout
-        title="Mincs"
-        description="Gerencie as igrejas cadastradas no sistema"
-        createButtonLabel="Nova Igreja"
-        onCreateClick={() => handleOpenModal()}
-        hasFilters={hasFilters}
-        isEmpty={filteredChurches.length === 0 && !isLoading}
-        emptyTitle={hasFilters ? 'Nenhuma igreja encontrada' : 'Nenhuma igreja cadastrada'}
-        emptyDescription={
-          hasFilters
-            ? 'Tente ajustar os filtros para encontrar igrejas'
-            : 'Comece adicionando uma nova igreja'
-        }
-        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
-        filters={
-          <CrudFilters
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            searchPlaceholder="Buscar por nome, endereço, email ou telefone..."
-            viewMode={viewMode}
-            onViewModeChange={setViewMode}
-          />
-        }
-        content={
-          <CrudView
-            viewMode={viewMode}
-            gridView={gridView}
-            listView={{
-              headers: [
-                renderHeader('name', 'Nome'),
-                renderHeader('address', 'Endereço'),
-                renderHeader('phone', 'Telefone'),
-                renderHeader('email', 'Email'),
-                'Ações',
-              ],
-              rows: listViewRows,
-            }}
-          />
-        }
-      />
+      {/* Mobile View */}
+      {!isDesktop && (
+        <ChurchesMobileView
+          churches={filteredChurches}
+          isLoading={isLoading}
+          searchTerm={searchTerm}
+          hasFilters={hasFilters}
+          onSearchChange={setSearchTerm}
+          onChurchEdit={handleChurchEdit}
+          onChurchDelete={handleChurchDelete}
+          onCreateClick={() => handleOpenModal()}
+        />
+      )}
+
+      {/* Desktop View */}
+      <div className="hidden lg:block">
+        <CrudPageLayout
+          title="Mincs"
+          description="Gerencie as igrejas cadastradas no sistema"
+          createButtonLabel="Nova Igreja"
+          onCreateClick={() => handleOpenModal()}
+          hasFilters={hasFilters}
+          isEmpty={filteredChurches.length === 0 && !isLoading}
+          emptyTitle={hasFilters ? 'Nenhuma igreja encontrada' : 'Nenhuma igreja cadastrada'}
+          emptyDescription={
+            hasFilters
+              ? 'Tente ajustar os filtros para encontrar igrejas'
+              : 'Comece adicionando uma nova igreja'
+          }
+          createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+          filters={
+            <CrudFilters
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Buscar por nome, endereço, email ou telefone..."
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+          }
+          content={
+            <CrudView
+              viewMode={viewMode}
+              gridView={gridView}
+              listView={{
+                headers: [
+                  renderHeader('name', 'Nome'),
+                  renderHeader('address', 'Endereço'),
+                  renderHeader('phone', 'Telefone'),
+                  renderHeader('email', 'Email'),
+                  'Ações',
+                ],
+                rows: listViewRows,
+              }}
+            />
+          }
+        />
+      </div>
 
       <Modal
         isOpen={modal.isOpen}

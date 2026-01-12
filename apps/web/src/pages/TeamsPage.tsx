@@ -190,8 +190,12 @@ export default function TeamsPage() {
 
   const hasFilters = searchTerm !== '' || selectedMinistryFilter !== 'all'
 
-  const handleTeamMenuClick = (team: Team) => {
+  const handleTeamEdit = (team: Team) => {
     handleOpenModal(team)
+  }
+
+  const handleTeamDelete = (team: Team) => {
+    handleDeleteClick(team.id)
   }
 
   const handleTeamClick = (team: Team) => {
@@ -285,8 +289,10 @@ export default function TeamsPage() {
           onSearchChange={setSearchTerm}
           onMinistryFilterChange={setSelectedMinistryFilter}
           getMinistryName={getMinistryName}
-          onTeamMenuClick={handleTeamMenuClick}
+          onTeamEdit={handleTeamEdit}
+          onTeamDelete={handleTeamDelete}
           onTeamClick={handleTeamClick}
+          onCreateClick={() => handleOpenModal()}
         />
       )}
 

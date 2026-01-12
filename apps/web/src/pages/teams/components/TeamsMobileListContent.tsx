@@ -8,7 +8,8 @@ interface TeamsMobileListContentProps {
   readonly isLoading: boolean
   readonly hasFilters: boolean
   readonly getMinistryName: (ministryId: string) => string
-  readonly onTeamMenuClick: (team: Team) => void
+  readonly onTeamEdit: (team: Team) => void
+  readonly onTeamDelete: (team: Team) => void
   readonly onTeamClick: (team: Team) => void
 }
 
@@ -17,7 +18,8 @@ export function TeamsMobileListContent({
   isLoading,
   hasFilters,
   getMinistryName,
-  onTeamMenuClick,
+  onTeamEdit,
+  onTeamDelete,
   onTeamClick,
 }: TeamsMobileListContentProps) {
   if (isLoading) {
@@ -45,7 +47,8 @@ export function TeamsMobileListContent({
           key={team.id}
           team={team}
           ministryName={getMinistryName(team.ministryId)}
-          onMenuClick={onTeamMenuClick}
+          onEdit={onTeamEdit}
+          onDelete={onTeamDelete}
           onClick={onTeamClick}
         />
       ))}

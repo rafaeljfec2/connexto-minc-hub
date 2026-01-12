@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { ItemMenuDropdown } from './ItemMenuDropdown'
 
 interface CompactListItemProps {
   readonly icon?: ReactNode
@@ -11,7 +12,8 @@ interface CompactListItemProps {
   }
   readonly metadata?: string
   readonly onClick?: () => void
-  readonly onMenuClick?: () => void
+  readonly onEdit?: () => void
+  readonly onDelete?: () => void
   readonly className?: string
 }
 
@@ -31,69 +33,77 @@ export function CompactListItem({
   badge,
   metadata,
   onClick,
-  onMenuClick,
+  onEdit,
+  onDelete,
   className = '',
 }: CompactListItemProps) {
   return (
-    <button
-      type="button"
-      className={`w-full flex items-center gap-3 px-4 py-3 bg-white dark:bg-dark-900 border-b border-dark-100 dark:border-dark-800 hover:bg-dark-50 dark:hover:bg-dark-800 transition-colors text-left ${className}`}
-      onClick={onClick}
+    <div
+      className={`w-full flex items-center bg-white dark:bg-dark-900 border-b border-dark-100 dark:border-dark-800 hover:bg-dark-50 dark:hover:bg-dark-800 transition-colors ${className}`}
     >
-      {/* Icon */}
-      {icon && (
-        <div
-          className={`flex-shrink-0 w-10 h-10 rounded-lg ${iconColor} flex items-center justify-center`}
-        >
-          {icon}
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50 truncate">{title}</h3>
-        {(subtitle || metadata) && (
-          <div className="flex items-center gap-2 mt-0.5">
-            {subtitle && (
-              <span className="text-xs text-dark-500 dark:text-dark-400 truncate">{subtitle}</span>
-            )}
-            {subtitle && metadata && <span className="text-dark-300 dark:text-dark-600">•</span>}
-            {metadata && (
-              <span className="text-xs text-dark-500 dark:text-dark-400">{metadata}</span>
-            )}
+      <button
+        type="button"
+        className={`flex-1 min-w-0 flex items-center gap-3 py-3 pl-4 text-left focus:outline-none cursor-pointer ${
+          onEdit || onDelete ? 'pr-2' : 'pr-4'
+        }`}
+        onClick={onClick}
+      >
+        {/* Icon */}
+        {icon && (
+          <div
+            className={`flex-shrink-0 w-10 h-10 rounded-lg ${iconColor} flex items-center justify-center`}
+          >
+            {icon}
           </div>
         )}
-      </div>
 
-      {/* Badge */}
-      {badge && (
-        <div className="flex-shrink-0">
-          <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-              badgeVariants[badge.variant || 'default']
-            }`}
-          >
-            {badge.text}
-          </span>
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50 truncate">
+            {title}
+          </h3>
+          {(subtitle || metadata) && (
+            <div className="flex items-center gap-2 mt-0.5">
+              {subtitle && (
+                <span className="text-xs text-dark-500 dark:text-dark-400 truncate">
+                  {subtitle}
+                </span>
+              )}
+              {subtitle && metadata && <span className="text-dark-300 dark:text-dark-600">•</span>}
+              {metadata && (
+                <span className="text-xs text-dark-500 dark:text-dark-400">{metadata}</span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Badge */}
+        {badge && (
+          <div className="flex-shrink-0">
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                badgeVariants[badge.variant || 'default']
+              }`}
+            >
+              {badge.text}
+            </span>
+          </div>
+        )}
+      </button>
+
+      {/* Menu Dropdown */}
+      {(onEdit || onDelete) && (
+        <div className="pr-4 py-3 flex-shrink-0">
+          <ItemMenuDropdown
+            onEdit={() => {
+              if (onEdit) onEdit()
+            }}
+            onDelete={() => {
+              if (onDelete) onDelete()
+            }}
+          />
         </div>
       )}
-
-      {/* Menu Button */}
-      {onMenuClick && (
-        <button
-          type="button"
-          onClick={e => {
-            e.stopPropagation()
-            onMenuClick()
-          }}
-          className="flex-shrink-0 p-1.5 text-dark-400 dark:text-dark-500 hover:text-dark-600 dark:hover:text-dark-300 transition-colors"
-          aria-label="Menu"
-        >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-          </svg>
-        </button>
-      )}
-    </button>
+    </div>
   )
 }
