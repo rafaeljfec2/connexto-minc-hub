@@ -214,6 +214,8 @@ export interface Message {
   createdAt: string
   updatedAt: string
   isEdited?: boolean
+  deletedForEveryone?: boolean
+  deletedBy?: string[]
   // Attachment fields
   attachmentUrl?: string | null
   attachmentName?: string | null

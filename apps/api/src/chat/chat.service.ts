@@ -491,6 +491,45 @@ export class ChatService {
     return msgWithSender;
   }
 
+  async deleteMessage(messageId: string, userId: string, deleteType: 'everyone' | 'me') {
+    // Find the message
+    const message = await this.messageRepository.findOne({
+      where: { id: messageId },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    if (deleteType === 'everyone') {
+      // Only sender can delete for everyone
+      if (message.senderId !== userId) {
+        throw new ForbiddenException('You can only delete your own messages for everyone');
+      }
+
+      // Mark as deleted for everyone and replace text
+      message.deletedForEveryone = true;
+      message.text = 'Mensagem excluída';
+    } else {
+      // Delete for me - add user to deletedBy array
+      const deletedBy = message.deletedBy || [];
+      if (!deletedBy.includes(userId)) {
+        deletedBy.push(userId);
+        message.deletedBy = deletedBy;
+      }
+    }
+
+    const updatedMessage = await this.messageRepository.save(message);
+
+    // Return with sender info
+    const msgWithSender = await this.messageRepository.findOne({
+      where: { id: updatedMessage.id },
+      relations: ['sender'],
+    });
+
+    return msgWithSender;
+  }
+
   async getUnreadCount(userId: string) {
     // Get all conversations for user
     const userParticipations = await this.participantRepository.find({

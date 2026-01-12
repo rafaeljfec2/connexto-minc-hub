@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { Download, FileText, Play, ExternalLink, X, Loader2, Edit2 } from 'lucide-react'
+import { Download, FileText, Play, ExternalLink, X, Loader2, Edit2, Trash2 } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
+import { Button } from '@/components/ui/Button'
 
 type MessageStatus = 'sending' | 'sent' | 'read'
 
@@ -38,7 +40,9 @@ interface ChatBubbleProps {
   readonly senderName?: string
   readonly senderColor?: string
   readonly isEdited?: boolean
+  readonly deletedForEveryone?: boolean
   readonly onEdit?: (messageId: string, currentText: string) => void
+  readonly onDelete?: (messageId: string, type: 'everyone' | 'me') => void
 }
 
 type MediaType = 'image' | 'video' | 'audio' | 'pdf' | 'document'
@@ -87,22 +91,40 @@ export function ChatBubble({
   senderName,
   senderColor,
   isEdited,
+  deletedForEveryone,
   onEdit,
+  onDelete,
 }: Readonly<ChatBubbleProps>) {
   const time = formatTime(timestamp)
   const [showContextMenu, setShowContextMenu] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
   const bubbleRef = useRef<HTMLDivElement>(null)
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent) => {
-      if (!isMe || !onEdit) return
+      if (!isMe && !onDelete) return
       e.preventDefault()
-      setContextMenuPosition({ x: e.clientX, y: e.clientY })
+      e.stopPropagation()
+
+      const x = e.pageX
+      const y = e.pageY
+
+      setContextMenuPosition({ x, y })
       setShowContextMenu(true)
     },
-    [isMe, onEdit]
+    [isMe, onDelete]
   )
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowContextMenu(false)
+    }
+    if (showContextMenu) {
+      globalThis.addEventListener('click', handleClickOutside)
+      return () => globalThis.removeEventListener('click', handleClickOutside)
+    }
+  }, [showContextMenu])
 
   const handleEditClick = useCallback(() => {
     if (onEdit) {
@@ -111,13 +133,63 @@ export function ChatBubble({
     setShowContextMenu(false)
   }, [onEdit, messageId, message])
 
-  useEffect(() => {
-    const handleClickOutside = () => setShowContextMenu(false)
-    if (showContextMenu) {
-      document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
-    }
-  }, [showContextMenu])
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    setShowContextMenu(false)
+    setShowDeleteModal(true)
+  }, [])
+
+  const handleDelete = useCallback(
+    (type: 'everyone' | 'me') => {
+      if (onDelete) {
+        onDelete(messageId, type)
+        setShowDeleteModal(false)
+      }
+    },
+    [messageId, onDelete]
+  )
+
+  if (deletedForEveryone) {
+    return (
+      <div className={`flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`}>
+        {!isMe && senderName && (
+          <span className="text-xs text-gray-400 mb-1 ml-1 block">{senderName}</span>
+        )}
+        <div
+          ref={bubbleRef}
+          className={`relative max-w-[85%] sm:max-w-[75%] px-4 py-2 rounded-2xl text-sm italic border ${
+            isMe
+              ? 'bg-primary-50 border-primary-200 text-gray-500 rounded-tr-none'
+              : 'bg-gray-50 border-gray-200 text-gray-500 rounded-tl-none'
+          }`}
+          onContextMenu={handleContextMenu}
+        >
+          <div className="flex items-center gap-2">
+            <X size={14} />
+            <span>Mensagem excluída</span>
+          </div>
+
+          {/* Context Menu for deleted message (only delete for me) */}
+          {showContextMenu && (
+            <div
+              className="fixed z-[9999] min-w-[160px] bg-white rounded-lg shadow-xl border border-gray-100 py-1"
+              style={{ top: contextMenuPosition.y, left: contextMenuPosition.x }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => handleDelete('me')}
+                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+              >
+                <Trash2 size={14} />
+                Excluir para mim
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   if (attachment) {
     return (
@@ -155,19 +227,75 @@ export function ChatBubble({
       </div>
       {showContextMenu && (
         <div
-          className="fixed z-50 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 py-1 min-w-[120px]"
+          className="fixed z-50 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 py-1 min-w-[160px]"
           style={{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }}
+          onClick={e => e.stopPropagation()}
         >
-          <button
-            type="button"
-            onClick={handleEditClick}
-            className="w-full px-4 py-2 text-left text-sm hover:bg-dark-100 dark:hover:bg-dark-700 flex items-center gap-2 text-dark-900 dark:text-dark-50"
-          >
-            <Edit2 className="h-4 w-4" />
-            Editar
-          </button>
+          {isMe && onEdit && (
+            <button
+              type="button"
+              onClick={handleEditClick}
+              className="w-full px-4 py-2 text-left text-sm hover:bg-dark-100 dark:hover:bg-dark-700 flex items-center gap-2 text-dark-900 dark:text-dark-50"
+            >
+              <Edit2 className="h-4 w-4" />
+              Editar
+            </button>
+          )}
+
+          <div className="relative group/delete">
+            <button
+              type="button"
+              onClick={handleDeleteClick}
+              className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 text-red-600 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Trash2 className="h-4 w-4" />
+                Excluir
+              </div>
+            </button>
+          </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} title="" size="sm">
+        <div className="flex flex-col items-center justify-center p-2 text-center">
+          <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mb-4">
+            <X className="w-6 h-6 text-red-600 dark:text-red-500" />
+          </div>
+
+          <h3 className="text-lg font-semibold text-dark-900 dark:text-dark-50 mb-2">
+            Excluir Mensagem
+          </h3>
+
+          <p className="text-sm text-dark-500 dark:text-dark-400 mb-6 max-w-[280px]">
+            Tem certeza que deseja excluir esta mensagem? Esta ação não pode ser desfeita.
+          </p>
+
+          <div className="flex flex-col gap-3 w-full">
+            {/* Delete for Everyone - Only if I sent it */}
+            {isMe && (
+              <Button variant="danger" className="w-full" onClick={() => handleDelete('everyone')}>
+                Excluir para todos
+              </Button>
+            )}
+
+            {/* Delete for Me - Always available */}
+            <Button
+              variant={isMe ? 'outline' : 'danger'}
+              className={`w-full ${isMe ? 'border-dark-200 text-dark-700 dark:border-dark-700 dark:text-dark-300' : ''}`}
+              onClick={() => handleDelete('me')}
+            >
+              Excluir para mim
+            </Button>
+
+            {/* Cancel */}
+            <Button variant="ghost" className="w-full" onClick={() => setShowDeleteModal(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </>
   )
 }

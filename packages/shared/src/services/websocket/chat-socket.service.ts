@@ -12,6 +12,8 @@ export interface ChatSocketEvents {
   'message-read': (data: { conversationId: string; readBy: string; messageIds?: string[] }) => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   'message:edited': (data: any) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  'message:deleted': (data: any) => void
   'user-typing': (data: { conversationId: string; userId: string; isTyping: boolean }) => void
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   'conversation-updated': (data: any) => void

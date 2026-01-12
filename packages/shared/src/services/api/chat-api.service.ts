@@ -120,6 +120,16 @@ export class ChatApiService {
     return response.data.data
   }
 
+  async deleteMessage(messageId: string, deleteType: 'everyone' | 'me'): Promise<Message> {
+    const response = await this.client.delete<ApiResponse<Message>>(`/chat/messages/${messageId}`, {
+      data: { deleteType },
+    })
+    if (!response.data.data) {
+      throw new Error('Failed to delete message')
+    }
+    return response.data.data
+  }
+
   async removeParticipant(conversationId: string, memberId: string): Promise<{ success: boolean }> {
     await this.client.delete(`/chat/groups/${conversationId}/members/${memberId}`)
     return { success: true }

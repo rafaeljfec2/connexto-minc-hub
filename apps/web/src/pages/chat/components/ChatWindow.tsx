@@ -244,6 +244,18 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     [editingMessageId]
   )
 
+  const handleDeleteMessage = useCallback(async (messageId: string, type: 'everyone' | 'me') => {
+    try {
+      const { ChatApiService } = await import('@minc-hub/shared')
+      const { api } = await import('@/lib/api')
+      const chatApi = new ChatApiService(api)
+
+      await chatApi.deleteMessage(messageId, type)
+    } catch (error) {
+      console.error('Failed to delete message:', error)
+    }
+  }, [])
+
   // Fallback: If activeConversation is missing, try to find it in the list
   const currentConversation = activeConversation || conversations.find(c => c.id === conversationId)
 
@@ -292,46 +304,50 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500"></div>
           </div>
         )}
-        {messages.map(message => {
-          const isMe = message.senderId === user?.id
-          const status = isMe
-            ? message.id.startsWith('temp-')
-              ? 'sending'
-              : message.read
-                ? 'read'
-                : 'sent'
-            : undefined
-
-          const sender =
-            isGroup && !isMe
-              ? currentConversation?.participants.find(p => p.id === message.senderId)
+        {messages
+          .filter(message => !message.deletedBy?.includes(user?.id || ''))
+          .map(message => {
+            const isMe = message.senderId === user?.id
+            const status = isMe
+              ? message.id.startsWith('temp-')
+                ? 'sending'
+                : message.read
+                  ? 'read'
+                  : 'sent'
               : undefined
 
-          return (
-            <ChatBubble
-              key={message.id}
-              messageId={message.id}
-              message={message.text}
-              isMe={isMe}
-              timestamp={message.createdAt}
-              status={status}
-              senderName={sender?.name}
-              senderColor={sender ? senderColors.get(sender.id) : undefined}
-              isEdited={message.isEdited}
-              onEdit={isMe ? handleEditMessage : undefined}
-              attachment={
-                message.attachmentUrl
-                  ? {
-                      url: message.attachmentUrl,
-                      name: message.attachmentName ?? 'arquivo',
-                      type: message.attachmentType ?? 'application/octet-stream',
-                      size: message.attachmentSize ?? 0,
-                    }
-                  : undefined
-              }
-            />
-          )
-        })}
+            const sender =
+              isGroup && !isMe
+                ? currentConversation?.participants.find(p => p.id === message.senderId)
+                : undefined
+
+            return (
+              <ChatBubble
+                key={message.id}
+                messageId={message.id}
+                message={message.text}
+                isMe={isMe}
+                timestamp={message.createdAt}
+                status={status}
+                senderName={sender?.name}
+                senderColor={sender ? senderColors.get(sender.id) : undefined}
+                isEdited={message.isEdited}
+                deletedForEveryone={message.deletedForEveryone}
+                onEdit={isMe ? handleEditMessage : undefined}
+                onDelete={handleDeleteMessage}
+                attachment={
+                  message.attachmentUrl
+                    ? {
+                        url: message.attachmentUrl,
+                        name: message.attachmentName ?? 'arquivo',
+                        type: message.attachmentType ?? 'application/octet-stream',
+                        size: message.attachmentSize ?? 0,
+                      }
+                    : undefined
+                }
+              />
+            )
+          })}
         {/* Spacer */}
         <div className="h-4" />
         <div ref={messagesEndRef} />

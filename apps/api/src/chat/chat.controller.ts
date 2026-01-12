@@ -17,6 +17,7 @@ import {
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { DeleteMessageDto } from './dto/delete-message.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { MarkMessagesReadDto } from './dto/mark-messages-read.dto';
@@ -111,6 +112,37 @@ export class ChatController {
     });
 
     return updatedMessage;
+  }
+
+  @Delete('messages/:messageId')
+  async deleteMessage(
+    @Req() req: { user: UserEntity },
+    @Param('messageId', ParseUUIDPipe) messageId: string,
+    @Body() deleteMessageDto: DeleteMessageDto,
+  ) {
+    const deletedMessage = await this.chatService.deleteMessage(
+      messageId,
+      req.user.id,
+      deleteMessageDto.deleteType,
+    );
+
+    if (!deletedMessage) {
+      throw new Error('Failed to delete message');
+    }
+
+    // Emit WebSocket event only for delete everyone
+    if (deleteMessageDto.deleteType === 'everyone') {
+      this.chatGateway.broadcastToConversationRoom(
+        deletedMessage.conversationId,
+        'message:deleted',
+        {
+          ...deletedMessage,
+          timestamp: deletedMessage.createdAt,
+        },
+      );
+    }
+
+    return deletedMessage;
   }
 
   @Get('users/:userId/status')

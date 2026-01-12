@@ -48,6 +48,12 @@ export class MessageEntity {
   @Column({ name: 'is_edited', type: 'boolean', default: false })
   isEdited: boolean;
 
+  @Column({ name: 'deleted_for_everyone', type: 'boolean', default: false })
+  deletedForEveryone: boolean;
+
+  @Column({ name: 'deleted_by', type: 'simple-array', nullable: true })
+  deletedBy: string[] | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

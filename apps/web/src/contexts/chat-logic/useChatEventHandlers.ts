@@ -212,6 +212,28 @@ export function useChatEventHandlers({
       )
     }
 
+    const handleMessageDeleted = (message: Message) => {
+      const currentActive = activeConversationRef.current
+
+      // Update message in active conversation
+      if (currentActive && message.conversationId === currentActive.id) {
+        setMessagesRef.current(prev => prev.map(msg => (msg.id === message.id ? message : msg)))
+      }
+
+      // Update last message in conversation list
+      setConversationsRef.current(prev =>
+        prev.map(c => {
+          if (c.id === message.conversationId && c.lastMessage?.id === message.id) {
+            return {
+              ...c,
+              lastMessage: message,
+            }
+          }
+          return c
+        })
+      )
+    }
+
     const onReconnected = () => {
       const currentActive = activeConversationRef.current
       if (currentActive) {
@@ -224,6 +246,7 @@ export function useChatEventHandlers({
     chatSocket.on('conversation-updated', handleConversationUpdated)
     chatSocket.on('message-read', handleMessageRead)
     chatSocket.on('message:edited', handleMessageEdited)
+    chatSocket.on('message:deleted', handleMessageDeleted)
     chatSocket.on('connected', onReconnected)
 
     return () => {
@@ -231,6 +254,7 @@ export function useChatEventHandlers({
       chatSocket.off('conversation-updated', handleConversationUpdated)
       chatSocket.off('message-read', handleMessageRead)
       chatSocket.off('message:edited', handleMessageEdited)
+      chatSocket.off('message:deleted', handleMessageDeleted)
       chatSocket.off('connected', onReconnected)
     }
   }, [chatSocket, activeConversationRef, isOptimisticUpdateRef])
