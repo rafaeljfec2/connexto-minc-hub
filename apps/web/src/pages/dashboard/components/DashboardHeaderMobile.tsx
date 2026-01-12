@@ -47,6 +47,42 @@ export function DashboardHeaderMobile({
     }
   }
 
+  const renderHeaderContent = () => {
+    if (title) {
+      return (
+        <h1 className="text-base font-semibold text-dark-900 dark:text-dark-50 truncate">
+          {title}
+        </h1>
+      )
+    }
+
+    if (showChurchSelector) {
+      return (
+        <div className="w-full max-w-[200px]">
+          <ComboBox
+            options={churchOptions}
+            value={selectedChurch?.id || null}
+            onValueChange={handleChurchChange}
+            placeholder="Igreja"
+            searchable
+            searchPlaceholder="Buscar..."
+            maxHeight="max-h-56"
+            className="h-9 px-0 sm:px-3 text-sm font-semibold justify-center bg-transparent border-none hover:bg-dark-100 dark:hover:bg-dark-800 focus:ring-0 text-dark-900 dark:text-dark-50"
+            contentClassName="rounded-md shadow-lg"
+            showEmptyMessage={false}
+            renderTrigger={(_option, displayValue) => (
+              <div className="flex items-center gap-1.5 mx-auto max-w-full">
+                <span className="truncate">{displayValue}</span>
+              </div>
+            )}
+          />
+        </div>
+      )
+    }
+
+    return null
+  }
+
   return (
     <div className="fixed top-0 left-0 right-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950 transition-all duration-300 safe-area-top pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between px-2 py-1.5 gap-1.5">
@@ -83,31 +119,7 @@ export function DashboardHeaderMobile({
         )}
 
         <div className="flex items-center justify-start flex-1 min-w-0 px-2">
-          {title ? (
-            <h1 className="text-base font-semibold text-dark-900 dark:text-dark-50 truncate">
-              {title}
-            </h1>
-          ) : showChurchSelector ? (
-            <div className="w-full max-w-[200px]">
-              <ComboBox
-                options={churchOptions}
-                value={selectedChurch?.id || null}
-                onValueChange={handleChurchChange}
-                placeholder="Igreja"
-                searchable
-                searchPlaceholder="Buscar..."
-                maxHeight="max-h-56"
-                className="h-9 px-0 sm:px-3 text-sm font-semibold justify-center bg-transparent border-none hover:bg-dark-100 dark:hover:bg-dark-800 focus:ring-0 text-dark-900 dark:text-dark-50"
-                contentClassName="rounded-md shadow-lg"
-                showEmptyMessage={false}
-                renderTrigger={(_option, displayValue) => (
-                  <div className="flex items-center gap-1.5 mx-auto max-w-full">
-                    <span className="truncate">{displayValue}</span>
-                  </div>
-                )}
-              />
-            </div>
-          ) : null}
+          {renderHeaderContent()}
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">

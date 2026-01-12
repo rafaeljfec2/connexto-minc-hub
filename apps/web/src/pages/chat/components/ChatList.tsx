@@ -128,12 +128,28 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
 
   return (
     <div
-      className={`flex flex-col h-full bg-white dark:bg-dark-950 border-r border-dark-200 dark:border-dark-800 ${className}`}
+      className={`flex flex-col h-full bg-white dark:bg-dark-950 border-r border-dark-200 dark:border-dark-800 pt-[env(safe-area-inset-top)] pb-[calc(env(safe-area-inset-bottom)+5rem)] lg:pb-0 ${className}`}
     >
       {/* Header */}
       <div className="p-4 border-b border-dark-200 dark:border-dark-800">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-dark-900 dark:text-dark-50">Conversas</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="p-2 -ml-2 text-dark-700 dark:text-dark-300 hover:text-dark-900 dark:hover:text-dark-50 transition-colors lg:hidden"
+              aria-label="Voltar"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+            <h2 className="text-xl font-bold text-dark-900 dark:text-dark-50">Conversas</h2>
+          </div>
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -153,7 +169,17 @@ export function ChatList({ className, onConversationClick }: Readonly<ChatListPr
             {/* Dropdown Menu */}
             {isDropdownOpen && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setIsDropdownOpen(false)} />
+                <button
+                  type="button"
+                  className="fixed inset-0 z-10 cursor-default"
+                  onClick={() => setIsDropdownOpen(false)}
+                  onKeyDown={e => {
+                    if (e.key === 'Escape' || e.key === 'Enter') {
+                      setIsDropdownOpen(false)
+                    }
+                  }}
+                  aria-label="Fechar menu"
+                />
                 <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 z-50 overflow-hidden">
                   <button
                     onClick={() => {

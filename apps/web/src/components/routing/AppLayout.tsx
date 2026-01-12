@@ -26,7 +26,7 @@ function getMainClassName(
   }
 
   if (isChatPage) {
-    return `${baseClasses} p-0 pt-[calc(4.5rem+env(safe-area-inset-top))] lg:pt-0 overflow-hidden`
+    return `${baseClasses} p-0 lg:pt-0 overflow-hidden`
   }
 
   if (isProfilePage) {
@@ -55,8 +55,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Fixed Navigation Elements - Outside animation to preserve fixed positioning */}
       <Sidebar />
 
-      {/* Hide mobile header when inside a chat conversation or new message page - they have their own headers */}
-      {!isChatConversation && !isNewMessagePage && (
+      {/* Hide mobile header when inside a chat conversation, chat list, or new message page - they have their own headers */}
+      {!isChatConversation && !isChatPage && !isNewMessagePage && (
         <div className="lg:hidden">
           <DashboardHeaderMobile
             onNotificationPress={() => {
