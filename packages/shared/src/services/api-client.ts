@@ -78,18 +78,8 @@ export class ApiClient {
     if (error.response?.data) {
       const data = error.response.data as any
       if (data.message) {
-        const apiError = new Error(data.message) as AxiosError
-        Object.assign(apiError, {
-          config: error.config,
-          code: error.code,
-          request: error.request,
-          response: error.response,
-          status: error.response.status,
-          statusText: error.response.statusText,
-          isAxiosError: true,
-          toJSON: error.toJSON,
-        })
-        return apiError
+        // Modify the existing error message instead of creating a new Error
+        error.message = data.message
       }
     }
     return error

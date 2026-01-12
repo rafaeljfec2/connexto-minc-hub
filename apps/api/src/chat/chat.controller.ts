@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Body,
   Param,
   Query,
@@ -15,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { MarkMessagesReadDto } from './dto/mark-messages-read.dto';
@@ -80,6 +82,15 @@ export class ChatController {
       req.user.id,
       markMessagesReadDto.messageIds,
     );
+  }
+
+  @Patch('messages/:messageId')
+  async updateMessage(
+    @Req() req: { user: UserEntity },
+    @Param('messageId', ParseUUIDPipe) messageId: string,
+    @Body() updateMessageDto: UpdateMessageDto,
+  ) {
+    return this.chatService.updateMessage(messageId, req.user.id, updateMessageDto.text);
   }
 
   @Get('users/:userId/status')

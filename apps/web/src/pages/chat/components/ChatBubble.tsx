@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { Download, FileText, Play, ExternalLink, X, Loader2 } from 'lucide-react'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { Download, FileText, Play, ExternalLink, X, Loader2, Edit2 } from 'lucide-react'
 
 type MessageStatus = 'sending' | 'sent' | 'read'
 
@@ -29,6 +29,7 @@ export interface MessageAttachment {
 }
 
 interface ChatBubbleProps {
+  readonly messageId: string
   readonly message: string
   readonly isMe: boolean
   readonly timestamp: string
@@ -36,6 +37,8 @@ interface ChatBubbleProps {
   readonly attachment?: MessageAttachment
   readonly senderName?: string
   readonly senderColor?: string
+  readonly isEdited?: boolean
+  readonly onEdit?: (messageId: string, currentText: string) => void
 }
 
 type MediaType = 'image' | 'video' | 'audio' | 'pdf' | 'document'
@@ -75,6 +78,7 @@ function formatTime(timestamp: string): string {
 }
 
 export function ChatBubble({
+  messageId,
   message,
   isMe,
   timestamp,
@@ -82,8 +86,38 @@ export function ChatBubble({
   attachment,
   senderName,
   senderColor,
+  isEdited,
+  onEdit,
 }: Readonly<ChatBubbleProps>) {
   const time = formatTime(timestamp)
+  const [showContextMenu, setShowContextMenu] = useState(false)
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
+  const bubbleRef = useRef<HTMLDivElement>(null)
+
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isMe || !onEdit) return
+      e.preventDefault()
+      setContextMenuPosition({ x: e.clientX, y: e.clientY })
+      setShowContextMenu(true)
+    },
+    [isMe, onEdit]
+  )
+
+  const handleEditClick = useCallback(() => {
+    if (onEdit) {
+      onEdit(messageId, message)
+    }
+    setShowContextMenu(false)
+  }, [onEdit, messageId, message])
+
+  useEffect(() => {
+    const handleClickOutside = () => setShowContextMenu(false)
+    if (showContextMenu) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showContextMenu])
 
   if (attachment) {
     return (
@@ -99,23 +133,42 @@ export function ChatBubble({
   }
 
   return (
-    <div
-      className={`mb-3 max-w-[80%] px-4 py-2 rounded-2xl ${
-        isMe
-          ? 'ml-auto bg-primary-500 text-white rounded-br-sm'
-          : 'mr-auto bg-dark-200 dark:bg-dark-800 text-dark-900 dark:text-dark-50 rounded-bl-sm'
-      }`}
-    >
-      {!isMe && senderName && (
-        <p
-          className={`text-xs font-bold mb-1 ${senderColor ?? 'text-primary-600 dark:text-primary-400'}`}
+    <>
+      <div
+        ref={bubbleRef}
+        onContextMenu={handleContextMenu}
+        className={`mb-3 max-w-[80%] px-4 py-2 rounded-2xl cursor-pointer ${
+          isMe
+            ? 'ml-auto bg-primary-500 text-white rounded-br-sm'
+            : 'mr-auto bg-dark-200 dark:bg-dark-800 text-dark-900 dark:text-dark-50 rounded-bl-sm'
+        }`}
+      >
+        {!isMe && senderName && (
+          <p
+            className={`text-xs font-bold mb-1 ${senderColor ?? 'text-primary-600 dark:text-primary-400'}`}
+          >
+            {senderName}
+          </p>
+        )}
+        <p className="text-sm leading-relaxed mb-1 break-words whitespace-pre-wrap">{message}</p>
+        <BubbleFooter time={time} isMe={isMe} status={status} isEdited={isEdited} />
+      </div>
+      {showContextMenu && (
+        <div
+          className="fixed z-50 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 py-1 min-w-[120px]"
+          style={{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }}
         >
-          {senderName}
-        </p>
+          <button
+            type="button"
+            onClick={handleEditClick}
+            className="w-full px-4 py-2 text-left text-sm hover:bg-dark-100 dark:hover:bg-dark-700 flex items-center gap-2 text-dark-900 dark:text-dark-50"
+          >
+            <Edit2 className="h-4 w-4" />
+            Editar
+          </button>
+        </div>
       )}
-      <p className="text-sm leading-relaxed mb-1 break-words whitespace-pre-wrap">{message}</p>
-      <BubbleFooter time={time} isMe={isMe} status={status} />
-    </div>
+    </>
   )
 }
 
@@ -365,11 +418,19 @@ interface BubbleFooterProps {
   readonly time: string
   readonly isMe: boolean
   readonly status?: MessageStatus
+  readonly isEdited?: boolean
 }
 
-function BubbleFooter({ time, isMe, status }: Readonly<BubbleFooterProps>) {
+function BubbleFooter({ time, isMe, status, isEdited }: Readonly<BubbleFooterProps>) {
   return (
     <div className="flex justify-end items-center gap-1 mt-1">
+      {isEdited && (
+        <span
+          className={`text-[10px] italic ${isMe ? 'text-white/60' : 'text-dark-400 dark:text-dark-500'}`}
+        >
+          editada
+        </span>
+      )}
       <span
         className={`text-[10px] ${isMe ? 'text-white/70' : 'text-dark-500 dark:text-dark-400'}`}
       >

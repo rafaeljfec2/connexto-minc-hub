@@ -45,7 +45,6 @@ export class ChatService {
       .createQueryBuilder('conversation')
       .leftJoinAndSelect('conversation.participants', 'participant')
       .leftJoinAndSelect('participant.user', 'user')
-      .leftJoinAndSelect('conversation.messages', 'message')
       .where('conversation.id IN (:...conversationIds)', { conversationIds })
       .orderBy('conversation.updatedAt', 'DESC')
       .take(limit)
@@ -460,6 +459,36 @@ export class ChatService {
 
     const result = await queryForUpdate.execute();
     return { updatedCount: result.affected };
+  }
+
+  async updateMessage(messageId: string, userId: string, text: string) {
+    // Find the message
+    const message = await this.messageRepository.findOne({
+      where: { id: messageId },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    // Verify the user is the sender
+    if (message.senderId !== userId) {
+      throw new ForbiddenException('You can only edit your own messages');
+    }
+
+    // Update the message
+    message.text = text;
+    message.isEdited = true;
+
+    const updatedMessage = await this.messageRepository.save(message);
+
+    // Return with sender info
+    const msgWithSender = await this.messageRepository.findOne({
+      where: { id: updatedMessage.id },
+      relations: ['sender'],
+    });
+
+    return msgWithSender;
   }
 
   async getUnreadCount(userId: string) {

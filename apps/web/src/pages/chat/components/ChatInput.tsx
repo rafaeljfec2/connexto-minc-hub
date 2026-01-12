@@ -9,6 +9,10 @@ interface ChatInputProps {
     file?: File
   ) => void
   readonly disabled?: boolean
+  readonly editMode?: boolean
+  readonly editText?: string
+  readonly onCancelEdit?: () => void
+  readonly onSaveEdit?: (text: string) => void
 }
 
 interface AttachmentOption {
@@ -49,7 +53,15 @@ const attachmentOptions: AttachmentOption[] = [
   },
 ]
 
-export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
+export function ChatInput({
+  onSend,
+  onAttachment,
+  disabled,
+  editMode,
+  editText,
+  onCancelEdit,
+  onSaveEdit,
+}: ChatInputProps) {
   const [text, setText] = useState('')
   const [showAttachMenu, setShowAttachMenu] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -71,6 +83,13 @@ export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
     }
   }, [text])
 
+  // Set text when entering edit mode
+  useEffect(() => {
+    if (editMode && editText) {
+      setText(editText)
+    }
+  }, [editMode, editText])
+
   // Close menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -87,12 +106,24 @@ export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
 
   function handleSend() {
     if (text.trim()) {
-      onSend(text)
+      if (editMode && onSaveEdit) {
+        onSaveEdit(text)
+      } else {
+        onSend(text)
+      }
       setText('')
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'
       }
     }
+  }
+
+  function handleCancel() {
+    setText('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+    }
+    onCancelEdit?.()
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -210,40 +241,53 @@ export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
           </div>
         )}
 
-        {/* Attach Button */}
-        <button
-          type="button"
-          onClick={() => setShowAttachMenu(!showAttachMenu)}
-          className={`p-2.5 rounded-full transition-all mb-0.5 ${
-            showAttachMenu
-              ? 'bg-primary-500 text-white rotate-45'
-              : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800'
-          }`}
-          aria-label="Anexar"
-        >
-          {showAttachMenu ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-          )}
-        </button>
+        {/* Attach Button - hide in edit mode */}
+        {!editMode && (
+          <button
+            type="button"
+            onClick={() => setShowAttachMenu(!showAttachMenu)}
+            className={`p-2.5 rounded-full transition-all mb-0.5 ${
+              showAttachMenu
+                ? 'bg-primary-500 text-white rotate-45'
+                : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800'
+            }`}
+            aria-label="Anexar"
+          >
+            {showAttachMenu ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            )}
+          </button>
+        )}
 
         <div
           className={`flex-1 bg-dark-100 dark:bg-dark-800 rounded-2xl px-4 py-3 min-h-[44px] ${disabled ? 'opacity-50' : ''}`}
         >
+          {editMode && (
+            <div className="text-xs text-primary-500 dark:text-primary-400 font-medium mb-1">
+              Editando mensagem
+            </div>
+          )}
           <textarea
             ref={textareaRef}
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={disabled ? 'Enviando arquivo...' : 'Digite uma mensagem...'}
+            placeholder={
+              disabled
+                ? 'Enviando arquivo...'
+                : editMode
+                  ? 'Edite a mensagem...'
+                  : 'Digite uma mensagem...'
+            }
             className="w-full bg-transparent text-dark-900 dark:text-dark-50 placeholder:text-dark-500 dark:placeholder:text-dark-400 text-sm resize-none outline-none max-h-[120px] overflow-y-auto block"
             rows={1}
             maxLength={500}
@@ -251,26 +295,59 @@ export function ChatInput({ onSend, onAttachment, disabled }: ChatInputProps) {
           />
         </div>
 
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={!text.trim() || disabled}
-          className={`p-2.5 rounded-full transition-colors mb-0.5 ${
-            text.trim() && !disabled
-              ? 'bg-primary-500 text-white hover:bg-primary-600'
-              : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-not-allowed'
-          }`}
-          aria-label="Enviar"
-        >
-          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            />
-          </svg>
-        </button>
+        {editMode ? (
+          <>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="p-2.5 rounded-full transition-colors mb-0.5 text-dark-500 dark:text-dark-400 hover:bg-dark-200 dark:hover:bg-dark-700"
+              aria-label="Cancelar"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!text.trim() || disabled}
+              className={`p-2.5 rounded-full transition-colors mb-0.5 ${
+                text.trim() && !disabled
+                  ? 'bg-primary-500 text-white hover:bg-primary-600'
+                  : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-not-allowed'
+              }`}
+              aria-label="Salvar"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={!text.trim() || disabled}
+            className={`p-2.5 rounded-full transition-colors mb-0.5 ${
+              text.trim() && !disabled
+                ? 'bg-primary-500 text-white hover:bg-primary-600'
+                : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-not-allowed'
+            }`}
+            aria-label="Enviar"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Alert Component */}

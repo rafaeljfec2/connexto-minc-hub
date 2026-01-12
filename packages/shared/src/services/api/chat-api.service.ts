@@ -109,6 +109,17 @@ export class ChatApiService {
     )
     return response.data.data || { updatedCount: 0 }
   }
+
+  async updateMessage(messageId: string, text: string): Promise<Message> {
+    const response = await this.client.patch<ApiResponse<Message>>(`/chat/messages/${messageId}`, {
+      text,
+    })
+    if (!response.data.data) {
+      throw new Error('Failed to update message')
+    }
+    return response.data.data
+  }
+
   async removeParticipant(conversationId: string, memberId: string): Promise<{ success: boolean }> {
     await this.client.delete(`/chat/groups/${conversationId}/members/${memberId}`)
     return { success: true }

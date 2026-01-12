@@ -57,6 +57,10 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isGroupDetailsOpen, setIsGroupDetailsOpen] = useState(false)
 
+  // Edit state
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
+  const [editingText, setEditingText] = useState('')
+
   // Memoize sender colors
   const senderColors = useMemo(() => {
     const colors = new Map<string, string>()
@@ -209,6 +213,37 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     }
   }
 
+  const handleEditMessage = useCallback((messageId: string, currentText: string) => {
+    setEditingMessageId(messageId)
+    setEditingText(currentText)
+  }, [])
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingMessageId(null)
+    setEditingText('')
+  }, [])
+
+  const handleSaveEdit = useCallback(
+    async (newText: string) => {
+      if (!editingMessageId || !newText.trim()) return
+
+      try {
+        // Call API to update message
+        const { ChatApiService } = await import('@minc-hub/shared')
+        const { api } = await import('@/lib/api')
+        const chatApi = new ChatApiService(api)
+
+        await chatApi.updateMessage(editingMessageId, newText.trim())
+
+        setEditingMessageId(null)
+        setEditingText('')
+      } catch (error) {
+        console.error('Failed to edit message:', error)
+      }
+    },
+    [editingMessageId]
+  )
+
   // Fallback: If activeConversation is missing, try to find it in the list
   const currentConversation = activeConversation || conversations.find(c => c.id === conversationId)
 
@@ -275,12 +310,15 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
           return (
             <ChatBubble
               key={message.id}
+              messageId={message.id}
               message={message.text}
               isMe={isMe}
               timestamp={message.createdAt}
               status={status}
               senderName={sender?.name}
               senderColor={sender ? senderColors.get(sender.id) : undefined}
+              isEdited={message.isEdited}
+              onEdit={isMe ? handleEditMessage : undefined}
               attachment={
                 message.attachmentUrl
                   ? {
@@ -403,7 +441,15 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
         {/* Input */}
         <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom)]">
-          <ChatInput onSend={handleSend} onAttachment={handleAttachment} disabled={isUploading} />
+          <ChatInput
+            onSend={handleSend}
+            onAttachment={handleAttachment}
+            disabled={isUploading}
+            editMode={!!editingMessageId}
+            editText={editingText}
+            onCancelEdit={handleCancelEdit}
+            onSaveEdit={handleSaveEdit}
+          />
         </div>
       </div>
 

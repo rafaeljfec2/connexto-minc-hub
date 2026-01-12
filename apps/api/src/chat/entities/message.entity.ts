@@ -45,6 +45,9 @@ export class MessageEntity {
   @Column({ name: 'attachment_size', type: 'int', nullable: true })
   attachmentSize: number | null;
 
+  @Column({ name: 'is_edited', type: 'boolean', default: false })
+  isEdited: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

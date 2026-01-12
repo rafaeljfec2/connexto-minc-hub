@@ -213,6 +213,7 @@ export interface Message {
   conversationId: string
   createdAt: string
   updatedAt: string
+  isEdited?: boolean
   // Attachment fields
   attachmentUrl?: string | null
   attachmentName?: string | null

@@ -50,6 +50,11 @@ interface TypingDto {
   isTyping: boolean;
 }
 
+interface EditMessageDto {
+  messageId: string;
+  text: string;
+}
+
 const MIN_TOKEN_LENGTH = 50;
 const COOKIE_TOKEN_NAMES = ['access_token', 'auth_token'];
 
@@ -416,6 +421,64 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
     } catch (error) {
       this.logger.error(`Error sending message: ${error.message}`);
+      client.emit('error', { message: error.message });
+    }
+  }
+
+  @SubscribeMessage('edit-message')
+  async handleEditMessage(
+    @MessageBody() data: EditMessageDto,
+    @ConnectedSocket() client: AuthenticatedSocket,
+  ): Promise<void> {
+    if (!client.userId) {
+      return;
+    }
+
+    try {
+      // Update message
+      const updatedMessage = await this.chatService.updateMessage(
+        data.messageId,
+        client.userId,
+        data.text,
+      );
+
+      if (!updatedMessage) {
+        throw new Error('Failed to update message');
+      }
+
+      // Get conversation to broadcast to participants
+      const conversation = await this.chatService.findOneConversation(
+        updatedMessage.conversationId,
+        client.userId,
+      );
+
+      this.logger.log(
+        `Broadcasting edited message ${updatedMessage.id} from user ${client.userId} to conversation ${updatedMessage.conversationId}`,
+      );
+
+      // Prepare message payload
+      const messagePayload = {
+        ...updatedMessage,
+        timestamp: updatedMessage.createdAt,
+      };
+
+      // Broadcast to conversation room
+      this.broadcastToConversationRoom(
+        updatedMessage.conversationId,
+        'message:edited',
+        messagePayload,
+      );
+
+      // Broadcast to individual user rooms
+      conversation.participants.forEach((participant) => {
+        this.broadcastToUserRoom(participant.userId, 'message:edited', messagePayload);
+      });
+
+      this.logger.log(
+        `Message ${updatedMessage.id} edited by user ${client.userId}. Broadcasted to ${conversation.participants.length} participants.`,
+      );
+    } catch (error) {
+      this.logger.error(`Error editing message: ${error.message}`);
       client.emit('error', { message: error.message });
     }
   }
