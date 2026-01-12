@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { Download, FileText, Play, ExternalLink, X, Loader2, Edit2, Trash2 } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
+import { useLongPress } from '@/hooks/useLongPress'
 
 type MessageStatus = 'sending' | 'sent' | 'read'
 
@@ -102,19 +103,39 @@ export function ChatBubble({
   const bubbleRef = useRef<HTMLDivElement>(null)
 
   const handleContextMenu = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent | React.TouchEvent) => {
+      // Allow context menu if it's my message OR if I can delete (for me)
       if (!isMe && !onDelete) return
-      e.preventDefault()
+
+      // Prevent default browser context menu
+      if (e.type === 'contextmenu') {
+        e.preventDefault()
+      }
+
+      // Stop propagation
       e.stopPropagation()
 
-      const x = e.pageX
-      const y = e.pageY
+      let clientX, clientY
 
-      setContextMenuPosition({ x, y })
+      if ('touches' in e) {
+        // Touch event
+        clientX = e.touches[0].clientX
+        clientY = e.touches[0].clientY
+      } else {
+        // Mouse event
+        clientX = (e as React.MouseEvent).clientX
+        clientY = (e as React.MouseEvent).clientY
+      }
+
+      setContextMenuPosition({ x: clientX, y: clientY })
       setShowContextMenu(true)
     },
     [isMe, onDelete]
   )
+
+  const longPressProps = useLongPress(handleContextMenu, {
+    threshold: 500, // 500ms for long press
+  })
 
   useEffect(() => {
     const handleClickOutside = () => {
@@ -159,12 +180,17 @@ export function ChatBubble({
           ref={bubbleRef}
           role="button"
           tabIndex={0}
-          className={`relative max-w-[85%] sm:max-w-[75%] px-4 py-2 rounded-2xl text-sm italic border ${
+          className={`relative max-w-[85%] sm:max-w-[75%] px-4 py-2 rounded-2xl text-sm italic border select-none ${
             isMe
               ? 'bg-primary-50 border-primary-200 text-gray-500 rounded-tr-none'
               : 'bg-gray-50 border-gray-200 text-gray-500 rounded-tl-none'
           }`}
-          onContextMenu={handleContextMenu}
+          style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none' } as React.CSSProperties}
+          onContextMenu={e => {
+            e.preventDefault()
+            handleContextMenu(e)
+          }}
+          {...longPressProps}
           onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
               handleContextMenu(e as unknown as React.MouseEvent)
@@ -223,17 +249,33 @@ export function ChatBubble({
         ref={bubbleRef}
         role="button"
         tabIndex={0}
-        onContextMenu={handleContextMenu}
+        onContextMenu={e => {
+          e.preventDefault()
+          // Do NOT call handleContextMenu here to avoid double trigger with longPress
+          // But for desktop right click we might want it.
+          // useLongPress handles mouse down/up, but context menu event is separate.
+          // Let's rely on longPressProps for consistency or handle context menu specifically for desktop right click?
+          // Actually context menu event is good for right click.
+          // But on mobile native context menu fires on long press.
+          // If we prevent default here, native menu is blocked.
+          // Then useLongPress triggers our menu.
+          // For desktop right click, we need to manually trigger if useLongPress doesn't cover it (it covers left click hold).
+          // Let's checking if event is right click?
+          // native contextmenu event usually means right click on desktop.
+          handleContextMenu(e)
+        }}
+        {...longPressProps}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             handleContextMenu(e as unknown as React.MouseEvent)
           }
         }}
-        className={`mb-3 max-w-[80%] px-4 py-2 rounded-2xl cursor-pointer ${
+        className={`mb-3 max-w-[80%] px-4 py-2 rounded-2xl cursor-pointer select-none ${
           isMe
             ? 'ml-auto bg-primary-500 text-white rounded-br-sm'
             : 'mr-auto bg-dark-200 dark:bg-dark-800 text-dark-900 dark:text-dark-50 rounded-bl-sm'
         }`}
+        style={{ WebkitUserSelect: 'none', WebkitTouchCallout: 'none' } as React.CSSProperties}
       >
         {!isMe && senderName && (
           <p
