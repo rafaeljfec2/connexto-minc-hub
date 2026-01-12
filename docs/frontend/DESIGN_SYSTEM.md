@@ -464,6 +464,70 @@ transition-all duration-200 ease-out
 
 ---
 
+## Padrão de Páginas CRUD
+
+Para garantir consistência e manutenibilidade, todas as novas páginas de listagem e cadastro (CRUD) devem seguir o padrão estabelecido na `ChurchesPage`.
+
+### Arquitetura da Página
+
+A página principal deve atuar como um _Controller_, gerenciando o estado (dados, loading, filtros) e decidindo qual view renderizar com base no dispositivo.
+
+```tsx
+export function EntityPage() {
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
+  // ... hooks de dados e handlers
+
+  return (
+    <>
+      {!isDesktop && <EntityMobileView {...props} />}
+      {isDesktop && <EntityDesktopView {...props} />}
+      <EntityFormModal />
+    </>
+  )
+}
+```
+
+### Mobile View Pattern
+
+Para dispositivos móveis, utilizamos um layout de lista otimizado:
+
+1.  **Header com Ação**: Título à esquerda, Botão "Novo" à direita (ícone `PlusIcon`).
+2.  **Barra de Busca**: Componente dedicado, full-width.
+3.  **Lista Compacta**: Uso obrigatório do componente `CompactListItem`.
+
+#### CompactListItem
+
+O `CompactListItem` é o componente padrão para itens de lista no mobile.
+
+```tsx
+<CompactListItem
+  icon={<MyIcon />}
+  title="Título Principal"
+  subtitle="Informação Secundária"
+  metadata="Metadados (ex: data, status)"
+  badge={{ text: 'Ativo', variant: 'success' }}
+  onClick={handleClick}
+  onEdit={handleEdit} // Habilita automaticamente o Menu Dropdown
+  onDelete={handleDelete} // Habilita automaticamente o Menu Dropdown
+/>
+```
+
+### ItemMenuDropdown
+
+Para ações secundárias (Editar, Excluir) em listas mobile, utilizamos o `ItemMenuDropdown`.
+Este componente utiliza **React Portals** para garantir que o menu flutue sobre outros elementos e não seja cortado por containers com scroll.
+Ele é invocado automaticamente pelo `CompactListItem` quando `onEdit` ou `onDelete` são fornecidos.
+
+### Referência de Implementação
+
+Utilize os seguintes arquivos como base para novos desenvolvimentos:
+
+- **Page Controller**: `src/pages/ChurchesPage.tsx`
+- **Mobile View**: `src/pages/churches/components/ChurchesMobileView.tsx`
+- **List Item**: `src/pages/churches/components/ChurchListItem.tsx`
+
+---
+
 ## Related Documentation
 
 - [Backend Standards](../backend/BACKEND_STANDARDS.md)
