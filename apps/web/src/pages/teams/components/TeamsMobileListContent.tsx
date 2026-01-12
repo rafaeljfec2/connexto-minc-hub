@@ -1,5 +1,7 @@
 import type { Team } from '@minc-hub/shared/types'
-import { TeamItemCard } from './TeamItemCard'
+import { TeamListItem } from './TeamListItem'
+
+// Using compact list view for better scalability
 
 interface TeamsMobileListContentProps {
   readonly teams: Team[]
@@ -37,9 +39,9 @@ export function TeamsMobileListContent({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="bg-white dark:bg-dark-900 rounded-lg overflow-hidden border border-dark-200 dark:border-dark-800">
       {teams.map(team => (
-        <TeamItemCard
+        <TeamListItem
           key={team.id}
           team={team}
           ministryName={getMinistryName(team.ministryId)}
