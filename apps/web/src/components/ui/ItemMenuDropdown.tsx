@@ -1,12 +1,20 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
-interface ItemMenuDropdownProps {
-  readonly onEdit: () => void
-  readonly onDelete: () => void
+export interface MenuItem {
+  label: string
+  onClick: () => void
+  icon?: ReactNode
+  className?: string
 }
 
-export function ItemMenuDropdown({ onEdit, onDelete }: ItemMenuDropdownProps) {
+interface ItemMenuDropdownProps {
+  readonly onEdit?: () => void
+  readonly onDelete?: () => void
+  readonly menuItems?: MenuItem[]
+}
+
+export function ItemMenuDropdown({ onEdit, onDelete, menuItems = [] }: ItemMenuDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
   const menuRef = useRef<HTMLDivElement>(null)
@@ -78,46 +86,76 @@ export function ItemMenuDropdown({ onEdit, onDelete }: ItemMenuDropdownProps) {
       }}
       className="w-40 bg-white dark:bg-dark-800 rounded-lg shadow-lg border border-dark-200 dark:border-dark-700 overflow-hidden"
     >
-      <button
-        type="button"
-        onClick={e => {
-          e.stopPropagation()
-          setIsOpen(false)
-          onEdit()
-        }}
-        className="w-full px-4 py-2.5 text-left text-sm text-dark-900 dark:text-dark-50 hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-          />
-        </svg>
-        Editar
-      </button>
-      <button
-        type="button"
-        onClick={e => {
-          e.stopPropagation()
-          setIsOpen(false)
-          onDelete()
-        }}
-        className="w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2 border-t border-dark-100 dark:border-dark-700"
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-          />
-        </svg>
-        Excluir
-      </button>
+      {/* Custom Menu Items */}
+      {menuItems.map((item, index) => (
+        <button
+          key={index}
+          type="button"
+          onClick={e => {
+            e.stopPropagation()
+            setIsOpen(false)
+            item.onClick()
+          }}
+          className={`w-full px-4 py-2.5 text-left text-sm hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 ${
+            item.className || 'text-dark-900 dark:text-dark-50'
+          }`}
+        >
+          {item.icon}
+          {item.label}
+        </button>
+      ))}
+
+      {/* Edit Button */}
+      {onEdit && (
+        <button
+          type="button"
+          onClick={e => {
+            e.stopPropagation()
+            setIsOpen(false)
+            onEdit()
+          }}
+          className={`w-full px-4 py-2.5 text-left text-sm text-dark-900 dark:text-dark-50 hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors flex items-center gap-2 ${
+            menuItems.length > 0 ? 'border-t border-dark-100 dark:border-dark-700' : ''
+          }`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+            />
+          </svg>
+          Editar
+        </button>
+      )}
+
+      {/* Delete Button */}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={e => {
+            e.stopPropagation()
+            setIsOpen(false)
+            onDelete()
+          }}
+          className="w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2 border-t border-dark-100 dark:border-dark-700"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+            />
+          </svg>
+          Excluir
+        </button>
+      )}
     </div>
   )
+
+  if (!onEdit && !onDelete && menuItems.length === 0) return null
 
   return (
     <>

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ItemMenuDropdown } from './ItemMenuDropdown'
+import { ItemMenuDropdown, MenuItem } from './ItemMenuDropdown'
 
 interface CompactListItemProps {
   readonly icon?: ReactNode
@@ -14,6 +14,7 @@ interface CompactListItemProps {
   readonly onClick?: () => void
   readonly onEdit?: () => void
   readonly onDelete?: () => void
+  readonly menuItems?: MenuItem[]
   readonly className?: string
 }
 
@@ -35,6 +36,7 @@ export function CompactListItem({
   onClick,
   onEdit,
   onDelete,
+  menuItems = [],
   className = '',
 }: CompactListItemProps) {
   return (
@@ -44,7 +46,7 @@ export function CompactListItem({
       <button
         type="button"
         className={`flex-1 min-w-0 flex items-center gap-3 py-3 pl-4 text-left focus:outline-none cursor-pointer ${
-          onEdit || onDelete ? 'pr-2' : 'pr-4'
+          onEdit || onDelete || menuItems.length > 0 ? 'pr-2' : 'pr-4'
         }`}
         onClick={onClick}
       >
@@ -92,16 +94,9 @@ export function CompactListItem({
       </button>
 
       {/* Menu Dropdown */}
-      {(onEdit || onDelete) && (
+      {(onEdit || onDelete || menuItems.length > 0) && (
         <div className="pr-4 py-3 flex-shrink-0">
-          <ItemMenuDropdown
-            onEdit={() => {
-              if (onEdit) onEdit()
-            }}
-            onDelete={() => {
-              if (onDelete) onDelete()
-            }}
-          />
+          <ItemMenuDropdown onEdit={onEdit} onDelete={onDelete} menuItems={menuItems} />
         </div>
       )}
     </div>
