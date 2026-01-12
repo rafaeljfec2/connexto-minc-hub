@@ -330,7 +330,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /**
    * Broadcasts message to conversation room
    */
-  private broadcastToConversationRoom(
+  public broadcastToConversationRoom(
     conversationId: string,
     event: string,
     payload: unknown,

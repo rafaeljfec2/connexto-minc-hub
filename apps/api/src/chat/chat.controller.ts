@@ -22,11 +22,15 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { MarkMessagesReadDto } from './dto/mark-messages-read.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserEntity } from '../users/entities/user.entity';
+import { ChatGateway } from './chat.gateway';
 
 @Controller('chat')
 @UseGuards(JwtAuthGuard)
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Get('conversations')
   async findConversations(
@@ -90,7 +94,23 @@ export class ChatController {
     @Param('messageId', ParseUUIDPipe) messageId: string,
     @Body() updateMessageDto: UpdateMessageDto,
   ) {
-    return this.chatService.updateMessage(messageId, req.user.id, updateMessageDto.text);
+    const updatedMessage = await this.chatService.updateMessage(
+      messageId,
+      req.user.id,
+      updateMessageDto.text,
+    );
+
+    if (!updatedMessage) {
+      throw new Error('Failed to update message');
+    }
+
+    // Emit WebSocket event to notify all clients
+    this.chatGateway.broadcastToConversationRoom(updatedMessage.conversationId, 'message:edited', {
+      ...updatedMessage,
+      timestamp: updatedMessage.createdAt,
+    });
+
+    return updatedMessage;
   }
 
   @Get('users/:userId/status')

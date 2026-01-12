@@ -416,7 +416,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         <div
           ref={messagesContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto px-4"
+          className="flex-1 overflow-y-auto px-6 md:px-12 lg:px-16"
         >
           <div className="py-4 min-h-full flex flex-col justify-end">{renderMessages()}</div>
         </div>
