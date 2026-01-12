@@ -161,11 +161,19 @@ export function MonthNavigator({ month, year, onChange, className }: MonthNaviga
         </button>
 
         <div className="flex-1 relative">
-          <button
+          <div
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full h-11 px-4 rounded-lg bg-dark-100 border border-dark-300 text-dark-900 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 flex items-center justify-between dark:bg-dark-800 dark:border-dark-700 dark:text-dark-50 dark:hover:bg-dark-700"
-            type="button"
+            className="w-full h-11 px-4 rounded-lg bg-dark-100 border border-dark-300 text-dark-900 hover:bg-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 ease-out hover:scale-[1.02] active:scale-95 flex items-center justify-between dark:bg-dark-800 dark:border-dark-700 dark:text-dark-50 dark:hover:bg-dark-700 cursor-pointer"
+            role="button"
+            tabIndex={0}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                setIsOpen(!isOpen)
+              }
+            }}
             aria-label="Selecionar mês/ano"
+            aria-expanded={isOpen}
           >
             <span className="text-sm font-medium">{currentLabel}</span>
             <div className="flex items-center gap-2">
@@ -209,7 +217,7 @@ export function MonthNavigator({ month, year, onChange, className }: MonthNaviga
                 />
               </svg>
             </div>
-          </button>
+          </div>
 
           {isOpen && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-dark-200 rounded-lg shadow-lg z-50 max-h-64 overflow-hidden flex flex-col dark:bg-dark-900 dark:border-dark-800">

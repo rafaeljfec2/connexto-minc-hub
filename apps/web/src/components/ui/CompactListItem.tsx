@@ -16,6 +16,7 @@ interface CompactListItemProps {
   readonly onDelete?: () => void
   readonly menuItems?: MenuItem[]
   readonly className?: string
+  readonly stacked?: boolean
 }
 
 const badgeVariants = {
@@ -38,6 +39,7 @@ export function CompactListItem({
   onDelete,
   menuItems = [],
   className = '',
+  stacked = false,
 }: CompactListItemProps) {
   return (
     <div
@@ -65,15 +67,21 @@ export function CompactListItem({
             {title}
           </h3>
           {(subtitle || metadata) && (
-            <div className="flex items-center gap-2 mt-0.5">
+            <div
+              className={`mt-0.5 ${stacked ? 'flex flex-col gap-0.5' : 'flex items-center gap-2'}`}
+            >
               {subtitle && (
                 <span className="text-xs text-dark-500 dark:text-dark-400 truncate">
                   {subtitle}
                 </span>
               )}
-              {subtitle && metadata && <span className="text-dark-300 dark:text-dark-600">•</span>}
+              {!stacked && subtitle && metadata && (
+                <span className="text-dark-300 dark:text-dark-600">•</span>
+              )}
               {metadata && (
-                <span className="text-xs text-dark-500 dark:text-dark-400">{metadata}</span>
+                <span className="text-xs text-dark-500 dark:text-dark-400 truncate">
+                  {metadata}
+                </span>
               )}
             </div>
           )}

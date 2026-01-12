@@ -68,13 +68,21 @@ export function AccordionTrigger({ children, className, value }: Readonly<Accord
   const isOpen = context.openItem === value
 
   return (
-    <button
+    <div
       onClick={() => value && context.toggleItem(value)}
       className={cn(
-        'w-full flex items-center justify-between p-4 text-left transition-colors hover:bg-dark-50 dark:hover:bg-dark-800/50',
+        'w-full flex items-center justify-between p-4 text-left transition-colors hover:bg-dark-50 dark:hover:bg-dark-800/50 cursor-pointer select-none',
         className
       )}
-      type="button"
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          if (value) context.toggleItem(value)
+        }
+      }}
+      aria-expanded={isOpen}
     >
       {children}
       <svg
@@ -88,7 +96,7 @@ export function AccordionTrigger({ children, className, value }: Readonly<Accord
       >
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
       </svg>
-    </button>
+    </div>
   )
 }
 

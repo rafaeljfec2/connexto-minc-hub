@@ -40,6 +40,7 @@ export function UsersListItem({ user, personName, onEdit, onDelete }: UsersListI
       metadata={personName ? `Vinculado a: ${personName}` : 'Não vinculado'}
       onEdit={() => onEdit(user)}
       onDelete={() => onDelete(user.id)}
+      stacked
     />
   )
 }
