@@ -117,7 +117,7 @@ export default function LoginPage() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-dark-800 border-none rounded-xl text-dark-900 dark:text-dark-50 placeholder-gray-400 focus:ring-2 focus:ring-orange-500/20 focus:bg-white dark:focus:bg-dark-800 transition-all font-medium"
-                placeholder="rafaeljfec2@gmail.com"
+                placeholder="digite seu email"
               />
             </div>
           </div>
@@ -181,7 +181,12 @@ export default function LoginPage() {
 
       <div className="mt-8 text-center bg-transparent">
         <p className="text-sm text-gray-400">
-          Created by <span className="text-orange-500 font-semibold">Connexto Tecnologia</span>
+          Created by{' '}
+          <span className="text-orange-500 font-semibold">
+            <a href="https://www.connexto.com.br" target="_blank">
+              Connexto Tecnologia
+            </a>
+          </span>
         </p>
       </div>
     </div>

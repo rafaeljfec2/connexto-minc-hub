@@ -125,7 +125,9 @@ export default function App() {
         allowsBackForwardNavigationGestures={Platform.OS === 'ios'}
         allowsInlineMediaPlayback={true}
         mediaPlaybackRequiresUserAction={false}
-        cacheEnabled={true}
+        cacheEnabled={false}
+        cacheMode="LOAD_NO_CACHE"
+        pullToRefreshEnabled={true}
         onShouldStartLoadWithRequest={request => {
           const isAllowed = ALLOWED_DOMAINS.some(domain => request.url.includes(domain))
           return isAllowed
