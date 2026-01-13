@@ -33,10 +33,10 @@ export function PeopleMobileView({
   onCreateClick,
 }: PeopleMobileViewProps) {
   return (
-    <div className="lg:hidden fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950">
+    <div className="lg:hidden fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 flex flex-col overflow-hidden bg-transparent dark:bg-dark-950">
       <PeopleSearchBar value={searchTerm} onChange={onSearchChange} />
 
-      <div className="px-4 py-3 bg-white dark:bg-dark-950 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
+      <div className="px-4 py-3 bg-transparent dark:bg-dark-950 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-dark-900 dark:text-dark-50">Servos</h2>
           <button
@@ -49,7 +49,7 @@ export function PeopleMobileView({
         </div>
       </div>
 
-      <div className="bg-dark-50 dark:bg-dark-950 flex-1 overflow-y-auto px-4 py-4">
+      <div className="bg-transparent dark:bg-dark-950 flex-1 overflow-y-auto px-4 py-4">
         <PeopleMobileListContent
           people={people}
           getMinistry={getMinistry}

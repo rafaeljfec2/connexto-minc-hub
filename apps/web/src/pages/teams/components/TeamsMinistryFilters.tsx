@@ -12,7 +12,7 @@ export function TeamsMinistryFilters({
   onSelect,
 }: TeamsMinistryFiltersProps) {
   return (
-    <div className="px-4 pb-3 bg-white dark:bg-dark-950 overflow-x-auto flex-shrink-0">
+    <div className="px-4 pb-3 bg-transparent dark:bg-dark-950 overflow-x-auto flex-shrink-0">
       <div className="flex gap-2">
         <button
           onClick={() => onSelect('all')}

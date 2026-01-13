@@ -75,7 +75,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       )}
 
       {/* Main Content - Animated Background & Page */}
-      <div className="h-[100dvh] w-screen overflow-hidden bg-gray-50 dark:bg-dark-950 lg:bg-grain relative animate-fade-in supports-[height:100dvh]:h-[100dvh] h-screen">
+      <div
+        className={`h-[100dvh] w-screen overflow-hidden dark:bg-dark-950 lg:bg-grain relative animate-fade-in supports-[height:100dvh]:h-[100dvh] h-screen ${
+          isChatConversation ? 'bg-gray-50' : 'bg-gray-200'
+        }`}
+      >
         {/* Overlay only for grain effect on desktop */}
         <div className="hidden lg:block absolute inset-0 bg-white/40 dark:bg-dark-950/60 transition-colors duration-300" />
         <div className="relative z-10 h-full flex flex-col lg:block">

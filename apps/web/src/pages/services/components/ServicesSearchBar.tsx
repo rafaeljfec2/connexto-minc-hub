@@ -5,7 +5,7 @@ interface ServicesSearchBarProps {
 
 export function ServicesSearchBar({ value, onChange }: ServicesSearchBarProps) {
   return (
-    <div className="px-4 pt-4 pb-3 bg-white dark:bg-dark-950 flex-shrink-0">
+    <div className="px-4 pt-4 pb-3 bg-white dark:bg-dark-950 flex-shrink-0 mb-3 shadow-sm">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg

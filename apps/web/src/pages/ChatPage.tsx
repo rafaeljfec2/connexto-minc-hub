@@ -8,7 +8,7 @@ import { useChat } from '@/hooks/useChat'
 import { useNavigate } from 'react-router-dom'
 
 const EmptyState = ({ onStartNewChat }: { onStartNewChat: () => void }) => (
-  <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-gray-50 dark:bg-dark-950">
+  <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-transparent dark:bg-dark-950">
     <div className="mb-6 relative">
       <div className="absolute inset-0 bg-primary-500/10 rounded-full blur-2xl" />
       <div className="relative bg-white dark:bg-dark-900 rounded-full p-6 shadow-lg">

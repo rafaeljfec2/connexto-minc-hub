@@ -36,7 +36,7 @@ export function TeamsMobileView({
   onCreateClick,
 }: TeamsMobileViewProps) {
   return (
-    <div className="lg:hidden fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950">
+    <div className="lg:hidden fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 flex flex-col overflow-hidden bg-transparent dark:bg-dark-950">
       <TeamsSearchBar value={searchTerm} onChange={onSearchChange} />
 
       <TeamsMinistryFilters
@@ -47,7 +47,7 @@ export function TeamsMobileView({
 
       <TeamsSectionHeader onCreateClick={onCreateClick} />
 
-      <div className="bg-dark-50 dark:bg-dark-950 flex-1 overflow-y-auto px-4 py-4">
+      <div className="bg-transparent dark:bg-dark-950 flex-1 overflow-y-auto px-4 py-4">
         <TeamsMobileListContent
           teams={teams}
           isLoading={isLoading}

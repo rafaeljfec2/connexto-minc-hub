@@ -59,7 +59,7 @@ export default function ProfilePage() {
   if (!user) return null
 
   return (
-    <div className="h-full bg-gray-50 dark:bg-dark-950 lg:bg-transparent lg:dark:bg-transparent">
+    <div className="h-full bg-transparent dark:bg-dark-950 lg:bg-transparent lg:dark:bg-transparent">
       <div className="max-w-5xl mx-auto px-4 py-6 lg:pt-0 lg:pb-6">
         {/* Header */}
         <div className="mb-4">

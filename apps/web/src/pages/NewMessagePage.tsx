@@ -98,7 +98,7 @@ export default function NewMessagePage() {
         }))
 
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-dark-950">
+    <div className="flex flex-col min-h-screen bg-transparent dark:bg-dark-950">
       {/* Header with back button */}
       <div className="fixed top-0 left-0 right-0 z-30 w-full border-b border-dark-200 bg-white dark:border-dark-800 dark:bg-dark-950 safe-area-top pt-[env(safe-area-inset-top)]">
         <div className="flex items-center px-2 py-2 gap-0">

@@ -40,7 +40,7 @@ function MobileDashboard({
   const isDesktop = false // Assuming isDesktop is defined elsewhere or a placeholder for now
 
   return (
-    <div className="lg:hidden flex flex-col min-h-screen bg-gray-50 dark:bg-dark-950">
+    <div className="lg:hidden flex flex-col min-h-screen bg-transparent dark:bg-dark-950">
       <div className="flex-1 pb-24 pt-4">
         {/* Upcoming Services Mobile (Carrossel) */}
         {!isDesktop && (
