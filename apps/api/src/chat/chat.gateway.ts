@@ -352,7 +352,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /**
    * Broadcasts message to all conversation participants
    */
-  private broadcastToParticipants(
+  /**
+   * Broadcasts message to all conversation participants
+   */
+  public broadcastToParticipants(
     conversationId: string,
     participants: Array<{ userId: string }>,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

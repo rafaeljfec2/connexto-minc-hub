@@ -375,6 +375,33 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
     )
   }
 
+  const handleSendAudio = async (file: Blob, _duration: number) => {
+    if (!activeConversation) return
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      // Ensure file has a name and type
+      const audioFile = new File([file], 'audio_message.webm', { type: 'audio/webm' })
+      formData.append('file', audioFile)
+
+      const { api } = await import('@/lib/api')
+      // Remove Content-Type header to let browser set it with boundary
+      await api.post(`/chat/conversations/${activeConversation.id}/messages/audio`, formData, {
+        headers: {
+          'Content-Type': undefined,
+        },
+      })
+
+      requestAnimationFrame(forceScroll)
+      setTimeout(forceScroll, 100)
+    } catch (error) {
+      console.error('Failed to send audio:', error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   return (
     <>
       <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-950">
@@ -464,8 +491,8 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
         <div className="flex-shrink-0 bg-white dark:bg-dark-950 border-t border-dark-200 dark:border-dark-800 pb-[env(safe-area-inset-bottom)]">
           <ChatInput
             onSend={handleSend}
+            onSendAudio={handleSendAudio}
             onAttachment={handleAttachment}
-            disabled={isUploading}
             editMode={!!editingMessageId}
             editText={editingText}
             onCancelEdit={handleCancelEdit}

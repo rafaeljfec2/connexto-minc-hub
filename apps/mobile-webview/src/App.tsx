@@ -130,6 +130,8 @@ export default function App() {
           const isAllowed = ALLOWED_DOMAINS.some(domain => request.url.includes(domain))
           return isAllowed
         }}
+        originWhitelist={['*']}
+        mediaCapturePermissionGrantType="grant"
       />
 
       {isLoading && (

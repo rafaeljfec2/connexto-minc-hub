@@ -25,6 +25,9 @@ export const ALLOWED_MIME_TYPES = [
   'video/quicktime',
   'audio/mpeg',
   'audio/wav',
+  'audio/webm',
+  'audio/mp4',
+  'audio/aac',
 ] as const;
 
 export const AVATAR_ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;

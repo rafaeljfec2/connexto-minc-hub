@@ -13,7 +13,10 @@ import {
   ParseIntPipe,
   DefaultValuePipe,
   Delete,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -24,6 +27,8 @@ import { MarkMessagesReadDto } from './dto/mark-messages-read.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserEntity } from '../users/entities/user.entity';
 import { ChatGateway } from './chat.gateway';
+import { UploadService } from '../upload/upload.service';
+import { UPLOAD_CONSTANTS } from '../upload/upload.constants';
 
 @Controller('chat')
 @UseGuards(JwtAuthGuard)
@@ -31,6 +36,7 @@ export class ChatController {
   constructor(
     private readonly chatService: ChatService,
     private readonly chatGateway: ChatGateway,
+    private readonly uploadService: UploadService,
   ) {}
 
   @Get('conversations')
@@ -74,6 +80,44 @@ export class ChatController {
     @Body() createMessageDto: CreateMessageDto,
   ) {
     return this.chatService.createMessage(conversationId, req.user.id, createMessageDto);
+  }
+
+  @Post('conversations/:conversationId/messages/audio')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: UPLOAD_CONSTANTS.MAX_FILE_SIZE } }),
+  )
+  async createAudioMessage(
+    @Req() req: { user: UserEntity },
+    @Param('conversationId', ParseUUIDPipe) conversationId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new Error('No audio file provided');
+    }
+
+    // Upload audio file
+    const uploadResult = await this.uploadService.uploadFile(file, 'chat-audio');
+
+    // Create message with attachment
+    const createMessageDto: CreateMessageDto = {
+      text: 'Áudio', // Fallback text
+      attachmentUrl: uploadResult.url,
+      attachmentName: 'audio_message',
+      attachmentType: file.mimetype,
+      attachmentSize: file.size,
+    };
+
+    const message = await this.chatService.createMessage(
+      conversationId,
+      req.user.id,
+      createMessageDto,
+    );
+
+    // Broadcast to participants
+    const conversation = await this.chatService.findOneConversation(conversationId, req.user.id);
+    this.chatGateway.broadcastToParticipants(conversationId, conversation.participants, message);
+
+    return message;
   }
 
   @Put('conversations/:conversationId/messages/read')

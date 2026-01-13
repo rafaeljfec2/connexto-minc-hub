@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect, Fragment } from 'react'
-import { Camera, Image, FileText, MapPin, X } from 'lucide-react'
+import { useState, useRef, useEffect, Fragment, useCallback } from 'react'
+import { Camera, Image, FileText, MapPin, X, Mic, StopCircle, Trash2 } from 'lucide-react'
+import { useLongPress } from '@/hooks/useLongPress'
 import { Alert, AlertType } from '@/components/ui/Alert'
 
 interface ChatInputProps {
   readonly onSend: (text: string) => void
+  readonly onSendAudio?: (file: Blob, duration: number) => Promise<void>
   readonly onAttachment?: (
     type: 'camera' | 'gallery' | 'document' | 'location',
     file?: File
@@ -21,6 +23,12 @@ interface AttachmentOption {
   icon: React.ReactNode
   color: string
   accept?: string
+}
+
+function formatDuration(seconds: number) {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
 function getPlaceholderText(disabled?: boolean, editMode?: boolean): string {
@@ -61,6 +69,7 @@ const attachmentOptions: AttachmentOption[] = [
 
 export function ChatInput({
   onSend,
+  onSendAudio,
   onAttachment,
   disabled,
   editMode,
@@ -81,6 +90,139 @@ export function ChatInput({
     title: string
     message: string
   } | null>(null)
+
+  // Audio Recording State
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingDuration, setRecordingDuration] = useState(0)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const timerIntervalRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const startTimeRef = useRef<number>(0)
+  const onSendAudioRef = useRef(onSendAudio)
+
+  const recordingSessionIdRef = useRef<string | null>(null)
+
+  // Keep ref updated
+  useEffect(() => {
+    onSendAudioRef.current = onSendAudio
+  }, [onSendAudio])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+      if (mediaRecorderRef.current?.state === 'recording') {
+        mediaRecorderRef.current.stop()
+      }
+      recordingSessionIdRef.current = null
+    }
+  }, [])
+
+  const startRecording = useCallback(async () => {
+    const sessionId = Date.now().toString()
+    recordingSessionIdRef.current = sessionId
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
+      // Check if session is still valid (user hasn't released button yet)
+      if (recordingSessionIdRef.current !== sessionId) {
+        stream.getTracks().forEach(track => track.stop())
+        return
+      }
+
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      audioChunksRef.current = []
+
+      mediaRecorderRef.current.ondataavailable = event => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
+      }
+
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      startTimeRef.current = Date.now()
+      setRecordingDuration(0)
+
+      timerIntervalRef.current = setInterval(() => {
+        setRecordingDuration(Math.floor((Date.now() - startTimeRef.current) / 1000))
+      }, 1000)
+    } catch (error) {
+      console.error('Error accessing microphone:', error)
+      recordingSessionIdRef.current = null
+      setAlertConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Erro no Microfone',
+        message: 'Não foi possível acessar o microfone. Verifique as permissões.',
+      })
+    }
+  }, [])
+
+  const stopRecording = useCallback(async () => {
+    recordingSessionIdRef.current = null // Invalidate session
+
+    if (mediaRecorderRef.current?.state !== 'recording') {
+      setIsRecording(false)
+      setRecordingDuration(0)
+      return
+    }
+
+    mediaRecorderRef.current.onstop = async () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+      const duration = recordingDuration
+
+      // Stop all tracks
+      mediaRecorderRef.current?.stream.getTracks().forEach(track => track.stop())
+
+      // Reset state
+      setIsRecording(false)
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+      setRecordingDuration(0)
+
+      // Send audio only if it's a valid recording (has chunks)
+      if (onSendAudioRef.current && audioBlob.size > 0) {
+        await onSendAudioRef.current(audioBlob, duration)
+      }
+    }
+
+    mediaRecorderRef.current.stop()
+  }, [recordingDuration])
+
+  const cancelRecording = useCallback(() => {
+    recordingSessionIdRef.current = null // Invalidate session
+
+    if (mediaRecorderRef.current?.state === 'recording') {
+      mediaRecorderRef.current.stop()
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop())
+    }
+    setIsRecording(false)
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current)
+    setRecordingDuration(0)
+    audioChunksRef.current = []
+  }, [])
+
+  const longPressProps = useLongPress(() => {}, {
+    threshold: 200,
+    onStart: () => {
+      void startRecording()
+    },
+    onFinish: _ => {
+      // Check if it was a short click (recording hasn't started or duration is 0)
+      const pressDuration = Date.now() - startTimeRef.current
+      if (!isRecording && pressDuration < 500) {
+        setAlertConfig({
+          isOpen: true,
+          type: 'info',
+          title: 'Segure para gravar',
+          message: 'Mantenha o botão pressionado para gravar seu áudio.',
+        })
+      }
+      void stopRecording()
+    },
+    onCancel: cancelRecording,
+  })
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -277,22 +419,36 @@ export function ChatInput({
         <div
           className={`flex-1 bg-dark-100 dark:bg-dark-800 rounded-2xl px-4 py-3 min-h-[44px] ${disabled ? 'opacity-50' : ''}`}
         >
-          {editMode && (
-            <div className="text-xs text-primary-500 dark:text-primary-400 font-medium mb-1">
-              Editando mensagem
+          {isRecording ? (
+            <div className="flex items-center justify-between h-full animate-in fade-in">
+              <div className="flex items-center gap-3 text-red-500 font-medium">
+                <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+                <span className="tabular-nums">{formatDuration(recordingDuration)}</span>
+                <span className="text-sm text-dark-500 font-normal">
+                  Gravando... (Solte para enviar)
+                </span>
+              </div>
             </div>
+          ) : (
+            <>
+              {editMode && (
+                <div className="text-xs text-primary-500 dark:text-primary-400 font-medium mb-1">
+                  Editando mensagem
+                </div>
+              )}
+              <textarea
+                ref={textareaRef}
+                value={text}
+                onChange={e => setText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={getPlaceholderText(disabled, editMode)}
+                className="w-full bg-transparent text-dark-900 dark:text-dark-50 placeholder:text-dark-500 dark:placeholder:text-dark-400 text-sm resize-none outline-none max-h-[120px] overflow-y-auto block"
+                rows={1}
+                maxLength={500}
+                disabled={disabled}
+              />
+            </>
           )}
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={e => setText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={getPlaceholderText(disabled, editMode)}
-            className="w-full bg-transparent text-dark-900 dark:text-dark-50 placeholder:text-dark-500 dark:placeholder:text-dark-400 text-sm resize-none outline-none max-h-[120px] overflow-y-auto block"
-            rows={1}
-            maxLength={500}
-            disabled={disabled}
-          />
         </div>
 
         {editMode ? (
@@ -346,6 +502,32 @@ export function ChatInput({
                 d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
               />
             </svg>
+          </button>
+        )}
+
+        {isRecording && (
+          <button
+            type="button"
+            onClick={cancelRecording}
+            className="p-2.5 rounded-full transition-colors mb-0.5 text-dark-500 hover:text-red-500 hover:bg-dark-100 dark:hover:bg-dark-800 animate-in fade-in slide-in-from-right-4"
+            title="Cancelar"
+          >
+            <Trash2 className="h-5 w-5" />
+          </button>
+        )}
+
+        {!editMode && !text.trim() && !disabled && (
+          <button
+            type="button"
+            {...longPressProps}
+            className={`p-2.5 rounded-full transition-all mb-0.5 select-none ${
+              isRecording
+                ? 'bg-red-500 text-white scale-110 shadow-lg'
+                : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300'
+            }`}
+            aria-label="Gravar áudio"
+          >
+            {isRecording ? <StopCircle className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
         )}
       </div>
