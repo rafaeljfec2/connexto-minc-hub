@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { UserRole } from '@/types'
+import { UserRole } from '@minc-hub/shared/types'
 import { ProtectedRoute } from './ProtectedRoute'
 import { AppLayout } from './AppLayout'
 

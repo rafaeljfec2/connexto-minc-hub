@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import type { Conversation } from '@/types'
+import type { Conversation } from '@minc-hub/shared'
 import { ConversationItem } from './ConversationItem'
 
 interface ChatListContentProps {

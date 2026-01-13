@@ -13,6 +13,14 @@ import { User, UserRole } from '@minc-hub/shared/types'
 import { createAuthService } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 
+declare global {
+  interface Window {
+    ReactNativeWebView?: {
+      postMessage: (message: string) => void
+    }
+  }
+}
+
 interface AuthContextType {
   user: User | null
   isLoading: boolean
@@ -175,6 +183,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const result = await authService.login(email, password)
         setUser(result.user)
         saveUserToStorage(result.user)
+
+        // Send token to Native App
+        if (window.ReactNativeWebView) {
+          const token = localStorage.getItem('auth_token')
+          if (token) {
+            window.ReactNativeWebView.postMessage(
+              JSON.stringify({
+                type: 'AUTH_SUCCESS',
+                token,
+              })
+            )
+          }
+        }
       } catch (error) {
         console.error('Erro ao fazer login:', error)
         throw error
@@ -188,6 +209,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await authService.logout()
       setUser(null)
       saveUserToStorage(null)
+
+      // Notify Native App to clear token
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: 'AUTH_LOGOUT',
+          })
+        )
+      }
     } catch (error) {
       console.error('Erro ao fazer logout:', error)
       setUser(null)

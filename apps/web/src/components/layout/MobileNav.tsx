@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { UserRole } from '@/types'
+import { UserRole } from '@minc-hub/shared/types'
 import { cn } from '@/lib/utils'
 
 interface NavItem {

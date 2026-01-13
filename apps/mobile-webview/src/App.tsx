@@ -9,16 +9,63 @@ import {
 } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { WebView } from 'react-native-webview'
-import type { WebViewNavigation } from 'react-native-webview'
+import type { WebViewNavigation, WebViewMessageEvent } from 'react-native-webview'
+import * as SecureStore from 'expo-secure-store'
 
 const WEBSITE_URL = 'https://www.mincteams.com.br'
 const ALLOWED_DOMAINS = ['mincteams.com.br', 'www.mincteams.com.br']
+const AUTH_TOKEN_KEY = 'auth_token'
 
 export default function App() {
   const webViewRef = useRef<WebView>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [canGoBack, setCanGoBack] = useState(false)
+  const [initialScript, setInitialScript] = useState<string>('')
+
+  // Load token on startup
+  useEffect(() => {
+    async function checkLogin() {
+      try {
+        const token = await SecureStore.getItemAsync(AUTH_TOKEN_KEY)
+        if (token) {
+          // Inject token into localStorage before page loads
+          const script = `
+            try {
+              window.localStorage.setItem('${AUTH_TOKEN_KEY}', '${token}');
+            } catch (e) {
+              console.error('Failed to inject token', e);
+            }
+            true;
+          `
+          setInitialScript(script)
+        }
+      } catch (error) {
+        console.error('Error loading token:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkLogin()
+  }, [])
+
+  // Handle messages from Web
+  const handleMessage = async (event: WebViewMessageEvent) => {
+    try {
+      if (!event.nativeEvent.data) return
+
+      const data = JSON.parse(event.nativeEvent.data)
+
+      if (data.type === 'AUTH_SUCCESS' && data.token) {
+        await SecureStore.setItemAsync(AUTH_TOKEN_KEY, data.token)
+      } else if (data.type === 'AUTH_LOGOUT') {
+        await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY)
+      }
+    } catch (error) {
+      // Ignore parse errors from other messages
+    }
+  }
 
   // Handle Android back button
   useEffect(() => {
@@ -48,7 +95,9 @@ export default function App() {
   }
 
   const handleLoadStart = () => {
-    setIsLoading(true)
+    // Only show loading if meaningful (first load or significant navigation)
+    // Don't override initial loading state if waiting for token
+    if (!initialScript) setIsLoading(true)
     setHasError(false)
   }
 
@@ -58,7 +107,7 @@ export default function App() {
   const handleLoadEnd = () => {
     if (isInitialLoadRef.current) {
       const elapsedTime = Date.now() - mountTimeRef.current
-      const MIN_SPLASH_TIME = 2500 // 2.5 seconds
+      const MIN_SPLASH_TIME = 2000
 
       if (elapsedTime < MIN_SPLASH_TIME) {
         setTimeout(() => {
@@ -115,6 +164,8 @@ export default function App() {
         onLoadEnd={handleLoadEnd}
         onError={handleError}
         onHttpError={handleError}
+        onMessage={handleMessage}
+        injectedJavaScriptBeforeContentLoaded={initialScript}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         allowsInlineMediaPlayback={true}
