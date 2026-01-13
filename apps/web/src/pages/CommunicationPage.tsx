@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Mail, MessageCircle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -8,7 +9,6 @@ import { ComboBox } from '@/components/ui/ComboBox'
 import { CheckboxList } from '@/components/ui/CheckboxList'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Modal } from '@/components/ui/Modal'
-import { PageHeader } from '@/components/layout/PageHeader'
 import { useModal } from '@/hooks/useModal'
 import { Team, Person } from '@/types'
 
@@ -212,15 +212,19 @@ export default function CommunicationPage() {
 
   return (
     <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8 sm:pt-6 sm:pb-8 lg:py-8">
-      <PageHeader
-        title="Comunicação"
-        description="Envie mensagens para membros e equipes"
-        action={
-          <Button variant="primary" size="md" onClick={handleOpenModal}>
-            Nova Mensagem
-          </Button>
-        }
-      />
+      <div className="flex flex-col items-start mb-6">
+        <h1 className="text-2xl font-bold text-dark-900 dark:text-dark-50 mb-1">Comunicação</h1>
+        <p className="text-sm text-dark-500 dark:text-dark-400 mb-4">
+          Envie mensagens para membros e equipes
+        </p>
+        <Button
+          variant="primary"
+          onClick={handleOpenModal}
+          className="w-full sm:w-auto font-bold text-base py-6"
+        >
+          Nova Mensagem
+        </Button>
+      </div>
 
       {messages.length === 0 ? (
         <Card>
@@ -241,15 +245,17 @@ export default function CommunicationPage() {
                     <CardTitle className="text-lg">{message.title}</CardTitle>
                     <p className="text-xs text-dark-400 mt-1">{getRecipientLabel(message)}</p>
                     {/* Communication Type Badges */}
-                    <div className="flex gap-2 mt-2">
+                    <div className="flex gap-2 mt-3">
                       {message.communicationTypes.includes('email') && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                          📧 Email
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400">
+                          <Mail className="w-3.5 h-3.5" />
+                          Email
                         </span>
                       )}
                       {message.communicationTypes.includes('chat') && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                          💬 Chat
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          Chat
                         </span>
                       )}
                     </div>

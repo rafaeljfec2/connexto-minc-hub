@@ -20,6 +20,7 @@ export default function TeamDetailsPage() {
   const [members, setMembers] = useState<Person[]>([])
   const [isLoadingMembers, setIsLoadingMembers] = useState(false)
   const [hasFetchedMembers, setHasFetchedMembers] = useState(false)
+  const [leader, setLeader] = useState<Person | null>(null)
 
   useEffect(() => {
     const loadTeam = async () => {
@@ -40,6 +41,12 @@ export default function TeamDetailsPage() {
           const allPeople = await apiServices.peopleService.getAll()
           const teamMembers = allPeople.filter(person => team.memberIds.includes(person.id))
           setMembers(teamMembers)
+
+          if (team.leaderId) {
+            const teamLeader = allPeople.find(person => person.id === team.leaderId)
+            setLeader(teamLeader || null)
+          }
+
           setHasFetchedMembers(true)
         } catch (error) {
           console.error('Failed to fetch members:', error)
@@ -130,38 +137,34 @@ export default function TeamDetailsPage() {
           {activeTab === 'membros' && (
             <>
               {/* Leadership Section */}
-              <section>
-                <h3 className="text-sm font-bold text-dark-900 dark:text-dark-50 mb-3 ml-1">
-                  Liderança
-                </h3>
-                <div className="bg-white dark:bg-dark-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-dark-800 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-dark-800 flex items-center justify-center overflow-hidden">
-                        <img
-                          src="https://i.pravatar.cc/150?u=Leadership"
-                          alt="Leader"
-                          className="w-full h-full object-cover"
-                        />
+              {leader && (
+                <section>
+                  <h3 className="text-sm font-bold text-dark-900 dark:text-dark-50 mb-3 ml-1">
+                    Liderança
+                  </h3>
+                  <div className="bg-white dark:bg-dark-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-dark-800 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <Avatar src={leader.avatar} name={leader.name} size="lg" />
+                        <div className="absolute -bottom-1 -right-1 bg-primary-500 rounded-full p-1 border-2 border-white dark:border-dark-900">
+                          <Star className="w-2.5 h-2.5 text-white fill-white" />
+                        </div>
                       </div>
-                      <div className="absolute -bottom-1 -right-1 bg-primary-500 rounded-full p-1 border-2 border-white dark:border-dark-900">
-                        <Star className="w-2.5 h-2.5 text-white fill-white" />
+                      <div>
+                        <h4 className="font-bold text-dark-900 dark:text-dark-50 text-sm">
+                          {leader.name}
+                        </h4>
+                        <p className="text-primary-600 dark:text-primary-400 text-xs font-medium">
+                          Líder da Equipe
+                        </p>
                       </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-dark-900 dark:text-dark-50 text-sm">
-                        Carlos Silva
-                      </h4>
-                      <p className="text-primary-600 dark:text-primary-400 text-xs font-medium">
-                        Ministro de Louvor
-                      </p>
-                    </div>
+                    <button className="text-gray-400 hover:text-gray-600">
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
                   </div>
-                  <button className="text-gray-400 hover:text-gray-600">
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
-                </div>
-              </section>
+                </section>
+              )}
 
               {/* Members List */}
               <section>
