@@ -3,6 +3,7 @@ import { Download, FileText, Play, ExternalLink, X, Loader2, Edit2, Trash2 } fro
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { useLongPress } from '@/hooks/useLongPress'
+import { AudioPreview } from './AudioPreview'
 
 type MessageStatus = 'sending' | 'sent' | 'read'
 
@@ -423,11 +424,19 @@ function AttachmentBubble({
           </p>
         </div>
       )}
-      <MediaPreview attachment={attachment} mediaType={mediaType} isMe={isMe} />
-      <div className="p-3">
-        <MediaActions attachment={attachment} mediaType={mediaType} isMe={isMe} />
-        <BubbleFooter time={time} isMe={isMe} status={status} />
-      </div>
+      <MediaPreview
+        attachment={attachment}
+        mediaType={mediaType}
+        isMe={isMe}
+        timestamp={time}
+        status={status}
+      />
+      {mediaType !== 'audio' && (
+        <div className="p-3">
+          <MediaActions attachment={attachment} mediaType={mediaType} isMe={isMe} />
+          <BubbleFooter time={time} isMe={isMe} status={status} />
+        </div>
+      )}
     </div>
   )
 }
@@ -436,16 +445,31 @@ interface MediaPreviewProps {
   readonly attachment: MessageAttachment
   readonly mediaType: MediaType
   readonly isMe: boolean
+  readonly timestamp?: string
+  readonly status?: MessageStatus
 }
 
-function MediaPreview({ attachment, mediaType, isMe }: Readonly<MediaPreviewProps>) {
+function MediaPreview({
+  attachment,
+  mediaType,
+  isMe,
+  timestamp,
+  status,
+}: Readonly<MediaPreviewProps>) {
   switch (mediaType) {
     case 'image':
       return <ImagePreview url={attachment.url} name={attachment.name} />
     case 'video':
       return <VideoPreview url={attachment.url} isMe={isMe} />
     case 'audio':
-      return <AudioPreview url={attachment.url} />
+      return (
+        <AudioPreview
+          url={attachment.url}
+          timestamp={timestamp}
+          isRead={status === 'read'}
+          isSent={status === 'sent' || status === 'read'}
+        />
+      )
     case 'pdf':
       return <PdfPreview url={attachment.url} isMe={isMe} />
     default:
@@ -502,16 +526,6 @@ function VideoPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
   )
 }
 
-function AudioPreview({ url }: Readonly<{ url: string }>) {
-  return (
-    <div className="px-3 pt-3">
-      <audio src={url} controls className="w-full h-10" preload="metadata">
-        <track kind="captions" />
-      </audio>
-    </div>
-  )
-}
-
 function PdfPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
   return (
     <a href={url} target="_blank" rel="noopener noreferrer" className="block relative">
@@ -542,8 +556,9 @@ function MediaActions({ attachment, mediaType, isMe }: Readonly<MediaActionsProp
     case 'image':
       return <ImageAction url={attachment.url} isMe={isMe} />
     case 'video':
-    case 'audio':
       return <MediaInfoAction name={attachment.name} size={attachment.size} isMe={isMe} />
+    case 'audio':
+      return null // Audio preview already shows all needed info
     default:
       return <DownloadAction attachment={attachment} isMe={isMe} />
   }
