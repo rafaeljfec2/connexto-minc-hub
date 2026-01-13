@@ -17,7 +17,7 @@ const navItems: NavItem[] = [
     roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
   },
   {
-    label: 'Servos',
+    label: 'Volutários',
     href: '/people',
     roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },

@@ -268,7 +268,7 @@ export function PersonFormModal({
             className="w-full sm:w-auto order-1 sm:order-3"
             disabled={isLoading}
           >
-            {person ? 'Salvar Alterações' : 'Adicionar Servo'}
+            {person ? 'Salvar Alterações' : 'Adicionar Volutário'}
           </Button>
         </div>
       </form>

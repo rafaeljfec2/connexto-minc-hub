@@ -233,7 +233,7 @@ export function PeopleDesktopView({
         title="Servos"
         description="Gerencie servos do Time Boas-Vindas"
         icon={<UserIcon className="h-8 w-8 text-primary-400" />}
-        createButtonLabel="Adicionar Servo"
+        createButtonLabel="Adicionar Volutário"
         onCreateClick={onCreateClick}
         hasFilters={hasFilters}
         isEmpty={people.length === 0}
