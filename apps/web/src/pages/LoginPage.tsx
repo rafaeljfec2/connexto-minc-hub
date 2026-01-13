@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/Button'
@@ -10,8 +10,15 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, isLoading: isAuthLoading, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isAuthLoading && isAuthenticated) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [isAuthLoading, isAuthenticated, navigate])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -28,9 +35,9 @@ export default function LoginPage() {
         localStorage.removeItem('rememberMe')
       }
 
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true })
-      }, 100)
+      // Navigation happens automatically due to useEffect above or state change
+      // But we keep explicit navigation for login action just in case
+      navigate('/dashboard', { replace: true })
     } catch (err: unknown) {
       let errorMessage = 'Email ou senha inválidos'
 
@@ -55,9 +62,17 @@ export default function LoginPage() {
       }
 
       setError(errorMessage)
-    } finally {
-      setIsLoading(false)
+      setIsLoading(false) // Only stop loading on error, on success we navigate away
     }
+  }
+
+  // Show loading spinner while checking auth status to prevent flash of login form
+  if (isAuthLoading || (isAuthenticated && !error)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-dark-950">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    )
   }
 
   return (
