@@ -119,14 +119,10 @@ export default function App() {
         onError={handleError}
         onHttpError={handleError}
         javaScriptEnabled={true}
-        domStorageEnabled={true}
-        startInLoadingState={true}
-        scalesPageToFit={true}
-        allowsBackForwardNavigationGestures={Platform.OS === 'ios'}
         allowsInlineMediaPlayback={true}
         mediaPlaybackRequiresUserAction={false}
-        cacheEnabled={false}
-        cacheMode="LOAD_NO_CACHE"
+        cacheEnabled={true}
+        domStorageEnabled={true}
         pullToRefreshEnabled={true}
         onShouldStartLoadWithRequest={request => {
           const isAllowed = ALLOWED_DOMAINS.some(domain => request.url.includes(domain))
