@@ -6,7 +6,7 @@ export function UsersSearchBar({
   readonly onSearchChange: (value: string) => void
 }) {
   return (
-    <div className="px-4 py-3 bg-white dark:bg-dark-950 mb-3 shadow-sm">
+    <div className="px-4 py-3 bg-transparent dark:bg-dark-950 mb-3">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg

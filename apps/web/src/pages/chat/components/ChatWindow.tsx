@@ -404,7 +404,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
 
   return (
     <>
-      <div className="flex flex-col h-full bg-gray-50 dark:bg-dark-950 relative overflow-hidden">
+      <div className="flex flex-col h-full bg-white dark:bg-dark-950 relative overflow-hidden">
         {/* Chat Background Fixed */}
         <div
           className="absolute inset-0 z-0 pointer-events-none"
@@ -416,7 +416,7 @@ export function ChatWindow({ conversationId, onBack }: ChatWindowProps) {
           }}
         />
         {/* Theme Overlay */}
-        <div className="absolute inset-0 z-0 bg-white/80 dark:bg-dark-950/80 pointer-events-none" />
+        <div className="absolute inset-0 z-0 bg-white/95 dark:bg-dark-950/80 pointer-events-none" />
 
         {/* Header */}
         <div className="flex-shrink-0 bg-white/95 dark:bg-dark-950/95 backdrop-blur border-b border-dark-200 dark:border-dark-800 p-3 pt-[calc(0.75rem+env(safe-area-inset-top))] lg:pt-3 flex items-center justify-between gap-3 relative z-10">
