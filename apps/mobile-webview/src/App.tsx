@@ -4,7 +4,6 @@ import {
   View,
   ActivityIndicator,
   BackHandler,
-  Platform,
   Text,
   TouchableOpacity,
 } from 'react-native'
@@ -20,6 +19,10 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [canGoBack, setCanGoBack] = useState(false)
+
+  // Adiciona timestamp para evitar cache do index.html, garantindo app atualizado
+  // O LocalStorage (login) é preservado pois o domínio é o mesmo
+  const initialUrl = useRef(`${WEBSITE_URL}?ts=${Date.now()}`).current
 
   // Handle Android back button
   useEffect(() => {
@@ -111,7 +114,7 @@ export default function App() {
 
       <WebView
         ref={webViewRef}
-        source={{ uri: WEBSITE_URL }}
+        source={{ uri: initialUrl }}
         style={styles.webview}
         onNavigationStateChange={handleNavigationStateChange}
         onLoadStart={handleLoadStart}
@@ -123,6 +126,8 @@ export default function App() {
         mediaPlaybackRequiresUserAction={false}
         cacheEnabled={true}
         domStorageEnabled={true}
+        thirdPartyCookiesEnabled={true}
+        sharedCookiesEnabled={true}
         pullToRefreshEnabled={true}
         onShouldStartLoadWithRequest={request => {
           const isAllowed = ALLOWED_DOMAINS.some(domain => request.url.includes(domain))
