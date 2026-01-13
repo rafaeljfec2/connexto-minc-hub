@@ -20,10 +20,6 @@ export default function App() {
   const [hasError, setHasError] = useState(false)
   const [canGoBack, setCanGoBack] = useState(false)
 
-  // Adiciona timestamp para evitar cache do index.html, garantindo app atualizado
-  // O LocalStorage (login) é preservado pois o domínio é o mesmo
-  const initialUrl = useRef(`${WEBSITE_URL}?ts=${Date.now()}`).current
-
   // Handle Android back button
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
@@ -58,8 +54,6 @@ export default function App() {
 
   const isInitialLoadRef = useRef(true)
   const mountTimeRef = useRef(Date.now())
-
-  // ... existing back handler code ...
 
   const handleLoadEnd = () => {
     if (isInitialLoadRef.current) {
@@ -114,7 +108,7 @@ export default function App() {
 
       <WebView
         ref={webViewRef}
-        source={{ uri: initialUrl }}
+        source={{ uri: WEBSITE_URL }}
         style={styles.webview}
         onNavigationStateChange={handleNavigationStateChange}
         onLoadStart={handleLoadStart}
@@ -122,10 +116,10 @@ export default function App() {
         onError={handleError}
         onHttpError={handleError}
         javaScriptEnabled={true}
+        domStorageEnabled={true}
         allowsInlineMediaPlayback={true}
         mediaPlaybackRequiresUserAction={false}
         cacheEnabled={true}
-        domStorageEnabled={true}
         thirdPartyCookiesEnabled={true}
         sharedCookiesEnabled={true}
         pullToRefreshEnabled={true}
@@ -135,6 +129,7 @@ export default function App() {
         }}
         originWhitelist={['*']}
         mediaCapturePermissionGrantType="grant"
+        userAgent="Mozilla/5.0 (Linux; Android 13; SM-S908B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36"
       />
 
       {isLoading && (
