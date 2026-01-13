@@ -4,6 +4,29 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/Button'
 import { BrandText } from '@/components/ui/BrandText'
 
+function getAuthErrorMessage(err: unknown): string {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const axiosError = err as { response?: { status?: number; data?: { message?: string } } }
+    if (axiosError.response?.status === 401) {
+      return 'Credenciais inválidas'
+    } else if (axiosError.response?.data?.message) {
+      return axiosError.response.data.message
+    } else if (axiosError.response?.status === 429) {
+      return 'Muitas tentativas. Tente novamente mais tarde.'
+    } else if (axiosError.response?.status === 500) {
+      return 'Erro no servidor. Tente novamente mais tarde.'
+    } else if (axiosError.response?.status === 0 || axiosError.response?.status === undefined) {
+      return 'Não foi possível conectar ao servidor. Verifique sua conexão.'
+    }
+  } else if (err && typeof err === 'object' && 'message' in err) {
+    const error = err as { message?: string }
+    if (error.message) {
+      return error.message
+    }
+  }
+  return 'Email ou senha inválidos'
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -39,29 +62,7 @@ export default function LoginPage() {
       // But we keep explicit navigation for login action just in case
       navigate('/dashboard', { replace: true })
     } catch (err: unknown) {
-      let errorMessage = 'Email ou senha inválidos'
-
-      if (err && typeof err === 'object' && 'response' in err) {
-        const axiosError = err as { response?: { status?: number; data?: { message?: string } } }
-        if (axiosError.response?.status === 401) {
-          errorMessage = 'Credenciais inválidas'
-        } else if (axiosError.response?.data?.message) {
-          errorMessage = axiosError.response.data.message
-        } else if (axiosError.response?.status === 429) {
-          errorMessage = 'Muitas tentativas. Tente novamente mais tarde.'
-        } else if (axiosError.response?.status === 500) {
-          errorMessage = 'Erro no servidor. Tente novamente mais tarde.'
-        } else if (axiosError.response?.status === 0 || axiosError.response?.status === undefined) {
-          errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão.'
-        }
-      } else if (err && typeof err === 'object' && 'message' in err) {
-        const error = err as { message?: string }
-        if (error.message) {
-          errorMessage = error.message
-        }
-      }
-
-      setError(errorMessage)
+      setError(getAuthErrorMessage(err))
       setIsLoading(false) // Only stop loading on error, on success we navigate away
     }
   }
@@ -112,7 +113,10 @@ export default function LoginPage() {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
+            <label
+              htmlFor="email"
+              className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1"
+            >
               Email
             </label>
             <div className="relative">
@@ -127,6 +131,7 @@ export default function LoginPage() {
                 </svg>
               </div>
               <input
+                id="email"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -138,7 +143,10 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
+            <label
+              htmlFor="password"
+              className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1"
+            >
               Senha
             </label>
             <div className="relative">
@@ -153,6 +161,7 @@ export default function LoginPage() {
                 </svg>
               </div>
               <input
+                id="password"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
@@ -175,12 +184,13 @@ export default function LoginPage() {
                 </span>
               </label>
 
-              <a
-                href="#"
-                className="text-xs font-bold text-orange-600 hover:text-orange-700 dark:text-orange-500"
+              <button
+                type="button"
+                onClick={() => {}} // TODO: Implement forgot password
+                className="text-xs font-bold text-orange-600 hover:text-orange-700 dark:text-orange-500 bg-transparent border-none p-0 cursor-pointer"
               >
                 Esqueceu a senha?
-              </a>
+              </button>
             </div>
           </div>
 

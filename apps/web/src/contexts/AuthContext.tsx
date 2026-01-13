@@ -152,8 +152,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         saveUserToStorage(null)
 
         // Redireciona para login se necessário
-        if (globalThis.window !== undefined && !window.location.pathname.includes('/login')) {
-          window.location.href = '/login'
+        if (
+          globalThis.window !== undefined &&
+          !globalThis.window.location.pathname.includes('/login')
+        ) {
+          globalThis.window.location.href = '/login'
         }
       }
       // Para outros erros, mantém o usuário do storage (pode ser erro temporário)
@@ -185,10 +188,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         saveUserToStorage(result.user)
 
         // Send token to Native App
-        if (window.ReactNativeWebView) {
+        if (globalThis.window.ReactNativeWebView) {
           const token = localStorage.getItem('auth_token')
           if (token) {
-            window.ReactNativeWebView.postMessage(
+            globalThis.window.ReactNativeWebView.postMessage(
               JSON.stringify({
                 type: 'AUTH_SUCCESS',
                 token,
@@ -211,8 +214,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       saveUserToStorage(null)
 
       // Notify Native App to clear token
-      if (window.ReactNativeWebView) {
-        window.ReactNativeWebView.postMessage(
+      if (globalThis.window.ReactNativeWebView) {
+        globalThis.window.ReactNativeWebView.postMessage(
           JSON.stringify({
             type: 'AUTH_LOGOUT',
           })
