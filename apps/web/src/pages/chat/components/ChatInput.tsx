@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, Fragment, useCallback } from 'react'
-import { Camera, Image, FileText, MapPin, X, Mic, StopCircle, Trash2 } from 'lucide-react'
+import { Camera, Image, FileText, MapPin, X, Mic } from 'lucide-react'
 import { useLongPress } from '@/hooks/useLongPress'
 import { Alert, AlertType } from '@/components/ui/Alert'
 
@@ -389,12 +389,12 @@ export function ChatInput({
           </div>
         )}
 
-        {/* Attach Button - hide in edit mode */}
-        {!editMode && (
+        {/* Attach Button - hide in edit mode or when recording */}
+        {!editMode && !isRecording && (
           <button
             type="button"
             onClick={() => setShowAttachMenu(!showAttachMenu)}
-            className={`p-2.5 rounded-full transition-all mb-0.5 ${
+            className={`p-2.5 rounded-full transition-all mb-0.5 flex-shrink-0 ${
               showAttachMenu
                 ? 'bg-primary-500 text-white rotate-45'
                 : 'text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300 hover:bg-dark-100 dark:hover:bg-dark-800'
@@ -416,47 +416,95 @@ export function ChatInput({
           </button>
         )}
 
-        <div
-          className={`flex-1 bg-dark-100 dark:bg-dark-800 rounded-2xl px-4 py-3 min-h-[44px] ${disabled ? 'opacity-50' : ''}`}
-        >
-          {isRecording ? (
-            <div className="flex items-center justify-between h-full animate-in fade-in">
-              <div className="flex items-center gap-3 text-red-500 font-medium">
-                <div className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-                <span className="tabular-nums">{formatDuration(recordingDuration)}</span>
-                <span className="text-sm text-dark-500 font-normal">
-                  Gravando... (Solte para enviar)
+        {/* Cancel/Trash button - show only when recording */}
+        {isRecording && (
+          <button
+            type="button"
+            onClick={cancelRecording}
+            className="p-2.5 rounded-full transition-colors text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 flex-shrink-0 mb-0.5"
+            aria-label="Cancelar gravação"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
+        )}
+
+        {/* Recording UI - WhatsApp Style */}
+        {isRecording ? (
+          <div className="flex items-center gap-2 flex-1 animate-in fade-in slide-in-from-bottom-2">
+            {/* Recording indicator with timer */}
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0" />
+            <span className="text-sm font-medium text-dark-700 dark:text-dark-300 min-w-[3rem]">
+              {formatDuration(recordingDuration)}
+            </span>
+
+            {/* Audio waveform visualization */}
+            <div className="flex items-center gap-0.5 flex-1 h-6">
+              {Array.from({ length: 30 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="w-0.5 bg-dark-400 dark:bg-dark-500 rounded-full transition-all"
+                  style={{
+                    height: `${Math.random() * 60 + 20}%`,
+                    animation: `pulse ${Math.random() * 0.5 + 0.5}s ease-in-out infinite`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Normal Input Area */
+          <div className="flex-1 bg-dark-100 dark:bg-dark-800 rounded-full px-4 py-2.5 min-h-[44px] flex items-center">
+            {editMode && (
+              <div className="flex items-center gap-2 mr-2 pb-0.5 border-r border-dark-300 dark:border-dark-700 pr-2">
+                <svg
+                  className="h-4 w-4 text-primary-500 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                <span className="text-xs text-dark-600 dark:text-dark-400 font-medium">
+                  Editando
                 </span>
               </div>
-            </div>
-          ) : (
-            <>
-              {editMode && (
-                <div className="text-xs text-primary-500 dark:text-primary-400 font-medium mb-1">
-                  Editando mensagem
-                </div>
-              )}
-              <textarea
-                ref={textareaRef}
-                value={text}
-                onChange={e => setText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={getPlaceholderText(disabled, editMode)}
-                className="w-full bg-transparent text-dark-900 dark:text-dark-50 placeholder:text-dark-500 dark:placeholder:text-dark-400 text-sm resize-none outline-none max-h-[120px] overflow-y-auto block"
-                rows={1}
-                maxLength={500}
-                disabled={disabled}
-              />
-            </>
-          )}
-        </div>
+            )}
 
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={e => setText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={getPlaceholderText(disabled, editMode)}
+              disabled={disabled}
+              rows={1}
+              className="w-full resize-none bg-transparent text-sm text-dark-900 dark:text-dark-50 placeholder-dark-400 dark:placeholder-dark-500 focus:outline-none disabled:cursor-not-allowed max-h-32 overflow-y-auto"
+              style={{
+                scrollbarWidth: 'thin',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Right side buttons */}
         {editMode ? (
           <>
             <button
               type="button"
               onClick={handleCancel}
-              className="p-2.5 rounded-full transition-colors mb-0.5 text-dark-500 dark:text-dark-400 hover:bg-dark-200 dark:hover:bg-dark-700"
+              className="p-2.5 rounded-full transition-colors mb-0.5 text-dark-500 dark:text-dark-400 hover:bg-dark-200 dark:hover:bg-dark-700 flex-shrink-0"
               aria-label="Cancelar"
             >
               <X className="h-5 w-5" />
@@ -465,7 +513,7 @@ export function ChatInput({
               type="button"
               onClick={handleSend}
               disabled={!text.trim() || disabled}
-              className={`p-2.5 rounded-full transition-colors mb-0.5 ${
+              className={`p-2.5 rounded-full transition-colors mb-0.5 flex-shrink-0 ${
                 text.trim() && !disabled
                   ? 'bg-primary-500 text-white hover:bg-primary-600'
                   : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-not-allowed'
@@ -482,16 +530,30 @@ export function ChatInput({
               </svg>
             </button>
           </>
-        ) : (
+        ) : isRecording ? (
+          /* Send button when recording */
+          <button
+            type="button"
+            onClick={() => void stopRecording()}
+            className="p-2.5 rounded-full transition-colors mb-0.5 bg-primary-500 text-white hover:bg-primary-600 flex-shrink-0"
+            aria-label="Enviar áudio"
+          >
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>
+          </button>
+        ) : text.trim() ? (
+          /* Send button when has text */
           <button
             type="button"
             onClick={handleSend}
-            disabled={!text.trim() || disabled}
-            className={`p-2.5 rounded-full transition-colors mb-0.5 ${
-              text.trim() && !disabled
-                ? 'bg-primary-500 text-white hover:bg-primary-600'
-                : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 cursor-not-allowed'
-            }`}
+            disabled={disabled}
+            className="p-2.5 rounded-full transition-colors mb-0.5 bg-primary-500 text-white hover:bg-primary-600 flex-shrink-0"
             aria-label="Enviar"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -503,31 +565,15 @@ export function ChatInput({
               />
             </svg>
           </button>
-        )}
-
-        {isRecording && (
-          <button
-            type="button"
-            onClick={cancelRecording}
-            className="p-2.5 rounded-full transition-colors mb-0.5 text-dark-500 hover:text-red-500 hover:bg-dark-100 dark:hover:bg-dark-800 animate-in fade-in slide-in-from-right-4"
-            title="Cancelar"
-          >
-            <Trash2 className="h-5 w-5" />
-          </button>
-        )}
-
-        {!editMode && !text.trim() && !disabled && (
+        ) : (
+          /* Mic button when no text */
           <button
             type="button"
             {...longPressProps}
-            className={`p-2.5 rounded-full transition-all mb-0.5 select-none ${
-              isRecording
-                ? 'bg-red-500 text-white scale-110 shadow-lg'
-                : 'bg-dark-200 dark:bg-dark-800 text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300'
-            }`}
+            className="p-2.5 rounded-full transition-all mb-0.5 select-none bg-primary-500 text-white hover:bg-primary-600 flex-shrink-0"
             aria-label="Gravar áudio"
           >
-            {isRecording ? <StopCircle className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            <Mic className="h-5 w-5" />
           </button>
         )}
       </div>
