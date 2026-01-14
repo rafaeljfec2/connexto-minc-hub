@@ -28,6 +28,7 @@ function getEndpoint(req: Request, fallback: string): string {
 import { GetUser } from '../common/decorators/get-user.decorator';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserEntity } from '../users/entities/user.entity';
 import { logSecurityEvent } from '../common/utils/security-logger.util';
@@ -319,6 +320,54 @@ export class AuthController {
         updatedAt: user.updatedAt,
       },
     };
+  }
+
+  @Post('change-password')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Change password',
+    description: 'Changes the authenticated user password. Requires current password.',
+  })
+  @ApiBody({
+    description: 'Payload to change password',
+    type: ChangePasswordDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Password changed successfully.',
+    schema: { example: { message: 'Password changed successfully' } },
+  })
+  @ApiResponse({ status: 401, description: 'Current password is incorrect.' })
+  async changePassword(
+    @GetUser() user: UserEntity,
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Req() req: Request,
+  ) {
+    const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
+    const endpoint = getEndpoint(req, '/auth/change-password');
+
+    try {
+      const result = await this.authService.changePassword(user, changePasswordDto);
+      logSecurityEvent('change_password_success', {
+        userId: user.id,
+        email: user.email,
+        ip,
+        status: 'success',
+        endpoint,
+      });
+      return result;
+    } catch (error) {
+      logSecurityEvent('change_password_failed', {
+        userId: user.id,
+        email: user.email,
+        ip,
+        status: 'fail',
+        reason: error instanceof Error ? error.message : 'unknown_error',
+        endpoint,
+      });
+      throw error;
+    }
   }
 
   private setAuthCookies(res: Response, result: LoginResponse) {

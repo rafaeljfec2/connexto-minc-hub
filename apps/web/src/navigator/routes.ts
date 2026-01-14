@@ -12,6 +12,7 @@ const CommunicationPage = lazy(() => import('@/pages/CommunicationPage'))
 const ChurchesPage = lazy(() => import('@/pages/ChurchesPage'))
 const MinistriesPage = lazy(() => import('@/pages/MinistriesPage'))
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'))
+const ChangePasswordPage = lazy(() => import('@/pages/ChangePasswordPage'))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'))
 const UsersPage = lazy(() => import('@/pages/UsersPage'))
 const SchedulePlanningConfigPage = lazy(() => import('@/pages/SchedulePlanningConfigPage'))
@@ -95,6 +96,10 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/profile',
     component: ProfilePage,
+  },
+  {
+    path: '/change-password',
+    component: ChangePasswordPage,
   },
   {
     path: '/settings',

@@ -10,6 +10,7 @@ export const ROUTES = {
   CHURCHES: '/churches',
   MINISTRIES: '/ministries',
   PROFILE: '/profile',
+  CHANGE_PASSWORD: '/change-password',
   SETTINGS: '/settings',
   USERS: '/users',
   SCHEDULE_PLANNING_CONFIG: '/schedule-planning-config',

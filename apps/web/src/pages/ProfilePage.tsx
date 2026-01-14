@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTheme } from '@/contexts/ThemeContext'
 import { ProfileHeader } from './profile/components/ProfileHeader'
@@ -7,8 +8,10 @@ import { EditableField } from './profile/components/EditableField'
 import { Button } from '@/components/ui/Button'
 import { uploadAvatar, updateProfile } from '@/services/upload.service'
 import { Alert, AlertType } from '@/components/ui/Alert'
+import { ROUTES } from '@/navigator/routes.constants'
 
 export default function ProfilePage() {
+  const navigate = useNavigate()
   const { user, logout, updateUser } = useAuth()
   const { theme, setTheme } = useTheme()
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
@@ -129,15 +132,7 @@ export default function ProfilePage() {
                 <Button
                   variant="primary"
                   className="w-full lg:w-auto"
-                  onClick={() =>
-                    setAlertConfig({
-                      isOpen: true,
-                      type: 'info',
-                      title: 'Em Breve!',
-                      message:
-                        'A funcionalidade de alteração de senha está em desenvolvimento e estará disponível em breve.',
-                    })
-                  }
+                  onClick={() => navigate(ROUTES.CHANGE_PASSWORD)}
                 >
                   Alterar Senha
                 </Button>

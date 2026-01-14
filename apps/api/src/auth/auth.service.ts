@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { PasswordResetService } from './services/password-reset.service';
 import { RefreshTokenService } from './services/refresh-token.service';
 
@@ -131,5 +132,29 @@ export class AuthService {
     }
 
     return { message: 'Password reset successfully' };
+  }
+
+  async changePassword(
+    user: UserEntity,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const currentUser = await this.usersService.findAuthUser(user.email);
+    if (!currentUser) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      currentUser.passwordHash,
+    );
+
+    if (!isCurrentPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const newPasswordHash = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    await this.usersService.updatePassword(user.id, newPasswordHash);
+
+    return { message: 'Password changed successfully' };
   }
 }
