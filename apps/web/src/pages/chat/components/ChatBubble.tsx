@@ -4,24 +4,36 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { useLongPress } from '@/hooks/useLongPress'
 import { AudioPreview } from './AudioPreview'
+import { sanitizeText, sanitizeUrl, isValidUrl } from '@/lib/sanitize'
 
 type MessageStatus = 'sending' | 'sent' | 'read'
 
 async function downloadFile(url: string, filename: string): Promise<void> {
+  const sanitizedUrl = sanitizeUrl(url)
+  const sanitizedFilename = sanitizeText(filename)
+
+  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+    console.error('Invalid URL for download')
+    return
+  }
+
   try {
-    const response = await fetch(url)
+    const response = await fetch(sanitizedUrl)
     const blob = await response.blob()
     const blobUrl = globalThis.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = blobUrl
-    link.download = filename
+    link.download = sanitizedFilename
     document.body.appendChild(link)
     link.click()
     link.remove()
     globalThis.URL.revokeObjectURL(blobUrl)
   } catch (error) {
     console.error('Download failed:', error)
-    globalThis.open(url, '_blank')
+    // Only open if URL is valid
+    if (isValidUrl(sanitizedUrl)) {
+      globalThis.open(sanitizedUrl, '_blank')
+    }
   }
 }
 
@@ -195,7 +207,7 @@ export function ChatBubble({
     return (
       <div className={`flex flex-col mb-4 ${isMe ? 'items-end' : 'items-start'}`}>
         {!isMe && senderName && (
-          <span className="text-xs text-gray-400 mb-1 ml-1 block">{senderName}</span>
+          <span className="text-xs text-gray-400 mb-1 ml-1 block">{sanitizeText(senderName)}</span>
         )}
         <div
           ref={bubbleRef}
@@ -302,10 +314,12 @@ export function ChatBubble({
           <p
             className={`text-xs font-bold mb-1 ${senderColor ?? 'text-primary-600 dark:text-primary-400'}`}
           >
-            {senderName}
+            {sanitizeText(senderName)}
           </p>
         )}
-        <p className="text-sm leading-relaxed mb-1 break-words whitespace-pre-wrap">{message}</p>
+        <p className="text-sm leading-relaxed mb-1 break-words whitespace-pre-wrap">
+          {sanitizeText(message)}
+        </p>
         <BubbleFooter time={time} isMe={isMe} status={status} isEdited={isEdited} />
       </div>
       {showContextMenu && (
@@ -420,7 +434,7 @@ function AttachmentBubble({
           <p
             className={`text-xs font-bold mb-1 ${senderColor ?? 'text-primary-600 dark:text-primary-400'}`}
           >
-            {senderName}
+            {sanitizeText(senderName)}
           </p>
         </div>
       )}
@@ -478,9 +492,25 @@ function MediaPreview({
 }
 
 function ImagePreview({ url, name }: Readonly<{ url: string; name: string }>) {
+  const sanitizedUrl = sanitizeUrl(url)
+  const sanitizedName = sanitizeText(name)
+
+  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+    return (
+      <div className="w-full h-32 flex items-center justify-center bg-dark-100 dark:bg-dark-800 text-dark-500 dark:text-dark-400">
+        <span className="text-sm">Imagem inválida ou não permitida</span>
+      </div>
+    )
+  }
+
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="block">
-      <img src={url} alt={name} className="w-full max-h-64 object-cover" loading="lazy" />
+    <a href={sanitizedUrl} target="_blank" rel="noopener noreferrer" className="block">
+      <img
+        src={sanitizedUrl}
+        alt={sanitizedName}
+        className="w-full max-h-64 object-cover"
+        loading="lazy"
+      />
     </a>
   )
 }
@@ -491,10 +521,20 @@ function VideoPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
   const handlePlay = useCallback(() => setShowPlayer(true), [])
   const handleClose = useCallback(() => setShowPlayer(false), [])
 
+  const sanitizedUrl = sanitizeUrl(url)
+
+  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+    return (
+      <div className="w-full h-32 flex items-center justify-center bg-dark-100 dark:bg-dark-800 text-dark-500 dark:text-dark-400">
+        <span className="text-sm">Vídeo inválido ou não permitido</span>
+      </div>
+    )
+  }
+
   if (showPlayer) {
     return (
       <div className="relative">
-        <video src={url} controls autoPlay className="w-full max-h-64 bg-black">
+        <video src={sanitizedUrl} controls autoPlay className="w-full max-h-64 bg-black">
           <track kind="captions" />
         </video>
         <button
@@ -514,7 +554,11 @@ function VideoPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
       className="relative cursor-pointer group w-full block"
       onClick={handlePlay}
     >
-      <video src={url} className="w-full max-h-64 object-cover bg-black" preload="metadata">
+      <video
+        src={sanitizedUrl}
+        className="w-full max-h-64 object-cover bg-black"
+        preload="metadata"
+      >
         <track kind="captions" />
       </video>
       <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
@@ -527,8 +571,18 @@ function VideoPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
 }
 
 function PdfPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
+  const sanitizedUrl = sanitizeUrl(url)
+
+  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+    return (
+      <div className="w-full h-32 flex items-center justify-center bg-dark-100 dark:bg-dark-800 text-dark-500 dark:text-dark-400">
+        <span className="text-sm">Documento inválido ou não permitido</span>
+      </div>
+    )
+  }
+
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="block relative">
+    <a href={sanitizedUrl} target="_blank" rel="noopener noreferrer" className="block relative">
       <div
         className={`h-32 flex items-center justify-center ${isMe ? 'bg-primary-600' : 'bg-dark-300 dark:bg-dark-700'}`}
       >
@@ -565,10 +619,16 @@ function MediaActions({ attachment, mediaType, isMe }: Readonly<MediaActionsProp
 }
 
 function ImageAction({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
+  const sanitizedUrl = sanitizeUrl(url)
+
+  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+    return null
+  }
+
   return (
     <div className="flex items-center gap-2">
       <a
-        href={url}
+        href={sanitizedUrl}
         target="_blank"
         rel="noopener noreferrer"
         className={`flex items-center gap-1 text-xs ${
@@ -587,12 +647,14 @@ function MediaInfoAction({
   size,
   isMe,
 }: Readonly<{ name: string; size: number; isMe: boolean }>) {
+  const sanitizedName = sanitizeText(name)
+
   return (
     <div className="flex items-center justify-between">
       <span
         className={`text-xs truncate max-w-[70%] ${isMe ? 'text-white/80' : 'text-dark-600 dark:text-dark-400'}`}
       >
-        {name}
+        {sanitizedName}
       </span>
       <span className={`text-xs ${isMe ? 'text-white/60' : 'text-dark-500'}`}>
         {formatFileSize(size)}
@@ -630,7 +692,7 @@ function DownloadAction({
         <FileText className="h-5 w-5" />
       </div>
       <div className="flex-1 min-w-0 text-left">
-        <p className="text-sm font-medium truncate">{attachment.name}</p>
+        <p className="text-sm font-medium truncate">{sanitizeText(attachment.name)}</p>
         <p className={`text-xs ${isMe ? 'text-white/70' : 'text-dark-500 dark:text-dark-400'}`}>
           {formatFileSize(attachment.size)}
         </p>

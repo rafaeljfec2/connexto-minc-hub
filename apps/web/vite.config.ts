@@ -23,7 +23,7 @@ export default defineConfig({
     cssMinify: true,
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
+        manualChunks: id => {
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'react-vendor'
@@ -41,5 +41,22 @@ export default defineConfig({
   preview: {
     port: 3001,
     host: true,
+    headers: {
+      'Content-Security-Policy': [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com data:",
+        "img-src 'self' data: https:",
+        "connect-src 'self' http://localhost:* https://*",
+        "media-src 'self' data: https:",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+        "require-trusted-types-for 'script'",
+        'trusted-types default',
+      ].join('; '),
+    },
   },
 })

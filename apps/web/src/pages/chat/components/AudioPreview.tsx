@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Play, Pause } from 'lucide-react'
+import { sanitizeUrl, isValidUrl } from '@/lib/sanitize'
 
 interface AudioPreviewProps {
   readonly url: string
@@ -102,17 +103,30 @@ export function AudioPreview({
     return height
   })
 
+  const sanitizedUrl = sanitizeUrl(url)
+  const sanitizedAvatarUrl = avatarUrl ? sanitizeUrl(avatarUrl) : null
+
+  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 min-w-[280px] max-w-[340px]">
+        <span className="text-sm text-dark-500 dark:text-dark-400">
+          Áudio inválido ou não permitido
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div className="flex items-center gap-2 px-3 py-2 min-w-[280px] max-w-[340px]">
       {/* Hidden audio element */}
-      <audio ref={audioRef} src={url} preload="metadata">
+      <audio ref={audioRef} src={sanitizedUrl} preload="metadata">
         <track kind="captions" />
       </audio>
 
       {/* Avatar (optional) */}
-      {avatarUrl && (
+      {sanitizedAvatarUrl && isValidUrl(sanitizedAvatarUrl) && (
         <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
-          <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+          <img src={sanitizedAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         </div>
       )}
 
