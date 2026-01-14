@@ -61,7 +61,6 @@ const isTrustedTypesSupported =
  */
 export function createTrustedTypesPolicies(): void {
   if (!isTrustedTypesSupported) {
-    // eslint-disable-next-line no-console
     console.warn('Trusted Types not supported in this browser')
     return
   }
@@ -126,7 +125,6 @@ export function createTrustedTypesPolicies(): void {
           // Return the sanitized URL (Trusted Types will handle it)
           return sanitized
         } catch (error) {
-          // eslint-disable-next-line no-console
           console.error('Invalid URL:', error)
           throw new Error('Invalid URL')
         }
@@ -134,7 +132,6 @@ export function createTrustedTypesPolicies(): void {
     })
 
     // Policy for script content (should be rarely used)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     trustedTypes.createPolicy('script', {
       createScript: (_script: string): string => {
         // In most cases, we should not create scripts dynamically
@@ -143,10 +140,9 @@ export function createTrustedTypesPolicies(): void {
       },
     })
 
-    // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console -- Success message for developers
     console.log('✅ Trusted Types policies created successfully')
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('❌ Failed to create Trusted Types policies:', error)
   }
 }

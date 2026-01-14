@@ -8,6 +8,50 @@ Módulo de segurança para receber e processar relatórios de violação CSP (Co
 
 Recebe relatórios de violação CSP do frontend.
 
+### GET `/minc-teams/v1/security/csp-reports`
+
+Lista relatórios de violação CSP com filtros e paginação.
+
+**Query Parameters:**
+
+- `page` (number, default: 1): Número da página
+- `limit` (number, default: 20, max: 100): Itens por página
+- `violatedDirective` (string, optional): Filtrar por diretiva violada
+- `isCritical` (boolean, optional): Filtrar apenas violações críticas
+- `blockedUri` (string, optional): Filtrar por URI bloqueada (busca parcial)
+- `documentUri` (string, optional): Filtrar por URI do documento (busca parcial)
+- `startDate` (string, optional): Data inicial (ISO 8601)
+- `endDate` (string, optional): Data final (ISO 8601)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "CSP reports retrieved successfully",
+  "data": [
+    {
+      "id": "uuid",
+      "documentUri": "https://app.example.com/page",
+      "violatedDirective": "script-src",
+      "blockedUri": "inline",
+      "isCritical": true,
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      ...
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}
+```
+
 **Request Body:**
 
 ```json
@@ -35,13 +79,15 @@ Recebe relatórios de violação CSP do frontend.
 ## Funcionalidades
 
 1. **Recebimento de Relatórios CSP**: Endpoint dedicado para receber violações CSP
-2. **Logging Estruturado**: Logs estruturados com todas as informações do relatório
-3. **Detecção de Violações Críticas**: Identifica violações críticas como:
+2. **Armazenamento em Banco de Dados**: Todos os relatórios são salvos na tabela `csp_reports`
+3. **Logging Estruturado**: Logs estruturados com todas as informações do relatório
+4. **Detecção de Violações Críticas**: Identifica violações críticas como:
    - Script injection
    - Inline scripts
    - Uso de `eval()`
    - Protocolo `javascript:`
-4. **Alertas**: Logs de nível ERROR para violações críticas
+5. **Alertas**: Logs de nível ERROR para violações críticas
+6. **Consulta de Relatórios**: Endpoint para consultar relatórios com filtros e paginação
 
 ## Monitoramento
 
@@ -61,14 +107,35 @@ Os relatórios CSP são logados com nível WARN. Violações críticas são loga
 }
 ```
 
+## Banco de Dados
+
+Os relatórios CSP são armazenados na tabela `csp_reports` com os seguintes campos:
+
+- `id`: UUID único do relatório
+- `document_uri`: URI do documento onde ocorreu a violação
+- `violated_directive`: Diretiva CSP violada
+- `blocked_uri`: URI que foi bloqueada
+- `is_critical`: Indica se é uma violação crítica
+- `raw_report`: Relatório completo em formato JSONB
+- `created_at`: Data e hora da violação
+
+**Índices criados:**
+
+- `idx_csp_reports_created_at`: Para consultas por data
+- `idx_csp_reports_violated_directive`: Para filtros por diretiva
+- `idx_csp_reports_is_critical`: Para filtrar violações críticas
+- `idx_csp_reports_created_at_critical`: Índice composto para consultas otimizadas
+
 ## Próximos Passos
 
 Para produção, considere:
 
-1. **Armazenamento em Banco de Dados**: Salvar relatórios para análise histórica
-2. **Integração com Monitoramento**: Enviar para serviços como Sentry, DataDog, etc.
-3. **Alertas Automáticos**: Notificar equipe de segurança em caso de violações críticas
-4. **Dashboard**: Criar dashboard para visualizar violações CSP
+1. ✅ **Armazenamento em Banco de Dados**: Implementado
+2. ✅ **Consulta de Relatórios**: Implementado com filtros e paginação
+3. **Integração com Monitoramento**: Enviar para serviços como Sentry, DataDog, etc.
+4. **Alertas Automáticos**: Notificar equipe de segurança em caso de violações críticas
+5. **Dashboard**: Criar dashboard frontend para visualizar violações CSP
+6. **Limpeza Automática**: Implementar job para limpar relatórios antigos (ex: > 90 dias)
 
 ## Configuração no Frontend
 
