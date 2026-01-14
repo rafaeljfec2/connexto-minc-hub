@@ -23,6 +23,7 @@ import { SchedulePlanningModule } from './schedule-planning/schedule-planning.mo
 import { CheckinModule } from './checkin/checkin.module';
 import { ChatModule } from './chat/chat.module';
 import { UploadModule } from './upload/upload.module';
+import { SecurityModule } from './security/security.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { UploadModule } from './upload/upload.module';
     CheckinModule,
     ChatModule,
     UploadModule,
+    SecurityModule,
   ],
   controllers: [AppController],
   providers: [
