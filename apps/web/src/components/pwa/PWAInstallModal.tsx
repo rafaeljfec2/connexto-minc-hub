@@ -36,6 +36,7 @@ export function PWAInstallModal({
   const { install, canInstall, isInstalled } = usePWAInstall()
   const [isOpen, setIsOpen] = useState(false)
   const [isInstalling, setIsInstalling] = useState(false)
+  const [showWaitingMessage, setShowWaitingMessage] = useState(false)
 
   useEffect(() => {
     // Não mostrar se já estiver instalado
@@ -63,6 +64,9 @@ export function PWAInstallModal({
   const handleInstall = async () => {
     // Não tentar instalar se não estiver disponível
     if (!canInstall) {
+      // Mostrar mensagem informativa
+      setShowWaitingMessage(true)
+      setTimeout(() => setShowWaitingMessage(false), 3000)
       return
     }
 
@@ -77,6 +81,13 @@ export function PWAInstallModal({
       }
     }
   }
+
+  // Atualizar quando canInstall mudar para true
+  useEffect(() => {
+    if (canInstall && isOpen) {
+      setShowWaitingMessage(false)
+    }
+  }, [canInstall, isOpen])
 
   const handleDismiss = () => {
     setIsOpen(false)
@@ -129,9 +140,31 @@ export function PWAInstallModal({
           <h3 className="text-2xl font-bold text-dark-900 dark:text-dark-50 mb-6">Instale o app</h3>
 
           {/* Description */}
-          <p className="text-dark-600 dark:text-dark-400 mb-6 text-sm">
+          <p className="text-dark-600 dark:text-dark-400 mb-4 text-sm">
             Instale o app para acesso rápido e melhor experiência
           </p>
+
+          {/* Waiting Message */}
+          {showWaitingMessage && (
+            <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                Aguardando permissão do navegador... O botão será habilitado em breve.
+              </p>
+            </div>
+          )}
+
+          {/* Info quando não pode instalar ainda */}
+          {!canInstall && !showWaitingMessage && (
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                O navegador está preparando a instalação. Aguarde alguns segundos...
+              </p>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                Ou instale manualmente: procure o ícone de instalação (➕) na barra de endereço do
+                navegador.
+              </p>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3">

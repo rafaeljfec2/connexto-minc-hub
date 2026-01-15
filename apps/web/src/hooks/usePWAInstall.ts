@@ -40,12 +40,17 @@ export function usePWAInstall() {
       setDeferredPrompt(null)
     }
 
-    globalThis.window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    globalThis.window.addEventListener('appinstalled', handleAppInstalled)
+    if (globalThis.window !== undefined) {
+      // Adicionar listeners
+      globalThis.window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt, {
+        passive: false,
+      })
+      globalThis.window.addEventListener('appinstalled', handleAppInstalled)
 
-    return () => {
-      globalThis.window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      globalThis.window.removeEventListener('appinstalled', handleAppInstalled)
+      return () => {
+        globalThis.window?.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+        globalThis.window?.removeEventListener('appinstalled', handleAppInstalled)
+      }
     }
   }, [])
 
