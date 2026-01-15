@@ -17,7 +17,8 @@ echo "Gerando ícones PWA a partir de $SOURCE_ICON..."
 for size in "${SIZES[@]}"; do
   output_file="$ICONS_DIR/icon-${size}x${size}.png"
   echo "Gerando $output_file..."
-  convert "$SOURCE_ICON" -resize "${size}x${size}" "$output_file"
+  # Criar ícone quadrado: redimensionar mantendo proporção e centralizar em fundo transparente
+  convert "$SOURCE_ICON" -resize "${size}x${size}^" -gravity center -extent "${size}x${size}" -background transparent "$output_file"
 done
 
 # Gerar favicon.ico (32x32)
