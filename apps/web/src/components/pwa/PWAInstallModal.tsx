@@ -38,8 +38,8 @@ export function PWAInstallModal({
   const [isInstalling, setIsInstalling] = useState(false)
 
   useEffect(() => {
-    // Não mostrar se já estiver instalado ou não puder instalar
-    if (isInstalled || !canInstall) {
+    // Não mostrar se já estiver instalado
+    if (isInstalled) {
       return
     }
 
@@ -49,10 +49,17 @@ export function PWAInstallModal({
       return
     }
 
+    // Se canInstall for false, ainda assim tentar mostrar após um delay maior
+    // (pode ser que o evento ainda não tenha sido disparado)
+    const showDelay = canInstall ? delay : delay * 2
+
     // Mostrar modal após delay
     const timer = setTimeout(() => {
-      setIsOpen(true)
-    }, delay)
+      // Verificar novamente antes de mostrar
+      if (!isInstalled && localStorage.getItem(storageKey) !== 'true') {
+        setIsOpen(true)
+      }
+    }, showDelay)
 
     return () => clearTimeout(timer)
   }, [canInstall, isInstalled, delay, storageKey])

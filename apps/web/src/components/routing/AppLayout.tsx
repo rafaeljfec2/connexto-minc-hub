@@ -9,6 +9,7 @@ import { ChatProvider } from '@/contexts/ChatContext'
 import { registerServiceWorker } from '@/utils/pwa'
 import { PWAInstallModal } from '@/components/pwa/PWAInstallModal'
 import { logger } from '@/lib/logger'
+import { PWADebugPanel } from '@/components/pwa/PWADebugPanel'
 
 interface AppLayoutProps {
   readonly children: ReactNode
@@ -64,6 +65,10 @@ export function AppLayout({ children }: AppLayoutProps) {
     <ChatProvider>
       {/* PWA Install Modal */}
       <PWAInstallModal />
+      {/* PWA Debug Panel - Disponível via ?debug=pwa em produção */}
+      {(import.meta.env.DEV || globalThis.window?.location.search.includes('debug=pwa')) && (
+        <PWADebugPanel />
+      )}
       {/* Fixed Navigation Elements - Outside animation to preserve fixed positioning */}
       <Sidebar />
 
