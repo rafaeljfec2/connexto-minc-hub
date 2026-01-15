@@ -10,6 +10,7 @@ import { useTeams } from '@/hooks/useTeams'
 import { useUsers } from '@/hooks/useUsers'
 import { useServices } from '@/hooks/useServices'
 import { useSort } from '@/hooks/useSort'
+import { useToast } from '@/contexts/ToastContext'
 import { Person, UserRole, MemberType } from '@minc-hub/shared/types'
 
 import { PeopleMobileView } from './people/components/PeopleMobileView'
@@ -30,6 +31,7 @@ export default function PeoplePage() {
   const { teams } = useTeams()
   const { users, createUser } = useUsers()
   const { services } = useServices()
+  const { showError } = useToast()
 
   // Modals
   const personModal = useModal()
@@ -170,8 +172,32 @@ export default function PeoplePage() {
   }
 
   async function handleSavePersonAndCreateUser(personData: Record<string, unknown>) {
+    // Validar se tem email antes de salvar
+    const email = personData.email as string
+    if (!email || !email.trim()) {
+      showError(
+        'Email é obrigatório para criar um usuário. Por favor, preencha o email antes de continuar.'
+      )
+      return
+    }
+
+    // Validar formato de email básico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email.trim())) {
+      showError('Email inválido. Por favor, insira um email válido.')
+      return
+    }
+
     const savedPerson = await handlePersonSubmit(personData)
     if (savedPerson) {
+      // Validar novamente após salvar
+      if (!savedPerson.email || !savedPerson.email.trim()) {
+        showError(
+          'A pessoa foi salva, mas não possui email. Por favor, edite a pessoa e adicione um email antes de criar o usuário.'
+        )
+        return
+      }
+
       setTimeout(() => {
         handleOpenCreateUserModal(savedPerson)
       }, 200)

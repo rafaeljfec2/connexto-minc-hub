@@ -17,6 +17,7 @@ import { ChurchesMobileView } from './churches/components/ChurchesMobileView'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { useSort } from '@/hooks/useSort'
 import { SortableColumn } from '@/components/ui/SortableColumn'
+import { formatPhone } from '@/utils/phone-mask'
 
 export default function ChurchesPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)')
@@ -74,7 +75,7 @@ export default function ChurchesPage() {
       setFormData({
         name: church.name,
         address: church.address ?? '',
-        phone: church.phone ?? '',
+        phone: church.phone ? formatPhone(church.phone) : '',
         email: church.email ?? '',
       })
     } else {
@@ -263,8 +264,11 @@ export default function ChurchesPage() {
             <Input
               label="Telefone"
               value={formData.phone}
-              onChange={e => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="(11) 3333-3333"
+              onChange={e => {
+                const formatted = formatPhone(e.target.value)
+                setFormData({ ...formData, phone: formatted })
+              }}
+              placeholder="(11) 99999-9999"
             />
             <Input
               label="Email"

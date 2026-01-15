@@ -3,6 +3,8 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Param,
   Req,
   Res,
   UnauthorizedException,
@@ -29,14 +31,21 @@ import { GetUser } from '../common/decorators/get-user.decorator';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { CreateAccessCodeDto } from './dto/create-access-code.dto';
+import { CheckActivationDto } from './dto/check-activation.dto';
+import { CompleteActivationDto } from './dto/complete-activation.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UserEntity } from '../users/entities/user.entity';
 import { logSecurityEvent } from '../common/utils/security-logger.util';
+import { ActivationService } from './services/activation.service';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly activationService: ActivationService,
+  ) {}
 
   @Post('login')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
@@ -368,6 +377,191 @@ export class AuthController {
       });
       throw error;
     }
+  }
+
+  @Post('activate/check')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiOperation({
+    summary: 'Valida telefone e código de acesso',
+    description:
+      'Valida se o telefone existe na base e se o código de acesso é válido. Retorna token temporário para completar ativação.',
+  })
+  @ApiBody({
+    description: 'Telefone e código de acesso',
+    type: CheckActivationDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Validação bem-sucedida. Retorna token temporário.',
+    schema: {
+      example: {
+        tempToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        personName: 'João Silva',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Código inválido, expirado ou desativado' })
+  @ApiResponse({ status: 404, description: 'Telefone não encontrado' })
+  @ApiTooManyRequestsResponse({
+    description: 'Muitas tentativas. Tente novamente mais tarde.',
+  })
+  async checkActivation(@Body() dto: CheckActivationDto, @Req() req: Request) {
+    const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
+    const endpoint = getEndpoint(req, '/auth/activate/check');
+
+    try {
+      const result = await this.activationService.validateAccessCode(dto);
+      return result;
+    } catch (error) {
+      logSecurityEvent('activation_check_failed', {
+        phone: dto.phone,
+        code: dto.accessCode,
+        ip,
+        endpoint,
+        reason: error instanceof Error ? error.message : 'unknown_error',
+      });
+      throw error;
+    }
+  }
+
+  @Post('activate/complete')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiOperation({
+    summary: 'Completa ativação da conta',
+    description:
+      'Cria usuário vinculado à pessoa usando token temporário. Retorna token de autenticação.',
+  })
+  @ApiBody({
+    description: 'Token temporário, email e senha',
+    type: CompleteActivationDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Conta ativada com sucesso. Retorna usuário e token de autenticação.',
+    schema: {
+      example: {
+        user: {
+          id: 'b1f2c3d4-5678-1234-9abc-def012345678',
+          name: 'João Silva',
+          email: 'joao@example.com',
+          role: 'servo',
+          isActive: true,
+          personId: 'a1b2c3d4-5678-1234-9abc-def012345678',
+        },
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Token inválido ou expirado' })
+  @ApiResponse({ status: 409, description: 'Email já está em uso ou pessoa já possui conta' })
+  @ApiTooManyRequestsResponse({
+    description: 'Muitas tentativas. Tente novamente mais tarde.',
+  })
+  async completeActivation(
+    @Body() dto: CompleteActivationDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const ip = req?.ip || (req?.headers['x-forwarded-for'] as string) || '-';
+    const endpoint = getEndpoint(req, '/auth/activate/complete');
+
+    try {
+      const result = await this.activationService.completeActivation(dto);
+
+      // Fazer login automático
+      const loginResult = await this.authService.login(result.user);
+      this.setAuthCookies(res, loginResult);
+
+      return {
+        user: loginResult.user,
+        token: loginResult.token,
+      };
+    } catch (error) {
+      logSecurityEvent('activation_complete_failed', {
+        ip,
+        endpoint,
+        reason: error instanceof Error ? error.message : 'unknown_error',
+      });
+      throw error;
+    }
+  }
+
+  @Post('access-codes')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Cria código de acesso',
+    description:
+      'Cria um novo código de acesso para ativação em massa. Requer autenticação e permissões adequadas.',
+  })
+  @ApiBody({
+    description: 'Dados do código de acesso',
+    type: CreateAccessCodeDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Código criado com sucesso',
+    type: Object,
+  })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para criar código neste escopo' })
+  @ApiResponse({ status: 409, description: 'Código já existe' })
+  async createAccessCode(@GetUser() user: UserEntity, @Body() dto: CreateAccessCodeDto) {
+    return this.activationService.createAccessCode(user, dto);
+  }
+
+  @Get('access-codes')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Lista códigos de acesso do usuário',
+    description: 'Retorna lista de códigos criados pelo usuário autenticado.',
+  })
+  @ApiOkResponse({
+    description: 'Lista de códigos de acesso',
+    type: [Object],
+  })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado' })
+  async getAccessCodes(@GetUser() user: UserEntity) {
+    return this.activationService.getAccessCodes(user);
+  }
+
+  @Patch('access-codes/:id/deactivate')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Desativa código de acesso',
+    description: 'Desativa um código de acesso criado pelo usuário.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Código desativado com sucesso',
+    schema: { example: { message: 'Código desativado com sucesso' } },
+  })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para desativar este código' })
+  @ApiResponse({ status: 404, description: 'Código não encontrado' })
+  async deactivateAccessCode(@GetUser() user: UserEntity, @Param('id') id: string) {
+    await this.activationService.deactivateAccessCode(user, id);
+    return { message: 'Código desativado com sucesso' };
+  }
+
+  @Get('access-codes/:id/stats')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Estatísticas de ativações do código',
+    description: 'Retorna estatísticas de ativações de um código de acesso.',
+  })
+  @ApiOkResponse({
+    description: 'Estatísticas do código',
+    type: Object,
+  })
+  @ApiUnauthorizedResponse({ description: 'Não autorizado' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para ver estatísticas deste código' })
+  @ApiResponse({ status: 404, description: 'Código não encontrado' })
+  async getActivationStats(@GetUser() user: UserEntity, @Param('id') id: string) {
+    return this.activationService.getActivationStats(user, id);
   }
 
   private setAuthCookies(res: Response, result: LoginResponse) {

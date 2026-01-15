@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { PersonEntity } from './entities/person.entity';
@@ -17,6 +17,19 @@ export class PersonsService {
 
   async create(createPersonDto: CreatePersonDto): Promise<PersonEntity> {
     const { teamMembers, ...personData } = createPersonDto;
+
+    // Verificar se email já existe (apenas se email foi fornecido)
+    if (personData.email) {
+      const existingPerson = await this.personsRepository.findOne({
+        where: { email: personData.email, deletedAt: IsNull() },
+      });
+
+      if (existingPerson) {
+        throw new ConflictException(
+          `Já existe uma pessoa cadastrada com o email ${personData.email}`,
+        );
+      }
+    }
 
     const person = this.personsRepository.create({
       ...personData,
@@ -131,6 +144,19 @@ export class PersonsService {
   async update(id: string, updatePersonDto: UpdatePersonDto): Promise<PersonEntity> {
     const person = await this.findOne(id);
     const { teamMembers, ...personData } = updatePersonDto;
+
+    // Verificar se email já existe em outra pessoa (apenas se email foi fornecido e mudou)
+    if (personData.email && personData.email !== person.email) {
+      const existingPerson = await this.personsRepository.findOne({
+        where: { email: personData.email, deletedAt: IsNull() },
+      });
+
+      if (existingPerson && existingPerson.id !== id) {
+        throw new ConflictException(
+          `Já existe uma pessoa cadastrada com o email ${personData.email}`,
+        );
+      }
+    }
 
     if (personData.birthDate) {
       personData.birthDate = new Date(personData.birthDate).toISOString();

@@ -27,6 +27,7 @@ export class PersonsController {
   @Post()
   @ApiOperation({ summary: 'Create a new person/servant' })
   @ApiResponse({ status: 201, description: 'Person created successfully', type: PersonEntity })
+  @ApiResponse({ status: 409, description: 'Person with this email already exists' })
   create(@Body() createPersonDto: CreatePersonDto): Promise<PersonEntity> {
     return this.personsService.create(createPersonDto);
   }
@@ -60,6 +61,8 @@ export class PersonsController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update a person' })
   @ApiResponse({ status: 200, description: 'Person updated successfully', type: PersonEntity })
+  @ApiResponse({ status: 404, description: 'Person not found' })
+  @ApiResponse({ status: 409, description: 'Person with this email already exists' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updatePersonDto: UpdatePersonDto,

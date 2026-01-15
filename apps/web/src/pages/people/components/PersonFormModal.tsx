@@ -8,6 +8,7 @@ import { CheckboxList } from '@/components/ui/CheckboxList'
 import { TeamMembersSelector } from './TeamMembersSelector'
 import { UserIcon } from '@/components/icons'
 import { Person, Ministry, Team, Service, MemberType } from '@minc-hub/shared/types'
+import { formatPhone } from '@/utils/phone-mask'
 
 interface PersonFormModalProps {
   readonly isOpen: boolean
@@ -47,6 +48,7 @@ export function PersonFormModal({
   onSaveAndCreateUser,
 }: PersonFormModalProps) {
   const [personFormData, setPersonFormData] = useState(getInitialFormData())
+  const [emailError, setEmailError] = useState('')
 
   useEffect(() => {
     if (person) {
@@ -72,7 +74,7 @@ export function PersonFormModal({
       setPersonFormData({
         name: person.name,
         email: person.email ?? '',
-        phone: person.phone ?? '',
+        phone: person.phone ? formatPhone(person.phone) : '',
         birthDate: person.birthDate ?? '',
         address: person.address ?? '',
         notes: person.notes ?? '',
@@ -81,8 +83,10 @@ export function PersonFormModal({
         teamMembers,
         preferredServiceIds,
       })
+      setEmailError('')
     } else {
       setPersonFormData(getInitialFormData())
+      setEmailError('')
     }
   }, [person, isOpen])
 
@@ -120,6 +124,20 @@ export function PersonFormModal({
   }
 
   async function handleSaveAndCreateUser() {
+    // Validar se tem email antes de criar usuário
+    if (!personFormData.email || !personFormData.email.trim()) {
+      setEmailError('Email é obrigatório para criar um usuário')
+      return
+    }
+
+    // Validar formato de email básico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(personFormData.email.trim())) {
+      setEmailError('Email inválido')
+      return
+    }
+
+    setEmailError('')
     await onSaveAndCreateUser(personFormData as unknown as Record<string, unknown>)
   }
 
@@ -147,12 +165,20 @@ export function PersonFormModal({
               label="Email"
               type="email"
               value={personFormData.email}
-              onChange={e => setPersonFormData({ ...personFormData, email: e.target.value })}
+              onChange={e => {
+                setPersonFormData({ ...personFormData, email: e.target.value })
+                setEmailError('')
+              }}
+              placeholder="email@exemplo.com"
+              error={emailError}
             />
             <Input
               label="Telefone"
               value={personFormData.phone}
-              onChange={e => setPersonFormData({ ...personFormData, phone: e.target.value })}
+              onChange={e => {
+                const formatted = formatPhone(e.target.value)
+                setPersonFormData({ ...personFormData, phone: formatted })
+              }}
               placeholder="(11) 99999-9999"
             />
           </div>

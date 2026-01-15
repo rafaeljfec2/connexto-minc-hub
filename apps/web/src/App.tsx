@@ -7,7 +7,7 @@ import { ChurchProvider } from '@/contexts/ChurchContext'
 import { ToastContainer } from '@/components/ui/ToastContainer'
 import { ProtectedRouteWrapper } from '@/components/routing/ProtectedRouteWrapper'
 // import LoginPage from '@/pages/LoginPage' // Converted to lazy
-import { protectedRoutes } from './navigator/routes'
+import { protectedRoutes, publicRoutes } from './navigator/routes'
 import { ROUTES } from './navigator/routes.constants'
 
 import { ScrollToTop } from '@/components/routing/ScrollToTop'
@@ -36,6 +36,17 @@ function App() {
                   </Suspense>
                 }
               />
+              {publicRoutes.map(route => (
+                <Route
+                  key={route.path}
+                  path={route.path}
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <route.component />
+                    </Suspense>
+                  }
+                />
+              ))}
               {protectedRoutes.map(route => (
                 <Route
                   key={route.path}

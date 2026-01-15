@@ -23,6 +23,7 @@ import { UserEntity } from '../../users/entities/user.entity';
 @Index(['teamId'], { where: '"deleted_at" IS NULL' })
 @Index(['name'], { where: '"deleted_at" IS NULL' })
 @Index(['email'], { where: '"deleted_at" IS NULL' })
+@Index(['email'], { where: '"deleted_at" IS NULL AND "email" IS NOT NULL', unique: true })
 export class PersonEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

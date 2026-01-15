@@ -11,8 +11,15 @@ import { LocalStrategy } from './local.strategy';
 import { jwtConstants } from './constants';
 import { RefreshTokenEntity } from './entities/refresh-token.entity';
 import { PasswordResetTokenEntity } from './entities/password-reset-token.entity';
+import { AccessCodeEntity } from './entities/access-code.entity';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { PasswordResetService } from './services/password-reset.service';
+import { TempActivationTokenService } from './services/temp-activation-token.service';
+import { ActivationService } from './services/activation.service';
+import { PersonEntity } from '../persons/entities/person.entity';
+import { TeamEntity } from '../teams/entities/team.entity';
+import { MinistryEntity } from '../ministries/entities/ministry.entity';
+import { ChurchEntity } from '../churches/entities/church.entity';
 
 @Module({
   imports: [
@@ -22,7 +29,15 @@ import { PasswordResetService } from './services/password-reset.service';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN ?? '24h' },
     }),
-    TypeOrmModule.forFeature([RefreshTokenEntity, PasswordResetTokenEntity]),
+    TypeOrmModule.forFeature([
+      RefreshTokenEntity,
+      PasswordResetTokenEntity,
+      AccessCodeEntity,
+      PersonEntity,
+      TeamEntity,
+      MinistryEntity,
+      ChurchEntity,
+    ]),
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
@@ -31,7 +46,15 @@ import { PasswordResetService } from './services/password-reset.service';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, RefreshTokenService, PasswordResetService],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    RefreshTokenService,
+    PasswordResetService,
+    TempActivationTokenService,
+    ActivationService,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

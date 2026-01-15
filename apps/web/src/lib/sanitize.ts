@@ -136,15 +136,17 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T, allowH
   const sanitized = { ...obj }
 
   for (const key in sanitized) {
-    if (typeof sanitized[key] === 'string') {
-      ;(sanitized[key] as unknown) = allowHtml
-        ? sanitizeHtml(sanitized[key] as string, true)
-        : sanitizeText(sanitized[key] as string)
-    } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
-      sanitized[key] = sanitizeObject(
-        sanitized[key] as Record<string, unknown>,
-        allowHtml
-      ) as T[Extract<keyof T, string>]
+    const value = sanitized[key]
+    if (typeof value === 'string') {
+      sanitized[key] = (allowHtml ? sanitizeHtml(value, true) : sanitizeText(value)) as T[Extract<
+        keyof T,
+        string
+      >]
+    } else if (typeof value === 'object' && value !== null) {
+      sanitized[key] = sanitizeObject(value as Record<string, unknown>, allowHtml) as T[Extract<
+        keyof T,
+        string
+      >]
     }
   }
 

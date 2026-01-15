@@ -20,6 +20,9 @@ const CheckinPage = lazy(() => import('@/pages/CheckinPage'))
 const ChatPage = lazy(() => import('@/pages/ChatPage'))
 const ChatDetailPage = lazy(() => import('@/pages/ChatDetailPage'))
 const NewMessagePage = lazy(() => import('@/pages/NewMessagePage'))
+const ActivateAccountPage = lazy(() => import('@/pages/ActivateAccountPage'))
+const CompleteActivationPage = lazy(() => import('@/pages/CompleteActivationPage'))
+const AccessCodesPage = lazy(() => import('@/pages/AccessCodesPage'))
 
 const TeamDetailsPage = lazy(() => import('@/pages/TeamDetailsPage'))
 
@@ -138,5 +141,21 @@ export const protectedRoutes: RouteConfig[] = [
       UserRole.LIDER_DE_EQUIPE,
       UserRole.SERVO,
     ],
+  },
+  {
+    path: '/access-codes',
+    component: AccessCodesPage,
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+  },
+]
+
+export const publicRoutes: RouteConfig[] = [
+  {
+    path: '/activate',
+    component: ActivateAccountPage,
+  },
+  {
+    path: '/activate/complete',
+    component: CompleteActivationPage,
   },
 ]

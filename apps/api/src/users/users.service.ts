@@ -49,6 +49,7 @@ export class UsersService {
     return this.createBaseQuery()
       .where('user.personId = :personId', { personId })
       .andWhere('user.deletedAt IS NULL')
+      .andWhere('user.isActive = :isActive', { isActive: true })
       .getOne();
   }
 
