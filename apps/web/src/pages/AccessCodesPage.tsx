@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { Alert } from '@/components/ui/Alert'
 import { useModal } from '@/hooks/useModal'
 import { useAccessCodes, CreateAccessCodeDto } from '@/hooks/useAccessCodes'
 import { useChurches } from '@/hooks/useChurches'
@@ -19,6 +20,8 @@ export default function AccessCodesPage() {
   const { teams } = useTeams()
   const { selectedChurch } = useChurch()
   const createModal = useModal()
+  const deactivateAlert = useModal()
+  const [codeToDeactivate, setCodeToDeactivate] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredCodes = useMemo(() => {
@@ -52,14 +55,25 @@ export default function AccessCodesPage() {
     [createCode, createModal]
   )
 
-  const handleDeactivate = useCallback(
-    async (codeId: string) => {
-      if (window.confirm('Tem certeza que deseja desativar este código?')) {
-        await deactivateCode(codeId)
-      }
+  const handleDeactivateClick = useCallback(
+    (codeId: string) => {
+      setCodeToDeactivate(codeId)
+      deactivateAlert.open()
     },
-    [deactivateCode]
+    [deactivateAlert]
   )
+
+  const handleDeactivateConfirm = useCallback(async () => {
+    if (codeToDeactivate) {
+      await deactivateCode(codeToDeactivate)
+      setCodeToDeactivate(null)
+    }
+  }, [codeToDeactivate, deactivateCode])
+
+  const handleDeactivateCancel = useCallback(() => {
+    setCodeToDeactivate(null)
+    deactivateAlert.close()
+  }, [deactivateAlert])
 
   const getScopeOptions = useCallback(() => {
     if (!selectedChurch) {
@@ -171,7 +185,7 @@ export default function AccessCodesPage() {
                   </div>
                 </div>
                 {code.isActive && !code.isExpired && (
-                  <Button variant="danger" size="sm" onClick={() => handleDeactivate(code.id)}>
+                  <Button variant="danger" size="sm" onClick={() => handleDeactivateClick(code.id)}>
                     Desativar
                   </Button>
                 )}
@@ -186,6 +200,18 @@ export default function AccessCodesPage() {
         onClose={createModal.close}
         onCreate={handleCreateCode}
         scopeOptions={getScopeOptions()}
+      />
+
+      <Alert
+        isOpen={deactivateAlert.isOpen}
+        onClose={handleDeactivateCancel}
+        type="warning"
+        title="Desativar Código"
+        message="Tem certeza que deseja desativar este código?"
+        confirmText="Desativar"
+        cancelText="Cancelar"
+        onConfirm={handleDeactivateConfirm}
+        showCancel={true}
       />
     </div>
   )

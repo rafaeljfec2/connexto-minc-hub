@@ -9,8 +9,12 @@ import { usePeople } from '@/hooks/usePeople'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useTeams } from '@/hooks/useTeams'
 import { useUsers } from '@/hooks/useUsers'
+import { useAccessCodes, AccessCodeScopeType } from '@/hooks/useAccessCodes'
+import { useChurch } from '@/contexts/ChurchContext'
+import { useToast } from '@/contexts/ToastContext'
 import { useSort } from '@/hooks/useSort'
 import { Person, UserRole } from '@minc-hub/shared/types'
+import { openWhatsApp, formatWhatsAppMessage, getActivationLink } from '@/utils/whatsapp'
 
 import { PeopleMobileView } from './people/components/PeopleMobileView'
 import { PeopleDesktopView } from './people/components/PeopleDesktopView'
@@ -23,6 +27,9 @@ export default function PeoplePage() {
   const { ministries } = useMinistries()
   const { teams } = useTeams()
   const { users, createUser } = useUsers()
+  const { createCode } = useAccessCodes()
+  const { selectedChurch } = useChurch()
+  const { showError, showSuccess } = useToast()
 
   // Modals
   const deleteModal = useModal()
@@ -162,6 +169,76 @@ export default function PeoplePage() {
     }
   }
 
+  async function handleSendWhatsApp(person: Person) {
+    try {
+      // Validar se tem telefone
+      if (!person.phone?.trim()) {
+        showError('Este servo não possui telefone cadastrado')
+        return
+      }
+
+      // Validar se tem igreja selecionada
+      if (!selectedChurch) {
+        showError('Selecione uma igreja antes de enviar o código de acesso')
+        return
+      }
+
+      // Determinar escopo do código de acesso
+      // Prioridade: Team > Ministry > Church
+      let scopeType: AccessCodeScopeType
+      let scopeId: string
+
+      if (person.teamId) {
+        scopeType = AccessCodeScopeType.TEAM
+        scopeId = person.teamId
+      } else if (person.ministryId) {
+        scopeType = AccessCodeScopeType.MINISTRY
+        scopeId = person.ministryId
+      } else {
+        scopeType = AccessCodeScopeType.CHURCH
+        scopeId = selectedChurch.id
+      }
+
+      // Gerar código único baseado no nome e timestamp
+      const codeBase = person.name
+        .split(' ')
+        .map(n => n[0])
+        .slice(0, 3)
+        .join('')
+        .toUpperCase()
+      const timestamp = Date.now().toString().slice(-4)
+      const accessCode = `${codeBase}${timestamp}`.substring(0, 10)
+
+      // Criar código de acesso
+      const createdCode = await createCode({
+        code: accessCode,
+        scopeType,
+        scopeId,
+        expiresInDays: 30,
+        maxUsages: 1, // Código único para esta pessoa
+      })
+
+      if (!createdCode) {
+        showError('Erro ao criar código de acesso')
+        return
+      }
+
+      // Gerar link de ativação
+      const activationLink = getActivationLink()
+
+      // Formatar mensagem
+      const message = formatWhatsAppMessage(person.name, createdCode.code, activationLink)
+
+      // Abrir WhatsApp
+      openWhatsApp(person.phone, message)
+
+      showSuccess('WhatsApp aberto com código de acesso!')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao enviar WhatsApp'
+      showError(errorMessage)
+    }
+  }
+
   return (
     <>
       {/* Mobile View */}
@@ -178,6 +255,7 @@ export default function PeoplePage() {
           onPersonEdit={handleOpenPersonModal}
           onPersonDelete={handleDeleteClick}
           onCreateUser={handleOpenCreateUserModal}
+          onSendWhatsApp={handleSendWhatsApp}
           onCreateClick={() => handleOpenPersonModal()}
         />
       )}
@@ -208,6 +286,7 @@ export default function PeoplePage() {
           onEdit={handleOpenPersonModal}
           onDelete={handleDeleteClick}
           onCreateUser={handleOpenCreateUserModal}
+          onSendWhatsApp={handleSendWhatsApp}
           onCreateClick={() => handleOpenPersonModal()}
         />
       )}

@@ -11,6 +11,7 @@ interface PeopleMobileListContentProps {
   readonly onPersonEdit: (person: Person) => void
   readonly onPersonDelete: (id: string) => void
   readonly onCreateUser: (person: Person) => void
+  readonly onSendWhatsApp?: (person: Person) => void
 }
 
 export function PeopleMobileListContent({
@@ -23,6 +24,7 @@ export function PeopleMobileListContent({
   onPersonEdit,
   onPersonDelete,
   onCreateUser,
+  onSendWhatsApp,
 }: PeopleMobileListContentProps) {
   if (isLoading) {
     return (
@@ -54,6 +56,7 @@ export function PeopleMobileListContent({
           onEdit={onPersonEdit}
           onDelete={onPersonDelete}
           onCreateUser={onCreateUser}
+          onSendWhatsApp={onSendWhatsApp}
         />
       ))}
     </div>

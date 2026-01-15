@@ -15,6 +15,7 @@ interface PeopleMobileViewProps {
   readonly onPersonEdit: (person: Person) => void
   readonly onPersonDelete: (id: string) => void
   readonly onCreateUser: (person: Person) => void
+  readonly onSendWhatsApp?: (person: Person) => void
   readonly onCreateClick: () => void
 }
 
@@ -30,6 +31,7 @@ export function PeopleMobileView({
   onPersonEdit,
   onPersonDelete,
   onCreateUser,
+  onSendWhatsApp,
   onCreateClick,
 }: PeopleMobileViewProps) {
   return (
@@ -60,6 +62,7 @@ export function PeopleMobileView({
           onPersonEdit={onPersonEdit}
           onPersonDelete={onPersonDelete}
           onCreateUser={onCreateUser}
+          onSendWhatsApp={onSendWhatsApp}
         />
       </div>
     </div>
