@@ -7,7 +7,7 @@
  * triggerCspViolation('script-src', 'inline')
  */
 
-/* eslint-disable no-console -- This is a test/debug utility file */
+/* eslint-disable no-console -- Este arquivo é para testes e precisa usar console para debug */
 
 /**
  * Dispara uma violação CSP de teste
@@ -15,7 +15,7 @@
  * @param blockedUri URI bloqueada (ex: 'inline', 'eval', 'javascript:')
  */
 export function triggerCspViolation(directive: string, blockedUri: string): void {
-  if (typeof window === 'undefined') {
+  if (globalThis.window === undefined) {
     console.warn('CSP violation test can only run in browser')
     return
   }

@@ -1,15 +1,18 @@
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DashboardHeaderMobile } from '@/pages/dashboard/components/DashboardHeaderMobile'
 import { FooterMobile } from '@/components/layout/FooterMobile'
+import { ChatProvider } from '@/contexts/ChatContext'
+import { registerServiceWorker } from '@/utils/pwa'
+import { PWAInstallModal } from '@/components/pwa/PWAInstallModal'
+import { logger } from '@/lib/logger'
 
 interface AppLayoutProps {
   readonly children: ReactNode
 }
-
-import { ChatProvider } from '@/contexts/ChatContext'
 
 // ... existing imports
 
@@ -50,8 +53,17 @@ export function AppLayout({ children }: AppLayoutProps) {
     isNewMessagePage
   )
 
+  // Registrar Service Worker quando o componente montar
+  useEffect(() => {
+    registerServiceWorker().catch(error => {
+      logger.error('Erro ao registrar Service Worker', 'AppLayout', error)
+    })
+  }, [])
+
   return (
     <ChatProvider>
+      {/* PWA Install Modal */}
+      <PWAInstallModal />
       {/* Fixed Navigation Elements - Outside animation to preserve fixed positioning */}
       <Sidebar />
 

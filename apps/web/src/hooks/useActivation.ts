@@ -74,6 +74,9 @@ export function useActivation(): UseActivationReturn {
 
   const checkActivation = useCallback(
     async (phone: string, accessCode: string): Promise<CheckActivationResponse | null> => {
+      // Import logger once at the start of the function
+      const { logger } = await import('../lib/logger')
+
       try {
         setIsLoading(true)
         setError(null)
@@ -87,10 +90,8 @@ export function useActivation(): UseActivationReturn {
         })
 
         // Debug: Log da resposta completa
-        // eslint-disable-next-line no-console -- Debug temporário
-        console.log('Resposta completa da API:', response)
-        // eslint-disable-next-line no-console -- Debug temporário
-        console.log('response.data:', response.data)
+        logger.debug('Resposta completa da API', 'Activation', { response })
+        logger.debug('response.data', 'Activation', { data: response.data })
 
         // A resposta vem envolvida pelo TransformResponseInterceptor
         // Formato: { success: true, statusCode: 200, message: "...", data: { tempToken, personName } }
@@ -100,15 +101,13 @@ export function useActivation(): UseActivationReturn {
 
         // Verificar se está no formato wrapper
         if ('data' in responseData && responseData.data) {
-          // eslint-disable-next-line no-console -- Debug temporário
-          console.log('Retornando dados do wrapper:', responseData.data)
+          logger.debug('Retornando dados do wrapper', 'Activation', { data: responseData.data })
           return responseData.data
         }
 
         // Verificar se tem tempToken diretamente (formato direto)
         if ('tempToken' in responseData && responseData.tempToken) {
-          // eslint-disable-next-line no-console -- Debug temporário
-          console.log('Retornando dados diretos:', {
+          logger.debug('Retornando dados diretos', 'Activation', {
             tempToken: responseData.tempToken,
             personName: responseData.personName,
           })
@@ -119,8 +118,7 @@ export function useActivation(): UseActivationReturn {
         }
 
         // Fallback: retornar como está
-        // eslint-disable-next-line no-console -- Debug temporário
-        console.log('Retornando fallback:', responseData)
+        logger.debug('Retornando fallback', 'Activation', { data: responseData })
         return responseData as CheckActivationResponse
       } catch (err) {
         const errorMessage = extractErrorMessage(err, 'Erro ao validar código de acesso')

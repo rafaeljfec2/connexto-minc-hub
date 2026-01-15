@@ -52,16 +52,19 @@ declare global {
 
 // Check if Trusted Types is supported
 const isTrustedTypesSupported =
-  typeof globalThis !== 'undefined' &&
-  typeof globalThis.window !== 'undefined' &&
-  'trustedTypes' in globalThis.window
+  globalThis !== undefined && globalThis.window !== undefined && 'trustedTypes' in globalThis.window
 
 /**
  * Creates Trusted Types policies for safe DOM manipulation
  */
 export function createTrustedTypesPolicies(): void {
   if (!isTrustedTypesSupported) {
-    console.warn('Trusted Types not supported in this browser')
+    // Trusted Types não suportado - não é crítico, apenas informativo
+    if (globalThis.window !== undefined) {
+      import('./logger').then(({ logger }) => {
+        logger.warn('Trusted Types not supported in this browser', 'TrustedTypes')
+      })
+    }
     return
   }
 
@@ -125,7 +128,9 @@ export function createTrustedTypesPolicies(): void {
           // Return the sanitized URL (Trusted Types will handle it)
           return sanitized
         } catch (error) {
-          console.error('Invalid URL:', error)
+          import('./logger').then(({ logger }) => {
+            logger.error('Invalid URL', 'TrustedTypes', error)
+          })
           throw new Error('Invalid URL')
         }
       },
@@ -140,10 +145,13 @@ export function createTrustedTypesPolicies(): void {
       },
     })
 
-    // eslint-disable-next-line no-console -- Success message for developers
-    console.log('✅ Trusted Types policies created successfully')
+    import('./logger').then(({ logger }) => {
+      logger.info('Trusted Types policies created successfully', 'TrustedTypes')
+    })
   } catch (error) {
-    console.error('❌ Failed to create Trusted Types policies:', error)
+    import('./logger').then(({ logger }) => {
+      logger.error('Failed to create Trusted Types policies', 'TrustedTypes', error)
+    })
   }
 }
 

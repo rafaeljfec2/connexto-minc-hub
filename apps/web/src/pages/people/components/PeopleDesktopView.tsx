@@ -228,7 +228,7 @@ export function PeopleDesktopView({
                 variant="primary"
                 size="sm"
                 onClick={() => onCreateUser(person)}
-                title="Criar usuário para este servo"
+                title="Criar usuário para este voluntário"
               >
                 <UserIcon className="h-4 w-4" />
               </Button>
@@ -250,19 +250,19 @@ export function PeopleDesktopView({
   return (
     <div className="hidden lg:block">
       <CrudPageLayout
-        title="Servos"
-        description="Gerencie servos do Time Boas-Vindas"
+        title="Voluntários"
+        description="Gerencie voluntários do Time Boas-Vindas"
         icon={<UserIcon className="h-8 w-8 text-primary-400" />}
-        createButtonLabel="Adicionar Volutário"
+        createButtonLabel="Adicionar Voluntário"
         onCreateClick={onCreateClick}
         hasFilters={hasFilters}
         isEmpty={people.length === 0}
         isLoading={isLoading}
-        emptyTitle={hasFilters ? 'Nenhum servo encontrado' : 'Nenhum servo cadastrado'}
+        emptyTitle={hasFilters ? 'Nenhum voluntário encontrado' : 'Nenhum voluntário cadastrado'}
         emptyDescription={
           hasFilters
-            ? 'Tente ajustar os filtros para encontrar servos'
-            : 'Comece adicionando um novo servo'
+            ? 'Tente ajustar os filtros para encontrar voluntários'
+            : 'Comece adicionando um novo voluntário'
         }
         createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
         filters={

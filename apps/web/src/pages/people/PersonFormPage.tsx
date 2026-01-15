@@ -616,7 +616,7 @@ export default function PersonFormPage() {
               className="w-full sm:w-auto order-1 sm:order-3"
               disabled={isLoading || !isFormValid}
             >
-              {isEditMode ? 'Salvar Alterações' : 'Adicionar Volutário'}
+              {isEditMode ? 'Salvar Alterações' : 'Adicionar Voluntário'}
             </Button>
           </div>
         </form>
