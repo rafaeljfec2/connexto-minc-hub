@@ -139,6 +139,12 @@ export default function PersonFormPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
+    // Validar campo obrigatório
+    if (!personFormData.name.trim()) {
+      showError('O campo Nome é obrigatório')
+      return
+    }
+
     try {
       // Prepare data for submission
       const submitData: Partial<Person> = {
@@ -243,6 +249,7 @@ export default function PersonFormPage() {
   }
 
   const isLoading = isLoadingPeople || isLoadingPerson
+  const isFormValid = personFormData.name.trim().length > 0
 
   // Mobile layout: fullscreen with fixed header and footer
   if (!isDesktop) {
@@ -394,7 +401,7 @@ export default function PersonFormPage() {
               variant="primary"
               onClick={handleSubmit}
               className="w-full flex items-center justify-center gap-2"
-              disabled={isLoading}
+              disabled={isLoading || !isFormValid}
             >
               {isEditMode ? 'Salvar' : 'Adicionar'}
             </Button>
@@ -607,7 +614,7 @@ export default function PersonFormPage() {
               type="submit"
               variant="primary"
               className="w-full sm:w-auto order-1 sm:order-3"
-              disabled={isLoading}
+              disabled={isLoading || !isFormValid}
             >
               {isEditMode ? 'Salvar Alterações' : 'Adicionar Volutário'}
             </Button>
