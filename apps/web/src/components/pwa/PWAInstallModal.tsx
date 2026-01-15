@@ -43,26 +43,22 @@ export function PWAInstallModal({
       return
     }
 
-    // Verificar se o usuário já rejeitou anteriormente
+    // Verificar se o usuário já clicou em "Cancelar" (não instalar)
     const wasDismissed = localStorage.getItem(storageKey) === 'true'
     if (wasDismissed) {
       return
     }
 
-    // Se canInstall for false, ainda assim tentar mostrar após um delay maior
-    // (pode ser que o evento ainda não tenha sido disparado)
-    const showDelay = canInstall ? delay : delay * 2
-
-    // Mostrar modal após delay
+    // Mostrar modal após delay (sempre, independente de canInstall)
     const timer = setTimeout(() => {
       // Verificar novamente antes de mostrar
       if (!isInstalled && localStorage.getItem(storageKey) !== 'true') {
         setIsOpen(true)
       }
-    }, showDelay)
+    }, delay)
 
     return () => clearTimeout(timer)
-  }, [canInstall, isInstalled, delay, storageKey])
+  }, [isInstalled, delay, storageKey])
 
   const handleInstall = async () => {
     setIsInstalling(true)
@@ -100,28 +96,32 @@ export function PWAInstallModal({
         </button>
 
         <div className="text-center">
-          {/* App Icon */}
-          <div className="mx-auto w-20 h-20 mb-4 flex items-center justify-center">
+          {/* Logo */}
+          <div className="flex items-center justify-center mb-6">
             <img
-              src="/icons/icon-192x192.png"
+              src="/minc-teams-logo.png"
               alt="MINC Teams"
-              className="w-full h-full rounded-xl"
+              className="h-24 w-auto object-contain invert dark:invert-0"
               onError={e => {
-                // Fallback se ícone não carregar
                 const target = e.target as HTMLImageElement
-                target.style.display = 'none'
+                target.src = '/Logo-minc.png'
+                target.className = 'h-20 w-auto object-contain invert dark:invert-0'
               }}
             />
           </div>
 
-          {/* Title */}
-          <h3 className="text-2xl font-bold text-dark-900 dark:text-dark-50 mb-2">Instale o app</h3>
+          {/* Brand Text - "minha igreja na cidade" */}
+          <div className="mb-4">
+            <p className="text-lg font-semibold text-dark-900 dark:text-white uppercase tracking-tight">
+              minha igreja
+            </p>
+            <p className="text-lg font-semibold text-dark-900 dark:text-white uppercase tracking-tight">
+              na cidade
+            </p>
+          </div>
 
-          {/* App Name */}
-          <p className="text-lg text-dark-700 dark:text-dark-300 mb-1">
-            MINC Teams - Time Boas-Vindas
-          </p>
-          <p className="text-sm text-dark-500 dark:text-dark-400 mb-6">mincteams.com.br</p>
+          {/* Title */}
+          <h3 className="text-2xl font-bold text-dark-900 dark:text-dark-50 mb-6">Instale o app</h3>
 
           {/* Description */}
           <p className="text-dark-600 dark:text-dark-400 mb-6 text-sm">
@@ -143,10 +143,10 @@ export function PWAInstallModal({
               onClick={handleInstall}
               className="flex-1"
               isLoading={isInstalling}
-              disabled={isInstalling}
+              disabled={isInstalling || !canInstall}
             >
               <Download className="mr-2 h-4 w-4" />
-              Instalar
+              {canInstall ? 'Instalar' : 'Aguardando...'}
             </Button>
           </div>
         </div>
