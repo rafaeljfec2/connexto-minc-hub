@@ -389,31 +389,31 @@ export default function PersonFormPage() {
         {/* Fixed Footer Buttons - positioned above mobile footer (approx 4.5rem height) */}
         <div className="fixed bottom-[4.5rem] left-0 right-0 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-t border-dark-200 dark:border-dark-700 px-4 pt-3 pb-4 z-20 lg:hidden shadow-lg">
           <div className="flex flex-col gap-2 max-w-2xl mx-auto">
-            {!isEditMode && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSaveAndCreateUser}
-                className="w-full flex items-center justify-center gap-2"
-                disabled={isLoading}
-              >
-                <UserIcon className="h-4 w-4" />
-                Criar Usuário
-              </Button>
-            )}
+            <Button
+              type="submit"
+              variant="primary"
+              onClick={handleSubmit}
+              className="w-full flex items-center justify-center gap-2"
+              disabled={isLoading}
+            >
+              {isEditMode ? 'Salvar' : 'Adicionar'}
+            </Button>
             <div className="flex gap-2">
               <Button type="button" variant="secondary" onClick={handleCancel} className="flex-1">
                 Cancelar
               </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                onClick={handleSubmit}
-                className="flex-1"
-                disabled={isLoading}
-              >
-                {isEditMode ? 'Salvar' : 'Adicionar'}
-              </Button>
+              {!isEditMode && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSaveAndCreateUser}
+                  className="flex-1 flex items-center justify-center gap-2"
+                  disabled={isLoading}
+                >
+                  <UserIcon className="h-4 w-4" />
+                  Criar Usuário
+                </Button>
+              )}
             </div>
           </div>
         </div>
