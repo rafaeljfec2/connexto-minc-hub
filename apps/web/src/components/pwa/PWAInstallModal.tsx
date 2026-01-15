@@ -89,9 +89,14 @@ export function PWAInstallModal({
     }
   }, [canInstall, isOpen])
 
-  const handleDismiss = () => {
+  const handleClose = () => {
+    // Apenas fecha o modal, sem marcar como dismissed
     setIsOpen(false)
-    // Marcar como rejeitado no localStorage
+  }
+
+  const handleDismiss = () => {
+    // Fecha o modal E marca como rejeitado no localStorage
+    setIsOpen(false)
     localStorage.setItem(storageKey, 'true')
   }
 
@@ -104,7 +109,7 @@ export function PWAInstallModal({
       <div className="bg-white dark:bg-dark-900 rounded-xl shadow-xl max-w-md w-full p-6 animate-scale-in relative">
         {/* Close button */}
         <button
-          onClick={handleDismiss}
+          onClick={handleClose}
           className="absolute top-4 right-4 p-1 text-dark-400 hover:text-dark-600 dark:text-dark-500 dark:hover:text-dark-300 transition-colors"
           aria-label="Fechar"
         >
@@ -174,7 +179,7 @@ export function PWAInstallModal({
               className="flex-1"
               disabled={isInstalling}
             >
-              Cancelar
+              Não quero
             </Button>
             <Button
               variant="primary"
