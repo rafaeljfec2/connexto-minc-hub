@@ -256,7 +256,7 @@ export default function PersonFormPage() {
     return (
       <>
         <PersonFormHeader isEditMode={isEditMode} onBack={handleCancel} />
-        <div className="flex-1 overflow-y-auto pt-[calc(5.5rem+env(safe-area-inset-top,0px))] pb-32">
+        <div className="flex-1 overflow-y-auto pt-[calc(5.5rem+env(safe-area-inset-top,0px))] pb-[calc(8rem+env(safe-area-inset-bottom,0px))]">
           <div className="px-4 pb-3">
             <form onSubmit={handleSubmit} className="space-y-3">
               {/* Basic Information Section */}
@@ -394,7 +394,7 @@ export default function PersonFormPage() {
         </div>
 
         {/* Fixed Footer Buttons - positioned above mobile footer (approx 4.5rem height) */}
-        <div className="fixed bottom-[4.5rem] left-0 right-0 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-t border-dark-200 dark:border-dark-700 px-4 pt-3 pb-4 z-20 lg:hidden shadow-lg">
+        <div className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 border-t border-dark-200 dark:border-dark-700 px-4 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] z-20 lg:hidden shadow-lg">
           <div className="flex flex-col gap-2 max-w-2xl mx-auto">
             <Button
               type="submit"
