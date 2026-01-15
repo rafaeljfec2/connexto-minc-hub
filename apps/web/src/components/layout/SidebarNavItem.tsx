@@ -30,7 +30,7 @@ export function SidebarNavItem({
       to={href}
       onClick={handleClick}
       className={cn(
-        'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ease-out',
+        'flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ease-out',
         'transform hover:scale-105 active:scale-95',
         isActive
           ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30'
