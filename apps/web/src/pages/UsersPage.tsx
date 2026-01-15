@@ -174,6 +174,10 @@ export default function UsersPage() {
         onConfirm={handleDeleteConfirm}
         title="Excluir Usuário"
         message="Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita."
+        confirmText="Sim"
+        cancelText="Não"
+        type="error"
+        showCancel={true}
       />
     </>
   )
