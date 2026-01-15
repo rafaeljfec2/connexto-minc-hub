@@ -41,12 +41,14 @@ export function PWAInstallModal({
   useEffect(() => {
     // Não mostrar se já estiver instalado
     if (isInstalled) {
+      setIsOpen(false)
       return
     }
 
-    // Verificar se o usuário já clicou em "Cancelar" (não instalar)
+    // Verificar se o usuário já clicou em "Não quero" (não instalar)
     const wasDismissed = localStorage.getItem(storageKey) === 'true'
     if (wasDismissed) {
+      setIsOpen(false)
       return
     }
 
@@ -60,6 +62,13 @@ export function PWAInstallModal({
 
     return () => clearTimeout(timer)
   }, [isInstalled, delay, storageKey])
+
+  // Fechar modal imediatamente se o app for instalado enquanto o modal estiver aberto
+  useEffect(() => {
+    if (isInstalled && isOpen) {
+      setIsOpen(false)
+    }
+  }, [isInstalled, isOpen])
 
   const handleInstall = async () => {
     // Não tentar instalar se não estiver disponível

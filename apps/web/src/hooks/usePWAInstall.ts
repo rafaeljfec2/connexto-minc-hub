@@ -17,11 +17,29 @@ export function usePWAInstall() {
   const [isInstallable, setIsInstallable] = useState(false)
 
   useEffect(() => {
-    // Verificar se já está instalado
-    setIsInstalled(isStandalone())
+    // Verificar se já está instalado imediatamente
+    const checkInstalled = () => {
+      const installed = isStandalone()
+      setIsInstalled(installed)
+      if (installed) {
+        setIsInstallable(false)
+        setDeferredPrompt(null)
+      }
+    }
+
+    // Verificar imediatamente
+    checkInstalled()
+
+    // Verificar periodicamente (caso o estado mude)
+    const intervalId = setInterval(checkInstalled, 1000)
 
     // Detectar evento beforeinstallprompt (Chrome, Edge, etc.)
     const handleBeforeInstallPrompt = (e: Event) => {
+      // Não capturar se já estiver instalado
+      if (isStandalone()) {
+        return
+      }
+
       // Prevenir o prompt padrão do navegador
       e.preventDefault()
 
@@ -48,6 +66,7 @@ export function usePWAInstall() {
       globalThis.window.addEventListener('appinstalled', handleAppInstalled)
 
       return () => {
+        clearInterval(intervalId)
         globalThis.window?.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
         globalThis.window?.removeEventListener('appinstalled', handleAppInstalled)
       }
