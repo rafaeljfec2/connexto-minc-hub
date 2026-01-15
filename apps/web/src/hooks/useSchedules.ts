@@ -5,7 +5,7 @@ import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { getCachedFetch } from './utils/fetchCache'
+import { clearCache } from './utils/fetchCache'
 
 type CreateSchedule = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -47,38 +47,34 @@ export function useSchedules(): UseSchedulesReturn {
         return
       }
 
-      const cacheKey = `schedules-${selectedChurch.id}-${serviceId ?? 'all'}-${startDate ?? ''}-${endDate ?? ''}`
-
-      await getCachedFetch(cacheKey, async () => {
-        try {
-          setIsLoading(true)
-          setError(null)
-          const data = await apiServices.schedulesService.getAll(serviceId, startDate, endDate)
-          // Filter schedules by selected church (via service.churchId)
-          const filteredData = data.filter(schedule => {
-            // If schedule has service relationship, filter by churchId
+      // Don't use cache for schedules - always fetch fresh data
+      // This ensures data is always up-to-date when user interacts with the page
+      try {
+        setIsLoading(true)
+        setError(null)
+        const data = await apiServices.schedulesService.getAll(serviceId, startDate, endDate)
+        // Filter schedules by selected church (via service.churchId)
+        const filteredData = data.filter(schedule => {
+          // If schedule has service relationship, filter by churchId
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          if ('service' in schedule && (schedule as any).service) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ('service' in schedule && (schedule as any).service) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              return (schedule as any).service.churchId === selectedChurch.id
-            }
-            // Otherwise, we need to fetch service to check churchId
-            // For now, include all schedules and let the backend filter
-            return true
-          })
-          setSchedules(filteredData)
-          return filteredData
-        } catch (err) {
-          const error = err instanceof Error ? err : new Error('Failed to fetch schedules')
-          setError(error)
-          throw error
-        } finally {
-          setIsLoading(false)
-        }
-      })
+            return (schedule as any).service.churchId === selectedChurch.id
+          }
+          // Otherwise, we need to fetch service to check churchId
+          // For now, include all schedules and let the backend filter
+          return true
+        })
+        setSchedules(filteredData)
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error('Failed to fetch schedules')
+        setError(error)
+        throw error
+      } finally {
+        setIsLoading(false)
+      }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedChurch?.id]
+    [selectedChurch]
   )
 
   const getScheduleById = useCallback(async (id: string): Promise<Schedule | null> => {
@@ -102,7 +98,14 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(true)
         setError(null)
         const newSchedule = await apiServices.schedulesService.create(data)
-        setSchedules(prev => [...prev, newSchedule])
+
+        // Invalidate cache and refresh
+        if (selectedChurch) {
+          const cacheKey = `schedules-${selectedChurch.id}-all--`
+          clearCache(cacheKey)
+        }
+        await fetchSchedules()
+
         showSuccess('Escala criada com sucesso!')
         return newSchedule
       } catch (err) {
@@ -115,7 +118,7 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError]
+    [showSuccess, showError, selectedChurch, fetchSchedules]
   )
 
   const updateSchedule = useCallback(
@@ -124,15 +127,13 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(true)
         setError(null)
         const updatedSchedule = await apiServices.schedulesService.update(id, data)
-        setSchedules(prev =>
-          prev.map(schedule => (schedule.id === id ? updatedSchedule : schedule))
-        )
 
-        // Invalidate cache to ensure fresh data on next fetch
+        // Invalidate cache and refresh
         if (selectedChurch) {
           const cacheKey = `schedules-${selectedChurch.id}-all--`
-          sessionStorage.removeItem(cacheKey)
+          clearCache(cacheKey)
         }
+        await fetchSchedules()
 
         showSuccess('Escala atualizada com sucesso!')
         return updatedSchedule
@@ -146,7 +147,7 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError, selectedChurch]
+    [showSuccess, showError, selectedChurch, fetchSchedules]
   )
 
   const deleteSchedule = useCallback(
@@ -155,7 +156,14 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(true)
         setError(null)
         await apiServices.schedulesService.delete(id)
-        setSchedules(prev => prev.filter(schedule => schedule.id !== id))
+
+        // Invalidate cache and refresh
+        if (selectedChurch) {
+          const cacheKey = `schedules-${selectedChurch.id}-all--`
+          clearCache(cacheKey)
+        }
+        await fetchSchedules()
+
         showSuccess('Escala excluída com sucesso!')
       } catch (err) {
         const errorMessage = extractErrorMessage(err, 'Falha ao excluir escala')
@@ -167,7 +175,7 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError]
+    [showSuccess, showError, selectedChurch, fetchSchedules]
   )
 
   const refresh = useCallback(async () => {
@@ -176,15 +184,21 @@ export function useSchedules(): UseSchedulesReturn {
 
   // Auto-fetch on mount and when church changes
   useEffect(() => {
-    if (selectedChurch) {
-      fetchSchedules().catch(() => {
-        // Error already handled in fetchSchedules
-      })
-    } else {
+    if (!selectedChurch) {
       setSchedules([])
+      return
     }
+
+    // Clear cache before fetching to ensure fresh data
+    const cacheKey = `schedules-${selectedChurch.id}-all--`
+    clearCache(cacheKey)
+
+    // Always fetch when church changes
+    fetchSchedules().catch(() => {
+      // Error already handled in fetchSchedules
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedChurch?.id]) // Only depend on selectedChurch.id to prevent loops
+  }, [selectedChurch?.id]) // Only depend on primitive value to prevent loops
 
   return {
     schedules,
