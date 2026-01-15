@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Alert } from '@/components/ui/Alert'
 import { Modal } from '@/components/ui/Modal'
 import { useModal } from '@/hooks/useModal'
@@ -8,40 +9,26 @@ import { usePeople } from '@/hooks/usePeople'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useTeams } from '@/hooks/useTeams'
 import { useUsers } from '@/hooks/useUsers'
-import { useServices } from '@/hooks/useServices'
 import { useSort } from '@/hooks/useSort'
-import { useToast } from '@/contexts/ToastContext'
-import { Person, UserRole, MemberType } from '@minc-hub/shared/types'
+import { Person, UserRole } from '@minc-hub/shared/types'
 
 import { PeopleMobileView } from './people/components/PeopleMobileView'
 import { PeopleDesktopView } from './people/components/PeopleDesktopView'
-import { PersonFormModal } from './people/components/PersonFormModal'
 import { CreateUserForm } from './people/components/CreateUserForm'
 
 export default function PeoplePage() {
-  const {
-    people,
-    isLoading: isLoadingPeople,
-    createPerson,
-    updatePerson,
-    deletePerson,
-  } = usePeople()
+  const navigate = useNavigate()
+  const { people, isLoading: isLoadingPeople, deletePerson } = usePeople()
 
   const { ministries } = useMinistries()
   const { teams } = useTeams()
   const { users, createUser } = useUsers()
-  const { services } = useServices()
-  const { showError } = useToast()
 
   // Modals
-  const personModal = useModal()
   const deleteModal = useModal()
   const createUserModal = useModal()
 
   const isDesktop = useMediaQuery('(min-width: 1024px)')
-
-  // Person form state
-  const [editingPerson, setEditingPerson] = useState<Person | null>(null)
 
   // User creation state
   const [creatingUserForPerson, setCreatingUserForPerson] = useState<Person | null>(null)
@@ -117,90 +104,9 @@ export default function PeoplePage() {
 
   function handleOpenPersonModal(person?: Person) {
     if (person) {
-      setEditingPerson(person)
+      navigate(`/people/${person.id}/edit`)
     } else {
-      setEditingPerson(null)
-    }
-    personModal.open()
-  }
-
-  function handleClosePersonModal() {
-    personModal.close()
-    setEditingPerson(null)
-  }
-
-  // Form submission handler
-  async function handlePersonSubmit(personData: Record<string, unknown>) {
-    try {
-      // Clean empty strings
-      if (!personData.ministryId) delete personData.ministryId
-      if (!personData.teamId) delete personData.teamId
-
-      // Team logic compatibility
-      if (Array.isArray(personData.teamMembers) && personData.teamMembers.length > 0) {
-        const teamMembers = personData.teamMembers as Array<{
-          teamId: string
-          memberType: MemberType
-        }>
-        const firstFixedTeam = teamMembers.find(tm => tm.memberType === MemberType.FIXED)
-        if (firstFixedTeam) {
-          personData.teamId = firstFixedTeam.teamId
-        } else {
-          personData.teamId = teamMembers[0].teamId
-        }
-      }
-
-      if (!personData.teamId) delete personData.teamId
-
-      // Remove preferredServiceIds as backend doesn't support it yet
-      const { preferredServiceIds: _, ...payload } = personData
-
-      let savedPerson: Person | null = null
-
-      if (editingPerson) {
-        savedPerson = await updatePerson(editingPerson.id, payload as unknown as Partial<Person>)
-      } else {
-        savedPerson = await createPerson(payload as unknown as Person)
-      }
-
-      handleClosePersonModal()
-      return savedPerson
-    } catch (error) {
-      console.error('Error submitting person form:', error)
-      return null
-    }
-  }
-
-  async function handleSavePersonAndCreateUser(personData: Record<string, unknown>) {
-    // Validar se tem email antes de salvar
-    const email = personData.email as string
-    if (!email || !email.trim()) {
-      showError(
-        'Email é obrigatório para criar um usuário. Por favor, preencha o email antes de continuar.'
-      )
-      return
-    }
-
-    // Validar formato de email básico
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email.trim())) {
-      showError('Email inválido. Por favor, insira um email válido.')
-      return
-    }
-
-    const savedPerson = await handlePersonSubmit(personData)
-    if (savedPerson) {
-      // Validar novamente após salvar
-      if (!savedPerson.email || !savedPerson.email.trim()) {
-        showError(
-          'A pessoa foi salva, mas não possui email. Por favor, edite a pessoa e adicione um email antes de criar o usuário.'
-        )
-        return
-      }
-
-      setTimeout(() => {
-        handleOpenCreateUserModal(savedPerson)
-      }, 200)
+      navigate('/people/new')
     }
   }
 
@@ -305,18 +211,6 @@ export default function PeoplePage() {
           onCreateClick={() => handleOpenPersonModal()}
         />
       )}
-
-      <PersonFormModal
-        isOpen={personModal.isOpen}
-        onClose={handleClosePersonModal}
-        person={editingPerson}
-        ministries={ministries}
-        teams={teams}
-        services={services}
-        isLoading={isLoadingPeople}
-        onSubmit={handlePersonSubmit}
-        onSaveAndCreateUser={handleSavePersonAndCreateUser}
-      />
 
       <Modal
         isOpen={createUserModal.isOpen}

@@ -23,6 +23,7 @@ const NewMessagePage = lazy(() => import('@/pages/NewMessagePage'))
 const ActivateAccountPage = lazy(() => import('@/pages/ActivateAccountPage'))
 const CompleteActivationPage = lazy(() => import('@/pages/CompleteActivationPage'))
 const AccessCodesPage = lazy(() => import('@/pages/AccessCodesPage'))
+const PersonFormPage = lazy(() => import('@/pages/people/PersonFormPage'))
 
 const TeamDetailsPage = lazy(() => import('@/pages/TeamDetailsPage'))
 
@@ -34,6 +35,16 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/people',
     component: PeoplePage,
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+  },
+  {
+    path: '/people/new',
+    component: PersonFormPage,
+    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+  },
+  {
+    path: '/people/:id/edit',
+    component: PersonFormPage,
     allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
   },
   {
