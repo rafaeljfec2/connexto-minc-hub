@@ -1,3 +1,17 @@
+/**
+ * EXEMPLO BASE: Página de Códigos de Acesso com Ordenação
+ *
+ * Este é um exemplo completo mostrando como implementar ordenação
+ * de colunas no grid customizado usando useSort e SortableColumn.
+ *
+ * Para usar este exemplo na sua página:
+ * 1. Copie as importações necessárias
+ * 2. Adicione o hook useSort
+ * 3. Crie os extractors de ordenação
+ * 4. Aplique a ordenação aos dados filtrados
+ * 5. Use SortableColumn nos cabeçalhos da tabela
+ */
+
 import { useState, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -6,8 +20,7 @@ import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { SortableColumn } from '@/components/ui/SortableColumn'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { EmptyState } from '@/components/ui/EmptyState'
+import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
 import { CrudFilters } from '@/components/crud/CrudFilters'
 import { CrudView } from '@/components/crud/CrudView'
 import { useModal } from '@/hooks/useModal'
@@ -18,13 +31,13 @@ import { useChurches } from '@/hooks/useChurches'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useTeams } from '@/hooks/useTeams'
 import { useChurch } from '@/contexts/ChurchContext'
-import { CreateAccessCodeModal } from './access-codes/components/CreateAccessCodeModal'
-import { AccessCodeCard } from './access-codes/components/AccessCodeCard'
+import { CreateAccessCodeModal } from '../components/CreateAccessCodeModal'
+import { AccessCodeCard } from '../components/AccessCodeCard'
 import { PlusIcon } from '@/components/icons'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale/pt-BR'
 
-export default function AccessCodesPage() {
+export default function AccessCodesPageWithSorting() {
   const { codes, isLoading, createCode, deactivateCode } = useAccessCodes()
   const { churches } = useChurches()
   const { ministries } = useMinistries()
@@ -40,46 +53,32 @@ export default function AccessCodesPage() {
     defaultMode: 'grid',
   })
 
-  // Inicializar hook de ordenação
+  // ============================================
+  // PASSO 1: Inicializar o hook de ordenação
+  // ============================================
   const { sortConfig, handleSort, sortData } = useSort<AccessCode>({
     defaultKey: 'code',
     defaultDirection: 'asc',
   })
 
-  // Extractors de ordenação (definido fora do useMemo para evitar dependência circular)
-  const sortExtractors = useMemo(
-    () => ({
-      code: (item: AccessCode) => item.code.toLowerCase(),
-      scopeType: (item: AccessCode) => item.scopeType.toLowerCase(),
-      scopeName: (item: AccessCode) => item.scopeName?.toLowerCase() ?? '',
-      scopeTypeAndName: (item: AccessCode) =>
-        `${item.scopeType} - ${item.scopeName ?? 'N/A'}`.toLowerCase(),
-      usageCount: (item: AccessCode) => item.usageCount,
-      maxUsages: (item: AccessCode) => item.maxUsages ?? Number.MAX_SAFE_INTEGER,
-      usageCountAndMax: (item: AccessCode) => {
-        // Ordenar por usageCount primeiro, depois por maxUsages
-        const max = item.maxUsages ?? Number.MAX_SAFE_INTEGER
-        return item.usageCount * 1000000 + max
-      },
-      expiresAt: (item: AccessCode) => new Date(item.expiresAt).getTime(),
-      createdAt: (item: AccessCode) => new Date(item.createdAt).getTime(),
-      isActive: (item: AccessCode) => (item.isActive ? 1 : 0),
-      isExpired: (item: AccessCode) => (item.isExpired ? 1 : 0),
-      status: (item: AccessCode) => {
-        // Ordenar: Ativo (1) > Inativo (2) > Expirado (3)
-        if (item.isExpired) return 3
-        if (item.isActive) return 1
-        return 2
-      },
-    }),
-    []
-  )
+  // ============================================
+  // PASSO 2: Criar extractors de ordenação
+  // ============================================
+  // Os extractors definem como extrair valores de cada campo para comparação
+  const sortExtractors = {
+    code: (item: AccessCode) => item.code.toLowerCase(),
+    scopeType: (item: AccessCode) => item.scopeType.toLowerCase(),
+    scopeName: (item: AccessCode) => item.scopeName?.toLowerCase() ?? '',
+    usageCount: (item: AccessCode) => item.usageCount,
+    expiresAt: (item: AccessCode) => new Date(item.expiresAt).getTime(),
+    createdAt: (item: AccessCode) => new Date(item.createdAt).getTime(),
+    isActive: (item: AccessCode) => (item.isActive ? 1 : 0),
+  }
 
-  // Filtrar e ordenar os dados
-  const filteredCodes = useMemo(() => {
-    if (!Array.isArray(codes)) {
-      return []
-    }
+  // ============================================
+  // PASSO 3: Filtrar e ordenar os dados
+  // ============================================
+  const filteredAndSortedCodes = useMemo(() => {
     // Primeiro filtrar
     const filtered = codes.filter(code => {
       const matchesSearch =
@@ -88,18 +87,21 @@ export default function AccessCodesPage() {
         code.scopeName?.toLowerCase().includes(searchTerm.toLowerCase())
       return matchesSearch
     })
-    // Depois ordenar
+
+    // Depois ordenar usando sortData
     return sortData(filtered, sortExtractors)
-  }, [codes, searchTerm, sortData, sortExtractors])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [codes, searchTerm, sortConfig, sortData, sortExtractors])
 
   const activeCodes = useMemo(() => {
-    return filteredCodes.filter(code => code.isActive && !code.isExpired)
-  }, [filteredCodes])
+    return filteredAndSortedCodes.filter(code => code.isActive && !code.isExpired)
+  }, [filteredAndSortedCodes])
 
   const expiredCodes = useMemo(() => {
-    return filteredCodes.filter(code => code.isExpired)
-  }, [filteredCodes])
+    return filteredAndSortedCodes.filter(code => code.isExpired)
+  }, [filteredAndSortedCodes])
 
+  // Handlers...
   const handleCreateCode = useCallback(
     async (dto: CreateAccessCodeDto) => {
       const result = await createCode(dto)
@@ -149,9 +151,18 @@ export default function AccessCodesPage() {
     }
   }, [selectedChurch, churches, ministries, teams])
 
+  // ============================================
+  // PASSO 4: Criar função helper para cabeçalhos ordenáveis
+  // ============================================
+  const renderHeader = (key: keyof AccessCode, label: string) => (
+    <SortableColumn sortKey={key} currentSort={sortConfig} onSort={handleSort}>
+      {label}
+    </SortableColumn>
+  )
+
   // Estatísticas
   const statsCards = (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 sm:mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <Card className="p-4">
         <div className="text-sm text-dark-600 dark:text-dark-400">Códigos Ativos</div>
         <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">
@@ -169,13 +180,13 @@ export default function AccessCodesPage() {
           Total de Ativações Completadas
         </div>
         <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">
-          {filteredCodes.reduce((sum, code) => sum + code.usageCount, 0)}
+          {filteredAndSortedCodes.reduce((sum, code) => sum + code.usageCount, 0)}
         </div>
       </Card>
     </div>
   )
 
-  // Skeleton para cards
+  // Skeletons...
   const AccessCodeCardSkeleton = (
     <Card className="p-6">
       <div className="space-y-4">
@@ -194,7 +205,6 @@ export default function AccessCodesPage() {
     </Card>
   )
 
-  // Skeleton para linhas da tabela
   const AccessCodeRowSkeleton = (
     <>
       <TableCell>
@@ -223,18 +233,12 @@ export default function AccessCodesPage() {
     </>
   )
 
-  // Função helper para renderizar cabeçalhos ordenáveis
-  // Aceita tanto chaves do AccessCode quanto chaves customizadas dos extractors
-  const renderHeader = (key: string, label: string) => (
-    <SortableColumn sortKey={key} currentSort={sortConfig} onSort={handleSort}>
-      {label}
-    </SortableColumn>
-  )
-
-  // Grid view
+  // ============================================
+  // PASSO 5: Grid View (dados já ordenados)
+  // ============================================
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {filteredCodes.map(code => (
+      {filteredAndSortedCodes.map(code => (
         <AccessCodeCard
           key={code.id}
           code={code}
@@ -245,8 +249,10 @@ export default function AccessCodesPage() {
     </div>
   )
 
-  // List view
-  const listViewRows = filteredCodes.map(code => (
+  // ============================================
+  // PASSO 6: List View com cabeçalhos ordenáveis
+  // ============================================
+  const listViewRows = filteredAndSortedCodes.map(code => (
     <TableRow key={code.id}>
       <TableCell>
         <span className="font-medium">{code.code}</span>
@@ -286,47 +292,31 @@ export default function AccessCodesPage() {
 
   return (
     <>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 sm:pt-6 sm:pb-8 lg:pt-4 lg:pb-8">
-        <PageHeader
-          title="Códigos de Acesso"
-          description="Gerencie códigos para ativação em massa de contas"
-          action={
-            <Button onClick={createModal.open} variant="primary" className="w-full sm:w-auto">
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Criar Novo Código
-            </Button>
-          }
-        />
-
-        {/* Estatísticas */}
-        {statsCards}
-
-        <CrudFilters
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          searchPlaceholder="Buscar por código ou escopo..."
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
-
-        {!isLoading && filteredCodes.length === 0 ? (
-          <EmptyState
-            title={searchTerm ? 'Nenhum código encontrado' : 'Nenhum código criado ainda'}
-            description={
-              searchTerm
-                ? 'Tente ajustar os filtros para encontrar códigos'
-                : 'Comece criando um novo código de acesso'
-            }
-            action={
-              searchTerm ? undefined : (
-                <Button onClick={createModal.open} variant="primary">
-                  <PlusIcon className="h-5 w-5 mr-2" />
-                  Criar Novo Código
-                </Button>
-              )
-            }
+      {statsCards}
+      <CrudPageLayout
+        title="Códigos de Acesso"
+        description="Gerencie códigos para ativação em massa de contas"
+        createButtonLabel="Criar Novo Código"
+        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+        onCreateClick={createModal.open}
+        hasFilters={searchTerm !== ''}
+        isEmpty={filteredAndSortedCodes.length === 0}
+        emptyTitle={searchTerm ? 'Nenhum código encontrado' : 'Nenhum código criado ainda'}
+        emptyDescription={
+          searchTerm
+            ? 'Tente ajustar os filtros para encontrar códigos'
+            : 'Comece criando um novo código de acesso'
+        }
+        filters={
+          <CrudFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar por código ou escopo..."
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
           />
-        ) : (
+        }
+        content={
           <CrudView
             viewMode={viewMode}
             isLoading={isLoading}
@@ -336,9 +326,9 @@ export default function AccessCodesPage() {
             listView={{
               headers: [
                 renderHeader('code', 'Código'),
-                renderHeader('status', 'Status'),
-                renderHeader('scopeTypeAndName', 'Escopo'),
-                renderHeader('usageCountAndMax', 'Usos'),
+                renderHeader('isActive', 'Status'),
+                renderHeader('scopeName', 'Escopo'),
+                renderHeader('usageCount', 'Usos'),
                 renderHeader('expiresAt', 'Expira em'),
                 renderHeader('createdAt', 'Criado em'),
                 'Ações', // Coluna sem ordenação
@@ -346,8 +336,9 @@ export default function AccessCodesPage() {
               rows: listViewRows,
             }}
           />
-        )}
-      </div>
+        }
+        isLoading={isLoading}
+      />
 
       <CreateAccessCodeModal
         isOpen={createModal.isOpen}
