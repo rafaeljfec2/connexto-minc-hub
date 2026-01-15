@@ -3,13 +3,21 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Alert } from '@/components/ui/Alert'
+import { TableRow, TableCell } from '@/components/ui/Table'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
+import { CrudFilters } from '@/components/crud/CrudFilters'
+import { CrudView } from '@/components/crud/CrudView'
 import { useModal } from '@/hooks/useModal'
+import { useViewMode } from '@/hooks/useViewMode'
 import { useAccessCodes, CreateAccessCodeDto } from '@/hooks/useAccessCodes'
 import { useChurches } from '@/hooks/useChurches'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useTeams } from '@/hooks/useTeams'
 import { useChurch } from '@/contexts/ChurchContext'
 import { CreateAccessCodeModal } from './access-codes/components/CreateAccessCodeModal'
+import { AccessCodeCard } from './access-codes/components/AccessCodeCard'
+import { PlusIcon } from '@/components/icons'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale/pt-BR'
 
@@ -23,6 +31,11 @@ export default function AccessCodesPage() {
   const deactivateAlert = useModal()
   const [codeToDeactivate, setCodeToDeactivate] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+
+  const { viewMode, setViewMode } = useViewMode({
+    storageKey: 'access-codes-view-mode',
+    defaultMode: 'grid',
+  })
 
   const filteredCodes = useMemo(() => {
     if (!Array.isArray(codes)) {
@@ -94,106 +107,174 @@ export default function AccessCodesPage() {
     }
   }, [selectedChurch, churches, ministries, teams])
 
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-dark-900 dark:text-dark-50">Códigos de Acesso</h1>
-          <p className="text-sm text-dark-600 dark:text-dark-400 mt-1">
-            Gerencie códigos para ativação em massa de contas
-          </p>
+  // Estatísticas
+  const statsCards = (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <Card className="p-4">
+        <div className="text-sm text-dark-600 dark:text-dark-400">Códigos Ativos</div>
+        <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">
+          {activeCodes.length}
         </div>
-        <Button onClick={createModal.open}>Criar Novo Código</Button>
-      </div>
+      </Card>
+      <Card className="p-4">
+        <div className="text-sm text-dark-600 dark:text-dark-400">Códigos Expirados</div>
+        <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">
+          {expiredCodes.length}
+        </div>
+      </Card>
+      <Card className="p-4">
+        <div className="text-sm text-dark-600 dark:text-dark-400">
+          Total de Ativações Completadas
+        </div>
+        <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">
+          {filteredCodes.reduce((sum, code) => sum + code.usageCount, 0)}
+        </div>
+      </Card>
+    </div>
+  )
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="p-4">
-          <div className="text-sm text-dark-600 dark:text-dark-400">Códigos Ativos</div>
-          <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">
-            {activeCodes.length}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-dark-600 dark:text-dark-400">Códigos Expirados</div>
-          <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">
-            {expiredCodes.length}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-dark-600 dark:text-dark-400">
-            Total de Ativações Completadas
-          </div>
-          <div className="text-2xl font-bold text-dark-900 dark:text-dark-50">
-            {filteredCodes.reduce((sum, code) => sum + code.usageCount, 0)}
-          </div>
-        </Card>
+  // Skeleton para cards
+  const AccessCodeCardSkeleton = (
+    <Card className="p-6">
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-2/3" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+        <Skeleton className="h-8 w-full rounded-md" />
       </div>
+    </Card>
+  )
 
-      {/* Busca */}
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Buscar por código ou escopo..."
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          className="w-full max-w-md h-11 px-4 rounded-lg bg-white border border-dark-300 text-dark-900 placeholder:text-dark-500 dark:bg-dark-900 dark:border-dark-700 dark:text-dark-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+  // Skeleton para linhas da tabela
+  const AccessCodeRowSkeleton = (
+    <>
+      <TableCell>
+        <Skeleton className="h-5 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-20 rounded-full" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-32" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-24" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-28" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-4 w-28" />
+      </TableCell>
+      <TableCell>
+        <div className="flex justify-end">
+          <Skeleton className="h-8 w-20 rounded-md" />
+        </div>
+      </TableCell>
+    </>
+  )
+
+  // Grid view
+  const gridView = (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {filteredCodes.map(code => (
+        <AccessCodeCard
+          key={code.id}
+          code={code}
+          onDeactivate={handleDeactivateClick}
+          isDeleting={isLoading}
         />
-      </div>
+      ))}
+    </div>
+  )
 
-      {/* Lista de Códigos */}
-      {isLoading ? (
-        <div className="text-center py-8 text-dark-600 dark:text-dark-400">Carregando...</div>
-      ) : filteredCodes.length === 0 ? (
-        <Card className="p-8 text-center">
-          <p className="text-dark-600 dark:text-dark-400">
-            {searchTerm ? 'Nenhum código encontrado' : 'Nenhum código criado ainda'}
-          </p>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {filteredCodes.map(code => (
-            <Card key={code.id} className="p-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-xl font-bold text-dark-900 dark:text-dark-50">
-                      {code.code}
-                    </span>
-                    <StatusBadge
-                      status={code.isExpired ? 'inactive' : code.isActive ? 'active' : 'inactive'}
-                    >
-                      {code.isExpired ? 'Expirado' : code.isActive ? 'Ativo' : 'Inativo'}
-                    </StatusBadge>
-                  </div>
-                  <div className="text-sm text-dark-600 dark:text-dark-400 space-y-1">
-                    <div>
-                      <strong>Escopo:</strong> {code.scopeType} - {code.scopeName ?? 'N/A'}
-                    </div>
-                    <div>
-                      <strong>Usos:</strong> {code.usageCount}
-                      {code.maxUsages ? ` / ${code.maxUsages}` : ' (ilimitado)'}
-                    </div>
-                    <div>
-                      <strong>Expira em:</strong>{' '}
-                      {format(new Date(code.expiresAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                    </div>
-                    <div>
-                      <strong>Criado em:</strong>{' '}
-                      {format(new Date(code.createdAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                    </div>
-                  </div>
-                </div>
-                {code.isActive && !code.isExpired && (
-                  <Button variant="danger" size="sm" onClick={() => handleDeactivateClick(code.id)}>
-                    Desativar
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+  // List view
+  const listViewRows = filteredCodes.map(code => (
+    <TableRow key={code.id}>
+      <TableCell>
+        <span className="font-medium">{code.code}</span>
+      </TableCell>
+      <TableCell>
+        <StatusBadge status={code.isExpired ? 'inactive' : code.isActive ? 'active' : 'inactive'}>
+          {code.isExpired ? 'Expirado' : code.isActive ? 'Ativo' : 'Inativo'}
+        </StatusBadge>
+      </TableCell>
+      <TableCell>
+        {code.scopeType} - {code.scopeName ?? 'N/A'}
+      </TableCell>
+      <TableCell>
+        {code.usageCount}
+        {code.maxUsages ? ` / ${code.maxUsages}` : ' (ilimitado)'}
+      </TableCell>
+      <TableCell>
+        {format(new Date(code.expiresAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+      </TableCell>
+      <TableCell>
+        {format(new Date(code.createdAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+      </TableCell>
+      <TableCell className="text-right">
+        {code.isActive && !code.isExpired && (
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleDeactivateClick(code.id)}
+            disabled={isLoading}
+          >
+            Desativar
+          </Button>
+        )}
+      </TableCell>
+    </TableRow>
+  ))
+
+  return (
+    <>
+      {statsCards}
+      <CrudPageLayout
+        title="Códigos de Acesso"
+        description="Gerencie códigos para ativação em massa de contas"
+        createButtonLabel="Criar Novo Código"
+        createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+        onCreateClick={createModal.open}
+        hasFilters={searchTerm !== ''}
+        isEmpty={filteredCodes.length === 0}
+        emptyTitle={searchTerm ? 'Nenhum código encontrado' : 'Nenhum código criado ainda'}
+        emptyDescription={
+          searchTerm
+            ? 'Tente ajustar os filtros para encontrar códigos'
+            : 'Comece criando um novo código de acesso'
+        }
+        filters={
+          <CrudFilters
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Buscar por código ou escopo..."
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+          />
+        }
+        content={
+          <CrudView
+            viewMode={viewMode}
+            isLoading={isLoading}
+            skeletonCard={AccessCodeCardSkeleton}
+            skeletonRow={AccessCodeRowSkeleton}
+            gridView={gridView}
+            listView={{
+              headers: ['Código', 'Status', 'Escopo', 'Usos', 'Expira em', 'Criado em', 'Ações'],
+              rows: listViewRows,
+            }}
+          />
+        }
+        isLoading={isLoading}
+      />
 
       <CreateAccessCodeModal
         isOpen={createModal.isOpen}
@@ -213,6 +294,6 @@ export default function AccessCodesPage() {
         onConfirm={handleDeactivateConfirm}
         showCancel={true}
       />
-    </div>
+    </>
   )
 }
