@@ -30,10 +30,10 @@ function getMainClassName(
   }
 
   if (isProfilePage) {
-    return `${baseClasses} pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pt-16 lg:pb-0 lg:px-8`
+    return `${baseClasses} pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pt-6 lg:pb-0 lg:px-8`
   }
 
-  return `${baseClasses} pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-16 lg:pb-0 lg:px-8`
+  return `${baseClasses} pt-[calc(4.5rem+env(safe-area-inset-top))] pb-[calc(6.5rem+env(safe-area-inset-bottom))] px-4 lg:pt-6 lg:pb-0 lg:px-8`
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
@@ -76,7 +76,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main Content - Animated Background & Page */}
       <div
-        className={`h-[100dvh] w-screen overflow-hidden dark:bg-dark-950 lg:bg-grain relative animate-fade-in supports-[height:100dvh]:h-[100dvh] h-screen ${
+        className={`h-screen w-screen overflow-hidden dark:bg-dark-950 lg:bg-grain relative animate-fade-in supports-[height:100dvh]:h-[100dvh] ${
           isChatConversation ? 'bg-gray-50' : 'bg-gray-200'
         }`}
       >

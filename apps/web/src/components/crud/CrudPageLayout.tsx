@@ -35,7 +35,7 @@ export function CrudPageLayout({
   isLoading = false,
 }: CrudPageLayoutProps) {
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 sm:pt-6 sm:pb-8 lg:py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 sm:pt-6 sm:pb-8 lg:pt-4 lg:pb-8">
       <PageHeader
         title={title}
         description={description}
