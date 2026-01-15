@@ -249,7 +249,7 @@ export default function PersonFormPage() {
     return (
       <>
         <PersonFormHeader isEditMode={isEditMode} onBack={handleCancel} />
-        <div className="flex-1 overflow-y-auto pt-[calc(5.5rem+env(safe-area-inset-top,0px))] pb-32">
+        <div className="flex-1 overflow-y-auto pt-[calc(6.5rem+env(safe-area-inset-top,0px))] pb-32">
           <div className="px-4 py-3">
             <form onSubmit={handleSubmit} className="space-y-3">
               {/* Basic Information Section */}
