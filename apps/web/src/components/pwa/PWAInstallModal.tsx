@@ -61,6 +61,11 @@ export function PWAInstallModal({
   }, [isInstalled, delay, storageKey])
 
   const handleInstall = async () => {
+    // Não tentar instalar se não estiver disponível
+    if (!canInstall) {
+      return
+    }
+
     setIsInstalling(true)
     const success = await install()
     setIsInstalling(false)

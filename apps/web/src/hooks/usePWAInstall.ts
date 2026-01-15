@@ -55,7 +55,8 @@ export function usePWAInstall() {
    */
   const install = useCallback(async (): Promise<boolean> => {
     if (!deferredPrompt) {
-      logger.warn('Nenhum prompt de instalação disponível', 'PWA-Install')
+      // Não logar warning - é esperado que o prompt ainda não esteja disponível
+      // quando o modal aparece antes do evento beforeinstallprompt
       return false
     }
 
