@@ -1,14 +1,23 @@
 import React from 'react'
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, Platform } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 interface ErrorScreenProps {
   readonly onRetry: () => void
 }
 
+// iOS já gerencia Safe Area automaticamente
+// Android precisa de edges explícitos
+const SAFE_AREA_EDGES = Platform.select({
+  ios: [] as const,
+  android: ['top', 'bottom'] as const,
+  default: [] as const,
+})
+
 export function ErrorScreen({ onRetry }: ErrorScreenProps) {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
       <StatusBar style="auto" />
       <Text style={styles.emoji}>📡</Text>
       <Text style={styles.title}>Sem Conexão</Text>
@@ -19,7 +28,7 @@ export function ErrorScreen({ onRetry }: ErrorScreenProps) {
       <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
         <Text style={styles.retryButtonText}>Tentar Novamente</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   )
 }
 

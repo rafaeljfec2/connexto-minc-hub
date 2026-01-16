@@ -1,7 +1,8 @@
 import React, { useRef } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, Platform } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { WebView } from 'react-native-webview'
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 import { WEBSITE_URL, USER_AGENT } from './constants/webview'
 import { useAuthToken } from './hooks/useAuthToken'
 import { useWebViewNavigation } from './hooks/useWebViewNavigation'
@@ -9,7 +10,15 @@ import { useWebViewLoading } from './hooks/useWebViewLoading'
 import { LoadingScreen } from './components/LoadingScreen'
 import { ErrorScreen } from './components/ErrorScreen'
 
-export default function App() {
+// iOS já gerencia Safe Area automaticamente
+// Android precisa de edges explícitos
+const SAFE_AREA_EDGES = Platform.select({
+  ios: [] as const,
+  android: ['top', 'bottom'] as const,
+  default: [] as const,
+})
+
+function AppContent() {
   const webViewRef = useRef<WebView>(null)
 
   const { initialScript, handleMessage } = useAuthToken()
@@ -23,7 +32,7 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={SAFE_AREA_EDGES}>
       <StatusBar style="auto" />
 
       <WebView
@@ -55,7 +64,15 @@ export default function App() {
       />
 
       {isLoading && <LoadingScreen />}
-    </View>
+    </SafeAreaView>
+  )
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppContent />
+    </SafeAreaProvider>
   )
 }
 
