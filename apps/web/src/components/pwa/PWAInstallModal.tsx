@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Download, X } from 'lucide-react'
 import { usePWAInstall } from '../../hooks/usePWAInstall'
+import { isStandalone } from '../../utils/pwa'
 import { Button } from '../ui/Button'
 
 interface PWAInstallModalProps {
@@ -39,8 +40,21 @@ export function PWAInstallModal({
   const [showWaitingMessage, setShowWaitingMessage] = useState(false)
 
   useEffect(() => {
-    // Não mostrar se já estiver instalado
-    if (isInstalled) {
+    // Verificar se já está instalado usando múltiplas verificações
+    const checkIfInstalled = () => {
+      // Verificar via hook
+      if (isInstalled) {
+        return true
+      }
+      // Verificar diretamente via isStandalone (backup)
+      if (isStandalone()) {
+        return true
+      }
+      return false
+    }
+
+    const installed = checkIfInstalled()
+    if (installed) {
       setIsOpen(false)
       return
     }
@@ -52,10 +66,23 @@ export function PWAInstallModal({
       return
     }
 
-    // Mostrar modal após delay (sempre, independente de canInstall)
+    // No Safari iOS, o evento beforeinstallprompt não existe
+    // Não mostrar o modal automaticamente no Safari iOS, apenas quando o usuário solicitar
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+
+    if (isIOS && isSafari) {
+      // No Safari iOS, não mostrar modal automático
+      // O usuário deve usar "Adicionar à Tela de Início" manualmente
+      setIsOpen(false)
+      return
+    }
+
+    // Mostrar modal após delay apenas se não for Safari iOS e não estiver instalado
     const timer = setTimeout(() => {
-      // Verificar novamente antes de mostrar
-      if (!isInstalled && localStorage.getItem(storageKey) !== 'true') {
+      // Verificar novamente antes de mostrar (múltiplas verificações)
+      const stillInstalled = checkIfInstalled()
+      if (!stillInstalled && localStorage.getItem(storageKey) !== 'true') {
         setIsOpen(true)
       }
     }, delay)

@@ -127,23 +127,48 @@ export function onUpdateAvailable(callback: () => void): void {
  * Verifica se o app está rodando em modo standalone (instalado)
  */
 export function isStandalone(): boolean {
-  if (globalThis.window === undefined) {
+  if (globalThis.window === undefined || globalThis.document === undefined) {
     return false
   }
 
-  // iOS Safari
-  if ((globalThis.window.navigator as { standalone?: boolean }).standalone === true) {
+  // iOS Safari - verificar navigator.standalone
+  const nav = globalThis.window.navigator as { standalone?: boolean }
+  if (nav.standalone === true) {
     return true
   }
 
-  // Android Chrome
+  // Verificar display-mode: standalone (Chrome, Edge, etc.)
   if (globalThis.window.matchMedia('(display-mode: standalone)').matches) {
     return true
   }
 
-  // Outros navegadores
+  // Verificar se está em modo fullscreen (alguns navegadores)
+  if (globalThis.window.matchMedia('(display-mode: fullscreen)').matches) {
+    return true
+  }
+
+  // Verificar referrer (Android)
   if (globalThis.document.referrer.includes('android-app://')) {
     return true
+  }
+
+  // Verificar se não há barra de endereço visível (heurística adicional)
+  // No mobile, se a altura da viewport é igual à altura da tela, pode estar em standalone
+  if (
+    globalThis.window.screen.height - globalThis.window.outerHeight < 50 &&
+    globalThis.window.outerHeight === globalThis.window.screen.height
+  ) {
+    // Verificar se não estamos em um navegador normal (sem barra de endereço)
+    const userAgent = globalThis.window.navigator.userAgent.toLowerCase()
+    const isMobile = /iphone|ipad|ipod|android|webos|blackberry|windows phone/i.test(userAgent)
+
+    if (
+      isMobile &&
+      !globalThis.document.querySelector('meta[name="apple-mobile-web-app-capable"]')
+    ) {
+      // Se estamos em mobile e não há meta tag apple-mobile-web-app-capable, provavelmente não é standalone
+      return false
+    }
   }
 
   return false
