@@ -1,11 +1,14 @@
-import { useState, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { Upload, FileText, CheckCircle2, XCircle, Loader2, Info } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
+import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
 import { parseSpreadsheet, type ParsedRow } from '@/utils/spreadsheet-parser'
 import { usePeople } from '@/hooks/usePeople'
 import { useTeams } from '@/hooks/useTeams'
+import { useMinistries } from '@/hooks/useMinistries'
 import { useToast } from '@/contexts/ToastContext'
+import { useChurch } from '@/contexts/ChurchContext'
 import type { Person } from '@minc-hub/shared/types'
 import { MemberType } from '@minc-hub/shared/types'
 import { mapTeamNumberToTeamId } from '@/utils/team-mapper'
@@ -33,10 +36,13 @@ export function PeopleImportModal({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { createPerson, refresh: refreshPeople } = usePeople()
   const { teams } = useTeams()
+  const { ministries, fetchMinistries, isLoading: isLoadingMinistries } = useMinistries()
+  const { selectedChurch } = useChurch()
   const { showSuccess, showError } = useToast()
 
   const [parsedData, setParsedData] = useState<ParsedRow[]>([])
   const [teamMapping, setTeamMapping] = useState<Map<number, string | null>>(new Map()) // rowNumber -> teamId
+  const [selectedMinistryId, setSelectedMinistryId] = useState<string | null>(null)
   const [isParsing, setIsParsing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [importResults, setImportResults] = useState<ImportResult[]>([])
@@ -44,6 +50,15 @@ export function PeopleImportModal({
   const [importStep, setImportStep] = useState<'upload' | 'preview' | 'importing' | 'results'>(
     'upload'
   )
+
+  // Carregar ministérios apenas quando o modal abrir
+  useEffect(() => {
+    if (isOpen && selectedChurch) {
+      fetchMinistries().catch(error => {
+        logger.error('Erro ao carregar ministérios', 'PeopleImportModal', error)
+      })
+    }
+  }, [isOpen, selectedChurch, fetchMinistries])
 
   const hasErrorsInPreview = useMemo(
     () => parsedData.some(row => row.errors.length > 0),
@@ -103,6 +118,11 @@ export function PeopleImportModal({
   )
 
   const handleImport = useCallback(async () => {
+    if (!selectedMinistryId) {
+      showError('Selecione um time antes de importar os voluntários')
+      return
+    }
+
     setIsImporting(true)
     setImportStep('importing')
     setImportResults([])
@@ -119,6 +139,7 @@ export function PeopleImportModal({
         const personData = {
           name: row.nome,
           phone: row.telefone,
+          ministryId: selectedMinistryId ?? undefined,
           teamId: teamId ?? undefined,
           teamMembers: teamId
             ? [
@@ -155,11 +176,20 @@ export function PeopleImportModal({
     if (onImportComplete) {
       onImportComplete()
     }
-  }, [parsedData, teamMapping, createPerson, refreshPeople, onImportComplete])
+  }, [
+    parsedData,
+    teamMapping,
+    selectedMinistryId,
+    createPerson,
+    refreshPeople,
+    onImportComplete,
+    showError,
+  ])
 
   const handleCloseModal = useCallback(() => {
     setParsedData([])
     setTeamMapping(new Map())
+    setSelectedMinistryId(null)
     setImportResults([])
     setCurrentImportProgress(0)
     setImportStep('upload')
@@ -169,6 +199,7 @@ export function PeopleImportModal({
   const handleRetry = useCallback(() => {
     setParsedData([])
     setTeamMapping(new Map())
+    setSelectedMinistryId(null)
     setImportResults([])
     setCurrentImportProgress(0)
     setImportStep('upload')
@@ -184,6 +215,15 @@ export function PeopleImportModal({
       return newMap
     })
   }, [])
+
+  const ministryOptions = useMemo<ComboBoxOption<string>[]>(() => {
+    return ministries
+      .filter(m => m.isActive && m.churchId === selectedChurch?.id)
+      .map(ministry => ({
+        value: ministry.id,
+        label: ministry.name,
+      }))
+  }, [ministries, selectedChurch?.id])
 
   const getTeamOptions = useMemo(() => {
     return teams.map(team => ({ value: team.id, label: team.name }))
@@ -233,6 +273,37 @@ export function PeopleImportModal({
 
         {importStep === 'preview' && (
           <div className="flex flex-col h-full min-h-0">
+            {/* Seleção de Time */}
+            <div className="mb-4 pb-4 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
+              {isLoadingMinistries && (
+                <div className="flex items-center gap-2 text-sm text-dark-600 dark:text-dark-400">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Carregando times...</span>
+                </div>
+              )}
+              {!isLoadingMinistries && ministryOptions.length === 0 && (
+                <div className="text-sm text-dark-600 dark:text-dark-400">
+                  Nenhum time disponível. Verifique se há times cadastrados para esta igreja.
+                </div>
+              )}
+              {!isLoadingMinistries && ministryOptions.length > 0 && (
+                <ComboBox
+                  options={ministryOptions}
+                  value={selectedMinistryId}
+                  onValueChange={setSelectedMinistryId}
+                  label="Selecione o Time"
+                  placeholder="Selecione um time para associar os voluntários"
+                  searchable
+                  searchPlaceholder="Buscar time..."
+                  error={
+                    parsedData.length > 0 && !selectedMinistryId
+                      ? 'Selecione um time antes de importar'
+                      : undefined
+                  }
+                  disabled={isLoadingMinistries}
+                />
+              )}
+            </div>
             {/* Header com estatísticas */}
             <div className="mb-4 pb-4 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
               <h3 className="text-xl font-bold text-dark-900 dark:text-dark-50 mb-3">
@@ -367,7 +438,7 @@ export function PeopleImportModal({
                               </div>
                             </td>
                             <td className="px-2 py-1.5 text-xs">
-                              {!isValid ? (
+                              {isValid === false ? (
                                 <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400">
                                   <XCircle className="h-3 w-3" />
                                   <span
@@ -402,7 +473,12 @@ export function PeopleImportModal({
                 variant="primary"
                 onClick={handleImport}
                 isLoading={isImporting}
-                disabled={isImporting || parsedData.length === 0 || totalValidRows === 0}
+                disabled={
+                  isImporting ||
+                  parsedData.length === 0 ||
+                  totalValidRows === 0 ||
+                  !selectedMinistryId
+                }
               >
                 <Upload className="h-4 w-4 mr-2" />
                 {isImporting

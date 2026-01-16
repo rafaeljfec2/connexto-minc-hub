@@ -111,7 +111,16 @@ function validateAndNormalizeRows(data: Record<string, string>[]): ParsedRow[] {
 
     // Mapear e validar nome
     const nomeKey = Object.keys(row).find(key => key.toLowerCase() === 'nome')
-    const nome = nomeKey ? row[nomeKey]?.trim() : ''
+    let nome = nomeKey ? row[nomeKey]?.trim() : ''
+    // Remover números do nome e normalizar
+    if (nome) {
+      // Remover todos os dígitos numéricos
+      nome = nome.replace(/\d+/g, '').trim()
+      // Remover espaços múltiplos e normalizar espaços
+      nome = nome.replace(/\s+/g, ' ').trim()
+      // Remover espaços no início e fim
+      nome = nome.trim()
+    }
     if (!nome) {
       errors.push('Nome é obrigatório.')
     }
