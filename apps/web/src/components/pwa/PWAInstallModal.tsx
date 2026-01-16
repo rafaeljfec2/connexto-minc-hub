@@ -124,6 +124,8 @@ export function PWAInstallModal({
     setIsInstalling(false)
 
     if (success) {
+      // Marcar como instalado no localStorage para não mostrar o modal novamente
+      localStorage.setItem(storageKey, 'installed')
       setIsOpen(false)
       if (onInstallComplete) {
         onInstallComplete()
