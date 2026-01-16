@@ -34,7 +34,7 @@ export function PWAInstallModal({
   storageKey = STORAGE_KEY_DEFAULT,
   onInstallComplete,
 }: PWAInstallModalProps) {
-  const { install, canInstall, isInstalled } = usePWAInstall()
+  const { install, canInstall, isInstalled, isInstallable } = usePWAInstall()
   const [isOpen, setIsOpen] = useState(false)
   const [isInstalling, setIsInstalling] = useState(false)
   const [showWaitingMessage, setShowWaitingMessage] = useState(false)
@@ -78,17 +78,30 @@ export function PWAInstallModal({
       return
     }
 
-    // Mostrar modal após delay apenas se não for Safari iOS e não estiver instalado
+    // Só mostrar o modal quando o evento beforeinstallprompt estiver disponível
+    // ou quando isInstallable for true (indica que o evento foi capturado)
+    if (!isInstallable && !canInstall) {
+      // Ainda não temos o evento, aguardar um pouco mais
+      return
+    }
+
+    // Mostrar modal após delay apenas se o evento estiver disponível
     const timer = setTimeout(() => {
-      // Verificar novamente antes de mostrar (múltiplas verificações)
+      // Verificar novamente antes de mostrar
       const stillInstalled = checkIfInstalled()
-      if (!stillInstalled && localStorage.getItem(storageKey) !== 'true') {
+      const stillDismissed = localStorage.getItem(storageKey) === 'true'
+
+      // Só mostrar se:
+      // 1. Não estiver instalado
+      // 2. Não foi rejeitado
+      // 3. O evento beforeinstallprompt está disponível (isInstallable ou canInstall)
+      if (!stillInstalled && !stillDismissed && (isInstallable || canInstall)) {
         setIsOpen(true)
       }
     }, delay)
 
     return () => clearTimeout(timer)
-  }, [isInstalled, delay, storageKey])
+  }, [isInstalled, delay, storageKey, isInstallable, canInstall])
 
   // Fechar modal imediatamente se o app for instalado enquanto o modal estiver aberto
   useEffect(() => {
