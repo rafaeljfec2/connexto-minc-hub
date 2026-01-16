@@ -17,8 +17,8 @@ export function ItemsPerPageSelector({
   className,
 }: ItemsPerPageSelectorProps) {
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      <label className="text-sm text-dark-600 dark:text-dark-400 whitespace-nowrap">
+    <div className={cn('flex items-center gap-1.5', className)}>
+      <label className="text-xs text-dark-600 dark:text-dark-400 whitespace-nowrap">
         Itens por página:
       </label>
       <div className="relative">
@@ -26,12 +26,12 @@ export function ItemsPerPageSelector({
           value={value}
           onChange={e => onChange(Number(e.target.value))}
           className={cn(
-            'appearance-none pl-3 pr-8 py-1.5 text-sm',
+            'appearance-none pl-2 pr-6 py-1 text-xs',
             'bg-white dark:bg-dark-800',
             'border border-dark-300 dark:border-dark-700',
             'rounded-md',
             'text-dark-900 dark:text-dark-50',
-            'focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500',
+            'focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500',
             'cursor-pointer'
           )}
         >
@@ -41,7 +41,7 @@ export function ItemsPerPageSelector({
             </option>
           ))}
         </select>
-        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-400 dark:text-dark-500 pointer-events-none" />
+        <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-dark-400 dark:text-dark-500 pointer-events-none" />
       </div>
     </div>
   )

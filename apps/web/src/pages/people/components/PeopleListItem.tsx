@@ -27,7 +27,7 @@ export function PeopleListItem({
   return (
     <CompactListItem
       icon={
-        <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-semibold text-sm">
+        <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 dark:text-primary-400 font-semibold text-xs">
           {person.name
             .split(' ')
             .map(n => n[0])

@@ -79,7 +79,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             onNotificationPress={() => {
               // Handle notifications
             }}
-            showChurchSelector={!isChatPage}
+            showChurchSelector={false}
           />
         </div>
       )}

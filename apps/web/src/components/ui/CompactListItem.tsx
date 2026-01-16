@@ -47,15 +47,15 @@ export function CompactListItem({
     >
       <button
         type="button"
-        className={`flex-1 min-w-0 flex items-center gap-3 py-3 pl-4 text-left focus:outline-none cursor-pointer ${
-          onEdit || onDelete || menuItems.length > 0 ? 'pr-2' : 'pr-4'
+        className={`flex-1 min-w-0 flex items-center gap-2 py-2 pl-3 text-left focus:outline-none cursor-pointer ${
+          onEdit || onDelete || menuItems.length > 0 ? 'pr-2' : 'pr-3'
         }`}
         onClick={onClick}
       >
         {/* Icon */}
         {icon && (
           <div
-            className={`flex-shrink-0 w-10 h-10 rounded-lg ${iconColor} flex items-center justify-center`}
+            className={`flex-shrink-0 w-8 h-8 rounded-md ${iconColor} flex items-center justify-center`}
           >
             {icon}
           </div>
@@ -63,23 +63,23 @@ export function CompactListItem({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50 truncate">
+          <h3 className="text-xs font-semibold text-dark-900 dark:text-dark-50 truncate">
             {title}
           </h3>
           {(subtitle || metadata) && (
             <div
-              className={`mt-0.5 ${stacked ? 'flex flex-col gap-0.5' : 'flex items-center gap-2'}`}
+              className={`mt-0.5 ${stacked ? 'flex flex-col gap-0.5' : 'flex items-center gap-1.5'}`}
             >
               {subtitle && (
-                <span className="text-xs text-dark-500 dark:text-dark-400 truncate">
+                <span className="text-[10px] text-dark-500 dark:text-dark-400 truncate">
                   {subtitle}
                 </span>
               )}
               {!stacked && subtitle && metadata && (
-                <span className="text-dark-300 dark:text-dark-600">•</span>
+                <span className="text-dark-300 dark:text-dark-600 text-[10px]">•</span>
               )}
               {metadata && (
-                <span className="text-xs text-dark-500 dark:text-dark-400 truncate">
+                <span className="text-[10px] text-dark-500 dark:text-dark-400 truncate">
                   {metadata}
                 </span>
               )}
@@ -91,7 +91,7 @@ export function CompactListItem({
         {badge && (
           <div className="flex-shrink-0">
             <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+              className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
                 badgeVariants[badge.variant || 'default']
               }`}
             >
@@ -103,7 +103,7 @@ export function CompactListItem({
 
       {/* Menu Dropdown */}
       {(onEdit || onDelete || menuItems.length > 0) && (
-        <div className="pr-4 py-3 flex-shrink-0">
+        <div className="pr-2 py-2 flex-shrink-0">
           <ItemMenuDropdown onEdit={onEdit} onDelete={onDelete} menuItems={menuItems} />
         </div>
       )}

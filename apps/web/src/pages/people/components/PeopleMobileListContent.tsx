@@ -57,7 +57,7 @@ export function PeopleMobileListContent({
   }
 
   return (
-    <div className="bg-white dark:bg-dark-900 rounded-lg overflow-hidden border border-dark-200 dark:border-dark-800">
+    <div className="bg-white dark:bg-dark-900 rounded-md overflow-hidden border border-dark-200 dark:border-dark-800">
       {people.map(person => (
         <PeopleListItem
           key={person.id}

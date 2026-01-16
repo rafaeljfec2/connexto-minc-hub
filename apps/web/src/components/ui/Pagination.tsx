@@ -57,23 +57,27 @@ export function Pagination({
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-      <div className="text-sm text-dark-600 dark:text-dark-400">
+      <div className="text-xs text-dark-600 dark:text-dark-400">
         Mostrando {startItem} a {endItem} de {totalItems} resultados
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <Button
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
+          className="text-xs px-2 py-1"
         >
           Anterior
         </Button>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           {getPageNumbers().map((page, index) => {
             if (page === '...') {
               return (
-                <span key={`ellipsis-${index}`} className="px-2 text-dark-500 dark:text-dark-500">
+                <span
+                  key={`ellipsis-${index}`}
+                  className="px-1 text-dark-500 dark:text-dark-500 text-xs"
+                >
                   ...
                 </span>
               )
@@ -83,7 +87,7 @@ export function Pagination({
               <button
                 key={pageNum}
                 onClick={() => onPageChange(pageNum)}
-                className={`px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 ${
+                className={`px-2 py-1 rounded text-xs font-medium transition-all duration-200 ${
                   currentPage === pageNum
                     ? 'bg-primary-600 text-white shadow-md'
                     : 'bg-dark-100 text-dark-700 hover:bg-dark-200 hover:text-dark-900 dark:bg-dark-800 dark:text-dark-300 dark:hover:bg-dark-700 dark:hover:text-dark-50'
@@ -99,6 +103,7 @@ export function Pagination({
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
+          className="text-xs px-2 py-1"
         >
           Próxima
         </Button>
