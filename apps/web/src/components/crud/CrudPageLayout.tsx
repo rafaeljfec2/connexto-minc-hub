@@ -17,6 +17,7 @@ interface CrudPageLayoutProps {
   readonly content: ReactNode
   readonly createButtonIcon?: ReactNode
   readonly isLoading?: boolean
+  readonly additionalActions?: ReactNode
 }
 
 export function CrudPageLayout({
@@ -33,6 +34,7 @@ export function CrudPageLayout({
   content,
   createButtonIcon,
   isLoading = false,
+  additionalActions,
 }: CrudPageLayoutProps) {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6 sm:pt-6 sm:pb-8 lg:pt-4 lg:pb-8">
@@ -41,10 +43,13 @@ export function CrudPageLayout({
         description={description}
         icon={icon}
         action={
-          <Button onClick={onCreateClick} variant="primary" className="w-full sm:w-auto">
-            {createButtonIcon}
-            {createButtonLabel}
-          </Button>
+          <div className="flex items-center gap-2">
+            {additionalActions}
+            <Button onClick={onCreateClick} variant="primary" className="w-full sm:w-auto">
+              {createButtonIcon}
+              {createButtonLabel}
+            </Button>
+          </div>
         }
       />
 

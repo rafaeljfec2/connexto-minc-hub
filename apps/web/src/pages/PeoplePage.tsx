@@ -19,6 +19,7 @@ import { openWhatsApp, formatWhatsAppMessage, getActivationLink } from '@/utils/
 import { PeopleMobileView } from './people/components/PeopleMobileView'
 import { PeopleDesktopView } from './people/components/PeopleDesktopView'
 import { CreateUserForm } from './people/components/CreateUserForm'
+import { PeopleImportModal } from '@/components/people/PeopleImportModal'
 
 export default function PeoplePage() {
   const navigate = useNavigate()
@@ -34,6 +35,7 @@ export default function PeoplePage() {
   // Modals
   const deleteModal = useModal()
   const createUserModal = useModal()
+  const importModal = useModal()
 
   const isDesktop = useMediaQuery('(min-width: 1024px)')
 
@@ -89,9 +91,9 @@ export default function PeoplePage() {
     const result = people.filter(person => {
       const matchesSearch =
         searchTerm === '' ||
-        person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+        (person.name && person.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (person.email && person.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (person.phone && person.phone.toLowerCase().includes(searchTerm.toLowerCase()))
 
       const matchesMinistry = filterMinistry === 'all' || person.ministryId === filterMinistry
       const matchesTeam = filterTeam === 'all' || person.teamId === filterTeam
@@ -100,7 +102,7 @@ export default function PeoplePage() {
     })
 
     return sortData(result, {
-      name: item => item.name.toLowerCase(),
+      name: item => (item.name || '').toLowerCase(),
       email: item => (item.email || '').toLowerCase(),
       phone: item => (item.phone || '').toLowerCase(),
       ministry: item => (getMinistry(item.ministryId)?.name || '').toLowerCase(),
@@ -257,6 +259,7 @@ export default function PeoplePage() {
           onCreateUser={handleOpenCreateUserModal}
           onSendWhatsApp={handleSendWhatsApp}
           onCreateClick={() => handleOpenPersonModal()}
+          onImportClick={() => importModal.open()}
         />
       )}
 
@@ -288,6 +291,7 @@ export default function PeoplePage() {
           onCreateUser={handleOpenCreateUserModal}
           onSendWhatsApp={handleSendWhatsApp}
           onCreateClick={() => handleOpenPersonModal()}
+          onImportClick={() => importModal.open()}
         />
       )}
 
@@ -325,6 +329,15 @@ export default function PeoplePage() {
         cancelText="Cancelar"
         type="error"
         showCancel={true}
+      />
+
+      <PeopleImportModal
+        isOpen={importModal.isOpen}
+        onClose={() => importModal.close()}
+        onImportComplete={() => {
+          importModal.close()
+          showSuccess('Importação concluída com sucesso!')
+        }}
       />
     </>
   )

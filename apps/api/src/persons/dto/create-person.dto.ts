@@ -9,6 +9,8 @@ import {
   IsArray,
   ValidateNested,
   IsEnum,
+  IsNotEmpty,
+  MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { MemberType } from '../../teams/entities/team-member.entity';
@@ -36,8 +38,11 @@ export class CreatePersonDto {
   @ApiProperty({
     example: 'João Silva',
     description: 'Nome completo da pessoa',
+    required: true,
   })
+  @IsNotEmpty({ message: 'Nome é obrigatório' })
   @IsString({ message: 'Nome deve ser uma string' })
+  @MinLength(1, { message: 'Nome não pode estar vazio' })
   @MaxLength(255, { message: 'Nome deve ter no máximo 255 caracteres' })
   name: string;
 

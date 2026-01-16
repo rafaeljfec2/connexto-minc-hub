@@ -6,6 +6,7 @@ import { TableRow, TableCell } from '@/components/ui/Table'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { SortableColumn } from '@/components/ui/SortableColumn'
 import { UserIcon, EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
+import { Upload } from 'lucide-react'
 import { formatDate } from '@minc-hub/shared/utils'
 import { cn } from '@/lib/utils'
 import { Person, Ministry, Team, MemberType } from '@minc-hub/shared/types'
@@ -36,6 +37,7 @@ interface PeopleDesktopViewProps {
   readonly onCreateUser: (person: Person) => void
   readonly onSendWhatsApp?: (person: Person) => void
   readonly onCreateClick: () => void
+  readonly onImportClick?: () => void
 }
 
 function PersonCardSkeleton() {
@@ -116,6 +118,7 @@ export function PeopleDesktopView({
   onCreateUser,
   onSendWhatsApp,
   onCreateClick,
+  onImportClick,
 }: PeopleDesktopViewProps) {
   const hasFilters = searchTerm !== '' || filterMinistry !== 'all' || filterTeam !== 'all'
 
@@ -265,6 +268,14 @@ export function PeopleDesktopView({
             : 'Comece adicionando um novo voluntário'
         }
         createButtonIcon={<PlusIcon className="h-5 w-5 mr-2" />}
+        additionalActions={
+          onImportClick ? (
+            <Button onClick={onImportClick} variant="secondary" className="w-full sm:w-auto">
+              <Upload className="h-4 w-4 mr-2" />
+              Importar
+            </Button>
+          ) : undefined
+        }
         filters={
           <CrudFilters
             searchTerm={searchTerm}
