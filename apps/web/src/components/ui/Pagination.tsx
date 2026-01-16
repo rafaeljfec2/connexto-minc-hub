@@ -56,7 +56,7 @@ export function Pagination({
   if (totalPages <= 1) return null
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
       <div className="text-sm text-dark-600 dark:text-dark-400">
         Mostrando {startItem} a {endItem} de {totalItems} resultados
       </div>

@@ -36,17 +36,17 @@ export function CrudFilters({
   const hasViewToggle = viewMode !== undefined && onViewModeChange !== undefined
 
   return (
-    <Card className="mb-6">
-      <div className="p-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+    <Card className="mb-2">
+      <div className="p-1.5">
+        <div className="flex flex-col sm:flex-row gap-1.5 items-stretch sm:items-center">
           <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dark-500 dark:text-dark-400" />
+            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-dark-500 dark:text-dark-400" />
             <Input
               type="text"
               placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={e => onSearchChange(e.target.value)}
-              className="pl-10"
+              className="pl-8 h-9 text-sm"
             />
           </div>
 
@@ -57,6 +57,7 @@ export function CrudFilters({
                 onChange={e => filter.onChange(e.target.value)}
                 disabled={filter.disabled}
                 options={filter.options}
+                className="h-9 text-sm"
               />
             </div>
           ))}

@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { SortableColumn } from '@/components/ui/SortableColumn'
+import { Pagination } from '@/components/ui/Pagination'
+import { ItemsPerPageSelector } from '@/components/ui/ItemsPerPageSelector'
 import { UserIcon, EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { Upload } from 'lucide-react'
 import { formatDate } from '@minc-hub/shared/utils'
@@ -16,6 +18,12 @@ import { SortConfig } from '@/hooks/useSort'
 
 interface PeopleDesktopViewProps {
   readonly people: Person[]
+  readonly totalItems: number
+  readonly currentPage: number
+  readonly totalPages: number
+  readonly itemsPerPage: number
+  readonly onPageChange: (page: number) => void
+  readonly onItemsPerPageChange: (itemsPerPage: number) => void
   readonly ministries: Ministry[]
   readonly teams: Team[]
   readonly getMinistry: (id?: string) => Ministry | undefined
@@ -97,6 +105,12 @@ function PersonRowSkeleton() {
 
 export function PeopleDesktopView({
   people,
+  totalItems,
+  currentPage,
+  totalPages,
+  itemsPerPage,
+  onPageChange,
+  onItemsPerPageChange,
   ministries,
   teams,
   getMinistry,
@@ -314,6 +328,46 @@ export function PeopleDesktopView({
             skeletonCard={<PersonCardSkeleton />}
             skeletonRow={<PersonRowSkeleton />}
             gridView={gridView}
+            gridHeader={
+              !isLoading && totalItems > 0 ? (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                  <ItemsPerPageSelector
+                    value={itemsPerPage}
+                    onChange={value => {
+                      onItemsPerPageChange(value)
+                      onPageChange(1)
+                    }}
+                  />
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={onPageChange}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={totalItems}
+                  />
+                </div>
+              ) : undefined
+            }
+            listHeader={
+              !isLoading && totalItems > 0 ? (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+                  <ItemsPerPageSelector
+                    value={itemsPerPage}
+                    onChange={value => {
+                      onItemsPerPageChange(value)
+                      onPageChange(1)
+                    }}
+                  />
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={onPageChange}
+                    itemsPerPage={itemsPerPage}
+                    totalItems={totalItems}
+                  />
+                </div>
+              ) : undefined
+            }
             listView={{
               headers: [
                 renderHeader('name', 'Nome'),

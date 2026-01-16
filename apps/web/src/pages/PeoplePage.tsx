@@ -13,6 +13,7 @@ import { useAccessCodes, AccessCodeScopeType } from '@/hooks/useAccessCodes'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useToast } from '@/contexts/ToastContext'
 import { useSort } from '@/hooks/useSort'
+import { usePagination } from '@/hooks/usePagination'
 import { Person, UserRole } from '@minc-hub/shared/types'
 import { openWhatsApp, formatWhatsAppMessage, getActivationLink } from '@/utils/whatsapp'
 
@@ -53,6 +54,7 @@ export default function PeoplePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterMinistry, setFilterMinistry] = useState<string>('all')
   const [filterTeam, setFilterTeam] = useState<string>('all')
+  const [itemsPerPage, setItemsPerPage] = useState(25)
 
   const { viewMode, setViewMode } = useViewMode({
     storageKey: 'servos-view-mode',
@@ -110,6 +112,44 @@ export default function PeoplePage() {
       birthday: item => (item.birthDate ? new Date(item.birthDate).getTime() : 0),
     })
   }, [people, searchTerm, filterMinistry, filterTeam, sortData, getMinistry, getTeam])
+
+  // Pagination
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedPeople,
+    setCurrentPage,
+    totalItems,
+  } = usePagination({
+    items: filteredPeople,
+    itemsPerPage,
+  })
+
+  // Reset to page 1 when filters change
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchTerm(value)
+      setCurrentPage(1)
+    },
+    [setCurrentPage]
+  )
+
+  const handleFilterMinistryChange = useCallback(
+    (value: string) => {
+      setFilterMinistry(value)
+      setFilterTeam('all')
+      setCurrentPage(1)
+    },
+    [setCurrentPage]
+  )
+
+  const handleFilterTeamChange = useCallback(
+    (value: string) => {
+      setFilterTeam(value)
+      setCurrentPage(1)
+    },
+    [setCurrentPage]
+  )
 
   function handleOpenPersonModal(person?: Person) {
     if (person) {
@@ -246,7 +286,7 @@ export default function PeoplePage() {
       {/* Mobile View */}
       {!isDesktop && (
         <PeopleMobileView
-          people={filteredPeople}
+          people={paginatedPeople}
           getMinistry={getMinistry}
           getTeam={getTeam}
           teams={teams}
@@ -254,20 +294,36 @@ export default function PeoplePage() {
           isLoading={isLoadingPeople}
           searchTerm={searchTerm}
           hasFilters={searchTerm !== ''}
-          onSearchChange={setSearchTerm}
+          onSearchChange={value => {
+            setSearchTerm(value)
+            setCurrentPage(1)
+          }}
           onPersonEdit={handleOpenPersonModal}
           onPersonDelete={handleDeleteClick}
           onCreateUser={handleOpenCreateUserModal}
           onSendWhatsApp={handleSendWhatsApp}
           onCreateClick={() => handleOpenPersonModal()}
           onImportClick={() => importModal.open()}
+          // Pagination props
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={setItemsPerPage}
+          totalItems={totalItems}
         />
       )}
 
       {/* Desktop View */}
       {isDesktop && (
         <PeopleDesktopView
-          people={filteredPeople}
+          people={paginatedPeople}
+          totalItems={totalItems}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
           ministries={ministries}
           teams={teams}
           getMinistry={getMinistry}
@@ -279,12 +335,9 @@ export default function PeoplePage() {
           viewMode={viewMode}
           sortConfig={sortConfig}
           isLoading={isLoadingPeople}
-          onSearchChange={setSearchTerm}
-          onFilterMinistryChange={value => {
-            setFilterMinistry(value)
-            setFilterTeam('all')
-          }}
-          onFilterTeamChange={setFilterTeam}
+          onSearchChange={handleSearchChange}
+          onFilterMinistryChange={handleFilterMinistryChange}
+          onFilterTeamChange={handleFilterTeamChange}
           onViewModeChange={setViewMode}
           onSort={handleSort}
           onEdit={handleOpenPersonModal}

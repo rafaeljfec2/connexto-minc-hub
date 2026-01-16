@@ -14,6 +14,8 @@ interface CrudViewProps {
   readonly isLoading?: boolean
   readonly skeletonCard?: ReactNode
   readonly skeletonRow?: ReactNode
+  readonly gridHeader?: ReactNode
+  readonly listHeader?: ReactNode
 }
 
 export function CrudView({
@@ -23,6 +25,8 @@ export function CrudView({
   isLoading = false,
   skeletonCard,
   skeletonRow,
+  gridHeader,
+  listHeader,
 }: CrudViewProps) {
   if (isLoading) {
     const itemCount = 8
@@ -77,20 +81,26 @@ export function CrudView({
       {/* Web: respeita o viewMode escolhido */}
       <div className="hidden md:block">
         {viewMode === 'grid' ? (
-          gridView
+          <div>
+            {gridHeader && <div className="mb-4">{gridHeader}</div>}
+            {gridView}
+          </div>
         ) : (
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {listView.headers.map((header, index) => (
-                    <TableHead key={index}>{header}</TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>{listView.rows}</TableBody>
-            </Table>
-          </Card>
+          <div>
+            {listHeader && <div className="mb-4">{listHeader}</div>}
+            <Card>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    {listView.headers.map((header, index) => (
+                      <TableHead key={index}>{header}</TableHead>
+                    ))}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>{listView.rows}</TableBody>
+              </Table>
+            </Card>
+          </div>
         )}
       </div>
     </>
