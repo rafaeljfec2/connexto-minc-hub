@@ -59,8 +59,9 @@ export function PWAInstallModal({
       return
     }
 
-    // Verificar se o usuário já clicou em "Não quero" (não instalar)
-    const wasDismissed = localStorage.getItem(storageKey) === 'true'
+    // Verificar se o usuário já clicou em "Não quero" ou se o app já foi instalado
+    const storageValue = localStorage.getItem(storageKey)
+    const wasDismissed = storageValue === 'true' || storageValue === 'installed'
     if (wasDismissed) {
       setIsOpen(false)
       return
@@ -89,11 +90,12 @@ export function PWAInstallModal({
     const timer = setTimeout(() => {
       // Verificar novamente antes de mostrar
       const stillInstalled = checkIfInstalled()
-      const stillDismissed = localStorage.getItem(storageKey) === 'true'
+      const storageValue = localStorage.getItem(storageKey)
+      const stillDismissed = storageValue === 'true' || storageValue === 'installed'
 
       // Só mostrar se:
       // 1. Não estiver instalado
-      // 2. Não foi rejeitado
+      // 2. Não foi rejeitado ou instalado anteriormente
       // 3. O evento beforeinstallprompt está disponível (isInstallable ou canInstall)
       if (!stillInstalled && !stillDismissed && (isInstallable || canInstall)) {
         setIsOpen(true)

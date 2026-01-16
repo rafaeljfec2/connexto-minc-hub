@@ -56,6 +56,11 @@ export function usePWAInstall() {
       setIsInstalled(true)
       setIsInstallable(false)
       setDeferredPrompt(null)
+
+      // Marcar como instalado no localStorage para não mostrar o modal novamente
+      if (globalThis.window !== undefined) {
+        localStorage.setItem('pwa-install-dismissed', 'installed')
+      }
     }
 
     if (globalThis.window !== undefined) {
