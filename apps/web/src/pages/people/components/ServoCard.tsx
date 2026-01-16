@@ -68,7 +68,7 @@ export function ServoCard({
           {/* Display all teams from teamMembers */}
           {person.teamMembers && person.teamMembers.length > 0 ? (
             person.teamMembers.map((teamMember: TeamMember) => {
-              const teamName = teamMember.team?.name ?? 'Equipe desconhecida'
+              const teamName = teamMember.team?.name ?? '-'
               const isFixed = teamMember.memberType === MemberType.FIXED
               return (
                 <span

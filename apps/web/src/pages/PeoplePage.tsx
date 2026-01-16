@@ -249,6 +249,7 @@ export default function PeoplePage() {
           people={filteredPeople}
           getMinistry={getMinistry}
           getTeam={getTeam}
+          teams={teams}
           hasUser={hasUser}
           isLoading={isLoadingPeople}
           searchTerm={searchTerm}

@@ -182,7 +182,7 @@ export function PeopleDesktopView({
                 )}
                 title={isFixed ? 'Membro fixo' : 'Ajuda eventual'}
               >
-                {team?.name ?? 'Equipe desconhecida'}
+                {team?.name ?? '-'}
                 {!isFixed && <span className="ml-1 text-[10px] opacity-75">(E)</span>}
               </span>
             )

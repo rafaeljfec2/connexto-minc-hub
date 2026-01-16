@@ -8,6 +8,7 @@ interface PeopleMobileViewProps {
   readonly people: Person[]
   readonly getMinistry: (id?: string) => Ministry | undefined
   readonly getTeam: (id?: string) => Team | undefined
+  readonly teams: Team[]
   readonly hasUser: (personId: string) => boolean
   readonly isLoading: boolean
   readonly searchTerm: string
@@ -25,6 +26,7 @@ export function PeopleMobileView({
   people,
   getMinistry,
   getTeam,
+  teams,
   hasUser,
   isLoading,
   searchTerm,
@@ -70,6 +72,7 @@ export function PeopleMobileView({
           people={people}
           getMinistry={getMinistry}
           getTeam={getTeam}
+          teams={teams}
           hasUser={hasUser}
           isLoading={isLoading}
           hasFilters={hasFilters}

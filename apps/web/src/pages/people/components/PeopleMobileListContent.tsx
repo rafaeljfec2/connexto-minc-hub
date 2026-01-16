@@ -5,6 +5,7 @@ interface PeopleMobileListContentProps {
   readonly people: Person[]
   readonly getMinistry: (id?: string) => Ministry | undefined
   readonly getTeam: (id?: string) => Team | undefined
+  readonly teams: Team[]
   readonly hasUser: (personId: string) => boolean
   readonly isLoading: boolean
   readonly hasFilters: boolean
@@ -18,6 +19,7 @@ export function PeopleMobileListContent({
   people,
   getMinistry,
   getTeam,
+  teams,
   hasUser,
   isLoading,
   hasFilters,
@@ -44,6 +46,16 @@ export function PeopleMobileListContent({
     )
   }
 
+  const getPersonTeam = (person: Person): Team | undefined => {
+    // Priorizar teamMembers se disponível
+    if (person.teamMembers && person.teamMembers.length > 0) {
+      const firstTeamId = person.teamMembers[0].teamId
+      return teams.find(t => t.id === firstTeamId)
+    }
+    // Fallback para teamId legado
+    return getTeam(person.teamId)
+  }
+
   return (
     <div className="bg-white dark:bg-dark-900 rounded-lg overflow-hidden border border-dark-200 dark:border-dark-800">
       {people.map(person => (
@@ -51,7 +63,7 @@ export function PeopleMobileListContent({
           key={person.id}
           person={person}
           ministry={getMinistry(person.ministryId)}
-          team={getTeam(person.teamId)}
+          team={getPersonTeam(person)}
           hasUser={hasUser(person.id)}
           onEdit={onPersonEdit}
           onDelete={onPersonDelete}

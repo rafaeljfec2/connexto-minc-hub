@@ -91,7 +91,7 @@ export function TeamMembersSelector({
 
   const getTeamName = (teamId: string): string => {
     const team = teams.find(t => t.id === teamId)
-    return team?.name ?? 'Equipe desconhecida'
+    return team?.name ?? '-'
   }
 
   return (
