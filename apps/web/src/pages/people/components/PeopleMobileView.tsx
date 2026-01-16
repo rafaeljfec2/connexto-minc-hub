@@ -1,8 +1,6 @@
 import type { Person, Ministry, Team } from '@minc-hub/shared/types'
 import { PeopleSearchBar } from './PeopleSearchBar'
 import { PeopleMobileListContent } from './PeopleMobileListContent'
-import { Pagination } from '@/components/ui/Pagination'
-import { ItemsPerPageSelector } from '@/components/ui/ItemsPerPageSelector'
 import { PlusIcon } from '@/components/icons'
 import { Upload } from 'lucide-react'
 
@@ -57,21 +55,43 @@ export function PeopleMobileView({
 }: PeopleMobileViewProps) {
   const paginationControls =
     !isLoading && totalItems > 0 ? (
-      <div className="flex flex-col gap-2 px-3 py-2 border-t border-dark-200 dark:border-dark-800 bg-white dark:bg-dark-900 flex-shrink-0">
-        <ItemsPerPageSelector
-          value={itemsPerPage}
-          onChange={value => {
-            onItemsPerPageChange(value)
-            onPageChange(1)
-          }}
-        />
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-          itemsPerPage={itemsPerPage}
-          totalItems={totalItems}
-        />
+      <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-t border-dark-200 dark:border-dark-800 bg-white dark:bg-dark-900 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span className="text-[10px] text-dark-500 dark:text-dark-400 whitespace-nowrap">
+            {currentPage}/{totalPages}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-2 py-0.5 text-[10px] font-medium rounded border border-dark-300 dark:border-dark-700 bg-white dark:bg-dark-800 text-dark-700 dark:text-dark-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors"
+            >
+              ←
+            </button>
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-2 py-0.5 text-[10px] font-medium rounded border border-dark-300 dark:border-dark-700 bg-white dark:bg-dark-800 text-dark-700 dark:text-dark-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-dark-50 dark:hover:bg-dark-700 transition-colors"
+            >
+              →
+            </button>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <select
+            value={itemsPerPage}
+            onChange={e => {
+              onItemsPerPageChange(Number(e.target.value))
+              onPageChange(1)
+            }}
+            className="text-[10px] px-1.5 py-0.5 bg-white dark:bg-dark-800 border border-dark-300 dark:border-dark-700 rounded text-dark-900 dark:text-dark-50 focus:outline-none focus:ring-1 focus:ring-primary-500 cursor-pointer"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
       </div>
     ) : undefined
 

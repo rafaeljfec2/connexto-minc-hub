@@ -54,7 +54,7 @@ export default function PeoplePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterMinistry, setFilterMinistry] = useState<string>('all')
   const [filterTeam, setFilterTeam] = useState<string>('all')
-  const [itemsPerPage, setItemsPerPage] = useState(25)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
 
   const { viewMode, setViewMode } = useViewMode({
     storageKey: 'servos-view-mode',
