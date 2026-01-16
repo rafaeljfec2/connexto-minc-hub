@@ -33,6 +33,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "PENDENTE"
+      }
+    },
+    "owner": "rafaeljfec2"
   }
 }
