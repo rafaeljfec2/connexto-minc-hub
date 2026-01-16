@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
-import path from 'path'
+import path from 'node:path'
 
 export default defineConfig({
   plugins: [react()],
@@ -10,6 +10,14 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@minc-hub/shared': path.resolve(__dirname, '../../packages/shared/src'),
     },
+    // Garantir que apenas uma instância do React seja usada (resolve symlinks do pnpm)
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    // Forçar inclusão do React nas dependências otimizadas para evitar múltiplas instâncias
+    include: ['react', 'react-dom', 'react/jsx-runtime'],
+    // Forçar re-otimização para garantir que apenas uma instância seja usada
+    force: true,
   },
   server: {
     port: 3001,

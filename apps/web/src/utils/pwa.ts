@@ -23,6 +23,28 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     return null
   }
 
+  // Em desenvolvimento, desabilitar Service Worker para evitar problemas com cache de chunks
+  if (import.meta.env.DEV) {
+    logger.debug('Service Worker desabilitado em desenvolvimento', 'PWA')
+
+    // Desregistrar qualquer Service Worker existente em desenvolvimento
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      for (const registration of registrations) {
+        await registration.unregister()
+        logger.debug('Service Worker desregistrado para desenvolvimento', 'PWA')
+      }
+
+      // Limpar todos os caches
+      const cacheNames = await caches.keys()
+      await Promise.all(cacheNames.map(name => caches.delete(name)))
+    } catch (error) {
+      logger.warn('Erro ao limpar Service Workers em desenvolvimento', 'PWA', error)
+    }
+
+    return null
+  }
+
   try {
     const registration = await navigator.serviceWorker.register('/service-worker.js', {
       scope: '/',

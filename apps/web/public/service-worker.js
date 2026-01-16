@@ -1,6 +1,6 @@
 // Service Worker para MINC Teams PWA
 // Versão do cache - incrementar quando houver mudanças significativas
-const CACHE_VERSION = 'v1.0.0'
+const CACHE_VERSION = 'v1.0.1'
 const CACHE_NAME = `minc-teams-${CACHE_VERSION}`
 
 // Assets estáticos para cachear na instalação
@@ -12,9 +12,10 @@ const STATIC_ASSETS = [
   '/icons/icon-512x512.png',
 ]
 
-// Extensões de arquivos que devem usar Cache First
+// Extensões de arquivos que devem usar Cache First (excluindo .js em dev)
+// Em desenvolvimento, arquivos JS devem sempre buscar da rede para evitar problemas com HMR
 const CACHE_FIRST_EXTENSIONS = [
-  '.js',
+  // Removido '.js' - usar Network First para evitar problemas com múltiplas instâncias do React
   '.css',
   '.png',
   '.jpg',
@@ -82,6 +83,12 @@ self.addEventListener('fetch', event => {
 
   // Estratégia: Network First para APIs
   if (isApiRequest(url)) {
+    event.respondWith(networkFirstStrategy(request))
+    return
+  }
+
+  // Estratégia: Network First para arquivos JS (evitar cache de versões antigas)
+  if (url.pathname.endsWith('.js')) {
     event.respondWith(networkFirstStrategy(request))
     return
   }
