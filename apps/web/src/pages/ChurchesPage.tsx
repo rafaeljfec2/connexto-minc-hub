@@ -248,7 +248,7 @@ export default function ChurchesPage() {
         size="md"
       >
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
-          <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(75vh-12rem)]">
+          <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-8rem)]">
             <Input
               label="Nome da Igreja *"
               value={formData.name}
@@ -280,7 +280,7 @@ export default function ChurchesPage() {
               />
             </div>
           </div>
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-dark-200 dark:border-dark-800 mt-4 flex-shrink-0 pb-safe">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
             <Button
               type="button"
               variant="secondary"

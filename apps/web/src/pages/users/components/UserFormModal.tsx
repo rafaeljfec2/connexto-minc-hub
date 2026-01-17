@@ -75,66 +75,74 @@ export function UserFormModal({
       title={user ? 'Editar Usuário' : 'Novo Usuário'}
       size="md"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Nome *"
-          value={formData.name}
-          onChange={e => setFormData({ ...formData, name: e.target.value })}
-          required
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        <div className="space-y-1 overflow-y-auto overscroll-contain max-h-[calc(80vh-8rem)]">
           <Input
-            label="Email *"
-            type="email"
-            value={formData.email}
-            onChange={e => setFormData({ ...formData, email: e.target.value })}
+            label="Nome *"
+            value={formData.name}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
             required
           />
-          {!user && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Senha *"
-              type="password"
-              value={formData.password}
-              onChange={e => setFormData({ ...formData, password: e.target.value })}
-              required={!user}
+              label="Email *"
+              type="email"
+              value={formData.email}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              required
             />
-          )}
-        </div>
-        <ComboBox
-          label="Papel *"
-          value={formData.role}
-          onValueChange={val => val && setFormData({ ...formData, role: val as UserRole })}
-          options={ROLE_OPTIONS}
-          searchable={false}
-        />
-        <ComboBox
-          label="Servo Vinculado (Opcional)"
-          value={formData.personId}
-          onValueChange={val => setFormData({ ...formData, personId: val || '' })}
-          options={personOptions}
-          placeholder="Selecione um servo"
-          searchable
-          searchPlaceholder="Buscar servo..."
-          disabled={people.length === 0}
-          emptyMessage="Nenhum servo encontrado"
-        />
-        <div className="pt-2">
-          <Checkbox
-            id="canCheckIn"
-            label="Permitir realizar check-in (Scan QR Code)"
-            checked={formData.canCheckIn}
-            onChange={e => setFormData({ ...formData, canCheckIn: e.target.checked })}
-            disabled={formData.role === UserRole.ADMIN}
+            {!user && (
+              <Input
+                label="Senha *"
+                type="password"
+                value={formData.password}
+                onChange={e => setFormData({ ...formData, password: e.target.value })}
+                required={!user}
+              />
+            )}
+          </div>
+          <ComboBox
+            label="Papel *"
+            value={formData.role}
+            onValueChange={val => val && setFormData({ ...formData, role: val as UserRole })}
+            options={ROLE_OPTIONS}
+            searchable={false}
           />
-          <p className="text-xs text-dark-500 mt-1 ml-6">
-            Usuários com papel Admin sempre têm permissão.
-          </p>
+          <ComboBox
+            label="Servo Vinculado (Opcional)"
+            value={formData.personId}
+            onValueChange={val => setFormData({ ...formData, personId: val || '' })}
+            options={personOptions}
+            placeholder="Selecione um servo"
+            searchable
+            searchPlaceholder="Buscar servo..."
+            disabled={people.length === 0}
+            emptyMessage="Nenhum servo encontrado"
+          />
+          <div className="pt-2">
+            <Checkbox
+              id="canCheckIn"
+              label="Permitir realizar check-in (Scan QR Code)"
+              checked={formData.canCheckIn}
+              onChange={e => setFormData({ ...formData, canCheckIn: e.target.checked })}
+              disabled={formData.role === UserRole.ADMIN}
+            />
+            <p className="text-xs text-dark-500 mt-1 ml-6">
+              Usuários com papel Admin sempre têm permissão.
+            </p>
+          </div>
         </div>
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isLoading}
+            className="w-full sm:w-auto"
+          >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
             {user ? 'Salvar Alterações' : 'Criar Usuário'}
           </Button>
         </div>

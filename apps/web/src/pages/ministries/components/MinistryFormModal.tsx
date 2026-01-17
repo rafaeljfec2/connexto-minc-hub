@@ -60,42 +60,44 @@ export function MinistryFormModal({
       title={ministry ? 'Editar Time' : 'Novo Time'}
       size="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <ComboBox
-          label="Igreja *"
-          value={formData.churchId || null}
-          onValueChange={val => setFormData({ ...formData, churchId: val || '' })}
-          options={churches.map(church => ({
-            value: church.id,
-            label: church.name,
-          }))}
-          placeholder="Selecione uma igreja"
-          searchable
-          searchPlaceholder="Buscar igreja..."
-        />
-        <Input
-          label="Nome do Time *"
-          value={formData.name}
-          onChange={e => setFormData({ ...formData, name: e.target.value })}
-          required
-        />
-        <Textarea
-          label="Descrição"
-          value={formData.description}
-          onChange={e => setFormData({ ...formData, description: e.target.value })}
-          placeholder="Descrição do time..."
-          rows={4}
-        />
-        <Checkbox
-          label="Time ativo"
-          checked={formData.isActive}
-          onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-        />
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose}>
+      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-8rem)]">
+          <ComboBox
+            label="Igreja *"
+            value={formData.churchId || null}
+            onValueChange={val => setFormData({ ...formData, churchId: val || '' })}
+            options={churches.map(church => ({
+              value: church.id,
+              label: church.name,
+            }))}
+            placeholder="Selecione uma igreja"
+            searchable
+            searchPlaceholder="Buscar igreja..."
+          />
+          <Input
+            label="Nome do Time *"
+            value={formData.name}
+            onChange={e => setFormData({ ...formData, name: e.target.value })}
+            required
+          />
+          <Textarea
+            label="Descrição"
+            value={formData.description}
+            onChange={e => setFormData({ ...formData, description: e.target.value })}
+            placeholder="Descrição do time..."
+            rows={4}
+          />
+          <Checkbox
+            label="Time ativo"
+            checked={formData.isActive}
+            onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
+          />
+        </div>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
+          <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
             Cancelar
           </Button>
-          <Button type="submit" variant="primary" disabled={isLoading}>
+          <Button type="submit" variant="primary" disabled={isLoading} className="w-full sm:w-auto">
             {ministry ? 'Salvar Alterações' : 'Criar Time'}
           </Button>
         </div>

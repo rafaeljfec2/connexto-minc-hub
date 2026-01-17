@@ -421,62 +421,71 @@ export default function SchedulePlanningConfigPage() {
         title={config ? 'Editar Configuração Global' : 'Criar Configuração Global'}
         size="md"
       >
-        <form onSubmit={handleGlobalSubmit} className="space-y-4">
-          <Input
-            label="Máximo de pessoas por equipe"
-            type="number"
-            min="1"
-            value={globalFormData.maxTeamMembers.toString()}
-            onChange={e =>
-              setGlobalFormData(prev => ({
-                ...prev,
-                maxTeamMembers: Number.parseInt(e.target.value, 10) || 1,
-              }))
-            }
-            required
-          />
-          <Input
-            label="Cultos por domingo"
-            type="number"
-            min="1"
-            value={globalFormData.servicesPerSunday.toString()}
-            onChange={e =>
-              setGlobalFormData(prev => ({
-                ...prev,
-                servicesPerSunday: Number.parseInt(e.target.value, 10) || 1,
-              }))
-            }
-            required
-          />
-          <Checkbox
-            label="Cada equipe serve uma vez ao mês"
-            checked={globalFormData.teamsServeOncePerMonth}
-            onChange={e =>
-              setGlobalFormData(prev => ({ ...prev, teamsServeOncePerMonth: e.target.checked }))
-            }
-          />
-          <Checkbox
-            label="Sortear equipes para servir mais de uma vez quando necessário"
-            checked={globalFormData.enableLotteryForExtraServices}
-            onChange={e =>
-              setGlobalFormData(prev => ({
-                ...prev,
-                enableLotteryForExtraServices: e.target.checked,
-              }))
-            }
-          />
-          <Checkbox
-            label="Fazer rotação de horários mensalmente"
-            checked={globalFormData.enableTimeRotation}
-            onChange={e =>
-              setGlobalFormData(prev => ({ ...prev, enableTimeRotation: e.target.checked }))
-            }
-          />
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="secondary" onClick={globalModal.close}>
+        <form onSubmit={handleGlobalSubmit} className="flex flex-col h-full">
+          <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-8rem)]">
+            <Input
+              label="Máximo de pessoas por equipe"
+              type="number"
+              min="1"
+              value={globalFormData.maxTeamMembers.toString()}
+              onChange={e =>
+                setGlobalFormData(prev => ({
+                  ...prev,
+                  maxTeamMembers: Number.parseInt(e.target.value, 10) || 1,
+                }))
+              }
+              required
+            />
+            <Input
+              label="Cultos por domingo"
+              type="number"
+              min="1"
+              value={globalFormData.servicesPerSunday.toString()}
+              onChange={e =>
+                setGlobalFormData(prev => ({
+                  ...prev,
+                  servicesPerSunday: Number.parseInt(e.target.value, 10) || 1,
+                }))
+              }
+              required
+            />
+            <Checkbox
+              label="Cada equipe serve uma vez ao mês"
+              checked={globalFormData.teamsServeOncePerMonth}
+              onChange={e =>
+                setGlobalFormData(prev => ({ ...prev, teamsServeOncePerMonth: e.target.checked }))
+              }
+            />
+            <Checkbox
+              label="Sortear equipes para servir mais de uma vez quando necessário"
+              checked={globalFormData.enableLotteryForExtraServices}
+              onChange={e =>
+                setGlobalFormData(prev => ({
+                  ...prev,
+                  enableLotteryForExtraServices: e.target.checked,
+                }))
+              }
+            />
+            <Checkbox
+              label="Fazer rotação de horários mensalmente"
+              checked={globalFormData.enableTimeRotation}
+              onChange={e =>
+                setGlobalFormData(prev => ({ ...prev, enableTimeRotation: e.target.checked }))
+              }
+            />
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={globalModal.close}
+              className="w-full sm:w-auto"
+            >
               Cancelar
             </Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit" className="w-full sm:w-auto">
+              Salvar
+            </Button>
           </div>
         </form>
       </Modal>
@@ -488,92 +497,103 @@ export default function SchedulePlanningConfigPage() {
         title="Configuração do Time"
         size="md"
       >
-        <form onSubmit={handleTeamSubmit} className="space-y-4">
-          <p className="text-sm text-dark-600 dark:text-dark-400">
-            Deixe em branco para usar a configuração global
-          </p>
-          <Input
-            label="Máximo de pessoas por equipe"
-            type="number"
-            min="1"
-            value={teamFormData.maxTeamMembers?.toString() ?? ''}
-            onChange={e =>
-              setTeamFormData(prev => ({
-                ...prev,
-                maxTeamMembers: e.target.value ? Number.parseInt(e.target.value, 10) : null,
-              }))
-            }
-          />
-          <div className="space-y-2">
-            <Checkbox
-              label="Cada equipe serve uma vez ao mês"
-              checked={teamFormData.teamsServeOncePerMonth ?? false}
+        <form onSubmit={handleTeamSubmit} className="flex flex-col h-full">
+          <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-8rem)]">
+            <p className="text-sm text-dark-600 dark:text-dark-400">
+              Deixe em branco para usar a configuração global
+            </p>
+            <Input
+              label="Máximo de pessoas por equipe"
+              type="number"
+              min="1"
+              value={teamFormData.maxTeamMembers?.toString() ?? ''}
               onChange={e =>
                 setTeamFormData(prev => ({
                   ...prev,
-                  teamsServeOncePerMonth: e.target.checked ? e.target.checked : null,
+                  maxTeamMembers: e.target.value ? Number.parseInt(e.target.value, 10) : null,
                 }))
               }
             />
-            {teamFormData.teamsServeOncePerMonth !== null && (
-              <button
-                type="button"
-                onClick={() => setTeamFormData(prev => ({ ...prev, teamsServeOncePerMonth: null }))}
-                className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
-              >
-                Usar configuração global
-              </button>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Checkbox
-              label="Sortear equipes para servir mais de uma vez quando necessário"
-              checked={teamFormData.enableLotteryForExtraServices ?? false}
-              onChange={e =>
-                setTeamFormData(prev => ({
-                  ...prev,
-                  enableLotteryForExtraServices: e.target.checked ? e.target.checked : null,
-                }))
-              }
-            />
-            {teamFormData.enableLotteryForExtraServices !== null && (
-              <button
-                type="button"
-                onClick={() =>
-                  setTeamFormData(prev => ({ ...prev, enableLotteryForExtraServices: null }))
+            <div className="space-y-2">
+              <Checkbox
+                label="Cada equipe serve uma vez ao mês"
+                checked={teamFormData.teamsServeOncePerMonth ?? false}
+                onChange={e =>
+                  setTeamFormData(prev => ({
+                    ...prev,
+                    teamsServeOncePerMonth: e.target.checked ? e.target.checked : null,
+                  }))
                 }
-                className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
-              >
-                Usar configuração global
-              </button>
-            )}
+              />
+              {teamFormData.teamsServeOncePerMonth !== null && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setTeamFormData(prev => ({ ...prev, teamsServeOncePerMonth: null }))
+                  }
+                  className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  Usar configuração global
+                </button>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Checkbox
+                label="Sortear equipes para servir mais de uma vez quando necessário"
+                checked={teamFormData.enableLotteryForExtraServices ?? false}
+                onChange={e =>
+                  setTeamFormData(prev => ({
+                    ...prev,
+                    enableLotteryForExtraServices: e.target.checked ? e.target.checked : null,
+                  }))
+                }
+              />
+              {teamFormData.enableLotteryForExtraServices !== null && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setTeamFormData(prev => ({ ...prev, enableLotteryForExtraServices: null }))
+                  }
+                  className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  Usar configuração global
+                </button>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Checkbox
+                label="Fazer rotação de horários mensalmente"
+                checked={teamFormData.enableTimeRotation ?? false}
+                onChange={e =>
+                  setTeamFormData(prev => ({
+                    ...prev,
+                    enableTimeRotation: e.target.checked ? e.target.checked : null,
+                  }))
+                }
+              />
+              {teamFormData.enableTimeRotation !== null && (
+                <button
+                  type="button"
+                  onClick={() => setTeamFormData(prev => ({ ...prev, enableTimeRotation: null }))}
+                  className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                >
+                  Usar configuração global
+                </button>
+              )}
+            </div>
           </div>
-          <div className="space-y-2">
-            <Checkbox
-              label="Fazer rotação de horários mensalmente"
-              checked={teamFormData.enableTimeRotation ?? false}
-              onChange={e =>
-                setTeamFormData(prev => ({
-                  ...prev,
-                  enableTimeRotation: e.target.checked ? e.target.checked : null,
-                }))
-              }
-            />
-            {teamFormData.enableTimeRotation !== null && (
-              <button
-                type="button"
-                onClick={() => setTeamFormData(prev => ({ ...prev, enableTimeRotation: null }))}
-                className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
-              >
-                Usar configuração global
-              </button>
-            )}
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="secondary" onClick={handleCloseTeamModal}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCloseTeamModal}
+              className="w-full sm:w-auto"
+            >
               Cancelar
             </Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit" className="w-full sm:w-auto">
+              Salvar
+            </Button>
           </div>
         </form>
       </Modal>
@@ -588,22 +608,26 @@ export default function SchedulePlanningConfigPage() {
         title="Criar Template"
         size="md"
       >
-        <form onSubmit={handleCreateTemplate} className="space-y-4">
-          <Input
-            label="Nome do template"
-            value={templateFormData.name}
-            onChange={e => setTemplateFormData(prev => ({ ...prev, name: e.target.value }))}
-            required
-          />
-          <Input
-            label="Descrição"
-            value={templateFormData.description}
-            onChange={e => setTemplateFormData(prev => ({ ...prev, description: e.target.value }))}
-          />
-          <p className="text-sm text-dark-600 dark:text-dark-400">
-            O template será criado com base na configuração global atual.
-          </p>
-          <div className="flex justify-end gap-3 pt-4">
+        <form onSubmit={handleCreateTemplate} className="flex flex-col h-full">
+          <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-8rem)]">
+            <Input
+              label="Nome do template"
+              value={templateFormData.name}
+              onChange={e => setTemplateFormData(prev => ({ ...prev, name: e.target.value }))}
+              required
+            />
+            <Input
+              label="Descrição"
+              value={templateFormData.description}
+              onChange={e =>
+                setTemplateFormData(prev => ({ ...prev, description: e.target.value }))
+              }
+            />
+            <p className="text-sm text-dark-600 dark:text-dark-400">
+              O template será criado com base na configuração global atual.
+            </p>
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
             <Button
               type="button"
               variant="secondary"
@@ -611,10 +635,13 @@ export default function SchedulePlanningConfigPage() {
                 templateModal.close()
                 setTemplateFormData({ name: '', description: '' })
               }}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
-            <Button type="submit">Criar</Button>
+            <Button type="submit" className="w-full sm:w-auto">
+              Criar
+            </Button>
           </div>
         </form>
       </Modal>

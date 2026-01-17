@@ -45,56 +45,60 @@ export function TeamFormModal({
       title={editingTeam ? 'Editar Equipe' : 'Nova Equipe'}
       size="lg"
     >
-      <form onSubmit={onSubmit} className="space-y-4">
-        <Select
-          label="Igreja *"
-          value={selectedChurch?.id ?? ''}
-          onChange={() => {
-            // Church is controlled by header selector
-          }}
-          options={churches.map(church => ({
-            value: church.id,
-            label: church.name,
-          }))}
-          required
-          disabled
-        />
-        <ComboBox
-          label="Time *"
-          value={formData.ministryId || null}
-          onValueChange={val => onFormDataChange({ ...formData, ministryId: val || '' })}
-          options={ministries.map(ministry => ({
-            value: ministry.id,
-            label: ministry.name,
-          }))}
-          placeholder="Selecione um time"
-          searchable
-          searchPlaceholder="Buscar time..."
-          disabled={!selectedChurch || ministries.length === 0}
-        />
-        <Input
-          label="Nome da Equipe *"
-          value={formData.name}
-          onChange={e => onFormDataChange({ ...formData, name: e.target.value })}
-          required
-        />
-        <Textarea
-          label="Descrição"
-          value={formData.description}
-          onChange={e => onFormDataChange({ ...formData, description: e.target.value })}
-          placeholder="Descrição da equipe..."
-          rows={4}
-        />
-        <Checkbox
-          label="Equipe ativa"
-          checked={formData.isActive}
-          onChange={e => onFormDataChange({ ...formData, isActive: e.target.checked })}
-        />
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose}>
+      <form onSubmit={onSubmit} className="flex flex-col h-full">
+        <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-8rem)]">
+          <Select
+            label="Igreja *"
+            value={selectedChurch?.id ?? ''}
+            onChange={() => {
+              // Church is controlled by header selector
+            }}
+            options={churches.map(church => ({
+              value: church.id,
+              label: church.name,
+            }))}
+            required
+            disabled
+          />
+          <ComboBox
+            label="Time *"
+            value={formData.ministryId || null}
+            onValueChange={val => onFormDataChange({ ...formData, ministryId: val || '' })}
+            options={ministries.map(ministry => ({
+              value: ministry.id,
+              label: ministry.name,
+            }))}
+            placeholder="Selecione um time"
+            searchable
+            searchPlaceholder="Buscar time..."
+            disabled={!selectedChurch || ministries.length === 0}
+          />
+          <Input
+            label="Nome da Equipe *"
+            value={formData.name}
+            onChange={e => onFormDataChange({ ...formData, name: e.target.value })}
+            required
+          />
+          <Textarea
+            label="Descrição"
+            value={formData.description}
+            onChange={e => onFormDataChange({ ...formData, description: e.target.value })}
+            placeholder="Descrição da equipe..."
+            rows={4}
+          />
+          <Checkbox
+            label="Equipe ativa"
+            checked={formData.isActive}
+            onChange={e => onFormDataChange({ ...formData, isActive: e.target.checked })}
+          />
+        </div>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
+          <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
             Cancelar
           </Button>
-          <Button type="submit">{editingTeam ? 'Salvar Alterações' : 'Criar Equipe'}</Button>
+          <Button type="submit" className="w-full sm:w-auto">
+            {editingTeam ? 'Salvar Alterações' : 'Criar Equipe'}
+          </Button>
         </div>
       </form>
     </Modal>

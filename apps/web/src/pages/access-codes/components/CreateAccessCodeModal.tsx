@@ -175,72 +175,85 @@ export function CreateAccessCodeModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Criar Código de Acesso" size="lg">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Código"
-          placeholder="MINC2024"
-          value={code}
-          onChange={handleCodeChange}
-          error={codeError}
-          disabled={isSubmitting}
-          required
-          maxLength={50}
-          autoFocus
-        />
+      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-8rem)]">
+          <Input
+            label="Código"
+            placeholder="MINC2024"
+            value={code}
+            onChange={handleCodeChange}
+            error={codeError}
+            disabled={isSubmitting}
+            required
+            maxLength={50}
+            autoFocus
+          />
 
-        <ComboBox
-          label="Tipo de Escopo"
-          options={scopeTypeOptions}
-          value={scopeType}
-          onValueChange={handleScopeTypeChange}
-          disabled={isSubmitting}
-          placeholder="Selecione o tipo de escopo"
-          searchable
-        />
+          <ComboBox
+            label="Tipo de Escopo"
+            options={scopeTypeOptions}
+            value={scopeType}
+            onValueChange={handleScopeTypeChange}
+            disabled={isSubmitting}
+            placeholder="Selecione o tipo de escopo"
+            searchable
+          />
 
-        <ComboBox
-          label={getScopeLabel()}
-          options={scopeComboBoxOptions}
-          value={scopeId || null}
-          onValueChange={handleScopeIdChange}
-          disabled={isScopeDisabled}
-          error={
-            scopeIdError ||
-            (isScopeDisabled && !isSubmitting && availableScopes.length === 0
-              ? getEmptyMessage()
-              : undefined)
-          }
-          placeholder="Selecione..."
-          searchable
-          emptyMessage={getEmptyMessage()}
-        />
+          <ComboBox
+            label={getScopeLabel()}
+            options={scopeComboBoxOptions}
+            value={scopeId || null}
+            onValueChange={handleScopeIdChange}
+            disabled={isScopeDisabled}
+            error={
+              scopeIdError ||
+              (isScopeDisabled && !isSubmitting && availableScopes.length === 0
+                ? getEmptyMessage()
+                : undefined)
+            }
+            placeholder="Selecione..."
+            searchable
+            emptyMessage={getEmptyMessage()}
+          />
 
-        <Input
-          label="Dias de Validade"
-          type="number"
-          min={1}
-          max={365}
-          value={expiresInDays}
-          onChange={e => setExpiresInDays(Number.parseInt(e.target.value, 10) || 30)}
-          disabled={isSubmitting}
-          required
-        />
+          <Input
+            label="Dias de Validade"
+            type="number"
+            min={1}
+            max={365}
+            value={expiresInDays}
+            onChange={e => setExpiresInDays(Number.parseInt(e.target.value, 10) || 30)}
+            disabled={isSubmitting}
+            required
+          />
 
-        <Input
-          label="Limite de Usos (opcional)"
-          type="number"
-          min={1}
-          placeholder="Deixe vazio para ilimitado"
-          value={maxUsages ?? ''}
-          onChange={handleMaxUsagesChange}
-          disabled={isSubmitting}
-        />
+          <Input
+            label="Limite de Usos (opcional)"
+            type="number"
+            min={1}
+            placeholder="Deixe vazio para ilimitado"
+            value={maxUsages ?? ''}
+            onChange={handleMaxUsagesChange}
+            disabled={isSubmitting}
+          />
+        </div>
 
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
             Cancelar
           </Button>
-          <Button type="submit" isLoading={isSubmitting} disabled={isSubmitting}>
+          <Button
+            type="submit"
+            isLoading={isSubmitting}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
             Criar Código
           </Button>
         </div>
