@@ -177,9 +177,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return
     }
 
-    // Sempre verifica autenticação na inicialização
-    // Quando usa cookies, não precisa verificar localStorage
-    // A API vai retornar o usuário se estiver autenticado via cookies
+    // Não verifica autenticação em rotas públicas
+    // Rotas públicas não precisam de auth e não devem fazer chamadas para /me
+    if (isPublicRoute()) {
+      setIsLoading(false)
+      return
+    }
+
+    // Verifica autenticação apenas em rotas protegidas
     hasCheckedAuthRef.current = true
     checkAuth()
     // eslint-disable-next-line react-hooks/exhaustive-deps
