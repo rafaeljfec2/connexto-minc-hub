@@ -5,15 +5,7 @@ import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { getCachedFetch } from './utils/fetchCache'
-
-// Rotas públicas que não devem fazer chamadas de API autenticadas
-const PUBLIC_ROUTES = ['/login', '/activate']
-
-function isPublicRoute(): boolean {
-  if (typeof window === 'undefined') return false
-  const pathname = window.location.pathname
-  return PUBLIC_ROUTES.some(route => pathname.startsWith(route))
-}
+import { isPublicRoute } from '@/utils/routes'
 
 type CreateChurch = Omit<Church, 'id' | 'createdAt' | 'updatedAt'>
 

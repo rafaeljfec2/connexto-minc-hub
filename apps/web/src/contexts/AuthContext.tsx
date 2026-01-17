@@ -12,6 +12,7 @@ import {
 import { User, UserRole } from '@minc-hub/shared/types'
 import { createAuthService } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
+import { isPublicRoute } from '@/utils/routes'
 
 declare global {
   interface Window {
@@ -19,15 +20,6 @@ declare global {
       postMessage: (message: string) => void
     }
   }
-}
-
-// Rotas públicas que não devem redirecionar para login em caso de 401
-const PUBLIC_ROUTES = ['/login', '/activate']
-
-function isPublicRoute(): boolean {
-  if (globalThis.window === undefined) return false
-  const pathname = globalThis.window.location.pathname
-  return PUBLIC_ROUTES.some(route => pathname.startsWith(route))
 }
 
 interface AuthContextType {
