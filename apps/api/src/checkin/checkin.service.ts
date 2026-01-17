@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { ScheduleEntity } from '../schedules/entities/schedule.entity';
 import { ScheduleTeamEntity } from '../schedules/entities/schedule-team.entity';
+import { ScheduleGuestVolunteerEntity } from '../schedules/entities/schedule-guest-volunteer.entity';
 import { ServiceEntity } from '../services/entities/service.entity';
 import { AttendanceEntity, AttendanceMethod } from '../attendances/entities/attendance.entity';
 import { PersonEntity } from '../persons/entities/person.entity';
@@ -26,6 +27,8 @@ export class CheckinService {
     private readonly schedulesRepository: Repository<ScheduleEntity>,
     @InjectRepository(ScheduleTeamEntity)
     private readonly scheduleTeamsRepository: Repository<ScheduleTeamEntity>,
+    @InjectRepository(ScheduleGuestVolunteerEntity)
+    private readonly guestVolunteersRepository: Repository<ScheduleGuestVolunteerEntity>,
     @InjectRepository(ServiceEntity)
     private readonly servicesRepository: Repository<ServiceEntity>,
     @InjectRepository(AttendanceEntity)
@@ -327,7 +330,8 @@ export class CheckinService {
     date: Date,
     person: PersonEntity,
   ): Promise<ScheduleEntity[]> {
-    const validSchedules = await this.schedulesRepository
+    // First, try to find schedules where person is in a team
+    let validSchedules = await this.schedulesRepository
       .createQueryBuilder('schedule')
       .select([
         'schedule.id',
@@ -351,9 +355,36 @@ export class CheckinService {
       .andWhere('scheduleTeam.teamId IN (:...teamIds)', { teamIds })
       .getMany();
 
+    // If no schedules found in teams, check if person is a guest volunteer
+    if (validSchedules.length === 0) {
+      validSchedules = await this.schedulesRepository
+        .createQueryBuilder('schedule')
+        .select([
+          'schedule.id',
+          'schedule.serviceId',
+          'schedule.date',
+          'service.id',
+          'service.churchId',
+          'service.type',
+          'service.name',
+          'service.time',
+          'service.dayOfWeek',
+        ])
+        .leftJoinAndSelect('schedule.service', 'service')
+        .innerJoin('schedule.guestVolunteers', 'guestVolunteer')
+        .where('CAST(schedule.date AS DATE) = :date', {
+          date: date.toISOString().split('T')[0],
+        })
+        .andWhere('schedule.deletedAt IS NULL')
+        .andWhere('service.isActive = true')
+        .andWhere('service.deletedAt IS NULL')
+        .andWhere('guestVolunteer.personId = :personId', { personId: person.id })
+        .getMany();
+    }
+
     if (validSchedules.length === 0) {
       throw new NotFoundException(
-        `No schedules found for person ${person.name} (ID: ${person.id}) on date ${date.toISOString().split('T')[0]}`,
+        `No schedules found for person ${person.name} (ID: ${person.id}) on date ${date.toISOString().split('T')[0]}. Person must be in a team assigned to a schedule or added as a guest volunteer.`,
       );
     }
 

@@ -247,42 +247,54 @@ export default function ChurchesPage() {
         title={editingChurch ? 'Editar Igreja' : 'Nova Igreja'}
         size="md"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Nome da Igreja *"
-            value={formData.name}
-            onChange={e => setFormData({ ...formData, name: e.target.value })}
-            required
-          />
-          <Input
-            label="Endereço"
-            value={formData.address}
-            onChange={e => setFormData({ ...formData, address: e.target.value })}
-            placeholder="Rua, número - Bairro, Cidade"
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+          <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(75vh-12rem)]">
             <Input
-              label="Telefone"
-              value={formData.phone}
-              onChange={e => {
-                const formatted = formatPhone(e.target.value)
-                setFormData({ ...formData, phone: formatted })
-              }}
-              placeholder="(11) 99999-9999"
+              label="Nome da Igreja *"
+              value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              required
             />
             <Input
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={e => setFormData({ ...formData, email: e.target.value })}
-              placeholder="contato@igreja.com"
+              label="Endereço"
+              value={formData.address}
+              onChange={e => setFormData({ ...formData, address: e.target.value })}
+              placeholder="Rua, número - Bairro, Cidade"
             />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Telefone"
+                value={formData.phone}
+                onChange={e => {
+                  const formatted = formatPhone(e.target.value)
+                  setFormData({ ...formData, phone: formatted })
+                }}
+                placeholder="(11) 99999-9999"
+              />
+              <Input
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                placeholder="contato@igreja.com"
+              />
+            </div>
           </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="secondary" onClick={handleCloseModal}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-dark-200 dark:border-dark-800 mt-4 flex-shrink-0 pb-safe">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCloseModal}
+              className="w-full sm:w-auto"
+            >
               Cancelar
             </Button>
-            <Button type="submit" variant="primary" disabled={isLoading}>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isLoading}
+              className="w-full sm:w-auto"
+            >
               {isLoading ? 'Salvando...' : editingChurch ? 'Salvar Alterações' : 'Criar Igreja'}
             </Button>
           </div>

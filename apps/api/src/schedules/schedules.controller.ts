@@ -9,15 +9,18 @@ import {
   Query,
   UseGuards,
   ParseUUIDPipe,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { SchedulesService } from './schedules.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { AddTeamToScheduleDto } from './dto/add-team-to-schedule.dto';
+import { AddGuestVolunteerDto } from './dto/add-guest-volunteer.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { ScheduleTeamEntity } from './entities/schedule-team.entity';
+import { ScheduleGuestVolunteerEntity } from './entities/schedule-guest-volunteer.entity';
 
 @ApiTags('Schedules')
 @ApiBearerAuth()
@@ -109,5 +112,46 @@ export class SchedulesController {
     @Param('teamId', ParseUUIDPipe) teamId: string,
   ): Promise<void> {
     return this.schedulesService.removeTeam(scheduleId, teamId);
+  }
+
+  @Post(':id/guest-volunteers')
+  @ApiOperation({ summary: 'Add guest volunteer to schedule' })
+  @ApiResponse({
+    status: 201,
+    description: 'Guest volunteer added successfully',
+    type: ScheduleGuestVolunteerEntity,
+  })
+  @ApiResponse({ status: 409, description: 'Person is already a guest volunteer' })
+  @ApiResponse({ status: 400, description: 'Person is already in the schedule as a team member' })
+  addGuestVolunteer(
+    @Param('id', ParseUUIDPipe) scheduleId: string,
+    @Body() addGuestVolunteerDto: AddGuestVolunteerDto,
+    @Request() req: any,
+  ): Promise<ScheduleGuestVolunteerEntity> {
+    return this.schedulesService.addGuestVolunteer(scheduleId, addGuestVolunteerDto, req.user.id);
+  }
+
+  @Get(':id/guest-volunteers')
+  @ApiOperation({ summary: 'List schedule guest volunteers' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of guest volunteers',
+    type: [ScheduleGuestVolunteerEntity],
+  })
+  getGuestVolunteers(
+    @Param('id', ParseUUIDPipe) scheduleId: string,
+  ): Promise<ScheduleGuestVolunteerEntity[]> {
+    return this.schedulesService.getGuestVolunteers(scheduleId);
+  }
+
+  @Delete(':id/guest-volunteers/:personId')
+  @ApiOperation({ summary: 'Remove guest volunteer from schedule' })
+  @ApiResponse({ status: 200, description: 'Guest volunteer removed successfully' })
+  @ApiResponse({ status: 404, description: 'Guest volunteer not found' })
+  removeGuestVolunteer(
+    @Param('id', ParseUUIDPipe) scheduleId: string,
+    @Param('personId', ParseUUIDPipe) personId: string,
+  ): Promise<void> {
+    return this.schedulesService.removeGuestVolunteer(scheduleId, personId);
   }
 }

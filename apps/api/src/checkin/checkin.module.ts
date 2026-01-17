@@ -7,6 +7,7 @@ import { CheckinService } from './checkin.service';
 import { CheckinGateway } from './checkin.gateway';
 import { ScheduleEntity } from '../schedules/entities/schedule.entity';
 import { ScheduleTeamEntity } from '../schedules/entities/schedule-team.entity';
+import { ScheduleGuestVolunteerEntity } from '../schedules/entities/schedule-guest-volunteer.entity';
 import { ServiceEntity } from '../services/entities/service.entity';
 import { AttendanceEntity } from '../attendances/entities/attendance.entity';
 import { PersonEntity } from '../persons/entities/person.entity';
@@ -20,6 +21,7 @@ import { UsersModule } from '../users/users.module';
     TypeOrmModule.forFeature([
       ScheduleEntity,
       ScheduleTeamEntity,
+      ScheduleGuestVolunteerEntity,
       ServiceEntity,
       AttendanceEntity,
       PersonEntity,

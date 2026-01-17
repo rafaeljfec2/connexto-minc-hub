@@ -32,7 +32,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
       onClick={onClose}
     >
       <div
@@ -41,15 +41,22 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
       />
       <div
         className={cn(
-          'relative z-[101] w-full max-h-[90vh] rounded-xl bg-white border border-dark-200 shadow-xl',
+          'relative z-[101] w-full bg-white border border-dark-200 shadow-xl',
           'dark:bg-dark-900 dark:border-dark-800',
-          'animate-scale-in flex flex-col',
+          'flex flex-col',
+          // Mobile: full width bottom sheet with safe area
+          'max-h-[75vh] rounded-t-3xl sm:rounded-xl',
+          'animate-slide-up sm:animate-scale-in',
+          // Desktop: centered modal
+          'sm:max-h-[90vh]',
           sizeClasses[size]
         )}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
-          <h2 className="text-xl font-semibold text-dark-900 dark:text-dark-50">{title}</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-dark-900 dark:text-dark-50">
+            {title}
+          </h2>
           <button
             onClick={onClose}
             className="text-dark-500 dark:text-dark-400 hover:text-dark-900 dark:hover:text-dark-50 transition-all duration-200 hover:scale-110 active:scale-95"
@@ -68,7 +75,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             </svg>
           </button>
         </div>
-        <div className="p-4 overflow-y-auto flex-1 min-h-0">{children}</div>
+        <div className="p-4 pb-8 flex-1 min-h-0 flex flex-col overflow-hidden">{children}</div>
       </div>
     </div>
   )

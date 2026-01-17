@@ -1,11 +1,18 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ScheduleEntity } from './entities/schedule.entity';
 import { ScheduleTeamEntity } from './entities/schedule-team.entity';
+import { ScheduleGuestVolunteerEntity } from './entities/schedule-guest-volunteer.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { AddTeamToScheduleDto } from './dto/add-team-to-schedule.dto';
+import { AddGuestVolunteerDto } from './dto/add-guest-volunteer.dto';
 
 @Injectable()
 export class SchedulesService {
@@ -14,6 +21,8 @@ export class SchedulesService {
     private readonly schedulesRepository: Repository<ScheduleEntity>,
     @InjectRepository(ScheduleTeamEntity)
     private readonly scheduleTeamsRepository: Repository<ScheduleTeamEntity>,
+    @InjectRepository(ScheduleGuestVolunteerEntity)
+    private readonly guestVolunteersRepository: Repository<ScheduleGuestVolunteerEntity>,
   ) {}
 
   private getBaseQueryBuilder(alias = 'schedule') {
@@ -222,5 +231,67 @@ export class SchedulesService {
       where: { scheduleId },
       relations: ['team'],
     });
+  }
+
+  // Guest Volunteers methods
+  async addGuestVolunteer(
+    scheduleId: string,
+    addGuestVolunteerDto: AddGuestVolunteerDto,
+    addedBy: string,
+  ): Promise<ScheduleGuestVolunteerEntity> {
+    await this.findOne(scheduleId);
+
+    // Check if already a guest volunteer
+    const existing = await this.guestVolunteersRepository.findOne({
+      where: { scheduleId, personId: addGuestVolunteerDto.personId },
+    });
+
+    if (existing) {
+      throw new ConflictException('Person is already a guest volunteer for this schedule');
+    }
+
+    // Check if already in schedule teams
+    const schedule = await this.schedulesRepository
+      .createQueryBuilder('schedule')
+      .leftJoin('schedule.scheduleTeams', 'scheduleTeams')
+      .leftJoin('scheduleTeams.team', 'team')
+      .leftJoin('team.teamMembers', 'teamMembers')
+      .where('schedule.id = :scheduleId', { scheduleId })
+      .andWhere('teamMembers.personId = :personId', { personId: addGuestVolunteerDto.personId })
+      .getOne();
+
+    if (schedule) {
+      throw new BadRequestException('Person is already in the schedule as a team member');
+    }
+
+    const guestVolunteer = this.guestVolunteersRepository.create({
+      scheduleId,
+      personId: addGuestVolunteerDto.personId,
+      addedBy,
+    });
+
+    return this.guestVolunteersRepository.save(guestVolunteer);
+  }
+
+  async getGuestVolunteers(scheduleId: string): Promise<ScheduleGuestVolunteerEntity[]> {
+    await this.findOne(scheduleId);
+    return this.guestVolunteersRepository.find({
+      where: { scheduleId },
+      relations: ['person'],
+    });
+  }
+
+  async removeGuestVolunteer(scheduleId: string, personId: string): Promise<void> {
+    await this.findOne(scheduleId);
+
+    const guestVolunteer = await this.guestVolunteersRepository.findOne({
+      where: { scheduleId, personId },
+    });
+
+    if (!guestVolunteer) {
+      throw new NotFoundException('Guest volunteer not found');
+    }
+
+    await this.guestVolunteersRepository.remove(guestVolunteer);
   }
 }

@@ -2,20 +2,26 @@ import { useState, useEffect, useRef } from 'react'
 import { canUserCheckIn } from '@minc-hub/shared/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Button } from '@/components/ui/Button'
 import { useCheckIn } from '@/hooks/useCheckIn'
 import { useCheckInWebSocket } from '@/hooks/useCheckInWebSocket'
+import { useGuestVolunteers } from '@/hooks/useGuestVolunteers'
+import { useModal } from '@/hooks/useModal'
 import { useQrScanner } from './checkin/hooks/useQrScanner'
 import { QrCodeDisplay } from './checkin/components/QrCodeDisplay'
 import { CheckInHistory } from './checkin/components/CheckInHistory'
 import { QrScannerView } from './checkin/components/QrScannerView'
+import { GuestVolunteerModal } from './checkin/components/GuestVolunteerModal'
 
 type Mode = 'scan' | 'generate'
 
 export default function CheckinPage() {
   const { user, isLoading: isLoadingUser } = useAuth()
   const [mode, setMode] = useState<Mode>('generate')
+  const guestModal = useModal()
 
   const canScan = canUserCheckIn(user)
+  const canManageVolunteers = canScan // Same permission for managing guest volunteers
 
   const {
     generateQrCode,
@@ -28,6 +34,9 @@ export default function CheckinPage() {
     errorType,
     errorMessage,
   } = useCheckIn()
+
+  const { guestVolunteers, fetchGuestVolunteers, addGuestVolunteer, removeGuestVolunteer } =
+    useGuestVolunteers()
 
   // Refs to prevent duplicate calls
   const hasFetchedHistoryRef = useRef(false)
@@ -146,9 +155,32 @@ export default function CheckinPage() {
     }
   }, [user?.personId, isLoadingUser])
 
+  // Fetch guest volunteers when qrCodeData changes (schedule loaded)
+  useEffect(() => {
+    if (qrCodeData?.schedule?.id && canManageVolunteers) {
+      fetchGuestVolunteers(qrCodeData.schedule.id)
+    }
+  }, [qrCodeData?.schedule?.id, canManageVolunteers, fetchGuestVolunteers])
+
   function handleModeChange(newMode: Mode) {
     setMode(newMode)
   }
+
+  const handleAddGuestVolunteer = async (personId: string) => {
+    if (!qrCodeData?.schedule?.id) return
+    await addGuestVolunteer(qrCodeData.schedule.id, personId)
+  }
+
+  const handleRemoveGuestVolunteer = async (personId: string) => {
+    if (!qrCodeData?.schedule?.id) return
+    await removeGuestVolunteer(qrCodeData.schedule.id, personId)
+  }
+
+  // Get existing person IDs (from history + guest volunteers)
+  const existingPersonIds = [
+    ...history.map(h => h.personId),
+    ...guestVolunteers.map(gv => gv.personId),
+  ]
 
   return (
     <>
@@ -211,6 +243,45 @@ export default function CheckinPage() {
                   />
                 </div>
 
+                {/* Guest Volunteers Section - Mobile */}
+                {canManageVolunteers && qrCodeData?.schedule && (
+                  <div className="bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50">
+                        Voluntários Avulsos
+                      </h3>
+                      <Button size="sm" onClick={guestModal.open}>
+                        Adicionar
+                      </Button>
+                    </div>
+                    {guestVolunteers.length > 0 ? (
+                      <div className="space-y-2">
+                        {guestVolunteers.map(gv => (
+                          <div
+                            key={gv.id}
+                            className="flex items-center justify-between p-2 bg-dark-50 dark:bg-dark-800 rounded text-xs"
+                          >
+                            <span className="text-dark-900 dark:text-dark-50">
+                              {gv.person?.name ?? 'Desconhecido'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGuestVolunteer(gv.personId)}
+                              className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-dark-500 dark:text-dark-400">
+                        Nenhum voluntário avulso
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 {/* History */}
                 <CheckInHistory history={history} compact />
               </div>
@@ -232,16 +303,57 @@ export default function CheckinPage() {
         <PageHeader title="Check-in" description="Gere ou escaneie QR codes para check-in" />
         <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Generate QR Code */}
-          <QrCodeDisplay
-            isLoading={isLoading}
-            isLoadingUser={isLoadingUser}
-            hasPersonId={!!user?.personId}
-            qrCode={qrCode}
-            qrCodeData={qrCodeData}
-            errorType={errorType}
-            errorMessage={errorMessage}
-            userName={user?.name}
-          />
+          <div className="space-y-6">
+            <QrCodeDisplay
+              isLoading={isLoading}
+              isLoadingUser={isLoadingUser}
+              hasPersonId={!!user?.personId}
+              qrCode={qrCode}
+              qrCodeData={qrCodeData}
+              errorType={errorType}
+              errorMessage={errorMessage}
+              userName={user?.name}
+            />
+
+            {/* Guest Volunteers Section */}
+            {canManageVolunteers && qrCodeData?.schedule && (
+              <div className="bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-dark-900 dark:text-dark-50">
+                    Voluntários Avulsos
+                  </h3>
+                  <Button size="sm" onClick={guestModal.open}>
+                    Adicionar
+                  </Button>
+                </div>
+                {guestVolunteers.length > 0 ? (
+                  <div className="space-y-2">
+                    {guestVolunteers.map(gv => (
+                      <div
+                        key={gv.id}
+                        className="flex items-center justify-between p-2 bg-dark-50 dark:bg-dark-800 rounded"
+                      >
+                        <span className="text-sm text-dark-900 dark:text-dark-50">
+                          {gv.person?.name ?? 'Desconhecido'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGuestVolunteer(gv.personId)}
+                          className="text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-dark-500 dark:text-dark-400">
+                    Nenhum voluntário avulso adicionado
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Scan QR Code */}
           <QrScannerView scannerRef={scannerRef} isScanning={isScanning} scanError={scanError} />
@@ -250,6 +362,15 @@ export default function CheckinPage() {
           <CheckInHistory history={history} />
         </div>
       </main>
+
+      {/* Guest Volunteer Modal */}
+      <GuestVolunteerModal
+        isOpen={guestModal.isOpen}
+        onClose={guestModal.close}
+        scheduleId={qrCodeData?.schedule?.id ?? ''}
+        onAdd={handleAddGuestVolunteer}
+        existingPersonIds={existingPersonIds}
+      />
     </>
   )
 }

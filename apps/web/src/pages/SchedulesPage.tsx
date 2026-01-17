@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
-import { Select } from '@/components/ui/Select'
 import { Alert } from '@/components/ui/Alert'
 import { ComboBox } from '@/components/ui/ComboBox'
 import { MonthNavigator } from '@/components/ui/MonthNavigator'
@@ -290,129 +289,142 @@ export default function SchedulesPage() {
         title={editingSchedule ? 'Editar Escala' : 'Nova Escala'}
         size="lg"
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Select
-            label="Culto *"
-            value={formData.serviceId}
-            onChange={e => setFormData({ ...formData, serviceId: e.target.value })}
-            options={[
-              { value: '', label: 'Selecione um culto' },
-              ...filteredServices.map(service => ({
-                value: service.id,
-                label: service.name,
-              })),
-            ]}
-            required
-          />
-          <Input
-            label="Data *"
-            type="date"
-            value={formData.date}
-            onChange={e => setFormData({ ...formData, date: e.target.value })}
-            required
-          />
-          <div>
-            <label
-              htmlFor="ministryId"
-              className="block text-sm font-medium text-dark-600 dark:text-dark-300 mb-2"
-            >
-              Time *
-            </label>
-            <ComboBox
-              options={filteredMinistries.map(ministry => ({
-                value: ministry.id,
-                label: ministry.name,
-              }))}
-              value={formData.ministryId || null}
-              onValueChange={ministryId =>
-                setFormData({ ...formData, ministryId: ministryId ?? '' })
-              }
-              placeholder="Selecione um time"
-              searchable
-              searchPlaceholder="Buscar time..."
-            />
-          </div>
-          {formData.ministryId && (
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+          <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(75vh-14rem)]">
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label
-                  htmlFor="teamIds"
-                  className="block text-sm font-medium text-dark-600 dark:text-dark-300"
-                >
-                  Equipes *
-                </label>
-                <Button type="button" variant="ghost" size="sm" onClick={handleAutoAssign}>
-                  Sortear Automaticamente
-                </Button>
-              </div>
+              <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2">
+                Culto *
+              </label>
               <ComboBox
-                options={filteredTeams
-                  .filter(t => t.isActive)
-                  .map(team => ({ value: team.id, label: team.name }))}
-                value={null}
-                onValueChange={teamId => {
-                  if (teamId && !formData.teamIds.includes(teamId)) {
-                    setFormData(prev => ({ ...prev, teamIds: [...prev.teamIds, teamId] }))
-                  }
-                }}
-                placeholder="Selecione uma equipe"
+                options={filteredServices.map(service => ({
+                  value: service.id,
+                  label: service.name,
+                }))}
+                value={formData.serviceId}
+                onValueChange={value => setFormData({ ...formData, serviceId: value ?? '' })}
+                placeholder="Selecione um culto"
                 searchable
-                searchPlaceholder="Buscar equipe..."
+                searchPlaceholder="Buscar culto..."
+                className="w-full"
               />
-              <div className="mt-4 p-4 rounded-xl bg-dark-50 dark:bg-dark-900/50 border border-dark-100 dark:border-dark-800 space-y-3">
-                <span className="text-xs font-medium text-dark-500 uppercase tracking-wider">
-                  Equipes Selecionadas
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {formData.teamIds.length === 0 ? (
-                    <span className="text-sm text-dark-500 italic">Nenhuma equipe selecionada</span>
-                  ) : (
-                    formData.teamIds.map(teamId => {
-                      const team = teams.find(t => t.id === teamId)
-                      const ministry = ministries.find(m => m.id === team?.ministryId)
-                      return (
-                        <div
-                          key={teamId}
-                          className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-sm"
-                        >
-                          <span className="text-sm font-medium text-dark-700 dark:text-dark-200">
-                            <span className="text-dark-500 font-normal mr-1">
-                              {ministry?.name}:
-                            </span>
-                            {team?.name}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => toggleTeam(teamId)}
-                            className="text-dark-400 hover:text-red-500 transition-colors"
+            </div>
+            <Input
+              label="Data *"
+              type="date"
+              value={formData.date}
+              onChange={e => setFormData({ ...formData, date: e.target.value })}
+              required
+            />
+            <div>
+              <label
+                htmlFor="ministryId"
+                className="block text-sm font-medium text-dark-600 dark:text-dark-300 mb-2"
+              >
+                Time *
+              </label>
+              <ComboBox
+                options={filteredMinistries.map(ministry => ({
+                  value: ministry.id,
+                  label: ministry.name,
+                }))}
+                value={formData.ministryId || null}
+                onValueChange={ministryId =>
+                  setFormData({ ...formData, ministryId: ministryId ?? '' })
+                }
+                placeholder="Selecione um time"
+                searchable
+                searchPlaceholder="Buscar time..."
+              />
+            </div>
+            {formData.ministryId && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label
+                    htmlFor="teamIds"
+                    className="block text-sm font-medium text-dark-600 dark:text-dark-300"
+                  >
+                    Equipes *
+                  </label>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleAutoAssign}>
+                    Sortear Automaticamente
+                  </Button>
+                </div>
+                <ComboBox
+                  options={filteredTeams
+                    .filter(t => t.isActive)
+                    .map(team => ({ value: team.id, label: team.name }))}
+                  value={null}
+                  onValueChange={teamId => {
+                    if (teamId && !formData.teamIds.includes(teamId)) {
+                      setFormData(prev => ({ ...prev, teamIds: [...prev.teamIds, teamId] }))
+                    }
+                  }}
+                  placeholder="Selecione uma equipe"
+                  searchable
+                  searchPlaceholder="Buscar equipe..."
+                />
+                <div className="mt-4 p-4 rounded-xl bg-dark-50 dark:bg-dark-900/50 border border-dark-100 dark:border-dark-800 space-y-3">
+                  <span className="text-xs font-medium text-dark-500 uppercase tracking-wider">
+                    Equipes Selecionadas
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.teamIds.length === 0 ? (
+                      <span className="text-sm text-dark-500 italic">
+                        Nenhuma equipe selecionada
+                      </span>
+                    ) : (
+                      formData.teamIds.map(teamId => {
+                        const team = teams.find(t => t.id === teamId)
+                        const ministry = ministries.find(m => m.id === team?.ministryId)
+                        return (
+                          <div
+                            key={teamId}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-dark-800 border border-dark-200 dark:border-dark-700 rounded-lg shadow-sm"
                           >
-                            <svg
-                              className="h-4 w-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                            <span className="text-sm font-medium text-dark-700 dark:text-dark-200">
+                              <span className="text-dark-500 font-normal mr-1">
+                                {ministry?.name}:
+                              </span>
+                              {team?.name}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => toggleTeam(teamId)}
+                              className="text-dark-400 hover:text-red-500 transition-colors"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      )
-                    })
-                  )}
+                              <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="secondary" onClick={handleCloseModal}>
+            )}
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-dark-200 dark:border-dark-800 mt-4 flex-shrink-0 pb-safe">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCloseModal}
+              className="w-full sm:w-auto"
+            >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
               {editingSchedule ? 'Salvar Alterações' : 'Criar Escala'}
             </Button>
           </div>

@@ -109,6 +109,15 @@ export interface Schedule {
   updatedAt: string
 }
 
+export interface GuestVolunteer {
+  id: string
+  scheduleId: string
+  personId: string
+  person?: Person
+  addedBy: string
+  createdAt: string
+}
+
 export interface Attendance {
   id: string
   scheduleId: string
