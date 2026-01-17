@@ -76,7 +76,7 @@ export function UserFormModal({
       size="md"
     >
       <form onSubmit={handleSubmit} className="flex flex-col h-full">
-        <div className="space-y-1 overflow-y-auto overscroll-contain max-h-[calc(80vh-8rem)]">
+        <div className="space-y-1 overflow-y-auto overscroll-contain max-h-[calc(78vh-12rem)]">
           <Input
             label="Nome *"
             value={formData.name}
@@ -132,7 +132,7 @@ export function UserFormModal({
             </p>
           </div>
         </div>
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-8 border-t border-dark-200 dark:border-dark-800 mt-8 flex-shrink-0 pb-4">
           <Button
             type="button"
             variant="outline"

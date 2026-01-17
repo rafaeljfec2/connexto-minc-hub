@@ -292,7 +292,10 @@ export default function SchedulesPage() {
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-10rem)]">
             <div>
-              <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2">
+              <label
+                htmlFor="serviceId"
+                className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2"
+              >
                 Culto *
               </label>
               <ComboBox

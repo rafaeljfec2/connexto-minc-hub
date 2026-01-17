@@ -31,27 +31,28 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: Readonl
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="fixed inset-0 bg-dark-950/80 backdrop-blur-sm animate-fade-in"
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in">
+      {/* Backdrop */}
+      <button
+        type="button"
+        className="fixed inset-0 bg-dark-950/80 backdrop-blur-sm animate-fade-in cursor-default"
         onClick={onClose}
+        aria-label="Fechar modal"
+        tabIndex={-1}
       />
+      {/* Modal Content */}
       <div
         className={cn(
           'relative z-[101] w-full bg-white border border-dark-200 shadow-xl',
           'dark:bg-dark-900 dark:border-dark-800',
           'flex flex-col',
           // Mobile: full width bottom sheet with safe area
-          'max-h-[75vh] rounded-t-3xl sm:rounded-xl',
+          'max-h-[78vh] rounded-t-3xl sm:rounded-xl',
           'animate-slide-up sm:animate-scale-in',
           // Desktop: centered modal
           'sm:max-h-[90vh]',
           sizeClasses[size]
         )}
-        onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b border-dark-200 dark:border-dark-800 flex-shrink-0">
           <h2 className="text-lg sm:text-xl font-semibold text-dark-900 dark:text-dark-50">
@@ -75,7 +76,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: Readonl
             </svg>
           </button>
         </div>
-        <div className="p-4 pb-20 flex-1 min-h-0 flex flex-col overflow-hidden">{children}</div>
+        <div className="p-4 pb-28 flex-1 min-h-0 flex flex-col overflow-hidden">{children}</div>
       </div>
     </div>
   )

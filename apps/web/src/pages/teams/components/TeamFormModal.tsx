@@ -46,7 +46,7 @@ export function TeamFormModal({
       size="lg"
     >
       <form onSubmit={onSubmit} className="flex flex-col h-full">
-        <div className="space-y-4 overflow-y-auto overscroll-contain max-h-[calc(65vh-8rem)]">
+        <div className="space-y-1 overflow-y-auto overscroll-contain max-h-[calc(78vh-12rem)]">
           <Select
             label="Igreja *"
             value={selectedChurch?.id ?? ''}
@@ -92,7 +92,7 @@ export function TeamFormModal({
             onChange={e => onFormDataChange({ ...formData, isActive: e.target.checked })}
           />
         </div>
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-6 border-t border-dark-200 dark:border-dark-800 mt-6 flex-shrink-0 pb-2">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-8 border-t border-dark-200 dark:border-dark-800 mt-8 flex-shrink-0 pb-4">
           <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
             Cancelar
           </Button>
