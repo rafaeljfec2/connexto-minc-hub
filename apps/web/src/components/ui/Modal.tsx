@@ -9,7 +9,7 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
-export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, size = 'md' }: Readonly<ModalProps>) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
