@@ -305,23 +305,18 @@ export function Sidebar() {
     )
   }
 
-  const sidebarContent = (
-    <>
-      <SidebarChurchSelector />
-      <nav className="flex-1 overflow-y-auto p-4">{renderNavItems()}</nav>
-      <SidebarBranding />
-      {user && <SidebarUserInfo user={user} />}
-    </>
-  )
-
   return (
     <>
       {/* Desktop Sidebar - Hidden on mobile */}
+      {/* Layout Web: Logo no header, sem combo de igrejas */}
       <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-dark-200 dark:bg-dark-900 dark:border-dark-800 fixed left-0 top-0 h-screen z-40">
-        {sidebarContent}
+        <SidebarBranding />
+        <nav className="flex-1 overflow-y-auto p-4">{renderNavItems()}</nav>
+        {user && <SidebarUserInfo user={user} />}
       </aside>
 
       {/* Mobile Menu - Hidden on chat pages */}
+      {/* Layout Mobile: Combo de igrejas no header, logo no footer */}
       {!isChatPage && (
         <div className="lg:hidden">
           <div className="hidden">
