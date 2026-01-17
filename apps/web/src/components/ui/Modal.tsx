@@ -47,7 +47,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: Readonl
           'dark:bg-dark-900 dark:border-dark-800',
           'flex flex-col',
           // Mobile: full width bottom sheet with safe area
-          'max-h-[78vh] rounded-t-3xl sm:rounded-xl',
+          'max-h-[80vh] rounded-t-3xl sm:rounded-xl',
           'animate-slide-up sm:animate-scale-in',
           // Desktop: centered modal
           'sm:max-h-[90vh]',
@@ -76,7 +76,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: Readonl
             </svg>
           </button>
         </div>
-        <div className="p-4 pb-28 flex-1 min-h-0 flex flex-col overflow-hidden">{children}</div>
+        <div className="p-4 pb-36 flex-1 min-h-0 flex flex-col overflow-hidden">{children}</div>
       </div>
     </div>
   )
