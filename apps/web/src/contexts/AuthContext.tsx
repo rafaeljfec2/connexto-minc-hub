@@ -21,6 +21,15 @@ declare global {
   }
 }
 
+// Rotas públicas que não devem redirecionar para login em caso de 401
+const PUBLIC_ROUTES = ['/login', '/activate']
+
+function isPublicRoute(): boolean {
+  if (globalThis.window === undefined) return false
+  const pathname = globalThis.window.location.pathname
+  return PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+}
+
 interface AuthContextType {
   user: User | null
   isLoading: boolean
@@ -88,6 +97,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           },
         },
         onUnauthorized: () => {
+          // Não faz nada se estiver em rota pública
+          if (isPublicRoute()) return
+
           // Só limpa se realmente não houver usuário no storage
           // Isso evita limpar durante verificação inicial se houver usuário salvo
           const storedUser = getUserFromStorage()
@@ -95,11 +107,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser(null)
             saveUserToStorage(null)
           }
-          // Evita redirecionar se já estamos na tela de login
-          if (
-            globalThis.window !== undefined &&
-            !globalThis.window.location.pathname.includes('/login')
-          ) {
+          // Redireciona para login apenas se não estiver em rota pública
+          if (globalThis.window !== undefined) {
             globalThis.window.location.href = '/login'
           }
         },
@@ -145,17 +154,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const isUnauthorized = status === 401
 
       // Só limpa o usuário se for realmente não autorizado
-      // Só limpa o usuário se for realmente não autorizado
-      if (isUnauthorized) {
-        // console.warn('Sessão expirada ou inválida (401). Realizando logout local.')
+      // E não estiver em uma rota pública
+      if (isUnauthorized && !isPublicRoute()) {
         setUser(null)
         saveUserToStorage(null)
 
-        // Redireciona para login se necessário
-        if (
-          globalThis.window !== undefined &&
-          !globalThis.window.location.pathname.includes('/login')
-        ) {
+        // Redireciona para login apenas se não estiver em rota pública
+        if (globalThis.window !== undefined) {
           globalThis.window.location.href = '/login'
         }
       }
