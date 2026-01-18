@@ -256,8 +256,8 @@ export default function PersonFormPage() {
     return (
       <>
         <PersonFormHeader isEditMode={isEditMode} onBack={handleCancel} />
-        <div className="flex-1 overflow-y-auto pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-[calc(8rem+env(safe-area-inset-bottom,0px))]">
-          <div className="px-4 pb-3 pt-0">
+        <div className="flex-1 overflow-y-auto pt-[calc(2.5rem+env(safe-area-inset-top,0px))] pb-[calc(8rem+env(safe-area-inset-bottom,0px))]">
+          <div className="px-4 pb-3 -mt-9">
             <form onSubmit={handleSubmit} className="space-y-3">
               {/* Basic Information Section */}
               <Card className="mb-0">

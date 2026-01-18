@@ -14,16 +14,16 @@ export function PersonFormHeader({ isEditMode, onBack }: PersonFormHeaderProps) 
   // Mobile: Fixed header with back button only - positioned at top (replaces main header)
   if (!isDesktop) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 safe-area-top pt-[env(safe-area-inset-top)] pb-2">
-        <div className="flex items-center px-4 h-12">
+      <div className="fixed top-0 left-0 right-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 safe-area-top pt-[env(safe-area-inset-top)]">
+        <div className="flex items-center px-2 h-10">
           <Button
             type="button"
             variant="ghost"
             onClick={onBack}
-            className="p-2"
+            className="p-1.5"
             aria-label="Voltar"
           >
-            <ArrowLeft className="h-6 w-6" />
+            <ArrowLeft className="h-5 w-5" />
           </Button>
         </div>
       </div>
