@@ -45,6 +45,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isProfilePage = location.pathname === '/profile'
   const isChatConversation = location.pathname.startsWith('/chat/')
   const isNewMessagePage = location.pathname === '/communication/new'
+  const isPersonFormPage =
+    location.pathname === '/people/new' ||
+    /^\/people\/[^/]+\/edit$/.exec(location.pathname) !== null
 
   const mainClassName = getMainClassName(
     isChatConversation,
@@ -67,8 +70,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       {/* Fixed Navigation Elements - Outside animation to preserve fixed positioning */}
       <Sidebar />
 
-      {/* Hide mobile header when inside a chat conversation, chat list, or new message page - they have their own headers */}
-      {!isChatConversation && !isChatPage && !isNewMessagePage && (
+      {/* Hide mobile header when inside a chat conversation, chat list, new message page, or person form page - they have their own headers */}
+      {!isChatConversation && !isChatPage && !isNewMessagePage && !isPersonFormPage && (
         <div className="lg:hidden">
           <DashboardHeaderMobile
             onNotificationPress={() => {

@@ -11,23 +11,20 @@ interface PersonFormHeaderProps {
 export function PersonFormHeader({ isEditMode, onBack }: PersonFormHeaderProps) {
   const isDesktop = useMediaQuery('(min-width: 1024px)')
 
-  // Mobile: Fixed header with back button - positioned directly below main header
+  // Mobile: Fixed header with back button only - positioned at top (replaces main header)
   if (!isDesktop) {
     return (
-      <div className="fixed top-[calc(3.25rem+env(safe-area-inset-top,0px))] left-0 right-0 z-20 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80">
-        <div className="flex items-center justify-center gap-3 px-4 py-3 relative">
+      <div className="fixed top-0 left-0 right-0 z-30 w-full border-b border-dark-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-dark-800 dark:bg-dark-950/95 dark:supports-[backdrop-filter]:dark:bg-dark-950/80 safe-area-top pt-[env(safe-area-inset-top)] pb-2">
+        <div className="flex items-center px-4 h-12">
           <Button
             type="button"
             variant="ghost"
             onClick={onBack}
-            className="p-2 absolute left-0"
+            className="p-2"
             aria-label="Voltar"
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <h1 className="text-xl font-semibold text-dark-900 dark:text-dark-50">
-            {isEditMode ? 'Editar Servo' : 'Novo Servo'}
-          </h1>
         </div>
       </div>
     )
