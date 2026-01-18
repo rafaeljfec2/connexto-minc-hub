@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTeams } from '@/hooks/useTeams'
+import { useMinistries } from '@/hooks/useMinistries'
 import { Team } from '@minc-hub/shared/types'
 import { useTeamMembers } from './teams/hooks/useTeamMembers'
 import { useTeamMemberRemoval } from './teams/hooks/useTeamMemberRemoval'
@@ -16,8 +17,14 @@ export default function TeamDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { getTeamById, refresh: refreshTeams } = useTeams()
+  const { ministries } = useMinistries()
   const [activeTab, setActiveTab] = useState<TabType>('membros')
   const [team, setTeam] = useState<Team | null>(null)
+
+  const ministryName = useMemo(() => {
+    if (!team?.ministryId) return null
+    return ministries.find(m => m.id === team.ministryId)?.name ?? null
+  }, [team?.ministryId, ministries])
 
   const {
     members,
@@ -59,7 +66,7 @@ export default function TeamDetailsPage() {
         {/* Left Panel (Desktop: Sidebar / Mobile: Top) */}
         <div className="flex-shrink-0 lg:w-80 lg:border-r lg:border-gray-100 lg:dark:border-dark-800 lg:bg-gray-50/50 lg:dark:bg-dark-900/50 lg:overflow-y-auto">
           <TeamHeader onBack={() => navigate(-1)} />
-          <TeamProfile team={team} />
+          <TeamProfile team={team} ministryName={ministryName} />
         </div>
 
         {/* Right Panel (Desktop: Content / Mobile: Bottom) */}

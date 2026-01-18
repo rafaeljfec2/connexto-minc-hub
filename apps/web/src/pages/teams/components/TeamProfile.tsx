@@ -3,9 +3,10 @@ import { Team } from '@minc-hub/shared/types'
 
 interface TeamProfileProps {
   readonly team: Team | null
+  readonly ministryName: string | null
 }
 
-export function TeamProfile({ team }: TeamProfileProps) {
+export function TeamProfile({ team, ministryName }: TeamProfileProps) {
   const teamName = team?.name || 'Equipe'
   const teamInitial = teamName.charAt(0).toUpperCase()
 
@@ -31,9 +32,11 @@ export function TeamProfile({ team }: TeamProfileProps) {
       </p>
 
       <div className="flex gap-1.5 flex-wrap justify-center">
-        <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-semibold uppercase tracking-wide">
-          Música
-        </span>
+        {ministryName && (
+          <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-semibold uppercase tracking-wide">
+            {ministryName}
+          </span>
+        )}
         <span className="px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-dark-800 text-gray-600 dark:text-gray-400 text-[10px] font-semibold uppercase tracking-wide">
           {team?.memberIds?.length || 0} Membros
         </span>
