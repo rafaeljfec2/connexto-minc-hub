@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { EditIcon } from '@/components/icons'
 import { AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/Accordion'
-import { Schedule, Team, Ministry } from '@minc-hub/shared/types'
+import { Schedule, Team, Ministry, Service } from '@minc-hub/shared/types'
 import { formatDate } from '@minc-hub/shared/utils'
 import { getDayLabel } from '@/lib/constants'
 import { ScheduleCard } from './ScheduleCard'
@@ -26,6 +26,7 @@ interface ScheduleGroupItemProps {
   group: GroupedSchedule
   teams: Team[]
   ministries: Ministry[]
+  services: Service[]
   onEdit: (s: Schedule) => void
   onDelete: (id: string) => void
 }
@@ -34,9 +35,23 @@ export function ScheduleGroupItem({
   group,
   teams,
   ministries,
+  services,
   onEdit,
   onDelete,
 }: ScheduleGroupItemProps) {
+  // Group schedules by service within the day
+  const schedulesByService = group.schedules.reduce(
+    (acc, schedule) => {
+      const serviceId = schedule.serviceId
+      if (!acc[serviceId]) {
+        acc[serviceId] = []
+      }
+      acc[serviceId].push(schedule)
+      return acc
+    },
+    {} as Record<string, Schedule[]>
+  )
+
   return (
     <AccordionItem value={group.key}>
       <AccordionTrigger>
@@ -51,37 +66,63 @@ export function ScheduleGroupItem({
               </span>
             </div>
             <span className="text-sm text-dark-600 dark:text-dark-300">
-              {group.serviceName} - {group.serviceTime}
+              {Object.keys(schedulesByService).length}{' '}
+              {Object.keys(schedulesByService).length === 1 ? 'culto' : 'cultos'}
             </span>
-          </div>
-          <div>
-            <Button
-              variant="action-edit"
-              size="sm"
-              onClick={e => {
-                e.preventDefault()
-                e.stopPropagation()
-                if (group.schedules.length > 0) {
-                  onEdit(group.schedules[0])
-                }
-              }}
-            >
-              <EditIcon className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </AccordionTrigger>
       <AccordionContent>
-        <div className="space-y-2">
-          {group.schedules.map(schedule => (
-            <ScheduleCard
-              key={schedule.id}
-              schedule={schedule}
-              teams={teams}
-              ministries={ministries}
-              onDelete={onDelete}
-            />
-          ))}
+        <div className="space-y-4">
+          {Object.entries(schedulesByService).map(([serviceId, schedules]) => {
+            const service = services.find(s => s.id === serviceId)
+            const serviceName = service?.name ?? 'Culto'
+            const serviceTime = service?.time ?? ''
+
+            return (
+              <div key={serviceId} className="space-y-2">
+                {/* Service header */}
+                <div className="flex items-center justify-between px-3 py-2 bg-dark-50 dark:bg-dark-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-sm text-dark-900 dark:text-dark-50">
+                      {serviceName}
+                    </span>
+                    {serviceTime && (
+                      <span className="text-xs text-dark-600 dark:text-dark-400">
+                        {serviceTime}
+                      </span>
+                    )}
+                  </div>
+                  <Button
+                    variant="action-edit"
+                    size="sm"
+                    onClick={e => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      if (schedules.length > 0) {
+                        onEdit(schedules[0])
+                      }
+                    }}
+                  >
+                    <EditIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Schedule cards for this service */}
+                <div className="space-y-2 pl-2">
+                  {schedules.map(schedule => (
+                    <ScheduleCard
+                      key={schedule.id}
+                      schedule={schedule}
+                      teams={teams}
+                      ministries={ministries}
+                      onDelete={onDelete}
+                    />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </AccordionContent>
     </AccordionItem>

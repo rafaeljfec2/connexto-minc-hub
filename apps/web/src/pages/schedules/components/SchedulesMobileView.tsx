@@ -1,7 +1,7 @@
 import { PlusIcon } from '@/components/icons'
 import { MonthNavigator } from '@/components/ui/MonthNavigator'
 import { GroupedSchedule } from '@/components/schedules/ScheduleGroupItem'
-import type { Team, Ministry, Schedule } from '@minc-hub/shared/types'
+import type { Team, Ministry, Schedule, Service } from '@minc-hub/shared/types'
 import { SchedulesSearchBar } from './SchedulesSearchBar'
 import { SchedulesMobileListContent } from './SchedulesMobileListContent'
 
@@ -10,6 +10,7 @@ interface SchedulesMobileViewProps {
   readonly isLoading: boolean
   readonly teams: Team[]
   readonly ministries: Ministry[]
+  readonly services: Service[]
   readonly searchTerm: string
   readonly selectedMonth: number
   readonly selectedYear: number
@@ -24,6 +25,7 @@ export function SchedulesMobileView({
   isLoading,
   teams,
   ministries,
+  services,
   searchTerm,
   selectedMonth,
   selectedYear,
@@ -66,6 +68,7 @@ export function SchedulesMobileView({
           isLoading={isLoading}
           teams={teams}
           ministries={ministries}
+          services={services}
           onEdit={onEdit}
           onDelete={onDelete}
           searchTerm={searchTerm}

@@ -95,29 +95,39 @@ export default function SchedulesPage() {
     })
   }, [schedules, selectedMonth, selectedYear, searchTerm, getServiceName])
 
-  // Group Schedules
+  // Group Schedules by DAY only (multiple services per day)
   const groupedSchedules = useMemo(() => {
     const groups = new Map<string, GroupedSchedule>()
 
-    filteredSchedules.forEach(schedule => {
+    // First sort schedules by date and service time
+    const sortedSchedules = [...filteredSchedules].sort((a, b) => {
+      const dateCompare = parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime()
+      if (dateCompare !== 0) return dateCompare
+
+      // If same day, sort by service time
+      const serviceA = filteredServices.find(s => s.id === a.serviceId)
+      const serviceB = filteredServices.find(s => s.id === b.serviceId)
+      if (!serviceA?.time || !serviceB?.time) return 0
+      return serviceA.time.localeCompare(serviceB.time)
+    })
+
+    sortedSchedules.forEach(schedule => {
       const date = parseLocalDate(schedule.date)
       const dateKey = date.toISOString().split('T')[0]
-      const key = `${dateKey}-${schedule.serviceId}`
 
-      if (!groups.has(key)) {
-        const service = filteredServices.find(s => s.id === schedule.serviceId)
-        groups.set(key, {
-          key,
+      if (!groups.has(dateKey)) {
+        groups.set(dateKey, {
+          key: dateKey,
           date,
-          serviceId: schedule.serviceId,
-          serviceName: service?.name ?? 'Desconhecido',
-          serviceDay: service?.dayOfWeek ?? 0,
-          serviceTime: service?.time ?? '',
+          serviceId: '', // Not used for day grouping
+          serviceName: '', // Not used for day grouping
+          serviceDay: date.getDay(),
+          serviceTime: '', // Not used for day grouping
           schedules: [],
         })
       }
 
-      groups.get(key)?.schedules.push(schedule)
+      groups.get(dateKey)?.schedules.push(schedule)
     })
 
     return Array.from(groups.values()).sort((a, b) => a.date.getTime() - b.date.getTime())
@@ -260,6 +270,7 @@ export default function SchedulesPage() {
           isLoading={isLoading}
           teams={teams}
           ministries={ministries}
+          services={filteredServices}
           onEdit={handleOpenModal}
           onDelete={handleDeleteClick}
         />
@@ -271,6 +282,7 @@ export default function SchedulesPage() {
         isLoading={isLoading}
         teams={teams}
         ministries={ministries}
+        services={filteredServices}
         searchTerm={searchTerm}
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}

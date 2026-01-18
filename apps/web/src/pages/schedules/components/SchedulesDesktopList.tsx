@@ -1,12 +1,13 @@
 import { Accordion } from '@/components/ui/Accordion'
 import { ScheduleGroupItem, GroupedSchedule } from '@/components/schedules/ScheduleGroupItem'
-import type { Team, Ministry, Schedule } from '@minc-hub/shared/types'
+import type { Team, Ministry, Schedule, Service } from '@minc-hub/shared/types'
 
 interface SchedulesDesktopListProps {
   readonly groupedSchedules: GroupedSchedule[]
   readonly isLoading: boolean
   readonly teams: Team[]
   readonly ministries: Ministry[]
+  readonly services: Service[]
   readonly onEdit: (schedule?: Schedule) => void
   readonly onDelete: (id: string) => void
 }
@@ -16,6 +17,7 @@ export function SchedulesDesktopList({
   isLoading,
   teams,
   ministries,
+  services,
   onEdit,
   onDelete,
 }: SchedulesDesktopListProps) {
@@ -43,6 +45,7 @@ export function SchedulesDesktopList({
           group={group}
           teams={teams}
           ministries={ministries}
+          services={services}
           onEdit={onEdit}
           onDelete={onDelete}
         />
