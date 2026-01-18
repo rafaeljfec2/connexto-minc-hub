@@ -6,7 +6,6 @@ import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useMinistries } from '@/hooks/useMinistries'
 import { AxiosError } from 'axios'
-import { getCachedFetch } from './utils/fetchCache'
 
 type CreateTeam = Omit<Team, 'id' | 'createdAt' | 'updatedAt' | 'memberIds'>
 
@@ -54,29 +53,24 @@ export function useTeams(): UseTeamsReturn {
       return
     }
 
-    const cacheKey = `teams-${selectedChurch.id}-${ministryIds.length}`
+    try {
+      setIsLoading(true)
+      setError(null)
 
-    await getCachedFetch(cacheKey, async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
+      // Fetch all teams (without filter) and filter by ministryIds on frontend
+      const allTeams = await apiServices.teamsService.getAll()
 
-        // Fetch all teams (without filter) and filter by ministryIds on frontend
-        const allTeams = await apiServices.teamsService.getAll()
+      // Filter teams by ministries of the selected church
+      const filteredTeams = allTeams.filter(team => ministryIds.includes(team.ministryId))
 
-        // Filter teams by ministries of the selected church
-        const filteredTeams = allTeams.filter(team => ministryIds.includes(team.ministryId))
-
-        setTeams(filteredTeams)
-        return filteredTeams
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to fetch teams')
-        setError(error)
-        throw error
-      } finally {
-        setIsLoading(false)
-      }
-    })
+      setTeams(filteredTeams)
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch teams')
+      setError(error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChurch?.id, ministryIds.length])
 

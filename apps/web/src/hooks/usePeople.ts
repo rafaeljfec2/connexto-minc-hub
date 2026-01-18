@@ -5,7 +5,6 @@ import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { getCachedFetch } from './utils/fetchCache'
 
 function extractErrorMessage(err: unknown, defaultMessage: string): string {
   if (err instanceof AxiosError && err.response) {
@@ -46,17 +45,11 @@ export function usePeople(): UsePeopleReturn {
       return
     }
 
-    const cacheKey = `people-${selectedChurch.id}`
-
     try {
       setIsLoading(true)
       setError(null)
       // Fetch all people - filtering by ministry will be done in the UI when user selects a filter
-      const allPeople = await getCachedFetch(cacheKey, async () => {
-        return await apiServices.peopleService.getAll()
-      })
-
-      // Always update state with fetched data
+      const allPeople = await apiServices.peopleService.getAll()
       setPeople(allPeople)
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to fetch people')

@@ -4,7 +4,6 @@ import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { getCachedFetch } from './utils/fetchCache'
 import { isPublicRoute } from '@/utils/routes'
 
 type CreateChurch = Omit<Church, 'id' | 'createdAt' | 'updatedAt'>
@@ -41,27 +40,11 @@ export function useChurches(): UseChurchesReturn {
   const { showSuccess, showError } = useToast()
 
   const fetchChurches = useCallback(async (): Promise<void> => {
-    const cacheKey = 'churches-all'
-
     try {
       setIsLoading(true)
       setError(null)
-
-      const data = await getCachedFetch(
-        cacheKey,
-        async () => {
-          const fetchedData = await apiServices.churchesService.getAll()
-          return fetchedData
-        },
-        5000 // 5 seconds cache for churches (they don't change often)
-      )
-
-      // Always update state with the data, whether from cache or new fetch
-      if (data && Array.isArray(data)) {
-        setChurches(data)
-      } else {
-        setChurches([])
-      }
+      const data = await apiServices.churchesService.getAll()
+      setChurches(data)
     } catch (err) {
       console.error('Error in fetchChurches:', err)
       const error = err instanceof Error ? err : new Error('Failed to fetch churches')

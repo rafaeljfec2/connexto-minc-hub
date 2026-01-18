@@ -5,7 +5,6 @@ import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { clearCache } from './utils/fetchCache'
 
 type CreateSchedule = Omit<Schedule, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -99,11 +98,7 @@ export function useSchedules(): UseSchedulesReturn {
         setError(null)
         const newSchedule = await apiServices.schedulesService.create(data)
 
-        // Invalidate cache and refresh
-        if (selectedChurch) {
-          const cacheKey = `schedules-${selectedChurch.id}-all--`
-          clearCache(cacheKey)
-        }
+        // Refresh to get fresh data
         await fetchSchedules()
 
         showSuccess('Escala criada com sucesso!')
@@ -118,7 +113,7 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError, selectedChurch, fetchSchedules]
+    [showSuccess, showError, fetchSchedules]
   )
 
   const updateSchedule = useCallback(
@@ -128,11 +123,7 @@ export function useSchedules(): UseSchedulesReturn {
         setError(null)
         const updatedSchedule = await apiServices.schedulesService.update(id, data)
 
-        // Invalidate cache and refresh
-        if (selectedChurch) {
-          const cacheKey = `schedules-${selectedChurch.id}-all--`
-          clearCache(cacheKey)
-        }
+        // Refresh to get fresh data
         await fetchSchedules()
 
         showSuccess('Escala atualizada com sucesso!')
@@ -147,7 +138,7 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError, selectedChurch, fetchSchedules]
+    [showSuccess, showError, fetchSchedules]
   )
 
   const deleteSchedule = useCallback(
@@ -157,11 +148,7 @@ export function useSchedules(): UseSchedulesReturn {
         setError(null)
         await apiServices.schedulesService.delete(id)
 
-        // Invalidate cache and refresh
-        if (selectedChurch) {
-          const cacheKey = `schedules-${selectedChurch.id}-all--`
-          clearCache(cacheKey)
-        }
+        // Refresh to get fresh data
         await fetchSchedules()
 
         showSuccess('Escala excluída com sucesso!')
@@ -175,7 +162,7 @@ export function useSchedules(): UseSchedulesReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError, selectedChurch, fetchSchedules]
+    [showSuccess, showError, fetchSchedules]
   )
 
   const refresh = useCallback(async () => {
@@ -188,10 +175,6 @@ export function useSchedules(): UseSchedulesReturn {
       setSchedules([])
       return
     }
-
-    // Clear cache before fetching to ensure fresh data
-    const cacheKey = `schedules-${selectedChurch.id}-all--`
-    clearCache(cacheKey)
 
     // Always fetch when church changes
     fetchSchedules().catch(() => {

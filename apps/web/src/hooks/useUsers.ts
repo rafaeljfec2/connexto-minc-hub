@@ -4,7 +4,6 @@ import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { AxiosError } from 'axios'
-import { getCachedFetch } from './utils/fetchCache'
 
 type CreateUser = Omit<User, 'id' | 'createdAt' | 'updatedAt' | 'canCheckIn'> & {
   password: string
@@ -42,23 +41,11 @@ export function useUsers(): UseUsersReturn {
   const { showSuccess, showError } = useToast()
 
   const fetchUsers = useCallback(async (): Promise<void> => {
-    const cacheKey = 'users-all'
-
     try {
       setIsLoading(true)
       setError(null)
-
-      const data = await getCachedFetch(cacheKey, async () => {
-        const fetchedData = await apiServices.usersService.getAll()
-        return fetchedData
-      })
-
-      // Always update state with the data, whether from cache or new fetch
-      if (data && Array.isArray(data)) {
-        setUsers(data)
-      } else {
-        setUsers([])
-      }
+      const data = await apiServices.usersService.getAll()
+      setUsers(data)
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to fetch users')
       setError(error)

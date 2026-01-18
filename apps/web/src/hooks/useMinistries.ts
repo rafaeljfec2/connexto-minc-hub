@@ -5,7 +5,6 @@ import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { getCachedFetch } from './utils/fetchCache'
 
 type CreateMinistry = Omit<Ministry, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -46,23 +45,11 @@ export function useMinistries(): UseMinistriesReturn {
       return
     }
 
-    const cacheKey = `ministries-${selectedChurch.id}`
-
     try {
       setIsLoading(true)
       setError(null)
-
-      const data = await getCachedFetch(cacheKey, async () => {
-        const fetchedData = await apiServices.ministriesService.getAll(selectedChurch.id)
-        return fetchedData
-      })
-
-      // Always update state with the data, whether from cache or new fetch
-      if (data && Array.isArray(data)) {
-        setMinistries(data)
-      } else {
-        setMinistries([])
-      }
+      const data = await apiServices.ministriesService.getAll(selectedChurch.id)
+      setMinistries(data)
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to fetch ministries')
       setError(error)

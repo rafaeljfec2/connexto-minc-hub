@@ -5,7 +5,6 @@ import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { AxiosError } from 'axios'
-import { getCachedFetch } from './utils/fetchCache'
 
 type CreateService = Omit<Service, 'id' | 'createdAt' | 'updatedAt'>
 
@@ -46,23 +45,18 @@ export function useServices(): UseServicesReturn {
       return
     }
 
-    const cacheKey = `services-${selectedChurch.id}`
-
-    await getCachedFetch(cacheKey, async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        const data = await apiServices.servicesService.getAll(selectedChurch.id)
-        setServices(data)
-        return data
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to fetch services')
-        setError(error)
-        throw error
-      } finally {
-        setIsLoading(false)
-      }
-    })
+    try {
+      setIsLoading(true)
+      setError(null)
+      const data = await apiServices.servicesService.getAll(selectedChurch.id)
+      setServices(data)
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to fetch services')
+      setError(error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedChurch?.id])
 
