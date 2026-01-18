@@ -5,7 +5,7 @@ interface SchedulesSearchBarProps {
 
 export function SchedulesSearchBar({ value, onChange }: SchedulesSearchBarProps) {
   return (
-    <div className="px-4 pt-3 pb-2 bg-transparent dark:bg-dark-950 flex-shrink-0">
+    <div className="px-4 pb-2 bg-transparent dark:bg-dark-950 flex-shrink-0">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg
