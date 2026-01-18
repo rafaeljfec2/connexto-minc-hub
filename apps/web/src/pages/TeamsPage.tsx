@@ -98,13 +98,20 @@ export default function TeamsPage() {
       return matchesSearch && matchesMinistry
     })
 
-    return sortData(result, {
-      name: item => item.name.toLowerCase(),
+    // Sort with natural sort for name field to handle numbers correctly
+    const sorted = sortData(result, {
+      name: item => {
+        // Extract numbers and pad them for natural sorting
+        const name = item.name.toLowerCase()
+        return name.replace(/\d+/g, match => match.padStart(10, '0'))
+      },
       ministry: item => getMinistryName(item.ministryId).toLowerCase(),
       description: item => (item.description || '').toLowerCase(),
       members: item => item.memberIds?.length ?? 0,
       status: item => (item.isActive ? 1 : 0),
     })
+
+    return sorted
   }, [teams, searchTerm, selectedMinistryFilter, sortData, getMinistryName])
 
   const renderHeader = (key: string, label: string) => (

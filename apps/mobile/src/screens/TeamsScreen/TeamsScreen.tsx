@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Input, Select, Checkbox, MultiSelect, CrudScreen } from '@/components'
 import { Team, Ministry } from '@minc-hub/shared/types'
 import { MOCK_TEAMS, MOCK_MINISTRIES, MOCK_PEOPLE } from '@/constants/mockData'
@@ -30,11 +30,26 @@ export default function TeamsScreen() {
     isActive: true,
   })
 
-  const { filteredData, refreshing, handleRefresh } = useListScreen({
+  const { filteredData: rawFilteredData, refreshing, handleRefresh } = useListScreen({
     data: teams,
     searchFields: ['name', 'description'],
     searchTerm,
   })
+
+  // Sort teams with natural sort to handle numbers correctly (EQUIPE 1, 2, 10, etc.)
+  const filteredData = useMemo(() => {
+    return [...rawFilteredData].sort((a, b) => {
+      const nameA = a.name.toLowerCase()
+      const nameB = b.name.toLowerCase()
+
+      // Extract numbers and pad them for natural sorting
+      const padNumbers = (str: string) => str.replace(/\d+/g, match => match.padStart(10, '0'))
+      const paddedA = padNumbers(nameA)
+      const paddedB = padNumbers(nameB)
+
+      return paddedA.localeCompare(paddedB)
+    })
+  }, [rawFilteredData])
 
   function getMinistry(team: Team): Ministry | undefined {
     return ministries.find(m => m.id === team.ministryId)

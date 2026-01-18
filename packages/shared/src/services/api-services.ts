@@ -72,18 +72,29 @@ export function createApiServices(api: AxiosInstance) {
       getAll: (ministryId?: string) =>
         api
           .get<ApiResponse<Team[]>>('/teams', {
-            params: ministryId ? { ministryId } : undefined,
+            params: {
+              ...(ministryId && { ministryId }),
+              _t: Date.now(), // Timestamp para evitar cache
+            },
           })
           .then(res => extractArrayData<Team>(res.data)),
       getById: (id: string) =>
         api
-          .get<ApiResponse<Team>>(`/teams/${id}`)
+          .get<ApiResponse<Team>>(`/teams/${id}`, {
+            params: {
+              _t: Date.now(), // Timestamp para evitar cache
+            },
+          })
           .then(res => extractEntityData<Team>(res.data, 'Team not found')),
       getMembers: (id: string) =>
         api
           .get<
             ApiResponse<Array<{ id: string; teamId: string; personId: string; person: Person }>>
-          >(`/teams/${id}/members`)
+          >(`/teams/${id}/members`, {
+            params: {
+              _t: Date.now(), // Timestamp para evitar cache
+            },
+          })
           .then(res => {
             const members = extractArrayData<{
               id: string

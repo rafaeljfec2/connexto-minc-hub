@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TeamEntity } from './entities/team.entity';
@@ -9,6 +9,8 @@ import { AddTeamMemberDto } from './dto/add-team-member.dto';
 
 @Injectable()
 export class TeamsService {
+  private readonly logger = new Logger(TeamsService.name);
+
   constructor(
     @InjectRepository(TeamEntity)
     private readonly teamsRepository: Repository<TeamEntity>,
@@ -25,7 +27,7 @@ export class TeamsService {
   }
 
   async findAll(): Promise<TeamEntity[]> {
-    return this.teamsRepository
+    const teams = await this.teamsRepository
       .createQueryBuilder('team')
       .select([
         'team.id',
@@ -51,8 +53,20 @@ export class TeamsService {
       .leftJoin('team.teamMembers', 'teamMembers')
       .addSelect(['teamMembers.id', 'teamMembers.personId'])
       .where('team.deletedAt IS NULL')
-      .orderBy('team.name', 'ASC')
       .getMany();
+
+    // Sort with natural sort to handle numbers correctly (EQUIPE 1, 2, 10, etc.)
+    return teams.sort((a, b) => {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+
+      // Extract numbers and pad them for natural sorting
+      const padNumbers = (str: string) => str.replace(/\d+/g, (match) => match.padStart(10, '0'));
+      const paddedA = padNumbers(nameA);
+      const paddedB = padNumbers(nameB);
+
+      return paddedA.localeCompare(paddedB);
+    });
   }
 
   async findByMinistry(ministryId: string): Promise<TeamEntity[]> {
@@ -134,9 +148,26 @@ export class TeamsService {
   }
 
   async update(id: string, updateTeamDto: UpdateTeamDto): Promise<TeamEntity> {
-    const team = await this.findOne(id);
-    Object.assign(team, updateTeamDto);
-    return this.teamsRepository.save(team);
+    // Verify team exists
+    await this.findOne(id);
+
+    // Log the update data for debugging
+    this.logger.debug(`Updating team ${id} with data:`, updateTeamDto);
+
+    // Use update method to ensure ministryId is properly updated in database
+    // This is important because Object.assign might not trigger TypeORM change detection for relations
+    await this.teamsRepository.update(id, updateTeamDto);
+
+    // Log after update
+    this.logger.debug(`Team updated in database`);
+
+    // Reload from database to ensure all relationships are up to date
+    const reloadedTeam = await this.findOne(id);
+
+    // Log after reload
+    this.logger.debug(`Reloaded team ministryId: ${reloadedTeam.ministryId}`);
+
+    return reloadedTeam;
   }
 
   async remove(id: string): Promise<void> {

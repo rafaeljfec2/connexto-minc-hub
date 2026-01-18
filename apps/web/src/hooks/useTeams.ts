@@ -72,7 +72,7 @@ export function useTeams(): UseTeamsReturn {
       setIsLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedChurch?.id, ministryIds.length])
+  }, [selectedChurch?.id, ministryIds.join(',')])
 
   const getTeamById = useCallback(async (id: string): Promise<Team | null> => {
     try {
@@ -134,8 +134,21 @@ export function useTeams(): UseTeamsReturn {
           memberIds?: string[]
           churchId?: string
         }
+
         const updatedTeam = await apiServices.teamsService.update(id, cleanData)
+
+        // Update local state immediately with the updated team
         setTeams(prev => prev.map(team => (team.id === id ? updatedTeam : team)))
+
+        // Small delay to ensure backend has persisted the changes
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Refresh teams list to ensure we have the latest data from server
+        // This is important when ministryId changes, as the team might move to a different ministry
+        if (selectedChurch) {
+          await fetchTeams()
+        }
+
         showSuccess('Equipe atualizada com sucesso!')
         return updatedTeam
       } catch (err) {
@@ -148,7 +161,7 @@ export function useTeams(): UseTeamsReturn {
         setIsLoading(false)
       }
     },
-    [showSuccess, showError]
+    [showSuccess, showError, fetchTeams, selectedChurch]
   )
 
   const deleteTeam = useCallback(
