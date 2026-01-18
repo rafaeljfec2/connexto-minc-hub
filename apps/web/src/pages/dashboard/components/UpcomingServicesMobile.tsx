@@ -22,13 +22,44 @@ export function UpcomingServicesMobile({
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const upcomingSchedules = schedules
-    .filter(schedule => {
-      const scheduleDate = parseLocalDate(schedule.date)
-      return scheduleDate >= new Date(new Date().setHours(0, 0, 0, 0))
-    })
-    .sort((a, b) => parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime())
-    .slice(0, 5)
+  const upcomingSchedules = (() => {
+    const now = new Date()
+
+    return schedules
+      .map(schedule => {
+        const service = services.find(s => s.id === schedule.serviceId)
+        return { schedule, service }
+      })
+      .filter(({ schedule, service }) => {
+        if (!service) return false
+
+        const scheduleDate = parseLocalDate(schedule.date)
+
+        // Combine date with service time to create full datetime
+        const [hours, minutes] = service.time ? service.time.split(':').map(Number) : [0, 0]
+        const scheduleDateTime = new Date(scheduleDate)
+        scheduleDateTime.setHours(hours, minutes, 0, 0)
+
+        // Only include schedules that haven't happened yet
+        return scheduleDateTime > now
+      })
+      .sort((a, b) => {
+        const dateA = parseLocalDate(a.schedule.date)
+        const dateB = parseLocalDate(b.schedule.date)
+        const timeA = a.service?.time ? a.service.time.split(':').map(Number) : [0, 0]
+        const timeB = b.service?.time ? b.service.time.split(':').map(Number) : [0, 0]
+
+        const dateTimeA = new Date(dateA)
+        dateTimeA.setHours(timeA[0], timeA[1], 0, 0)
+
+        const dateTimeB = new Date(dateB)
+        dateTimeB.setHours(timeB[0], timeB[1], 0, 0)
+
+        return dateTimeA.getTime() - dateTimeB.getTime()
+      })
+      .map(({ schedule }) => schedule)
+      .slice(0, 5)
+  })()
 
   if (upcomingSchedules.length === 0) {
     return null
