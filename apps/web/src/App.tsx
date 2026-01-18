@@ -6,11 +6,10 @@ import { ToastProvider } from '@/contexts/ToastContext'
 import { ChurchProvider } from '@/contexts/ChurchContext'
 import { ToastContainer } from '@/components/ui/ToastContainer'
 import { ProtectedRouteWrapper } from '@/components/routing/ProtectedRouteWrapper'
-// import LoginPage from '@/pages/LoginPage' // Converted to lazy
+import { ScrollToTop } from '@/components/routing/ScrollToTop'
 import { protectedRoutes, publicRoutes } from './navigator/routes'
 import { ROUTES } from './navigator/routes.constants'
-
-import { ScrollToTop } from '@/components/routing/ScrollToTop'
+import type { RouteConfig } from './navigator/routes.types'
 
 const LoginPage = lazy(() => import('@/pages/LoginPage'))
 
@@ -19,6 +18,36 @@ const PageLoader = () => (
     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
   </div>
 )
+
+function renderPublicRoute(route: RouteConfig) {
+  return (
+    <Route
+      key={route.path}
+      path={route.path}
+      element={
+        <Suspense fallback={<PageLoader />}>
+          <route.component />
+        </Suspense>
+      }
+    />
+  )
+}
+
+function renderProtectedRoute(route: RouteConfig) {
+  return (
+    <Route
+      key={route.path}
+      path={route.path}
+      element={
+        <ProtectedRouteWrapper allowedRoles={route.allowedRoles}>
+          <Suspense fallback={<PageLoader />}>
+            <route.component />
+          </Suspense>
+        </ProtectedRouteWrapper>
+      }
+    />
+  )
+}
 
 function App() {
   return (
@@ -36,30 +65,8 @@ function App() {
                   </Suspense>
                 }
               />
-              {publicRoutes.map(route => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <route.component />
-                    </Suspense>
-                  }
-                />
-              ))}
-              {protectedRoutes.map(route => (
-                <Route
-                  key={route.path}
-                  path={route.path}
-                  element={
-                    <ProtectedRouteWrapper allowedRoles={route.allowedRoles}>
-                      <Suspense fallback={<PageLoader />}>
-                        <route.component />
-                      </Suspense>
-                    </ProtectedRouteWrapper>
-                  }
-                />
-              ))}
+              {publicRoutes.map(renderPublicRoute)}
+              {protectedRoutes.map(renderProtectedRoute)}
               <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
             </Routes>
             <ToastContainer />

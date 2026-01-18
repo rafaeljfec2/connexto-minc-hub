@@ -57,7 +57,7 @@ export class CheckinService {
    * - User is linked to a person
    * - Person belongs to at least one active team (from either relationship)
    * - There is an active schedule for the person's teams on the target date
-   * - Check-in time is within the allowed window (30 minutes before service)
+   * - Check-in time is within the allowed window (1 hour before service, 1h30 after service start)
    * - Person has not already checked in for this schedule
    */
   async generateQrCode(
@@ -110,7 +110,7 @@ export class CheckinService {
       throw new NotFoundException('Service not found');
     }
 
-    // Validate check-in time (30 minutes before service)
+    // Validate check-in time (1 hour before service, 1h30 after service start)
     // Use schedule.date from DB (it's already a Date object)
     const timeValidation = validateCheckInTime(service, schedule.date);
     if (!timeValidation.isValid) {
@@ -140,7 +140,7 @@ export class CheckinService {
 
     const qrCode = JSON.stringify(qrCodeData);
 
-    // QR Code expires at check-in close time (1h after service start)
+    // QR Code expires at check-in close time (1h30 after service start)
     const expiresAt = timeValidation.checkInCloseTime;
 
     return {
@@ -211,7 +211,7 @@ export class CheckinService {
       throw new BadRequestException('Person already checked in for this schedule');
     }
 
-    // Validate check-in time (30 minutes before service)
+    // Validate check-in time (1 hour before service, 1h30 after service start)
     const timeValidation = validateCheckInTime(service, schedule.date);
     if (!timeValidation.isValid) {
       throw new ForbiddenException(timeValidation.errorMessage);
@@ -412,7 +412,7 @@ export class CheckinService {
       throw new BadRequestException('Invalid QR Code data structure');
     }
 
-    // Validate timestamp (QR Code expires after 1 hour)
+    // Validate timestamp (QR Code expires after check-in window closes)
     if (isQrCodeExpired(qrCodeData.timestamp)) {
       throw new BadRequestException('QR Code has expired');
     }

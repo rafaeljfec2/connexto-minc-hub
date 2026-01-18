@@ -1,9 +1,9 @@
 import { ServiceEntity } from '../../services/entities/service.entity';
 
 // Constants for check-in time windows
-export const CHECKIN_OPEN_MINUTES_BEFORE = 30;
-export const CHECKIN_TOLERANCE_MINUTES_AFTER = 60; // 1 hour tolerance
-export const QR_CODE_EXPIRATION_MS = 3 * 60 * 60 * 1000; // 3 hours (covers 30m before + 1h after window)
+export const CHECKIN_OPEN_MINUTES_BEFORE = 60; // 1 hour before service
+export const CHECKIN_TOLERANCE_MINUTES_AFTER = 90; // 1 hour 30 minutes after service start
+export const QR_CODE_EXPIRATION_MS = 3 * 60 * 60 * 1000; // 3 hours (covers 1h before + 1h30m after window)
 
 export interface CheckInTimeValidation {
   isValid: boolean;
@@ -34,8 +34,8 @@ function getServiceDateTime(scheduleDate: Date | string, timeString: string): Da
 
 /**
  * Validates if check-in is allowed based on service time
- * Check-in opens 30 minutes before service time
- * Check-in closes 1 hour after service start time (allows late arrivals)
+ * Check-in opens 1 hour before service time
+ * Check-in closes 1 hour 30 minutes after service start time (allows late arrivals)
  */
 export function validateCheckInTime(
   service: ServiceEntity,
