@@ -98,13 +98,17 @@ export class SchedulesService {
   }
 
   async findAll(): Promise<ScheduleEntity[]> {
-    return this.getBaseQueryBuilder().orderBy('schedule.date', 'DESC').getMany();
+    return this.getBaseQueryBuilder()
+      .orderBy('schedule.date', 'ASC')
+      .addOrderBy('service.time', 'ASC')
+      .getMany();
   }
 
   async findByService(serviceId: string): Promise<ScheduleEntity[]> {
     return this.getBaseQueryBuilder()
       .andWhere('schedule.serviceId = :serviceId', { serviceId })
-      .orderBy('schedule.date', 'DESC')
+      .orderBy('schedule.date', 'ASC')
+      .addOrderBy('service.time', 'ASC')
       .getMany();
   }
 
@@ -112,7 +116,8 @@ export class SchedulesService {
     return this.getBaseQueryBuilder()
       .andWhere('schedule.date >= :startDate', { startDate })
       .andWhere('schedule.date <= :endDate', { endDate })
-      .orderBy('schedule.date', 'DESC')
+      .orderBy('schedule.date', 'ASC')
+      .addOrderBy('service.time', 'ASC')
       .getMany();
   }
 
