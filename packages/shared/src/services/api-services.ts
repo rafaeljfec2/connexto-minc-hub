@@ -167,6 +167,10 @@ export function createApiServices(api: AxiosInstance) {
             },
           })
           .then(res => extractEntityData<Team>(res.data, 'Team not found')),
+      removeMember: (teamId: string, personId: string) =>
+        api.delete<ApiResponse<void>>(`/teams/${teamId}/members/${personId}`).then(() => {
+          // Delete doesn't return data
+        }),
       getMembers: (id: string) =>
         api
           .get<
