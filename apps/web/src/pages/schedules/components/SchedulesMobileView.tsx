@@ -38,9 +38,8 @@ export function SchedulesMobileView({
     <div className="lg:hidden fixed top-[calc(4.5rem+env(safe-area-inset-top,0px))] bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] left-0 right-0 flex flex-col overflow-hidden bg-transparent dark:bg-dark-950">
       <div className="bg-transparent dark:bg-dark-950 flex-shrink-0 border-b border-dark-200 dark:border-dark-800">
         <SchedulesSearchBar value={searchTerm} onChange={onSearchChange} />
-
         {/* Header Section with Title and New Button */}
-        <div className="px-4 py-3 border-t border-dark-200 dark:border-dark-800 flex items-center justify-between">
+        <div className="px-4 py-2 border-t border-dark-200 dark:border-dark-800 flex items-center justify-between">
           <h2 className="text-base font-bold text-dark-900 dark:text-dark-50">Escalas</h2>
           <button
             onClick={() => onEdit()}
@@ -50,9 +49,8 @@ export function SchedulesMobileView({
             Nova
           </button>
         </div>
-
-        {/* Month Navigator - behaving like the filters in Teams view */}
-        <div className="px-4 pb-3">
+        {/* Month Navigator */}
+        <div className="px-4 pb-2">
           <MonthNavigator
             month={selectedMonth.toString().padStart(2, '0')}
             year={selectedYear.toString()}

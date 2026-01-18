@@ -5,7 +5,7 @@ interface SchedulesSearchBarProps {
 
 export function SchedulesSearchBar({ value, onChange }: SchedulesSearchBarProps) {
   return (
-    <div className="px-4 pt-4 pb-3 bg-transparent dark:bg-dark-950 flex-shrink-0 mb-3">
+    <div className="px-4 pt-3 pb-2 bg-transparent dark:bg-dark-950 flex-shrink-0">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <svg
@@ -27,7 +27,7 @@ export function SchedulesSearchBar({ value, onChange }: SchedulesSearchBarProps)
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder="Buscar por culto ou data..."
-          className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 rounded-lg text-sm text-dark-900 dark:text-dark-50 placeholder-dark-400 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full pl-10 pr-4 py-2 bg-white dark:bg-dark-900 border border-dark-200 dark:border-dark-800 rounded-lg text-sm text-dark-900 dark:text-dark-50 placeholder-dark-400 dark:placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
     </div>
