@@ -1,6 +1,6 @@
-import { Accordion } from '@/components/ui/Accordion'
-import { ScheduleGroupItem, GroupedSchedule } from '@/components/schedules/ScheduleGroupItem'
 import type { Team, Ministry, Schedule, Service } from '@minc-hub/shared/types'
+import { ScheduleListItem } from './ScheduleListItem'
+import type { GroupedSchedule } from '@/components/schedules/ScheduleGroupItem'
 
 interface SchedulesMobileListContentProps {
   readonly groupedSchedules: GroupedSchedule[]
@@ -31,9 +31,12 @@ export function SchedulesMobileListContent({
     )
   }
 
-  if (groupedSchedules.length === 0) {
+  // Flatten all schedules from groups
+  const allSchedules = groupedSchedules.flatMap(group => group.schedules)
+
+  if (allSchedules.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center bg-white dark:bg-dark-900 rounded-lg border border-dark-200 dark:border-dark-800">
+      <div className="flex flex-col items-center justify-center p-12 text-center">
         <p className="text-dark-500 dark:text-dark-400">
           {searchTerm ? 'Nenhuma escala encontrada' : 'Nenhuma escala neste período'}
         </p>
@@ -41,22 +44,22 @@ export function SchedulesMobileListContent({
     )
   }
 
-  // Use the same structure as current desktop/default view but ensuring it looks good on mobile
   return (
-    <div className="space-y-4">
-      <Accordion className="space-y-4">
-        {groupedSchedules.map(group => (
-          <ScheduleGroupItem
-            key={group.key}
-            group={group}
+    <div className="bg-white dark:bg-dark-900 rounded-lg overflow-hidden border border-dark-200 dark:border-dark-800">
+      {allSchedules.map(schedule => {
+        const service = services.find(s => s.id === schedule.serviceId)
+        return (
+          <ScheduleListItem
+            key={schedule.id}
+            schedule={schedule}
+            service={service}
             teams={teams}
             ministries={ministries}
-            services={services}
             onEdit={onEdit}
-            onDelete={onDelete}
+            onDelete={s => onDelete(s.id)}
           />
-        ))}
-      </Accordion>
+        )
+      })}
     </div>
   )
 }
