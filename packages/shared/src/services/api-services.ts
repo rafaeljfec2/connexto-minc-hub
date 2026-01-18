@@ -45,30 +45,111 @@ function extractEntityData<T>(response: unknown, errorMessage: string): T {
   return entity
 }
 
-export function createApiServices(api: AxiosInstance) {
+/**
+ * Helper function to extract nullable entity data from ApiResponse
+ */
+function extractNullableEntityData<T>(response: unknown): T | null {
+  if (response && typeof response === 'object' && 'success' in response) {
+    const apiResponse = response as ApiResponse<T | null>
+    return apiResponse.data ?? null
+  }
+  return (response as T | null) ?? null
+}
+
+/**
+ * Creates a standard CRUD service for a given resource
+ */
+function createCrudService<T>(
+  api: AxiosInstance,
+  resourcePath: string,
+  resourceName: string,
+  options?: {
+    getAllParams?: Record<string, unknown>
+    getByIdParams?: Record<string, unknown>
+  }
+) {
   return {
-    peopleService: {
-      getAll: () =>
-        api.get<ApiResponse<Person[]>>('/persons').then(res => extractArrayData<Person>(res.data)),
-      getById: (id: string) =>
-        api
-          .get<ApiResponse<Person>>(`/persons/${id}`)
-          .then(res => extractEntityData<Person>(res.data, 'Person not found')),
-      create: (data: CreateEntity<Person>) =>
-        api
-          .post<ApiResponse<Person>>('/persons', data)
-          .then(res => extractEntityData<Person>(res.data, 'Failed to create person')),
-      update: (id: string, data: Partial<Person>) =>
-        api
-          .patch<ApiResponse<Person>>(`/persons/${id}`, data)
-          .then(res => extractEntityData<Person>(res.data, 'Failed to update person')),
-      delete: (id: string) =>
-        api.delete<ApiResponse<void>>(`/persons/${id}`).then(() => {
-          // Delete doesn't return data
-        }),
-    },
+    getAll: (params?: Record<string, unknown>) =>
+      api
+        .get<ApiResponse<T[]>>(`/${resourcePath}`, {
+          params: { ...options?.getAllParams, ...params },
+        })
+        .then(res => extractArrayData<T>(res.data)),
+    getById: (id: string, params?: Record<string, unknown>) =>
+      api
+        .get<ApiResponse<T>>(`/${resourcePath}/${id}`, {
+          params: { ...options?.getByIdParams, ...params },
+        })
+        .then(res => extractEntityData<T>(res.data, `${resourceName} not found`)),
+    create: (data: CreateEntity<T>) =>
+      api
+        .post<ApiResponse<T>>(`/${resourcePath}`, data)
+        .then(res =>
+          extractEntityData<T>(res.data, `Failed to create ${resourceName.toLowerCase()}`)
+        ),
+    update: (id: string, data: Partial<T>) =>
+      api
+        .patch<ApiResponse<T>>(`/${resourcePath}/${id}`, data)
+        .then(res =>
+          extractEntityData<T>(res.data, `Failed to update ${resourceName.toLowerCase()}`)
+        ),
+    delete: (id: string) =>
+      api.delete<ApiResponse<void>>(`/${resourcePath}/${id}`).then(() => {
+        // Delete doesn't return data
+      }),
+  }
+}
+
+/**
+ * Extracts teamIds from scheduleTeams relationship
+ */
+function extractTeamIdsFromSchedule(schedule: Schedule): Schedule {
+  if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
+    return {
+      ...schedule,
+      teamIds: (schedule as any).scheduleTeams
+        .map((st: any) => st.teamId ?? st.team?.id)
+        .filter(Boolean),
+    }
+  }
+  return schedule
+}
+
+/**
+ * Transforms schedule response to include teamIds
+ */
+function transformScheduleResponse<T extends Schedule>(response: T): T {
+  return extractTeamIdsFromSchedule(response) as T
+}
+
+/**
+ * Transforms array of schedules to include teamIds
+ */
+function transformScheduleArrayResponse<T extends Schedule>(schedules: T[]): T[] {
+  return schedules.map(transformScheduleResponse)
+}
+
+export function createApiServices(api: AxiosInstance) {
+  // Standard CRUD services
+  const peopleService = createCrudService<Person>(api, 'persons', 'Person')
+  const churchesService = createCrudService<Church>(api, 'churches', 'Church')
+  const usersService = createCrudService<User>(api, 'users', 'User')
+
+  // Services with query parameters
+  const servicesService = createCrudService<Service>(api, 'services', 'Service')
+  const ministriesService = createCrudService<Ministry>(api, 'ministries', 'Ministry')
+
+  // Teams service with cache busting
+  const teamsServiceBase = createCrudService<Team>(api, 'teams', 'Team', {
+    getAllParams: { _t: Date.now() },
+    getByIdParams: { _t: Date.now() },
+  })
+
+  return {
+    peopleService,
 
     teamsService: {
+      ...teamsServiceBase,
       getAll: (ministryId?: string) =>
         api
           .get<ApiResponse<Team[]>>('/teams', {
@@ -102,7 +183,6 @@ export function createApiServices(api: AxiosInstance) {
               personId: string
               person: Person
             }>(res.data)
-            // Retornar array de personIds
             return members.map(m => m.personId)
           }),
       create: (data: Omit<CreateEntity<Team>, 'memberIds'>) =>
@@ -113,35 +193,16 @@ export function createApiServices(api: AxiosInstance) {
         api
           .patch<ApiResponse<Team>>(`/teams/${id}`, data)
           .then(res => extractEntityData<Team>(res.data, 'Failed to update team')),
-      delete: (id: string) =>
-        api.delete<ApiResponse<void>>(`/teams/${id}`).then(() => {
-          // Delete doesn't return data
-        }),
     },
 
     servicesService: {
+      ...servicesService,
       getAll: (churchId?: string) =>
         api
           .get<ApiResponse<Service[]>>('/services', {
             params: churchId ? { churchId } : undefined,
           })
           .then(res => extractArrayData<Service>(res.data)),
-      getById: (id: string) =>
-        api
-          .get<ApiResponse<Service>>(`/services/${id}`)
-          .then(res => extractEntityData<Service>(res.data, 'Service not found')),
-      create: (data: CreateEntity<Service>) =>
-        api
-          .post<ApiResponse<Service>>('/services', data)
-          .then(res => extractEntityData<Service>(res.data, 'Failed to create service')),
-      update: (id: string, data: Partial<Service>) =>
-        api
-          .patch<ApiResponse<Service>>(`/services/${id}`, data)
-          .then(res => extractEntityData<Service>(res.data, 'Failed to update service')),
-      delete: (id: string) =>
-        api.delete<ApiResponse<void>>(`/services/${id}`).then(() => {
-          // Delete doesn't return data
-        }),
     },
 
     schedulesService: {
@@ -156,60 +217,22 @@ export function createApiServices(api: AxiosInstance) {
           })
           .then(res => {
             const schedules = extractArrayData<Schedule>(res.data)
-            // Extract teamIds from scheduleTeams relationship if present
-            return schedules.map(schedule => {
-              if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
-                return {
-                  ...schedule,
-                  teamIds: (schedule as any).scheduleTeams
-                    .map((st: any) => st.teamId || st.team?.id)
-                    .filter(Boolean),
-                }
-              }
-              return schedule
-            })
+            return transformScheduleArrayResponse(schedules)
           }),
       getById: (id: string) =>
         api.get<ApiResponse<Schedule>>(`/schedules/${id}`).then(res => {
           const schedule = extractEntityData<Schedule>(res.data, 'Schedule not found')
-          // Extract teamIds from scheduleTeams relationship if present
-          if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
-            return {
-              ...schedule,
-              teamIds: (schedule as any).scheduleTeams
-                .map((st: any) => st.teamId || st.team?.id)
-                .filter(Boolean),
-            }
-          }
-          return schedule
+          return transformScheduleResponse(schedule)
         }),
       create: (data: CreateEntity<Schedule>) =>
         api.post<ApiResponse<Schedule>>('/schedules', data).then(res => {
           const schedule = extractEntityData<Schedule>(res.data, 'Failed to create schedule')
-          // Extract teamIds from scheduleTeams relationship if present
-          if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
-            return {
-              ...schedule,
-              teamIds: (schedule as any).scheduleTeams
-                .map((st: any) => st.teamId || st.team?.id)
-                .filter(Boolean),
-            }
-          }
-          return schedule
+          return transformScheduleResponse(schedule)
         }),
       update: (id: string, data: Partial<Schedule>) =>
         api.patch<ApiResponse<Schedule>>(`/schedules/${id}`, data).then(res => {
           const schedule = extractEntityData<Schedule>(res.data, 'Failed to update schedule')
-          // Extract teamIds from scheduleTeams relationship if present
-          if ('scheduleTeams' in schedule && Array.isArray((schedule as any).scheduleTeams)) {
-            return {
-              ...schedule,
-              teamIds: (schedule as any).scheduleTeams
-                .map((st: any) => st.teamId || st.team?.id)
-                .filter(Boolean),
-            }
-          }
-          return schedule
+          return transformScheduleResponse(schedule)
         }),
       delete: (id: string) =>
         api.delete<ApiResponse<void>>(`/schedules/${id}`).then(() => {
@@ -235,85 +258,34 @@ export function createApiServices(api: AxiosInstance) {
     },
 
     churchesService: {
-      getAll: () =>
-        api.get<ApiResponse<Church[]>>('/churches').then(res => extractArrayData<Church>(res.data)),
-      getById: (id: string) =>
-        api
-          .get<ApiResponse<Church>>(`/churches/${id}`)
-          .then(res => extractEntityData<Church>(res.data, 'Church not found')),
-      create: (data: CreateEntity<Church>) =>
-        api
-          .post<ApiResponse<Church>>('/churches', data)
-          .then(res => extractEntityData<Church>(res.data, 'Failed to create church')),
-      update: (id: string, data: Partial<Church>) =>
-        api
-          .patch<ApiResponse<Church>>(`/churches/${id}`, data)
-          .then(res => extractEntityData<Church>(res.data, 'Church not found')),
-      delete: (id: string) =>
-        api.delete<ApiResponse<void>>(`/churches/${id}`).then(() => {
-          // Delete doesn't return data
-        }),
+      ...churchesService,
     },
 
     ministriesService: {
+      ...ministriesService,
       getAll: (churchId?: string) =>
         api
           .get<ApiResponse<Ministry[]>>('/ministries', {
             params: churchId ? { churchId } : undefined,
           })
           .then(res => extractArrayData<Ministry>(res.data)),
-      getById: (id: string) =>
-        api
-          .get<ApiResponse<Ministry>>(`/ministries/${id}`)
-          .then(res => extractEntityData<Ministry>(res.data, 'Ministry not found')),
-      create: (data: CreateEntity<Ministry>) =>
-        api
-          .post<ApiResponse<Ministry>>('/ministries', data)
-          .then(res => extractEntityData<Ministry>(res.data, 'Failed to create ministry')),
-      update: (id: string, data: Partial<Ministry>) =>
-        api
-          .patch<ApiResponse<Ministry>>(`/ministries/${id}`, data)
-          .then(res => extractEntityData<Ministry>(res.data, 'Ministry not found')),
-      delete: (id: string) =>
-        api.delete<ApiResponse<void>>(`/ministries/${id}`).then(() => {
-          // Delete doesn't return data
-        }),
     },
 
     usersService: {
-      getAll: () =>
-        api.get<ApiResponse<User[]>>('/users').then(res => extractArrayData<User>(res.data)),
-      getById: (id: string) =>
-        api
-          .get<ApiResponse<User>>(`/users/${id}`)
-          .then(res => extractEntityData<User>(res.data, 'User not found')),
+      ...usersService,
       create: (
         data: Omit<CreateEntity<User>, 'canCheckIn'> & { password: string; canCheckIn?: boolean }
       ) =>
         api
           .post<ApiResponse<User>>('/users', data)
           .then(res => extractEntityData<User>(res.data, 'Failed to create user')),
-      update: (id: string, data: Partial<User>) =>
-        api
-          .patch<ApiResponse<User>>(`/users/${id}`, data)
-          .then(res => extractEntityData<User>(res.data, 'Failed to update user')),
-      delete: (id: string) =>
-        api.delete<ApiResponse<void>>(`/users/${id}`).then(() => {
-          // Delete doesn't return data
-        }),
     },
 
     schedulePlanningService: {
       getConfig: (churchId: string) =>
         api
           .get<ApiResponse<SchedulePlanningConfig | null>>(`/schedule-planning/config/${churchId}`)
-          .then(res => {
-            if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-              const apiResponse = res.data as ApiResponse<SchedulePlanningConfig | null>
-              return apiResponse.data ?? null
-            }
-            return (res.data as SchedulePlanningConfig | null) ?? null
-          }),
+          .then(res => extractNullableEntityData<SchedulePlanningConfig>(res.data)),
       createOrUpdateConfig: (
         churchId: string,
         data: Partial<CreateEntity<SchedulePlanningConfig>>
@@ -326,13 +298,7 @@ export function createApiServices(api: AxiosInstance) {
       getTeamConfig: (teamId: string) =>
         api
           .get<ApiResponse<TeamPlanningConfig | null>>(`/schedule-planning/team/${teamId}/config`)
-          .then(res => {
-            if (res.data && typeof res.data === 'object' && 'success' in res.data) {
-              const apiResponse = res.data as ApiResponse<TeamPlanningConfig | null>
-              return apiResponse.data ?? null
-            }
-            return (res.data as TeamPlanningConfig | null) ?? null
-          }),
+          .then(res => extractNullableEntityData<TeamPlanningConfig>(res.data)),
       createOrUpdateTeamConfig: (teamId: string, data: Partial<CreateEntity<TeamPlanningConfig>>) =>
         api
           .post<ApiResponse<TeamPlanningConfig>>(`/schedule-planning/team/${teamId}/config`, data)
