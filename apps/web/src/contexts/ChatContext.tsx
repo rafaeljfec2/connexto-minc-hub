@@ -1,31 +1,54 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from './AuthContext'
+import { useChurch } from './ChurchContext'
 import { ChatWebSocketService, ChatApiService, Conversation, Message } from '@minc-hub/shared'
 import { api } from '@/lib/api'
 import { ChatContext } from '@/hooks/useChat'
+import { useConversationsQuery } from '@/hooks/queries/useConversationsQuery'
+import { useMessagesQuery } from '@/hooks/queries/useMessagesQuery'
 import { useChatConnection } from './chat-logic/useChatConnection'
 import { useChatEventHandlers } from './chat-logic/useChatEventHandlers'
 import { useChatActions } from './chat-logic/useChatActions'
 
 const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
-export function ChatProvider({ children }: { children: React.ReactNode }) {
+export function ChatProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const { user } = useAuth()
+  const { selectedChurch } = useChurch()
+  const queryClient = useQueryClient()
+
+  // React Query hooks
+  const {
+    conversations,
+    isLoading: isLoadingConversations,
+    refetch: refetchConversations,
+  } = useConversationsQuery()
 
   // State
-  const [conversations, setConversations] = useState<Conversation[]>([])
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
+
+  // Messages query for active conversation
+  const { messages, isLoading: isLoadingMessages } = useMessagesQuery(
+    activeConversation?.id ?? null
+  )
+
   const unreadCount = useMemo(() => {
     return conversations.reduce((acc, curr) => acc + (curr.unreadCount || 0), 0)
   }, [conversations])
 
-  const [isLoadingConversations, setIsLoadingConversations] = useState(false)
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false)
-
   // Pagination State
   const [hasMoreMessages, setHasMoreMessages] = useState(false)
   const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false)
+  const [dummyLoadingState, setDummyLoadingState] = useState(false)
+
+  // Wrapper para setIsLoadingMessages (usado por useChatActions)
+  const setIsLoadingMessages = useCallback(
+    (value: React.SetStateAction<boolean>) => {
+      setDummyLoadingState(typeof value === 'function' ? value(dummyLoadingState) : value)
+    },
+    [dummyLoadingState]
+  )
 
   // Refs
   const activeConversationRef = useRef(activeConversation)
@@ -44,24 +67,43 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const chatApi = useMemo(() => new ChatApiService(api), [])
   const chatSocket = useMemo(() => new ChatWebSocketService(SOCKET_URL), [])
 
-  // 3. Loaders (keep simple here)
+  // Loader para recarregar conversas (usado pelo WebSocket)
   const loadConversations = useCallback(async () => {
     if (!user) return
-    setIsLoadingConversations(true)
-    try {
-      const data = await chatApi.getConversations()
-      setConversations(data)
-    } catch (error) {
-      console.error('Failed to load conversations', error)
-    } finally {
-      setIsLoadingConversations(false)
-    }
-  }, [user, chatApi])
+    await refetchConversations()
+  }, [user, refetchConversations])
+
+  // Setters que atualizam o cache do React Query
+  const setMessages = useCallback(
+    (updater: React.SetStateAction<Message[]>) => {
+      const conversationId = activeConversationRef.current?.id
+      if (!conversationId) return
+
+      queryClient.setQueryData<Message[]>(['messages', selectedChurch?.id, conversationId], old => {
+        if (!old) return []
+        return typeof updater === 'function' ? updater(old) : updater
+      })
+    },
+    [queryClient, selectedChurch?.id]
+  )
+
+  const setConversations = useCallback(
+    (updater: React.SetStateAction<Conversation[]>) => {
+      queryClient.setQueryData<Conversation[]>(
+        ['conversations', selectedChurch?.id, user?.id],
+        old => {
+          if (!old) return []
+          return typeof updater === 'function' ? updater(old) : updater
+        }
+      )
+    },
+    [queryClient, selectedChurch?.id, user?.id]
+  )
 
   // 1. Connection Logic
   const { isConnected } = useChatConnection({ chatSocket, user })
 
-  // 2. Event Handlers
+  // 2. Event Handlers com integração React Query
   useChatEventHandlers({
     chatSocket,
     user,
@@ -72,13 +114,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setConversations,
     loadConversations,
   })
-
-  // Initial Data Load
-  useEffect(() => {
-    if (user) {
-      loadConversations()
-    }
-  }, [user, loadConversations])
 
   // 4. Actions
   const {
