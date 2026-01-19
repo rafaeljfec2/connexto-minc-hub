@@ -7,6 +7,7 @@ import { ChurchProvider } from '@/contexts/ChurchContext'
 import { ToastContainer } from '@/components/ui/ToastContainer'
 import { ProtectedRouteWrapper } from '@/components/routing/ProtectedRouteWrapper'
 import { ScrollToTop } from '@/components/routing/ScrollToTop'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { protectedRoutes, publicRoutes } from './navigator/routes'
 import { ROUTES } from './navigator/routes.constants'
 import type { RouteConfig } from './navigator/routes.types'
@@ -51,29 +52,31 @@ function renderProtectedRoute(route: RouteConfig) {
 
 function App() {
   return (
-    <ThemeProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <ChurchProvider>
-            <ScrollToTop />
-            <Routes>
-              <Route
-                path={ROUTES.LOGIN}
-                element={
-                  <Suspense fallback={<PageLoader />}>
-                    <LoginPage />
-                  </Suspense>
-                }
-              />
-              {publicRoutes.map(renderPublicRoute)}
-              {protectedRoutes.map(renderProtectedRoute)}
-              <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
-            </Routes>
-            <ToastContainer />
-          </ChurchProvider>
-        </AuthProvider>
-      </ToastProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <ChurchProvider>
+              <ScrollToTop />
+              <Routes>
+                <Route
+                  path={ROUTES.LOGIN}
+                  element={
+                    <Suspense fallback={<PageLoader />}>
+                      <LoginPage />
+                    </Suspense>
+                  }
+                />
+                {publicRoutes.map(renderPublicRoute)}
+                {protectedRoutes.map(renderProtectedRoute)}
+                <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+              </Routes>
+              <ToastContainer />
+            </ChurchProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
 
