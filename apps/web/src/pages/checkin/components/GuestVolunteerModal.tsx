@@ -19,17 +19,31 @@ export function GuestVolunteerModal({
   scheduleId: _scheduleId,
   onAdd,
   existingPersonIds,
-}: GuestVolunteerModalProps) {
+}: Readonly<GuestVolunteerModalProps>) {
   const { user } = useAuth()
   const { people, fetchPeople } = usePeople()
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
+  const [hasFetchedForModal, setHasFetchedForModal] = useState(false)
 
   useEffect(() => {
-    if (isOpen && people.length === 0) {
-      fetchPeople()
+    if (isOpen && !hasFetchedForModal) {
+      setHasFetchedForModal(true)
+      void fetchPeople()
+        .then(() => {
+          // Success - flag remains true
+        })
+        .catch(() => {
+          // Error already handled in hook - reset flag so it can retry next time modal opens
+          setHasFetchedForModal(false)
+        })
     }
-  }, [isOpen, people.length, fetchPeople])
+
+    if (!isOpen) {
+      setSelectedPersonId(null)
+      setHasFetchedForModal(false)
+    }
+  }, [isOpen, hasFetchedForModal, fetchPeople])
 
   // Filter people: same ministry, not already in schedule or guest volunteers
   const availablePeople = useMemo(() => {
@@ -67,8 +81,8 @@ export function GuestVolunteerModal({
       await onAdd(selectedPersonId)
       setSelectedPersonId(null)
       onClose()
-    } catch (error) {
-      // Error is handled by the hook
+    } catch {
+      // Error is handled by the hook - intentionally empty catch
     } finally {
       setIsAdding(false)
     }
@@ -96,7 +110,10 @@ export function GuestVolunteerModal({
         </p>
 
         <div>
-          <label className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2">
+          <label
+            htmlFor="volunteer-select"
+            className="block text-sm font-medium text-dark-700 dark:text-dark-300 mb-2"
+          >
             Voluntário
           </label>
           <ComboBox

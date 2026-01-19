@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { ServiceEntity } from '../../services/entities/service.entity';
 import { ScheduleTeamEntity } from './schedule-team.entity';
+import { ScheduleGuestVolunteerEntity } from './schedule-guest-volunteer.entity';
 import { AttendanceEntity } from '../../attendances/entities/attendance.entity';
 
 @Entity('schedules')
@@ -33,6 +34,9 @@ export class ScheduleEntity {
 
   @OneToMany(() => ScheduleTeamEntity, (scheduleTeam) => scheduleTeam.schedule)
   scheduleTeams: ScheduleTeamEntity[];
+
+  @OneToMany(() => ScheduleGuestVolunteerEntity, (guestVolunteer) => guestVolunteer.schedule)
+  guestVolunteers: ScheduleGuestVolunteerEntity[];
 
   @OneToMany(() => AttendanceEntity, (attendance) => attendance.schedule)
   attendances: AttendanceEntity[];

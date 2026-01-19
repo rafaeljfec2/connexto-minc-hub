@@ -363,14 +363,16 @@ export default function CheckinPage() {
         </div>
       </main>
 
-      {/* Guest Volunteer Modal */}
-      <GuestVolunteerModal
-        isOpen={guestModal.isOpen}
-        onClose={guestModal.close}
-        scheduleId={qrCodeData?.schedule?.id ?? ''}
-        onAdd={handleAddGuestVolunteer}
-        existingPersonIds={existingPersonIds}
-      />
+      {/* Guest Volunteer Modal - Only render when open to avoid unnecessary API calls */}
+      {guestModal.isOpen && (
+        <GuestVolunteerModal
+          isOpen={guestModal.isOpen}
+          onClose={guestModal.close}
+          scheduleId={qrCodeData?.schedule?.id ?? ''}
+          onAdd={handleAddGuestVolunteer}
+          existingPersonIds={existingPersonIds}
+        />
+      )}
     </>
   )
 }
