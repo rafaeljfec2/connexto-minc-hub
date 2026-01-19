@@ -97,12 +97,47 @@ export class ActivationService {
       return;
     }
 
-    if (user.role === UserRole.LIDER_DE_TIME) {
+    // Para SERVO, verificar se é líder de time ou equipe através das entidades
+    if (user.role === UserRole.SERVO) {
+      await this.validateServoPermission(user, scopeType, scopeId);
+      return;
+    }
+
+    throw new ForbiddenException('Você não tem permissão para criar códigos de acesso');
+  }
+
+  /**
+   * Valida permissão para SERVO (verifica se é líder de time ou equipe)
+   */
+  private async validateServoPermission(
+    user: UserEntity,
+    scopeType: AccessCodeScopeType,
+    scopeId: string,
+  ): Promise<void> {
+    // Verificar se é líder de time através de TimeMember
+    const isTimeLeader = await this.personRepository.manager
+      .createQueryBuilder()
+      .select('1')
+      .from('time_members', 'tm')
+      .where('tm.person_id = :personId', { personId: user.personId })
+      .andWhere('tm.role = :role', { role: 'lider_de_time' })
+      .getRawOne();
+
+    if (isTimeLeader) {
       await this.validateLeaderDeTimePermission(user, scopeType, scopeId);
       return;
     }
 
-    if (user.role === UserRole.LIDER_DE_EQUIPE) {
+    // Verificar se é líder de equipe através de TeamMember
+    const isTeamLeader = await this.personRepository.manager
+      .createQueryBuilder()
+      .select('1')
+      .from('team_members', 'tm')
+      .where('tm.person_id = :personId', { personId: user.personId })
+      .andWhere('tm.role = :role', { role: 'lider_de_equipe' })
+      .getRawOne();
+
+    if (isTeamLeader) {
       await this.validateLeaderDeEquipePermission(user, scopeType, scopeId);
       return;
     }
@@ -146,26 +181,44 @@ export class ActivationService {
       throw new NotFoundException('Ministério não encontrado');
     }
 
-    const userTeams = await this.teamRepository.find({
-      where: { leaderId: user.id, ministryId, deletedAt: IsNull() },
-    });
-    if (userTeams.length === 0) {
+    // Verificar se usuário é líder de time deste ministério
+    const isTimeLeader = await this.personRepository.manager
+      .createQueryBuilder()
+      .select('1')
+      .from('time_members', 'tm')
+      .where('tm.person_id = :personId', { personId: user.personId })
+      .andWhere('tm.ministry_id = :ministryId', { ministryId })
+      .andWhere('tm.role = :role', { role: 'lider_de_time' })
+      .getRawOne();
+
+    if (!isTimeLeader) {
       throw new ForbiddenException('Você não tem permissão para criar código para este ministério');
     }
   }
 
   /**
-   * Valida acesso de líder a time
+   * Valida acesso de líder a equipe
    */
   private async validateTeamAccessForLeader(user: UserEntity, teamId: string): Promise<void> {
     const team = await this.teamRepository.findOne({
       where: { id: teamId, deletedAt: IsNull() },
     });
     if (!team) {
-      throw new NotFoundException('Time não encontrado');
+      throw new NotFoundException('Equipe não encontrada');
     }
-    if (team.leaderId !== user.id) {
-      throw new ForbiddenException('Você não tem permissão para criar código para este time');
+
+    // Verificar se usuário é líder desta equipe
+    const isTeamLeader = await this.personRepository.manager
+      .createQueryBuilder()
+      .select('1')
+      .from('team_members', 'tm')
+      .where('tm.person_id = :personId', { personId: user.personId })
+      .andWhere('tm.team_id = :teamId', { teamId })
+      .andWhere('tm.role = :role', { role: 'lider_de_equipe' })
+      .getRawOne();
+
+    if (!isTeamLeader) {
+      throw new ForbiddenException('Você não tem permissão para criar código para esta equipe');
     }
   }
 

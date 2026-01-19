@@ -14,32 +14,32 @@ const navItems: NavItem[] = [
   {
     label: 'Dashboard',
     href: '/dashboard',
-    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
+    roles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     label: 'Voluntários',
     href: '/people',
-    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     label: 'Equipes',
     href: '/teams',
-    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     label: 'Cultos',
     href: '/services',
-    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+    roles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     label: 'Escalas',
     href: '/schedules',
-    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     label: 'Comunicação',
     href: '/communication',
-    roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    roles: [UserRole.PASTOR, UserRole.SERVO],
   },
   { label: 'Igrejas', href: '/churches', roles: [UserRole.PASTOR] },
 ]

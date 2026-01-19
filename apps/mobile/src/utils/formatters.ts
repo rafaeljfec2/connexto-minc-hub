@@ -3,8 +3,7 @@ import { UserRole, ServiceType } from '@minc-hub/shared/types'
 export function getRoleLabel(role: UserRole | string): string {
   const roleMap: Record<string, string> = {
     [UserRole.ADMIN]: 'Administrador',
-    [UserRole.LIDER_DE_EQUIPE]: 'Líder de Equipe',
-    [UserRole.LIDER_DE_TIME]: 'Líder de Time',
+    [UserRole.PASTOR]: 'Pastor',
     [UserRole.SERVO]: 'Servo',
   }
   return roleMap[role] ?? 'Desconhecido'

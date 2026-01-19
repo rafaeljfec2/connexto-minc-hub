@@ -26,8 +26,7 @@ export function UsersListItem({ user, personName, onEdit, onDelete }: UsersListI
 
   let badgeVariant: 'success' | 'warning' | 'error' | 'info' | 'default' = 'default'
   if (user.role === UserRole.ADMIN) badgeVariant = 'error'
-  else if (user.role === UserRole.LIDER_DE_TIME || user.role === UserRole.LIDER_DE_EQUIPE)
-    badgeVariant = 'info'
+  // Liderança agora é contextual (TimeMember/TeamMember), não UserRole
   else if (user.role === UserRole.PASTOR) badgeVariant = 'warning'
 
   return (

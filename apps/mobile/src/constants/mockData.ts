@@ -36,7 +36,7 @@ export const MOCK_USERS: User[] = [
     id: '2',
     email: 'coord@minchteams.com',
     name: 'Coordenador Teste',
-    role: UserRole.LIDER_DE_TIME,
+    role: UserRole.SERVO,
     personId: '1',
     canCheckIn: true,
     createdAt: new Date().toISOString(),

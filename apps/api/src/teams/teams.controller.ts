@@ -15,6 +15,7 @@ import { TeamsService } from './teams.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { AddTeamMemberDto } from './dto/add-team-member.dto';
+import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TeamEntity } from './entities/team.entity';
 import { TeamMemberEntity } from './entities/team-member.entity';
@@ -85,6 +86,18 @@ export class TeamsController {
   @ApiResponse({ status: 200, description: 'List of members', type: [TeamMemberEntity] })
   getMembers(@Param('id', ParseUUIDPipe) teamId: string): Promise<TeamMemberEntity[]> {
     return this.teamsService.getMembers(teamId);
+  }
+
+  @Patch(':id/members/:personId')
+  @ApiOperation({ summary: 'Update team member role or type' })
+  @ApiResponse({ status: 200, description: 'Member updated successfully', type: TeamMemberEntity })
+  @ApiResponse({ status: 404, description: 'Person is not a member of the team' })
+  updateMemberRole(
+    @Param('id', ParseUUIDPipe) teamId: string,
+    @Param('personId', ParseUUIDPipe) personId: string,
+    @Body() updateDto: UpdateTeamMemberDto,
+  ): Promise<TeamMemberEntity> {
+    return this.teamsService.updateMemberRole(teamId, personId, updateDto);
   }
 
   @Delete(':id/members/:personId')

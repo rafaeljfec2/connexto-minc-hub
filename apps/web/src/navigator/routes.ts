@@ -35,62 +35,47 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/people',
     component: PeoplePage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/people/new',
     component: PersonFormPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/people/:id/edit',
     component: PersonFormPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/teams/:id',
     component: TeamDetailsPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/teams',
     component: TeamsPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/services',
     component: ServicesPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/schedules',
     component: SchedulesPage,
-    allowedRoles: [
-      UserRole.PASTOR,
-      UserRole.LIDER_DE_TIME,
-      UserRole.LIDER_DE_EQUIPE,
-      UserRole.SERVO,
-    ],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/communication',
     component: CommunicationPage,
-    allowedRoles: [
-      UserRole.PASTOR,
-      UserRole.LIDER_DE_TIME,
-      UserRole.LIDER_DE_EQUIPE,
-      UserRole.SERVO,
-    ],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/communication/new',
     component: NewMessagePage,
-    allowedRoles: [
-      UserRole.PASTOR,
-      UserRole.LIDER_DE_TIME,
-      UserRole.LIDER_DE_EQUIPE,
-      UserRole.SERVO,
-    ],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/churches',
@@ -100,12 +85,12 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/users',
     component: UsersPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/ministries',
     component: MinistriesPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/profile',
@@ -122,12 +107,12 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/monthly-schedules',
     component: MonthlySchedulePage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/schedule-planning-config',
     component: SchedulePlanningConfigPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/checkin',
@@ -136,27 +121,17 @@ export const protectedRoutes: RouteConfig[] = [
   {
     path: '/chat',
     component: ChatPage,
-    allowedRoles: [
-      UserRole.PASTOR,
-      UserRole.LIDER_DE_TIME,
-      UserRole.LIDER_DE_EQUIPE,
-      UserRole.SERVO,
-    ],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/chat/:conversationId',
     component: ChatDetailPage,
-    allowedRoles: [
-      UserRole.PASTOR,
-      UserRole.LIDER_DE_TIME,
-      UserRole.LIDER_DE_EQUIPE,
-      UserRole.SERVO,
-    ],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
   {
     path: '/access-codes',
     component: AccessCodesPage,
-    allowedRoles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+    allowedRoles: [UserRole.PASTOR, UserRole.SERVO],
   },
 ]
 

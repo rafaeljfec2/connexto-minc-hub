@@ -1,6 +1,11 @@
+import { useState, useEffect } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Schedule, Service, Team, Person, Ministry } from '@minc-hub/shared/types'
 import { parseLocalDate, formatTime } from '@/lib/utils'
+import { createApiServices } from '@minc-hub/shared/services'
+import { api } from '@/lib/api'
+
+const apiServices = createApiServices(api)
 
 interface ScheduleDetailsModalProps {
   isOpen: boolean
@@ -12,6 +17,11 @@ interface ScheduleDetailsModalProps {
   ministries: Ministry[]
 }
 
+interface TeamWithMembers extends Team {
+  leaderIds?: string[]
+  memberDetails?: Array<{ personId: string; role: string; person?: Person }>
+}
+
 export function ScheduleDetailsModal({
   isOpen,
   onClose,
@@ -21,10 +31,52 @@ export function ScheduleDetailsModal({
   people,
   ministries,
 }: ScheduleDetailsModalProps) {
+  const [teamsWithMembers, setTeamsWithMembers] = useState<TeamWithMembers[]>([])
+
+  useEffect(() => {
+    if (!schedule || !isOpen) return
+
+    const fetchTeamMembers = async () => {
+      const scheduledTeamIds = schedule.teamIds
+      const scheduledTeams = teams.filter(team => scheduledTeamIds.includes(team.id))
+
+      const teamsWithMembersData = await Promise.all(
+        scheduledTeams.map(async team => {
+          try {
+            const members = await apiServices.teamsService.getMembers(team.id)
+            const leaderIds = members.filter(m => m.role === 'lider_de_equipe').map(m => m.personId)
+
+            return {
+              ...team,
+              leaderIds,
+              memberDetails: members,
+            }
+          } catch (error) {
+            console.error(`Failed to fetch members for team ${team.id}:`, error)
+            return {
+              ...team,
+              leaderIds: [],
+              memberDetails: [],
+            }
+          }
+        })
+      )
+
+      setTeamsWithMembers(teamsWithMembersData)
+    }
+
+    fetchTeamMembers()
+  }, [schedule, isOpen, teams])
+
   if (!schedule) return null
 
   const scheduleDate = parseLocalDate(schedule.date)
-  const scheduledTeams = teams.filter(team => schedule.teamIds.includes(team.id))
+  const scheduledTeams =
+    teamsWithMembers.length > 0
+      ? teamsWithMembers
+      : teams
+          .filter(team => schedule.teamIds.includes(team.id))
+          .map(team => ({ ...team, leaderIds: [] }))
 
   const day = scheduleDate.getDate().toString()
   const month = scheduleDate.toLocaleDateString('pt-BR', { month: 'long' })
@@ -97,12 +149,17 @@ export function ScheduleDetailsModal({
                           .filter(p => team.memberIds.includes(p.id))
                           .sort((a, b) => {
                             // Líder primeiro
-                            if (a.id === team.leaderId) return -1
-                            if (b.id === team.leaderId) return 1
+                            const teamWithMembers = teamsWithMembers.find(t => t.id === team.id)
+                            const isALeader = teamWithMembers?.leaderIds?.includes(a.id) ?? false
+                            const isBLeader = teamWithMembers?.leaderIds?.includes(b.id) ?? false
+                            if (isALeader && !isBLeader) return -1
+                            if (!isALeader && isBLeader) return 1
                             return 0
                           })
                           .map(member => {
-                            const isLeader = member.id === team.leaderId
+                            const teamWithMembers = teamsWithMembers.find(t => t.id === team.id)
+                            const isLeader =
+                              teamWithMembers?.leaderIds?.includes(member.id) ?? false
                             return (
                               <li
                                 key={member.id}

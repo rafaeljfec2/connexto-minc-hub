@@ -16,6 +16,11 @@ export enum MemberType {
   EVENTUAL = 'eventual',
 }
 
+export enum TeamMemberRole {
+  LIDER_DE_EQUIPE = 'lider_de_equipe',
+  MEMBRO = 'membro',
+}
+
 @Entity('team_members')
 @Unique(['teamId', 'personId'])
 @Index(['teamId'])
@@ -46,6 +51,13 @@ export class TeamMemberEntity {
     default: MemberType.FIXED,
   })
   memberType: MemberType;
+
+  @Column({
+    type: 'enum',
+    enum: TeamMemberRole,
+    default: TeamMemberRole.MEMBRO,
+  })
+  role: TeamMemberRole;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
