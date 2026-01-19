@@ -5,9 +5,9 @@ import { Modal } from '@/components/ui/Modal'
 import { useModal } from '@/hooks/useModal'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { usePeople } from '@/hooks/usePeople'
-import { useMinistries } from '@/hooks/useMinistries'
-import { useTeams } from '@/hooks/useTeams'
+import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
+import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
 import { useUsers } from '@/hooks/useUsers'
 import { useAccessCodes, AccessCodeScopeType } from '@/hooks/useAccessCodes'
 import { useChurch } from '@/contexts/ChurchContext'
@@ -24,10 +24,10 @@ import { PeopleImportModal } from '@/components/people/PeopleImportModal'
 
 export default function PeoplePage() {
   const navigate = useNavigate()
-  const { people, isLoading: isLoadingPeople, deletePerson } = usePeople()
+  const { people, isLoading: isLoadingPeople, deletePerson } = usePeopleQuery()
 
-  const { ministries } = useMinistries()
-  const { teams } = useTeams()
+  const { ministries } = useMinistriesQuery()
+  const { teams } = useTeamsQuery()
   const { users, createUser } = useUsers()
   const { createCode } = useAccessCodes()
   const { selectedChurch } = useChurch()

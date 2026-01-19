@@ -7,7 +7,7 @@ import { User, UserRole } from '@minc-hub/shared/types'
 import { useSort } from '@/hooks/useSort'
 import { getRoleLabel } from '@/lib/userUtils'
 import { useUsers } from '@/hooks/useUsers'
-import { usePeople } from '@/hooks/usePeople'
+import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
 
 import { UsersMobileView } from './users/components/UsersMobileView'
 import { UsersDesktopView } from './users/components/UsersDesktopView'
@@ -15,7 +15,7 @@ import { UserFormModal } from './users/components/UserFormModal'
 
 export default function UsersPage() {
   const { users, isLoading, createUser, updateUser, deleteUser } = useUsers()
-  const { people } = usePeople()
+  const { people } = usePeopleQuery()
 
   const modal = useModal()
   const deleteModal = useModal()

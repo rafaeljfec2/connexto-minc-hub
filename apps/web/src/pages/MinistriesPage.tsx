@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { Alert } from '@/components/ui/Alert'
 import { useModal } from '@/hooks/useModal'
-import { useMinistries } from '@/hooks/useMinistries'
+import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
 import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -13,7 +13,8 @@ import { MinistriesDesktopView } from './ministries/components/MinistriesDesktop
 import { MinistryFormModal } from './ministries/components/MinistryFormModal'
 
 export default function MinistriesPage() {
-  const { ministries, isLoading, createMinistry, updateMinistry, deleteMinistry } = useMinistries()
+  const { ministries, isLoading, createMinistry, updateMinistry, deleteMinistry } =
+    useMinistriesQuery()
   const { churches } = useChurchesQuery()
   const modal = useModal()
   const deleteModal = useModal()
@@ -77,7 +78,7 @@ export default function MinistriesPage() {
   async function handleSubmit(data: Omit<Ministry, 'id' | 'createdAt' | 'updatedAt'>) {
     try {
       if (editingMinistry) {
-        await updateMinistry(editingMinistry.id, data)
+        await updateMinistry({ id: editingMinistry.id, data })
       } else {
         await createMinistry(data)
       }

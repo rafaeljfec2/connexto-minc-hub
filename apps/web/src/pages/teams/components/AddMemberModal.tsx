@@ -3,7 +3,7 @@ import { Person, MemberType } from '@minc-hub/shared/types'
 import { Modal } from '@/components/ui/Modal'
 import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
 import { Button } from '@/components/ui/Button'
-import { usePeople } from '@/hooks/usePeople'
+import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
 
 interface AddMemberModalProps {
   readonly isOpen: boolean
@@ -26,7 +26,7 @@ export function AddMemberModal({
   onMemberTypeChange,
   existingMemberIds,
 }: AddMemberModalProps) {
-  const { people } = usePeople()
+  const { people } = usePeopleQuery()
 
   // Filter out people who are already members
   const availablePeople = useMemo(() => {

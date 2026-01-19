@@ -3,7 +3,7 @@ import { Alert } from '@/components/ui/Alert'
 import { useModal } from '@/hooks/useModal'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { useServices } from '@/hooks/useServices'
+import { useServicesQuery } from '@/hooks/queries/useServicesQuery'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useSort } from '@/hooks/useSort'
 import { Service } from '@minc-hub/shared/types'
@@ -14,7 +14,7 @@ import { ServicesDesktopView } from './services/components/ServicesDesktopView'
 import { ServiceFormModal } from './services/components/ServiceFormModal'
 
 export default function ServicesPage() {
-  const { services, isLoading, createService, updateService, deleteService } = useServices()
+  const { services, isLoading, createService, updateService, deleteService } = useServicesQuery()
   const { selectedChurch } = useChurch()
   const modal = useModal()
   const deleteModal = useModal()
@@ -75,7 +75,7 @@ export default function ServicesPage() {
       }
 
       if (editingService) {
-        await updateService(editingService.id, serviceData)
+        await updateService({ id: editingService.id, data: serviceData })
       } else {
         await createService(serviceData)
       }

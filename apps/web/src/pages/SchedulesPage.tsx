@@ -8,10 +8,10 @@ import { MonthNavigator } from '@/components/ui/MonthNavigator'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { PlusIcon } from '@/components/icons'
 import { useModal } from '@/hooks/useModal'
-import { useSchedules } from '@/hooks/useSchedules'
-import { useServices } from '@/hooks/useServices'
-import { useTeams } from '@/hooks/useTeams'
-import { useMinistries } from '@/hooks/useMinistries'
+import { useSchedulesQuery } from '@/hooks/queries/useSchedulesQuery'
+import { useServicesQuery } from '@/hooks/queries/useServicesQuery'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
+import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
 import { useChurch } from '@/contexts/ChurchContext'
 import { Schedule } from '@minc-hub/shared/types'
 import { formatDate, parseLocalDate } from '@/lib/utils'
@@ -21,10 +21,11 @@ import { SchedulesMobileView } from './schedules/components/SchedulesMobileView'
 import { SchedulesDesktopList } from './schedules/components/SchedulesDesktopList'
 
 export default function SchedulesPage() {
-  const { schedules, isLoading, createSchedule, updateSchedule, deleteSchedule } = useSchedules()
-  const { services } = useServices()
-  const { teams } = useTeams()
-  const { ministries } = useMinistries()
+  const { schedules, isLoading, createSchedule, updateSchedule, deleteSchedule } =
+    useSchedulesQuery()
+  const { services } = useServicesQuery()
+  const { teams } = useTeamsQuery()
+  const { ministries } = useMinistriesQuery()
   const { selectedChurch } = useChurch()
   const modal = useModal()
   const deleteModal = useModal()
@@ -179,7 +180,7 @@ export default function SchedulesPage() {
       }
 
       if (editingSchedule) {
-        await updateSchedule(editingSchedule.id, payload)
+        await updateSchedule({ id: editingSchedule.id, data: payload })
       } else {
         await createSchedule(payload)
       }

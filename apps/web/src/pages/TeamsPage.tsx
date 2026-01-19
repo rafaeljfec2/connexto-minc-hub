@@ -5,10 +5,10 @@ import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useModal } from '@/hooks/useModal'
-import { useTeams } from '@/hooks/useTeams'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
-import { useMinistries } from '@/hooks/useMinistries'
+import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useSort } from '@/hooks/useSort'
@@ -23,9 +23,9 @@ import { TeamFormModal } from './teams/components/TeamFormModal'
 export default function TeamsPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const navigate = useNavigate()
-  const { teams, isLoading, createTeam, updateTeam, deleteTeam } = useTeams()
+  const { teams, isLoading, createTeam, updateTeam, deleteTeam } = useTeamsQuery()
   const { churches } = useChurchesQuery()
-  const { ministries } = useMinistries()
+  const { ministries } = useMinistriesQuery()
   const { selectedChurch } = useChurch()
 
   const modal = useModal()
@@ -167,7 +167,7 @@ export default function TeamsPage() {
         delete (teamData as Record<string, unknown>).churchId
       }
       if (editingTeam) {
-        await updateTeam(editingTeam.id, teamData)
+        await updateTeam({ id: editingTeam.id, data: teamData })
       } else {
         await createTeam(teamData)
       }

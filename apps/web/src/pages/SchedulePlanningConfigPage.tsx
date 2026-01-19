@@ -10,7 +10,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Team } from '@minc-hub/shared/types'
 import { EditIcon, TrashIcon, PlusIcon } from '@/components/icons'
 import { useSchedulePlanningConfig } from '@/hooks/useSchedulePlanningConfig'
-import { useTeams } from '@/hooks/useTeams'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
 import { useChurch } from '@/contexts/ChurchContext'
 import { cn } from '@/lib/utils'
 
@@ -34,7 +34,7 @@ export default function SchedulePlanningConfigPage() {
     applyTemplate,
     deleteTemplate,
   } = useSchedulePlanningConfig()
-  const { teams } = useTeams()
+  const { teams } = useTeamsQuery()
   const [activeTab, setActiveTab] = useState<TabType>('global')
   const globalModal = useModal()
   const teamModal = useModal()

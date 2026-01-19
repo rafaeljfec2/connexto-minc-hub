@@ -12,10 +12,11 @@ import { PersonFormHeader } from './components/PersonFormHeader'
 import { UserIcon } from '@/components/icons'
 import { Person, MemberType, UserRole } from '@minc-hub/shared/types'
 import { formatPhone } from '@/utils/phone-mask'
-import { usePeople } from '@/hooks/usePeople'
-import { useMinistries } from '@/hooks/useMinistries'
-import { useTeams } from '@/hooks/useTeams'
-import { useServices } from '@/hooks/useServices'
+import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
+import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
+import { useServicesQuery } from '@/hooks/queries/useServicesQuery'
+import { usePersonByIdQuery } from '@/hooks/queries/usePersonByIdQuery'
 import { useUsers } from '@/hooks/useUsers'
 import { useToast } from '@/contexts/ToastContext'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -42,16 +43,16 @@ export default function PersonFormPage() {
   const isEditMode = Boolean(id)
   const isDesktop = useMediaQuery('(min-width: 1024px)')
 
-  const { getPersonById, createPerson, updatePerson, isLoading: isLoadingPeople } = usePeople()
-  const { ministries } = useMinistries()
-  const { teams } = useTeams()
-  const { services } = useServices()
+  const { createPerson, updatePerson, isLoading: isLoadingPeople } = usePeopleQuery()
+  const { data: existingPerson, isLoading: isLoadingPerson } = usePersonByIdQuery(id)
+  const { ministries } = useMinistriesQuery()
+  const { teams } = useTeamsQuery()
+  const { services } = useServicesQuery()
   const { createUser } = useUsers()
   const { showError } = useToast()
 
   const [personFormData, setPersonFormData] = useState(getInitialFormData())
   const [emailError, setEmailError] = useState('')
-  const [isLoadingPerson, setIsLoadingPerson] = useState(false)
 
   const createUserModal = useModal()
   const [creatingUserForPerson, setCreatingUserForPerson] = useState<Person | null>(null)
@@ -61,56 +62,45 @@ export default function PersonFormPage() {
 
   // Load person data if in edit mode
   useEffect(() => {
-    if (isEditMode && id) {
-      setIsLoadingPerson(true)
-      getPersonById(id)
-        .then(loadedPerson => {
-          if (loadedPerson) {
-            // Extract preferred service IDs from person (assuming it's stored in notes or a custom field)
-            // For now, we'll initialize as empty array
-            const preferredServiceIds: string[] = []
+    if (isEditMode && existingPerson) {
+      const loadedPerson = existingPerson
+      // Extract preferred service IDs from person (assuming it's stored in notes or a custom field)
+      // For now, we'll initialize as empty array
+      const preferredServiceIds: string[] = []
 
-            // Convert teamMembers to form format
-            const teamMembers =
-              loadedPerson.teamMembers?.map(tm => ({
-                teamId: tm.teamId,
-                memberType: tm.memberType,
-              })) ?? []
+      // Convert teamMembers to form format
+      const teamMembers =
+        loadedPerson.teamMembers?.map((tm: { teamId: string; memberType: MemberType }) => ({
+          teamId: tm.teamId,
+          memberType: tm.memberType,
+        })) ?? []
 
-            // If person has teamId but no teamMembers, add it as fixed for compatibility
-            if (loadedPerson.teamId && teamMembers.length === 0) {
-              teamMembers.push({
-                teamId: loadedPerson.teamId,
-                memberType: MemberType.FIXED,
-              })
-            }
+      // If person has teamId but no teamMembers, add it as fixed for compatibility
+      if (loadedPerson.teamId && teamMembers.length === 0) {
+        teamMembers.push({
+          teamId: loadedPerson.teamId,
+          memberType: MemberType.FIXED,
+        })
+      }
 
-            setPersonFormData({
-              name: loadedPerson.name,
-              email: loadedPerson.email ?? '',
-              phone: loadedPerson.phone ? formatPhone(loadedPerson.phone) : '',
-              birthDate: loadedPerson.birthDate ?? '',
-              address: loadedPerson.address ?? '',
-              notes: loadedPerson.notes ?? '',
-              ministryId: loadedPerson.ministryId ?? '',
-              teamId: loadedPerson.teamId ?? '',
-              teamMembers,
-              preferredServiceIds,
-            })
-          } else {
-            showError('Servo não encontrado')
-            navigate('/people')
-          }
-        })
-        .catch(() => {
-          showError('Erro ao carregar dados do servo')
-          navigate('/people')
-        })
-        .finally(() => {
-          setIsLoadingPerson(false)
-        })
+      setPersonFormData({
+        name: loadedPerson.name,
+        email: loadedPerson.email ?? '',
+        phone: loadedPerson.phone ? formatPhone(loadedPerson.phone) : '',
+        birthDate: loadedPerson.birthDate ?? '',
+        address: loadedPerson.address ?? '',
+        notes: loadedPerson.notes ?? '',
+        ministryId: loadedPerson.ministryId ?? '',
+        teamId: loadedPerson.teamId ?? '',
+        teamMembers,
+        preferredServiceIds,
+      })
+    } else if (isEditMode && !existingPerson && !isLoadingPerson) {
+      // Person not found
+      showError('Servo não encontrado')
+      navigate('/people')
     }
-  }, [id, isEditMode, getPersonById, navigate, showError])
+  }, [isEditMode, existingPerson, isLoadingPerson, navigate, showError])
 
   // Filter ministries by isActive
   const filteredMinistries = ministries.filter(m => m.isActive)
@@ -160,7 +150,7 @@ export default function PersonFormPage() {
       }
 
       if (isEditMode && id) {
-        await updatePerson(id, submitData)
+        await updatePerson({ id, data: submitData })
       } else {
         await createPerson(submitData as Person)
       }
@@ -202,14 +192,16 @@ export default function PersonFormPage() {
         teamMembers: personFormData.teamMembers as unknown as Person['teamMembers'],
       }
 
-      const savedPerson = await createPerson(submitData as Person)
-
-      // Open create user modal
-      setCreatingUserForPerson(savedPerson)
-      setUserEmail(savedPerson.email ?? '')
-      setUserPassword('')
-      setUserRole(UserRole.SERVO)
-      createUserModal.open()
+      createPerson(submitData as Person, {
+        onSuccess: savedPerson => {
+          // Open create user modal
+          setCreatingUserForPerson(savedPerson)
+          setUserEmail(savedPerson?.email ?? '')
+          setUserPassword('')
+          setUserRole(UserRole.SERVO)
+          createUserModal.open()
+        },
+      })
     } catch (error) {
       console.error('Error saving person:', error)
       // Error is already handled by the hook

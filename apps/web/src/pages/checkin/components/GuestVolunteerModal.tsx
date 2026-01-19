@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { ComboBox, ComboBoxOption } from '@/components/ui/ComboBox'
-import { usePeople } from '@/hooks/usePeople'
+import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
 import { useAuth } from '@/contexts/AuthContext'
 
 interface GuestVolunteerModalProps {
@@ -21,7 +21,7 @@ export function GuestVolunteerModal({
   existingPersonIds,
 }: Readonly<GuestVolunteerModalProps>) {
   const { user } = useAuth()
-  const { people, fetchPeople } = usePeople()
+  const { people, refresh: fetchPeople } = usePeopleQuery()
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [hasFetchedForModal, setHasFetchedForModal] = useState(false)
