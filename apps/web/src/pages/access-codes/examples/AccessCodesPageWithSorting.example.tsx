@@ -28,8 +28,8 @@ import { useViewMode } from '@/hooks/useViewMode'
 import { useSort } from '@/hooks/useSort'
 import { useAccessCodes, CreateAccessCodeDto, AccessCode } from '@/hooks/useAccessCodes'
 import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
-import { useMinistries } from '@/hooks/useMinistries'
-import { useTeams } from '@/hooks/useTeams'
+import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
 import { useChurch } from '@/contexts/ChurchContext'
 import { CreateAccessCodeModal } from '../components/CreateAccessCodeModal'
 import { AccessCodeCard } from '../components/AccessCodeCard'
@@ -40,8 +40,8 @@ import { ptBR } from 'date-fns/locale/pt-BR'
 export default function AccessCodesPageWithSorting() {
   const { codes, isLoading, createCode, deactivateCode } = useAccessCodes()
   const { churches } = useChurchesQuery()
-  const { ministries } = useMinistries()
-  const { teams } = useTeams()
+  const { ministries } = useMinistriesQuery()
+  const { teams } = useTeamsQuery()
   const { selectedChurch } = useChurch()
   const createModal = useModal()
   const deactivateAlert = useModal()

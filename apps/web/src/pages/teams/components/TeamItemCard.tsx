@@ -1,6 +1,5 @@
 import { UserPlus } from 'lucide-react'
 import { Team, Person } from '@minc-hub/shared/types'
-import { usePeople } from '@/hooks/usePeople'
 import { useState, useEffect, useMemo } from 'react'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
@@ -85,7 +84,6 @@ export function TeamItemCard({
   onAddMember,
   onClick,
 }: TeamItemCardProps) {
-  const { getPersonById } = usePeople()
   const [leader, setLeader] = useState<Person | null>(null)
   const [members, setMembers] = useState<Person[]>([])
   const [totalMembers, setTotalMembers] = useState(0)
@@ -96,8 +94,9 @@ export function TeamItemCard({
   // Carregar líder
   useEffect(() => {
     if (team.leaderId) {
-      getPersonById(team.leaderId)
-        .then(person => {
+      apiServices.peopleService
+        .getById(team.leaderId)
+        .then((person: Person | null) => {
           if (person) setLeader(person)
         })
         .catch(() => {
@@ -106,7 +105,7 @@ export function TeamItemCard({
     } else {
       setLeader(null)
     }
-  }, [team.leaderId, getPersonById])
+  }, [team.leaderId])
 
   // Carregar membros - buscar da API se memberIds não estiver disponível
   useEffect(() => {
@@ -134,8 +133,8 @@ export function TeamItemCard({
         }
 
         const firstThreeIds = personIds.slice(0, 3)
-        const peoplePromises = firstThreeIds.map(personId =>
-          getPersonById(personId).catch(() => null)
+        const peoplePromises = firstThreeIds.map((personId: string) =>
+          apiServices.peopleService.getById(personId).catch(() => null)
         )
         const people = await Promise.all(peoplePromises)
 
@@ -155,7 +154,7 @@ export function TeamItemCard({
     return () => {
       cancelled = true
     }
-  }, [team.id, team.memberIds, getPersonById])
+  }, [team.id, team.memberIds])
 
   if (!team) {
     return null

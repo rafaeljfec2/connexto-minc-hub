@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { usePeople } from '@/hooks/usePeople'
-import { useTeams } from '@/hooks/useTeams'
-import { useMinistries } from '@/hooks/useMinistries'
+import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
+import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useToast } from '@/contexts/ToastContext'
 import { parseSpreadsheet, type ParsedRow } from '@/utils/spreadsheet-parser'
@@ -25,9 +25,13 @@ interface UsePeopleImportProps {
 }
 
 export function usePeopleImport({ isOpen, onImportComplete }: UsePeopleImportProps) {
-  const { createPerson, refresh: refreshPeople } = usePeople()
-  const { teams } = useTeams()
-  const { ministries, fetchMinistries, isLoading: isLoadingMinistries } = useMinistries()
+  const { createPerson, refresh: refreshPeople } = usePeopleQuery()
+  const { teams } = useTeamsQuery()
+  const {
+    ministries,
+    refresh: fetchMinistries,
+    isLoading: isLoadingMinistries,
+  } = useMinistriesQuery()
   const { selectedChurch } = useChurch()
   const { showSuccess, showError } = useToast()
 
@@ -141,8 +145,12 @@ export function usePeopleImport({ isOpen, onImportComplete }: UsePeopleImportPro
             : undefined,
         } as Omit<Person, 'id' | 'createdAt' | 'updatedAt'>
 
-        const newPerson = await createPerson(personData)
-        results.push({ rowNumber: row.rowNumber, success: true, person: newPerson })
+        const newPerson = (await createPerson(personData)) as Person | undefined
+        if (newPerson) {
+          results.push({ rowNumber: row.rowNumber, success: true, person: newPerson })
+        } else {
+          throw new Error('Falha ao criar pessoa')
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Erro ao criar pessoa'
         logger.error(

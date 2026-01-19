@@ -1,5 +1,5 @@
 import { Ministry } from '@minc-hub/shared/types'
-import { useTeams } from '@/hooks/useTeams'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
 import { useMemo } from 'react'
 
 interface MinistryItemCardProps {
@@ -67,8 +67,8 @@ function getMinistryIcon(ministryName: string) {
 }
 
 export function MinistryItemCard({ ministry, onMenuClick }: MinistryItemCardProps) {
-  const { teams } = useTeams()
-  
+  const { teams } = useTeamsQuery()
+
   // Contar equipes deste ministério
   const ministryTeams = useMemo(() => {
     return teams.filter(team => team.ministryId === ministry.id && team.isActive)
@@ -85,7 +85,9 @@ export function MinistryItemCard({ ministry, onMenuClick }: MinistryItemCardProp
     <div className="bg-white dark:bg-dark-900 rounded-lg p-4 shadow-sm">
       <div className="flex items-start gap-3">
         {/* Ícone */}
-        <div className={`${ministryIcon.color} rounded-lg w-12 h-12 flex items-center justify-center text-white flex-shrink-0`}>
+        <div
+          className={`${ministryIcon.color} rounded-lg w-12 h-12 flex items-center justify-center text-white flex-shrink-0`}
+        >
           {ministryIcon.icon}
         </div>
 
