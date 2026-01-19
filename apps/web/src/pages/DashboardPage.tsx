@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePeople } from '@/hooks/usePeople'
-import { useTeams } from '@/hooks/useTeams'
-import { useSchedules } from '@/hooks/useSchedules'
-import { useServices } from '@/hooks/useServices'
-import { useMinistries } from '@/hooks/useMinistries'
+import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
+import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
+import { useSchedulesQuery } from '@/hooks/queries/useSchedulesQuery'
+import { useServicesQuery } from '@/hooks/queries/useServicesQuery'
+import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
 import { User, Person, Team, Schedule, Service, Ministry } from '@minc-hub/shared/types'
 import { QuickActionsMobile } from './dashboard/components/QuickActionsMobile'
 import { UpcomingServicesMobile } from './dashboard/components/UpcomingServicesMobile'
@@ -94,11 +94,11 @@ function DesktopDashboard({
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const { people } = usePeople()
-  const { teams } = useTeams()
-  const { schedules } = useSchedules()
-  const { services } = useServices()
-  const { ministries } = useMinistries()
+  const { people } = usePeopleQuery()
+  const { teams } = useTeamsQuery()
+  const { schedules } = useSchedulesQuery()
+  const { services } = useServicesQuery()
+  const { ministries } = useMinistriesQuery()
 
   const activeTeams = useMemo(() => teams.filter(t => t.isActive), [teams])
   const activities: ActivityItem[] = []

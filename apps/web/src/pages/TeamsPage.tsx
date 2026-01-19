@@ -7,7 +7,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useModal } from '@/hooks/useModal'
 import { useTeams } from '@/hooks/useTeams'
 import { useViewMode } from '@/hooks/useViewMode'
-import { useChurches } from '@/hooks/useChurches'
+import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
 import { useMinistries } from '@/hooks/useMinistries'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -24,7 +24,7 @@ export default function TeamsPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const navigate = useNavigate()
   const { teams, isLoading, createTeam, updateTeam, deleteTeam } = useTeams()
-  const { churches } = useChurches()
+  const { churches } = useChurchesQuery()
   const { ministries } = useMinistries()
   const { selectedChurch } = useChurch()
 

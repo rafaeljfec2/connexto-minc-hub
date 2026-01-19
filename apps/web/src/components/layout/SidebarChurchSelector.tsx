@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { ComboBox, ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
-import { useChurches } from '@/hooks/useChurches'
+import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
 
 export function SidebarChurchSelector() {
   const { selectedChurch, setSelectedChurch } = useChurch()
-  const { churches, isLoading } = useChurches()
+  const { churches, isLoading } = useChurchesQuery()
 
   const placeholderText = useMemo(() => {
     if (isLoading) return 'Carregando...'

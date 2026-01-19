@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { TableRow, TableCell } from '@/components/ui/Table'
 import { useModal } from '@/hooks/useModal'
-import { useChurches } from '@/hooks/useChurches'
+import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { CrudPageLayout } from '@/components/crud/CrudPageLayout'
@@ -21,7 +21,7 @@ import { formatPhone } from '@/utils/phone-mask'
 
 export default function ChurchesPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)')
-  const { churches, isLoading, createChurch, updateChurch, deleteChurch } = useChurches()
+  const { churches, isLoading, createChurch, updateChurch, deleteChurch } = useChurchesQuery()
   const modal = useModal()
   const deleteModal = useModal()
   const [editingChurch, setEditingChurch] = useState<Church | null>(null)
@@ -106,7 +106,7 @@ export default function ChurchesPage() {
 
     try {
       if (editingChurch) {
-        await updateChurch(editingChurch.id, formData)
+        await updateChurch({ id: editingChurch.id, data: formData })
       } else {
         await createChurch(formData)
       }

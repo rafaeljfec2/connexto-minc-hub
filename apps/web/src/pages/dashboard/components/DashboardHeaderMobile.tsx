@@ -1,7 +1,8 @@
 import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
-import { useChurches } from '@/hooks/useChurches'
+import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
 import { useMemo } from 'react'
+import type { Church } from '@minc-hub/shared/types'
 
 interface DashboardHeaderMobileProps {
   readonly onNotificationPress?: () => void
@@ -17,11 +18,11 @@ export function DashboardHeaderMobile({
   showChurchSelector = true,
 }: Readonly<DashboardHeaderMobileProps>) {
   const { selectedChurch, setSelectedChurch } = useChurch()
-  const { churches } = useChurches()
+  const { churches } = useChurchesQuery()
 
   const churchOptions: ComboBoxOption<string>[] = useMemo(
     () =>
-      churches.map(church => ({
+      churches.map((church: Church) => ({
         value: church.id,
         label: church.name,
       })),
@@ -33,7 +34,7 @@ export function DashboardHeaderMobile({
       setSelectedChurch(null)
       return
     }
-    const selected = churches.find(church => church.id === churchId)
+    const selected = churches.find((church: Church) => church.id === churchId)
     setSelectedChurch(selected ?? null)
   }
 

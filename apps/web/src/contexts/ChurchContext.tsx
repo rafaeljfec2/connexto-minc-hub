@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { Church } from '@minc-hub/shared/types'
-import { useChurches } from '@/hooks/useChurches'
+import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
 
 interface ChurchContextType {
   selectedChurch: Church | null
@@ -18,7 +18,7 @@ interface ChurchProviderProps {
 const SELECTED_CHURCH_STORAGE_KEY = 'selected_church_id'
 
 export function ChurchProvider({ children }: ChurchProviderProps) {
-  const { churches } = useChurches()
+  const { churches } = useChurchesQuery()
   const [selectedChurch, setSelectedChurchState] = useState<Church | null>(null)
 
   // Restore selected church from localStorage on mount or when churches are loaded

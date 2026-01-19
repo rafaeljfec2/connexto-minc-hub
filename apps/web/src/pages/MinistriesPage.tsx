@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from 'react'
 import { Alert } from '@/components/ui/Alert'
 import { useModal } from '@/hooks/useModal'
 import { useMinistries } from '@/hooks/useMinistries'
-import { useChurches } from '@/hooks/useChurches'
+import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
 import { useViewMode } from '@/hooks/useViewMode'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { useSort } from '@/hooks/useSort'
@@ -14,7 +14,7 @@ import { MinistryFormModal } from './ministries/components/MinistryFormModal'
 
 export default function MinistriesPage() {
   const { ministries, isLoading, createMinistry, updateMinistry, deleteMinistry } = useMinistries()
-  const { churches } = useChurches()
+  const { churches } = useChurchesQuery()
   const modal = useModal()
   const deleteModal = useModal()
   const isDesktop = useMediaQuery('(min-width: 1024px)')

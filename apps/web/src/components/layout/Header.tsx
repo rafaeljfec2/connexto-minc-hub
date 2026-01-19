@@ -6,7 +6,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { BrandText } from '@/components/ui/BrandText'
 import { ComboBox, ComboBoxOption } from '@/components/ui/ComboBox'
 import { useChurch } from '@/contexts/ChurchContext'
-import { useChurches } from '@/hooks/useChurches'
+import { useChurchesQuery } from '@/hooks/queries/useChurchesQuery'
 import { useChat } from '@/hooks/useChat'
 
 const HEADER_CLASSES = {
@@ -21,7 +21,7 @@ const HEADER_CLASSES = {
 export function Header() {
   const navigate = useNavigate()
   const { selectedChurch, setSelectedChurch } = useChurch()
-  const { churches, isLoading } = useChurches()
+  const { churches, isLoading } = useChurchesQuery()
   const { unreadCount } = useChat()
 
   const placeholderText = useMemo(() => {

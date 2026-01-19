@@ -1,5 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import { ToastProvider } from '@/contexts/ToastContext'
@@ -8,6 +10,7 @@ import { ToastContainer } from '@/components/ui/ToastContainer'
 import { ProtectedRouteWrapper } from '@/components/routing/ProtectedRouteWrapper'
 import { ScrollToTop } from '@/components/routing/ScrollToTop'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { queryClient } from '@/lib/queryClient'
 import { protectedRoutes, publicRoutes } from './navigator/routes'
 import { ROUTES } from './navigator/routes.constants'
 import type { RouteConfig } from './navigator/routes.types'
@@ -53,29 +56,32 @@ function renderProtectedRoute(route: RouteConfig) {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <ToastProvider>
-          <AuthProvider>
-            <ChurchProvider>
-              <ScrollToTop />
-              <Routes>
-                <Route
-                  path={ROUTES.LOGIN}
-                  element={
-                    <Suspense fallback={<PageLoader />}>
-                      <LoginPage />
-                    </Suspense>
-                  }
-                />
-                {publicRoutes.map(renderPublicRoute)}
-                {protectedRoutes.map(renderProtectedRoute)}
-                <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
-              </Routes>
-              <ToastContainer />
-            </ChurchProvider>
-          </AuthProvider>
-        </ToastProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <ChurchProvider>
+                <ScrollToTop />
+                <Routes>
+                  <Route
+                    path={ROUTES.LOGIN}
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <LoginPage />
+                      </Suspense>
+                    }
+                  />
+                  {publicRoutes.map(renderPublicRoute)}
+                  {protectedRoutes.map(renderProtectedRoute)}
+                  <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+                </Routes>
+                <ToastContainer />
+              </ChurchProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </ErrorBoundary>
   )
 }
