@@ -17,6 +17,7 @@ interface TeamsMobileViewProps {
   readonly onTeamEdit: (team: Team) => void
   readonly onTeamDelete: (team: Team) => void
   readonly onTeamClick: (team: Team) => void
+  readonly onAddMember?: (team: Team) => void
   readonly onCreateClick: () => void
 }
 
@@ -33,6 +34,7 @@ export function TeamsMobileView({
   onTeamEdit,
   onTeamDelete,
   onTeamClick,
+  onAddMember,
   onCreateClick,
 }: TeamsMobileViewProps) {
   return (
@@ -56,6 +58,7 @@ export function TeamsMobileView({
           onTeamEdit={onTeamEdit}
           onTeamDelete={onTeamDelete}
           onTeamClick={onTeamClick}
+          onAddMember={onAddMember}
         />
       </div>
     </div>

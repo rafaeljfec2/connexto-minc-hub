@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useTeams } from '@/hooks/useTeams'
 import { useMinistries } from '@/hooks/useMinistries'
 import { Team } from '@minc-hub/shared/types'
@@ -18,6 +18,7 @@ type TabType = 'membros' | 'tarefas' | 'atividades'
 export default function TeamDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { getTeamById, refresh: refreshTeams } = useTeams()
   const { ministries } = useMinistries()
   const [activeTab, setActiveTab] = useState<TabType>('membros')
@@ -58,6 +59,16 @@ export default function TeamDetailsPage() {
     }
     loadTeam()
   }, [id, getTeamById])
+
+  // Abrir modal de adicionar membro se vier da navegação com estado
+  useEffect(() => {
+    const state = location.state as { openAddMemberModal?: boolean } | null
+    if (state?.openAddMemberModal) {
+      openModal()
+      // Limpar o estado para não abrir novamente ao navegar
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.state, location.pathname, navigate, openModal])
 
   const handleRemoveMemberConfirm = async () => {
     if (!id) return

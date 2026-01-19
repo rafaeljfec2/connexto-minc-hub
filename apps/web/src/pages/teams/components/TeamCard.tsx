@@ -1,14 +1,17 @@
+import { UserPlus } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Team } from '@minc-hub/shared/types'
 import { EditIcon, TrashIcon } from '@/components/icons'
+import { ItemMenuDropdown, type MenuItem } from '@/components/ui/ItemMenuDropdown'
 
 interface TeamCardProps {
   readonly team: Team
   readonly ministryName?: string
   readonly onEdit: (team: Team) => void
   readonly onDelete: (id: string) => void
+  readonly onAddMember?: (team: Team) => void
   readonly onClick?: (team: Team) => void
   readonly isUpdating: boolean
   readonly isDeleting: boolean
@@ -19,10 +22,20 @@ export function TeamCard({
   ministryName,
   onEdit,
   onDelete,
+  onAddMember,
   onClick,
   isUpdating,
   isDeleting,
 }: TeamCardProps) {
+  const menuItems: MenuItem[] = []
+  if (onAddMember) {
+    menuItems.push({
+      label: 'Adicionar Membro',
+      onClick: () => onAddMember(team),
+      icon: <UserPlus className="w-4 h-4" />,
+    })
+  }
+
   return (
     <Card
       className={`hover:shadow-lg transition-shadow ${onClick ? 'cursor-pointer' : ''}`}
@@ -45,6 +58,13 @@ export function TeamCard({
             <p className="text-sm text-dark-500 dark:text-dark-500">
               {team.memberIds?.length ?? 0} membro{(team.memberIds?.length ?? 0) !== 1 ? 's' : ''}
             </p>
+          </div>
+          <div onClick={e => e.stopPropagation()} className="flex-shrink-0">
+            <ItemMenuDropdown
+              onEdit={() => onEdit(team)}
+              onDelete={() => onDelete(team.id)}
+              menuItems={menuItems}
+            />
           </div>
         </div>
 

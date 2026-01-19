@@ -1,14 +1,18 @@
+import { UserPlus } from 'lucide-react'
 import { Team, Person } from '@minc-hub/shared/types'
 import { usePeople } from '@/hooks/usePeople'
 import { useState, useEffect, useMemo } from 'react'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { Avatar } from '@/components/ui/Avatar'
+import { ItemMenuDropdown } from '@/components/ui/ItemMenuDropdown'
 
 interface TeamItemCardProps {
   readonly team: Team
   readonly ministryName?: string
-  readonly onMenuClick?: (team: Team) => void
+  readonly onEdit?: (team: Team) => void
+  readonly onDelete?: (team: Team) => void
+  readonly onAddMember?: (team: Team) => void
   readonly onClick?: (team: Team) => void
 }
 
@@ -73,7 +77,14 @@ function getTeamIcon(ministryName?: string, teamName?: string) {
 
 const apiServices = createApiServices(api)
 
-export function TeamItemCard({ team, ministryName, onMenuClick, onClick }: TeamItemCardProps) {
+export function TeamItemCard({
+  team,
+  ministryName,
+  onEdit,
+  onDelete,
+  onAddMember,
+  onClick,
+}: TeamItemCardProps) {
   const { getPersonById } = usePeople()
   const [leader, setLeader] = useState<Person | null>(null)
   const [members, setMembers] = useState<Person[]>([])
@@ -177,19 +188,24 @@ export function TeamItemCard({ team, ministryName, onMenuClick, onClick }: TeamI
             </div>
 
             {/* Menu de três pontos verticais - canto superior direito */}
-            {onMenuClick && (
-              <button
-                onClick={e => {
-                  e.stopPropagation()
-                  onMenuClick(team)
-                }}
-                className="p-1 text-dark-500 dark:text-dark-400 hover:text-dark-700 dark:hover:text-dark-300 transition-colors flex-shrink-0"
-                aria-label="Menu"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                </svg>
-              </button>
+            {(onEdit || onDelete || onAddMember) && (
+              <div onClick={e => e.stopPropagation()}>
+                <ItemMenuDropdown
+                  onEdit={onEdit ? () => onEdit(team) : undefined}
+                  onDelete={onDelete ? () => onDelete(team) : undefined}
+                  menuItems={
+                    onAddMember
+                      ? [
+                          {
+                            label: 'Adicionar Membro',
+                            onClick: () => onAddMember(team),
+                            icon: <UserPlus className="w-4 h-4" />,
+                          },
+                        ]
+                      : []
+                  }
+                />
+              </div>
             )}
           </div>
 

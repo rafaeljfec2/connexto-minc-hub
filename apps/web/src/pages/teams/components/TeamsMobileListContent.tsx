@@ -11,6 +11,7 @@ interface TeamsMobileListContentProps {
   readonly onTeamEdit: (team: Team) => void
   readonly onTeamDelete: (team: Team) => void
   readonly onTeamClick: (team: Team) => void
+  readonly onAddMember?: (team: Team) => void
 }
 
 export function TeamsMobileListContent({
@@ -21,6 +22,7 @@ export function TeamsMobileListContent({
   onTeamEdit,
   onTeamDelete,
   onTeamClick,
+  onAddMember,
 }: TeamsMobileListContentProps) {
   if (isLoading) {
     return (
@@ -50,6 +52,7 @@ export function TeamsMobileListContent({
           onEdit={onTeamEdit}
           onDelete={onTeamDelete}
           onClick={onTeamClick}
+          onAddMember={onAddMember}
         />
       ))}
     </div>

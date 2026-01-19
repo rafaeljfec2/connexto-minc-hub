@@ -209,6 +209,10 @@ export default function TeamsPage() {
     navigate(`/teams/${team.id}`)
   }
 
+  const handleAddMember = (team: Team) => {
+    navigate(`/teams/${team.id}`, { state: { openAddMemberModal: true } })
+  }
+
   // Grid view for desktop
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -221,6 +225,7 @@ export default function TeamsPage() {
             ministryName={getMinistryName(team.ministryId)}
             onEdit={handleOpenModal}
             onDelete={handleDeleteClick}
+            onAddMember={handleAddMember}
             onClick={handleTeamClick}
             isUpdating={isLoading}
             isDeleting={isLoading}
@@ -299,6 +304,7 @@ export default function TeamsPage() {
           onTeamEdit={handleTeamEdit}
           onTeamDelete={handleTeamDelete}
           onTeamClick={handleTeamClick}
+          onAddMember={handleAddMember}
           onCreateClick={() => handleOpenModal()}
         />
       )}

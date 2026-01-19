@@ -26,8 +26,8 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: Readonl
   const sizeClasses = {
     sm: 'max-w-md',
     md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
+    lg: 'max-w-3xl',
+    xl: 'max-w-5xl',
   }
 
   return (
@@ -76,7 +76,9 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: Readonl
             </svg>
           </button>
         </div>
-        <div className="p-4 pb-36 flex-1 min-h-0 flex flex-col overflow-hidden">{children}</div>
+        <div className="p-4 pb-36 sm:p-6 sm:pb-6 flex-1 min-h-0 flex flex-col overflow-hidden">
+          {children}
+        </div>
       </div>
     </div>
   )

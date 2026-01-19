@@ -45,8 +45,8 @@ export function TeamFormModal({
       title={editingTeam ? 'Editar Equipe' : 'Nova Equipe'}
       size="lg"
     >
-      <form onSubmit={onSubmit} className="flex flex-col h-full">
-        <div className="space-y-1 overflow-y-auto overscroll-contain max-h-[calc(78vh-12rem)]">
+      <form onSubmit={onSubmit} className="flex flex-col h-full sm:-m-6">
+        <div className="sm:px-6 space-y-1 sm:space-y-4 overflow-y-auto overscroll-contain max-h-[calc(78vh-12rem)] sm:flex-1 sm:min-h-0">
           <Select
             label="Igreja *"
             value={selectedChurch?.id ?? ''}
@@ -92,7 +92,7 @@ export function TeamFormModal({
             onChange={e => onFormDataChange({ ...formData, isActive: e.target.checked })}
           />
         </div>
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-8 border-t border-dark-200 dark:border-dark-800 mt-8 flex-shrink-0 pb-4">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-8 border-t border-dark-200 dark:border-dark-800 mt-8 flex-shrink-0 pb-4 sm:px-6 sm:pb-6 sm:pt-6 sm:mt-0 sm:bg-white sm:dark:bg-dark-900">
           <Button type="button" variant="secondary" onClick={onClose} className="w-full sm:w-auto">
             Cancelar
           </Button>

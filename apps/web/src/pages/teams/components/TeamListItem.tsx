@@ -1,5 +1,7 @@
+import { UserPlus } from 'lucide-react'
 import type { Team } from '@minc-hub/shared/types'
 import { CompactListItem } from '@/components/ui/CompactListItem'
+import type { MenuItem } from '@/components/ui/ItemMenuDropdown'
 
 interface TeamListItemProps {
   readonly team: Team
@@ -7,10 +9,27 @@ interface TeamListItemProps {
   readonly onEdit?: (team: Team) => void
   readonly onDelete?: (team: Team) => void
   readonly onClick?: (team: Team) => void
+  readonly onAddMember?: (team: Team) => void
 }
 
-export function TeamListItem({ team, ministryName, onEdit, onDelete, onClick }: TeamListItemProps) {
+export function TeamListItem({
+  team,
+  ministryName,
+  onEdit,
+  onDelete,
+  onClick,
+  onAddMember,
+}: TeamListItemProps) {
   const memberCount = team.memberIds?.length ?? 0
+
+  const menuItems: MenuItem[] = []
+  if (onAddMember) {
+    menuItems.push({
+      label: 'Adicionar Membro',
+      onClick: () => onAddMember(team),
+      icon: <UserPlus className="w-4 h-4" />,
+    })
+  }
 
   return (
     <CompactListItem
@@ -32,6 +51,7 @@ export function TeamListItem({ team, ministryName, onEdit, onDelete, onClick }: 
       onClick={() => onClick?.(team)}
       onEdit={onEdit ? () => onEdit(team) : undefined}
       onDelete={onDelete ? () => onDelete(team) : undefined}
+      menuItems={menuItems}
     />
   )
 }
