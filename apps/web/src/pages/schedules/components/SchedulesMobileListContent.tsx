@@ -50,7 +50,7 @@ export function SchedulesMobileListContent({
   }
 
   return (
-    <Accordion className="space-y-3" defaultValue={groupedSchedules[0]?.key}>
+    <Accordion className="space-y-3">
       {groupedSchedules.map(group => {
         const formattedDate = formatDate(group.date.toISOString())
         const dayLabel = getDayLabel(group.date.getDay())

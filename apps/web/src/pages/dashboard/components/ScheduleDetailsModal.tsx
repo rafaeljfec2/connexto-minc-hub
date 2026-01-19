@@ -95,15 +95,39 @@ export function ScheduleDetailsModal({
                       ) : (
                         people
                           .filter(p => team.memberIds.includes(p.id))
-                          .map(member => (
-                            <li
-                              key={member.id}
-                              className="text-sm text-dark-700 dark:text-dark-300 flex items-center gap-2"
-                            >
-                              <div className="w-1.5 h-1.5 rounded-full bg-primary-500 flex-shrink-0" />
-                              {member.name}
-                            </li>
-                          ))
+                          .sort((a, b) => {
+                            // Líder primeiro
+                            if (a.id === team.leaderId) return -1
+                            if (b.id === team.leaderId) return 1
+                            return 0
+                          })
+                          .map(member => {
+                            const isLeader = member.id === team.leaderId
+                            return (
+                              <li
+                                key={member.id}
+                                className={`text-sm flex items-center gap-2 ${
+                                  isLeader
+                                    ? 'font-semibold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 px-2 py-1.5 rounded-md'
+                                    : 'text-dark-700 dark:text-dark-300'
+                                }`}
+                              >
+                                <div
+                                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                    isLeader
+                                      ? 'bg-primary-600 dark:bg-primary-400'
+                                      : 'bg-primary-500'
+                                  }`}
+                                />
+                                {member.name}
+                                {isLeader && (
+                                  <span className="ml-auto text-xs px-2 py-0.5 bg-primary-600 dark:bg-primary-500 text-white rounded-full font-medium">
+                                    Líder
+                                  </span>
+                                )}
+                              </li>
+                            )
+                          })
                       )}
                     </ul>
                   </div>

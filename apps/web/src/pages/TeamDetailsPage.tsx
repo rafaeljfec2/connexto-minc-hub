@@ -87,7 +87,7 @@ export default function TeamDetailsPage() {
 
   return (
     <>
-      <div className="fixed lg:static top-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:top-auto bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:bottom-auto left-0 right-0 lg:w-full lg:max-w-7xl lg:mx-auto lg:my-8 lg:h-[calc(100vh-8rem)] flex flex-col lg:flex-row overflow-hidden bg-white dark:bg-dark-900 lg:bg-white lg:dark:bg-dark-900 lg:rounded-2xl lg:shadow-xl lg:border lg:border-gray-200 lg:dark:border-dark-800">
+      <div className="fixed lg:static top-0 lg:top-auto bottom-0 lg:bottom-auto left-0 right-0 lg:w-full lg:max-w-7xl lg:mx-auto lg:my-8 lg:h-[calc(100vh-8rem)] flex flex-col lg:flex-row overflow-hidden bg-white dark:bg-dark-900 lg:bg-white lg:dark:bg-dark-900 lg:rounded-2xl lg:shadow-xl lg:border lg:border-gray-200 lg:dark:border-dark-800 pt-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:pt-0 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
         {/* Left Panel (Desktop: Sidebar / Mobile: Top) */}
         <div className="flex-shrink-0 lg:w-80 lg:border-r lg:border-gray-100 lg:dark:border-dark-800 lg:bg-gray-50/50 lg:dark:bg-dark-900/50 lg:overflow-y-auto">
           <TeamHeader onBack={() => navigate(-1)} onAddMember={openModal} />
