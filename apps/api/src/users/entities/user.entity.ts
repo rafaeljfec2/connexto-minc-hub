@@ -14,8 +14,6 @@ import { PersonEntity } from '../../persons/entities/person.entity';
 export enum UserRole {
   ADMIN = 'admin',
   PASTOR = 'pastor',
-  LIDER_DE_TIME = 'lider_de_time',
-  LIDER_DE_EQUIPE = 'lider_de_equipe',
   SERVO = 'servo',
 }
 

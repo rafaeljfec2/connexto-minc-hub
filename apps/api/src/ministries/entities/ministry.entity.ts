@@ -13,6 +13,7 @@ import {
 import { ChurchEntity } from '../../churches/entities/church.entity';
 import { TeamEntity } from '../../teams/entities/team.entity';
 import { PersonEntity } from '../../persons/entities/person.entity';
+import { TimeMemberEntity } from './time-member.entity';
 
 @Entity('ministries')
 @Index(['churchId'], { where: '"deleted_at" IS NULL' })
@@ -40,6 +41,9 @@ export class MinistryEntity {
 
   @OneToMany(() => TeamEntity, (team) => team.ministry)
   teams: TeamEntity[];
+
+  @OneToMany(() => TimeMemberEntity, (timeMember) => timeMember.ministry)
+  timeMembers: TimeMemberEntity[];
 
   @OneToMany(() => PersonEntity, (person) => person.ministry)
   persons: PersonEntity[];

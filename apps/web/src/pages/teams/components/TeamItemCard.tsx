@@ -84,67 +84,41 @@ export function TeamItemCard({
   onAddMember,
   onClick,
 }: TeamItemCardProps) {
-  const [leader, setLeader] = useState<Person | null>(null)
+  const [leaders, setLeaders] = useState<Person[]>([])
   const [members, setMembers] = useState<Person[]>([])
   const [totalMembers, setTotalMembers] = useState(0)
 
   const teamIcon = useMemo(() => getTeamIcon(ministryName, team.name), [ministryName, team.name])
   const additionalMembers = totalMembers > 3 ? totalMembers - 3 : 0
+  const leader = leaders[0] || null
 
-  // Carregar líder
-  useEffect(() => {
-    if (team.leaderId) {
-      apiServices.peopleService
-        .getById(team.leaderId)
-        .then((person: Person | null) => {
-          if (person) setLeader(person)
-        })
-        .catch(() => {
-          // Ignore errors
-        })
-    } else {
-      setLeader(null)
-    }
-  }, [team.leaderId])
-
-  // Carregar membros - buscar da API se memberIds não estiver disponível
+  // Carregar líderes e membros
   useEffect(() => {
     let cancelled = false
 
     const loadMembers = async () => {
       try {
-        let personIds: string[] = []
-
-        // Se team.memberIds existe e tem valores, usar eles
-        if (team.memberIds && team.memberIds.length > 0) {
-          personIds = team.memberIds
-        } else {
-          // Caso contrário, buscar da API
-          personIds = await apiServices.teamsService.getMembers(team.id)
-        }
+        const teamMembers = await apiServices.teamsService.getMembers(team.id)
 
         if (cancelled) return
 
-        setTotalMembers(personIds.length)
+        const allMembers = teamMembers
+          .map(tm => tm.person)
+          .filter((p): p is Person => p !== undefined && p !== null)
 
-        if (personIds.length === 0) {
-          setMembers([])
-          return
-        }
+        const teamLeaders = teamMembers
+          .filter(tm => tm.role === 'lider_de_equipe')
+          .map(tm => tm.person)
+          .filter((p): p is Person => p !== undefined && p !== null)
 
-        const firstThreeIds = personIds.slice(0, 3)
-        const peoplePromises = firstThreeIds.map((personId: string) =>
-          apiServices.peopleService.getById(personId).catch(() => null)
-        )
-        const people = await Promise.all(peoplePromises)
-
-        if (cancelled) return
-
-        setMembers(people.filter((p): p is Person => p !== null))
+        setTotalMembers(allMembers.length)
+        setMembers(allMembers.slice(0, 3))
+        setLeaders(teamLeaders)
       } catch (error) {
         if (cancelled) return
         console.error('Error loading team members:', error)
         setMembers([])
+        setLeaders([])
         setTotalMembers(0)
       }
     }
@@ -154,7 +128,7 @@ export function TeamItemCard({
     return () => {
       cancelled = true
     }
-  }, [team.id, team.memberIds])
+  }, [team.id])
 
   if (!team) {
     return null

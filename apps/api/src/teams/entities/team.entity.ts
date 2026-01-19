@@ -12,13 +12,11 @@ import {
   AfterLoad,
 } from 'typeorm';
 import { MinistryEntity } from '../../ministries/entities/ministry.entity';
-import { UserEntity } from '../../users/entities/user.entity';
 import { TeamMemberEntity } from './team-member.entity';
 import { ScheduleTeamEntity } from '../../schedules/entities/schedule-team.entity';
 
 @Entity('teams')
 @Index(['ministryId'], { where: '"deleted_at" IS NULL' })
-@Index(['leaderId'], { where: '"deleted_at" IS NULL' })
 @Index(['name'], { where: '"deleted_at" IS NULL' })
 @Index(['isActive'], { where: '"deleted_at" IS NULL' })
 export class TeamEntity {
@@ -31,13 +29,6 @@ export class TeamEntity {
   @ManyToOne(() => MinistryEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ministry_id' })
   ministry: MinistryEntity;
-
-  @Column({ type: 'uuid', nullable: true, name: 'leader_id' })
-  leaderId: string | null;
-
-  @ManyToOne(() => UserEntity, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'leader_id' })
-  leader: UserEntity | null;
 
   @Column({ type: 'varchar', length: 255 })
   name: string;

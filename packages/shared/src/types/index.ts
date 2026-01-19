@@ -1,9 +1,16 @@
 export enum UserRole {
   ADMIN = 'admin',
   PASTOR = 'pastor',
-  LIDER_DE_TIME = 'lider_de_time',
-  LIDER_DE_EQUIPE = 'lider_de_equipe',
   SERVO = 'servo',
+}
+
+export enum TimeMemberRole {
+  LIDER_DE_TIME = 'lider_de_time',
+}
+
+export enum TeamMemberRole {
+  LIDER_DE_EQUIPE = 'lider_de_equipe',
+  MEMBRO = 'membro',
 }
 
 export interface User {
@@ -23,11 +30,22 @@ export enum MemberType {
   EVENTUAL = 'eventual',
 }
 
+export interface TimeMember {
+  id: string
+  ministryId: string
+  personId: string
+  role: TimeMemberRole
+  createdAt: string
+  ministry?: Ministry
+  person?: Person
+}
+
 export interface TeamMember {
   id: string
   teamId: string
   personId: string
   memberType: MemberType
+  role: TeamMemberRole
   createdAt: string
   team?: Team
 }
@@ -53,7 +71,6 @@ export interface Team {
   name: string
   description?: string
   ministryId: string
-  leaderId?: string
   memberIds: string[]
   isActive: boolean
   createdAt: string

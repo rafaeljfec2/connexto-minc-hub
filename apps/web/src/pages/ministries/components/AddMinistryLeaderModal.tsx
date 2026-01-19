@@ -1,41 +1,33 @@
 import { useMemo } from 'react'
-import { Person, MemberType, TeamMemberRole } from '@minc-hub/shared/types'
+import { Person } from '@minc-hub/shared/types'
 import { Modal } from '@/components/ui/Modal'
 import { ComboBox, type ComboBoxOption } from '@/components/ui/ComboBox'
 import { Button } from '@/components/ui/Button'
 import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
 
-interface AddMemberModalProps {
+interface AddMinistryLeaderModalProps {
   readonly isOpen: boolean
   readonly onClose: () => void
   readonly onSubmit: () => void
   readonly selectedPerson: Person | null
-  readonly memberType: MemberType
-  readonly role: TeamMemberRole
   readonly onPersonChange: (person: Person | null) => void
-  readonly onMemberTypeChange: (type: MemberType) => void
-  readonly onRoleChange: (role: TeamMemberRole) => void
-  readonly existingMemberIds: string[]
+  readonly existingLeaderIds: string[]
 }
 
-export function AddMemberModal({
+export function AddMinistryLeaderModal({
   isOpen,
   onClose,
   onSubmit,
   selectedPerson,
-  memberType,
-  role,
   onPersonChange,
-  onMemberTypeChange,
-  onRoleChange,
-  existingMemberIds,
-}: AddMemberModalProps) {
+  existingLeaderIds,
+}: AddMinistryLeaderModalProps) {
   const { people } = usePeopleQuery()
 
-  // Filter out people who are already members
+  // Filter out people who are already leaders
   const availablePeople = useMemo(() => {
-    return people.filter(person => !existingMemberIds.includes(person.id))
-  }, [people, existingMemberIds])
+    return people.filter(person => !existingLeaderIds.includes(person.id))
+  }, [people, existingLeaderIds])
 
   const personOptions: ComboBoxOption<string>[] = useMemo(() => {
     return availablePeople.map(person => ({
@@ -44,23 +36,13 @@ export function AddMemberModal({
     }))
   }, [availablePeople])
 
-  const memberTypeOptions: ComboBoxOption<MemberType>[] = [
-    { value: MemberType.FIXED, label: 'Fixo' },
-    { value: MemberType.EVENTUAL, label: 'Eventual' },
-  ]
-
-  const roleOptions: ComboBoxOption<TeamMemberRole>[] = [
-    { value: TeamMemberRole.MEMBRO, label: 'Membro' },
-    { value: TeamMemberRole.LIDER_DE_EQUIPE, label: 'Líder da Equipe' },
-  ]
-
   const handlePersonSelect = (personId: string | null) => {
     const person = personId ? availablePeople.find(p => p.id === personId) : null
     onPersonChange(person ?? null)
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Adicionar Membro" size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title="Adicionar Líder de Ministério" size="md">
       <div className="flex flex-col h-full sm:-m-6">
         <div className="sm:px-6 space-y-4 overflow-y-auto overscroll-contain sm:flex-1 sm:min-h-0">
           <ComboBox
@@ -73,25 +55,9 @@ export function AddMemberModal({
             searchPlaceholder="Buscar pessoa..."
           />
 
-          <ComboBox
-            label="Tipo de Membro"
-            value={memberType}
-            onValueChange={value => onMemberTypeChange(value as MemberType)}
-            options={memberTypeOptions}
-            placeholder="Selecione o tipo"
-          />
-
-          <ComboBox
-            label="Função"
-            value={role}
-            onValueChange={value => onRoleChange(value as TeamMemberRole)}
-            options={roleOptions}
-            placeholder="Selecione a função"
-          />
-
           {availablePeople.length === 0 && (
             <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-              Todas as pessoas já são membros desta equipe.
+              Todas as pessoas já são líderes deste ministério.
             </p>
           )}
         </div>

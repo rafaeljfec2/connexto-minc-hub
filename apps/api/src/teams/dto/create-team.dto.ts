@@ -18,15 +18,6 @@ export class CreateTeamDto {
   ministryId: string;
 
   @ApiProperty({
-    example: 'uuid-do-lider',
-    description: 'ID do líder da equipe (usuário)',
-    required: false,
-  })
-  @IsUUID('4', { message: 'ID do líder deve ser um UUID válido' })
-  @IsOptional()
-  leaderId?: string;
-
-  @ApiProperty({
     example: 'Equipe responsável pelo recebimento',
     description: 'Descrição da equipe',
     required: false,

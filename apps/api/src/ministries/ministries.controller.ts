@@ -14,8 +14,10 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { MinistriesService } from './ministries.service';
 import { CreateMinistryDto } from './dto/create-ministry.dto';
 import { UpdateMinistryDto } from './dto/update-ministry.dto';
+import { AddTimeMemberDto } from './dto/add-time-member.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { MinistryEntity } from './entities/ministry.entity';
+import { TimeMemberEntity } from './entities/time-member.entity';
 
 @ApiTags('Ministries')
 @ApiBearerAuth()
@@ -65,5 +67,34 @@ export class MinistriesController {
   @ApiResponse({ status: 200, description: 'Ministry removed successfully' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
     return this.ministriesService.remove(id);
+  }
+
+  @Post(':id/leaders')
+  @ApiOperation({ summary: 'Add leader to ministry' })
+  @ApiResponse({ status: 201, description: 'Leader added successfully', type: TimeMemberEntity })
+  @ApiResponse({ status: 409, description: 'Person is already a leader of the ministry' })
+  addLeader(
+    @Param('id', ParseUUIDPipe) ministryId: string,
+    @Body() addTimeMemberDto: AddTimeMemberDto,
+  ): Promise<TimeMemberEntity> {
+    return this.ministriesService.addLeader(ministryId, addTimeMemberDto);
+  }
+
+  @Get(':id/leaders')
+  @ApiOperation({ summary: 'List ministry leaders' })
+  @ApiResponse({ status: 200, description: 'List of leaders', type: [TimeMemberEntity] })
+  getLeaders(@Param('id', ParseUUIDPipe) ministryId: string): Promise<TimeMemberEntity[]> {
+    return this.ministriesService.getLeaders(ministryId);
+  }
+
+  @Delete(':id/leaders/:personId')
+  @ApiOperation({ summary: 'Remove leader from ministry' })
+  @ApiResponse({ status: 200, description: 'Leader removed successfully' })
+  @ApiResponse({ status: 404, description: 'Person is not a leader of the ministry' })
+  removeLeader(
+    @Param('id', ParseUUIDPipe) ministryId: string,
+    @Param('personId', ParseUUIDPipe) personId: string,
+  ): Promise<void> {
+    return this.ministriesService.removeLeader(ministryId, personId);
   }
 }

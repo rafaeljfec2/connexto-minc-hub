@@ -2,10 +2,11 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TeamEntity } from './entities/team.entity';
-import { TeamMemberEntity, MemberType } from './entities/team-member.entity';
+import { TeamMemberEntity, MemberType, TeamMemberRole } from './entities/team-member.entity';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { AddTeamMemberDto } from './dto/add-team-member.dto';
+import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
 
 @Injectable()
 export class TeamsService {
@@ -32,7 +33,6 @@ export class TeamsService {
       .select([
         'team.id',
         'team.ministryId',
-        'team.leaderId',
         'team.name',
         'team.description',
         'team.isActive',
@@ -43,13 +43,8 @@ export class TeamsService {
         'ministry.name',
         'ministry.description',
         'ministry.isActive',
-        'leader.id',
-        'leader.name',
-        'leader.email',
-        'leader.role',
       ])
       .leftJoin('team.ministry', 'ministry')
-      .leftJoin('team.leader', 'leader')
       .leftJoin('team.teamMembers', 'teamMembers')
       .addSelect(['teamMembers.id', 'teamMembers.personId'])
       .where('team.deletedAt IS NULL')
@@ -75,7 +70,6 @@ export class TeamsService {
       .select([
         'team.id',
         'team.ministryId',
-        'team.leaderId',
         'team.name',
         'team.description',
         'team.isActive',
@@ -86,13 +80,8 @@ export class TeamsService {
         'ministry.name',
         'ministry.description',
         'ministry.isActive',
-        'leader.id',
-        'leader.name',
-        'leader.email',
-        'leader.role',
       ])
       .leftJoin('team.ministry', 'ministry')
-      .leftJoin('team.leader', 'leader')
       .leftJoin('team.teamMembers', 'teamMembers')
       .addSelect(['teamMembers.id', 'teamMembers.personId'])
       .where('team.ministryId = :ministryId', { ministryId })
@@ -107,7 +96,6 @@ export class TeamsService {
       .select([
         'team.id',
         'team.ministryId',
-        'team.leaderId',
         'team.name',
         'team.description',
         'team.isActive',
@@ -118,13 +106,10 @@ export class TeamsService {
         'ministry.name',
         'ministry.description',
         'ministry.isActive',
-        'leader.id',
-        'leader.name',
-        'leader.email',
-        'leader.role',
         'teamMembers.id',
         'teamMembers.teamId',
         'teamMembers.personId',
+        'teamMembers.role',
         'person.id',
         'person.ministryId',
         'person.teamId',
@@ -133,7 +118,6 @@ export class TeamsService {
         'person.phone',
       ])
       .leftJoin('team.ministry', 'ministry')
-      .leftJoin('team.leader', 'leader')
       .leftJoin('team.teamMembers', 'teamMembers')
       .leftJoin('teamMembers.person', 'person')
       .where('team.id = :id', { id })
@@ -190,6 +174,7 @@ export class TeamsService {
       teamId,
       personId: addTeamMemberDto.personId,
       memberType: addTeamMemberDto.memberType ?? MemberType.FIXED,
+      role: addTeamMemberDto.role ?? TeamMemberRole.MEMBRO,
     });
 
     return this.teamMembersRepository.save(teamMember);
@@ -215,5 +200,32 @@ export class TeamsService {
       where: { teamId },
       relations: ['person'],
     });
+  }
+
+  async updateMemberRole(
+    teamId: string,
+    personId: string,
+    updateDto: UpdateTeamMemberDto,
+  ): Promise<TeamMemberEntity> {
+    await this.findOne(teamId);
+
+    const teamMember = await this.teamMembersRepository.findOne({
+      where: { teamId, personId },
+      relations: ['person'],
+    });
+
+    if (!teamMember) {
+      throw new NotFoundException('Person is not a member of this team');
+    }
+
+    if (updateDto.memberType !== undefined) {
+      teamMember.memberType = updateDto.memberType;
+    }
+
+    if (updateDto.role !== undefined) {
+      teamMember.role = updateDto.role;
+    }
+
+    return this.teamMembersRepository.save(teamMember);
   }
 }

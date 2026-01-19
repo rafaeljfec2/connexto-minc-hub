@@ -182,7 +182,7 @@ export const MOCK_USERS: User[] = [
     id: '2',
     email: 'joao@example.com',
     name: 'João Silva',
-    role: UserRole.LIDER_DE_EQUIPE,
+    role: UserRole.SERVO,
     personId: '1',
     canCheckIn: true,
     createdAt: new Date().toISOString(),

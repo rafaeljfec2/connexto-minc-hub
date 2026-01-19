@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
+import { Person, TeamMemberRole } from '@minc-hub/shared/types'
 import { useTeamByIdQuery } from '@/hooks/queries/useTeamByIdQuery'
 import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
-import { useTeamMembers } from './teams/hooks/useTeamMembers'
+import { useTeamMembersQuery } from '@/hooks/queries/useTeamMembersQuery'
 import { useTeamMemberRemoval } from './teams/hooks/useTeamMemberRemoval'
 import { useTeamMemberAddition } from './teams/hooks/useTeamMemberAddition'
 import { TeamHeader } from './teams/components/TeamHeader'
@@ -19,8 +19,7 @@ export default function TeamDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
-  const { refresh: refreshTeams } = useTeamsQuery()
-  const { data: team, refetch: refetchTeam } = useTeamByIdQuery(id)
+  const { data: team } = useTeamByIdQuery(id)
   const { ministries } = useMinistriesQuery()
   const [activeTab, setActiveTab] = useState<TabType>('membros')
 
@@ -30,22 +29,40 @@ export default function TeamDetailsPage() {
   }, [team?.ministryId, ministries])
 
   const {
-    members,
-    leader,
-    isLoading,
-    refresh: refreshMembers,
-  } = useTeamMembers(team ?? null, activeTab === 'membros')
+    members: teamMembersData,
+    isLoading: isLoadingMembers,
+    addMember: addMemberMutation,
+    updateMemberRole: updateMemberRoleMutation,
+    removeMember: removeMemberMutation,
+  } = useTeamMembersQuery(team?.id ?? null)
 
-  const { memberToRemove, deleteMemberModal, handleDeleteMemberClick, handleRemoveMember, reset } =
+  // Separar membros e líderes e ordenar por nome
+  const members = useMemo(() => {
+    return teamMembersData
+      .map(tm => tm.person)
+      .filter((p): p is Person => p !== undefined && p !== null)
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }))
+  }, [teamMembersData])
+
+  const leaders = useMemo(() => {
+    return teamMembersData
+      .filter(tm => tm.role === 'lider_de_equipe')
+      .map(tm => tm.person)
+      .filter((p): p is Person => p !== undefined && p !== null)
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }))
+  }, [teamMembersData])
+
+  const { memberToRemove, deleteMemberModal, handleDeleteMemberClick, reset } =
     useTeamMemberRemoval()
 
   const {
     addMemberModal,
     selectedPerson,
     memberType,
+    role,
     setSelectedPerson,
     setMemberType,
-    handleAddMember,
+    setRole,
     openModal,
     closeModal,
   } = useTeamMemberAddition()
@@ -64,20 +81,34 @@ export default function TeamDetailsPage() {
   }, [location.state, location.pathname, navigate, openModal])
 
   const handleRemoveMemberConfirm = async () => {
-    if (!id) return
-    await handleRemoveMember(id, () => {
-      refreshMembers()
-      refreshTeams()
-      refetchTeam()
-    })
+    if (!id || !memberToRemove) return
+    removeMemberMutation(memberToRemove.id)
+    reset()
   }
 
   const handleAddMemberConfirm = async () => {
+    if (!id || !selectedPerson) return
+    addMemberMutation({
+      personId: selectedPerson.id,
+      memberType: memberType as string,
+      role,
+    })
+    closeModal()
+  }
+
+  const handlePromoteMember = (member: Person) => {
     if (!id) return
-    await handleAddMember(id, async () => {
-      await refreshMembers()
-      await refreshTeams()
-      await refetchTeam()
+    updateMemberRoleMutation({
+      personId: member.id,
+      role: TeamMemberRole.LIDER_DE_EQUIPE,
+    })
+  }
+
+  const handleDemoteMember = (member: Person) => {
+    if (!id) return
+    updateMemberRoleMutation({
+      personId: member.id,
+      role: TeamMemberRole.MEMBRO,
     })
   }
 
@@ -102,11 +133,12 @@ export default function TeamDetailsPage() {
           <div className="flex-1 overflow-y-auto px-4 lg:px-8 pb-32 lg:pb-8 space-y-6">
             {activeTab === 'membros' && (
               <MembersList
-                team={team ?? null}
                 members={members}
-                leader={leader}
-                isLoading={isLoading}
+                leaders={leaders}
+                isLoading={isLoadingMembers}
                 onMemberDelete={handleDeleteMemberClick}
+                onPromoteMember={handlePromoteMember}
+                onDemoteMember={handleDemoteMember}
                 onAddMember={openModal}
               />
             )}
@@ -120,8 +152,10 @@ export default function TeamDetailsPage() {
         onSubmit={handleAddMemberConfirm}
         selectedPerson={selectedPerson}
         memberType={memberType}
+        role={role}
         onPersonChange={setSelectedPerson}
         onMemberTypeChange={setMemberType}
+        onRoleChange={setRole}
         existingMemberIds={existingMemberIds}
       />
 

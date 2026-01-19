@@ -37,7 +37,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
     ],
   },
@@ -57,7 +57,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
       {
         label: 'Usuários',
@@ -72,7 +72,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
       {
         label: 'Códigos de Acesso',
@@ -87,7 +87,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
     ],
   },
@@ -122,7 +122,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
       {
         label: 'Equipes',
@@ -137,7 +137,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
     ],
   },
@@ -157,7 +157,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
       {
         label: 'Escalas',
@@ -172,7 +172,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE, UserRole.SERVO],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
       {
         label: 'Sorteio Mensal',
@@ -187,7 +187,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
       {
         label: 'Config. Planejamento',
@@ -208,7 +208,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
     ],
   },
@@ -228,7 +228,7 @@ const navCategories: NavCategory[] = [
             />
           </svg>
         ),
-        roles: [UserRole.PASTOR, UserRole.LIDER_DE_TIME, UserRole.LIDER_DE_EQUIPE],
+        roles: [UserRole.PASTOR, UserRole.SERVO],
       },
     ],
   },

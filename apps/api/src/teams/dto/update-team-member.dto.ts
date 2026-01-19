@@ -1,20 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsOptional, IsEnum } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { MemberType, TeamMemberRole } from '../entities/team-member.entity';
 
-export class AddTeamMemberDto {
-  @ApiProperty({
-    example: 'uuid-da-pessoa',
-    description: 'ID da pessoa a ser adicionada à equipe',
-  })
-  @IsUUID('4', { message: 'ID da pessoa deve ser um UUID válido' })
-  personId: string;
-
+export class UpdateTeamMemberDto {
   @ApiProperty({
     example: 'fixed',
     description: 'Tipo de membro: fixed (fixo) ou eventual',
     enum: MemberType,
-    default: MemberType.FIXED,
     required: false,
   })
   @IsEnum(MemberType, { message: 'Tipo de membro deve ser "fixed" ou "eventual"' })
@@ -22,10 +14,9 @@ export class AddTeamMemberDto {
   memberType?: MemberType;
 
   @ApiProperty({
-    example: 'membro',
+    example: 'lider_de_equipe',
     description: 'Função do membro na equipe',
     enum: TeamMemberRole,
-    default: TeamMemberRole.MEMBRO,
     required: false,
   })
   @IsEnum(TeamMemberRole, { message: 'Função deve ser "lider_de_equipe" ou "membro"' })

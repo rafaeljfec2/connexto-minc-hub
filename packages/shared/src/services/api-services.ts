@@ -167,16 +167,38 @@ export function createApiServices(api: AxiosInstance) {
             },
           })
           .then(res => extractEntityData<Team>(res.data, 'Team not found')),
-      addMember: (teamId: string, data: { personId: string; memberType?: string }) =>
+      addMember: (teamId: string, data: { personId: string; memberType?: string; role?: string }) =>
         api
-          .post<ApiResponse<{ id: string; teamId: string; personId: string; memberType: string }>>(
-            `/teams/${teamId}/members`,
-            {
-              ...data,
-              memberType: data.memberType ?? 'fixed',
-            }
-          )
+          .post<
+            ApiResponse<{
+              id: string
+              teamId: string
+              personId: string
+              memberType: string
+              role: string
+            }>
+          >(`/teams/${teamId}/members`, {
+            ...data,
+            memberType: data.memberType ?? 'fixed',
+            role: data.role ?? 'membro',
+          })
           .then(res => extractEntityData(res.data, 'Failed to add member')),
+      updateMemberRole: (
+        teamId: string,
+        personId: string,
+        data: { memberType?: string; role?: string }
+      ) =>
+        api
+          .patch<
+            ApiResponse<{
+              id: string
+              teamId: string
+              personId: string
+              memberType: string
+              role: string
+            }>
+          >(`/teams/${teamId}/members/${personId}`, data)
+          .then(res => extractEntityData(res.data, 'Failed to update member')),
       removeMember: (teamId: string, personId: string) =>
         api.delete<ApiResponse<void>>(`/teams/${teamId}/members/${personId}`).then(() => {
           // Delete doesn't return data
@@ -184,7 +206,16 @@ export function createApiServices(api: AxiosInstance) {
       getMembers: (id: string) =>
         api
           .get<
-            ApiResponse<Array<{ id: string; teamId: string; personId: string; person: Person }>>
+            ApiResponse<
+              Array<{
+                id: string
+                teamId: string
+                personId: string
+                memberType: string
+                role: string
+                person: Person
+              }>
+            >
           >(`/teams/${id}/members`, {
             params: {
               _t: Date.now(), // Timestamp para evitar cache
@@ -195,9 +226,11 @@ export function createApiServices(api: AxiosInstance) {
               id: string
               teamId: string
               personId: string
+              memberType: string
+              role: string
               person: Person
             }>(res.data)
-            return members.map(m => m.personId)
+            return members
           }),
       create: (data: Omit<CreateEntity<Team>, 'memberIds'>) =>
         api
@@ -283,6 +316,40 @@ export function createApiServices(api: AxiosInstance) {
             params: churchId ? { churchId } : undefined,
           })
           .then(res => extractArrayData<Ministry>(res.data)),
+      addLeader: (ministryId: string, personId: string) =>
+        api
+          .post<
+            ApiResponse<{
+              id: string
+              ministryId: string
+              personId: string
+              role: string
+              person?: Person
+            }>
+          >(`/ministries/${ministryId}/leaders`, { personId })
+          .then(res => extractEntityData(res.data, 'Failed to add leader')),
+      getLeaders: (ministryId: string) =>
+        api
+          .get<
+            ApiResponse<
+              Array<{
+                id: string
+                ministryId: string
+                personId: string
+                role: string
+                person?: Person
+              }>
+            >
+          >(`/ministries/${ministryId}/leaders`, {
+            params: {
+              _t: Date.now(), // Timestamp para evitar cache
+            },
+          })
+          .then(res => extractArrayData(res.data)),
+      removeLeader: (ministryId: string, personId: string) =>
+        api.delete<ApiResponse<void>>(`/ministries/${ministryId}/leaders/${personId}`).then(() => {
+          // Delete doesn't return data
+        }),
     },
 
     usersService: {
