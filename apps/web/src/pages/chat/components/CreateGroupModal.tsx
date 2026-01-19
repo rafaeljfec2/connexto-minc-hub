@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react'
 import { Modal } from '@/components/ui/Modal'
-import { useUsers } from '@/hooks/useUsers'
+import { useUsersQuery } from '@/hooks/queries/useUsersQuery'
 import { useAuth } from '@/contexts/AuthContext'
 import { CreateGroupTabs } from './CreateGroupTabs'
+import { User } from '@minc-hub/shared/types'
 
 interface CreateGroupModalProps {
   isOpen: boolean
@@ -17,7 +18,7 @@ export function CreateGroupModal({
   onCreateGroup,
   onCreateGroupFromTeam,
 }: Readonly<CreateGroupModalProps>) {
-  const { users, isLoading } = useUsers()
+  const { users, isLoading } = useUsersQuery()
   const { user: currentUser } = useAuth()
   const [groupName, setGroupName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -27,9 +28,9 @@ export function CreateGroupModal({
   const filteredUsers = useMemo(() => {
     if (!users) return []
     return users
-      .filter(u => u.id !== currentUser?.id)
+      .filter((u: User) => u.id !== currentUser?.id)
       .filter(
-        u =>
+        (u: User) =>
           u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           u.email.toLowerCase().includes(searchQuery.toLowerCase())
       )
@@ -154,7 +155,7 @@ export function CreateGroupModal({
 
           return (
             <div className="divide-y divide-dark-100 dark:divide-dark-800">
-              {filteredUsers.map(user => {
+              {filteredUsers.map((user: User) => {
                 const isSelected = selectedUserIds.includes(user.id)
                 return (
                   <button

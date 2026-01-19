@@ -6,7 +6,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { User, UserRole } from '@minc-hub/shared/types'
 import { useSort } from '@/hooks/useSort'
 import { getRoleLabel } from '@/lib/userUtils'
-import { useUsers } from '@/hooks/useUsers'
+import { useUsersQuery } from '@/hooks/queries/useUsersQuery'
 import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
 
 import { UsersMobileView } from './users/components/UsersMobileView'
@@ -14,7 +14,7 @@ import { UsersDesktopView } from './users/components/UsersDesktopView'
 import { UserFormModal } from './users/components/UserFormModal'
 
 export default function UsersPage() {
-  const { users, isLoading, createUser, updateUser, deleteUser } = useUsers()
+  const { users, isLoading, createUser, updateUser, deleteUser } = useUsersQuery()
   const { people } = usePeopleQuery()
 
   const modal = useModal()
@@ -85,12 +85,15 @@ export default function UsersPage() {
   async function handleSubmit(formData: Record<string, unknown>) {
     try {
       if (editingUser) {
-        await updateUser(editingUser.id, {
-          name: formData.name as string,
-          email: formData.email as string,
-          role: formData.role as UserRole,
-          personId: (formData.personId as string) || undefined,
-          canCheckIn: formData.canCheckIn as boolean,
+        await updateUser({
+          id: editingUser.id,
+          data: {
+            name: formData.name as string,
+            email: formData.email as string,
+            role: formData.role as UserRole,
+            personId: (formData.personId as string) || undefined,
+            canCheckIn: formData.canCheckIn as boolean,
+          },
         })
       } else {
         await createUser({

@@ -8,7 +8,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { usePeopleQuery } from '@/hooks/queries/usePeopleQuery'
 import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
 import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
-import { useUsers } from '@/hooks/useUsers'
+import { useUsersQuery } from '@/hooks/queries/useUsersQuery'
 import { useAccessCodes, AccessCodeScopeType } from '@/hooks/useAccessCodes'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useToast } from '@/contexts/ToastContext'
@@ -28,7 +28,7 @@ export default function PeoplePage() {
 
   const { ministries } = useMinistriesQuery()
   const { teams } = useTeamsQuery()
-  const { users, createUser } = useUsers()
+  const { users, createUser } = useUsersQuery()
   const { createCode } = useAccessCodes()
   const { selectedChurch } = useChurch()
   const { showError, showSuccess } = useToast()

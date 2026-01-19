@@ -17,7 +17,7 @@ import { useMinistriesQuery } from '@/hooks/queries/useMinistriesQuery'
 import { useTeamsQuery } from '@/hooks/queries/useTeamsQuery'
 import { useServicesQuery } from '@/hooks/queries/useServicesQuery'
 import { usePersonByIdQuery } from '@/hooks/queries/usePersonByIdQuery'
-import { useUsers } from '@/hooks/useUsers'
+import { useUsersQuery } from '@/hooks/queries/useUsersQuery'
 import { useToast } from '@/contexts/ToastContext'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { CreateUserForm } from './components/CreateUserForm'
@@ -48,7 +48,7 @@ export default function PersonFormPage() {
   const { ministries } = useMinistriesQuery()
   const { teams } = useTeamsQuery()
   const { services } = useServicesQuery()
-  const { createUser } = useUsers()
+  const { createUser } = useUsersQuery()
   const { showError } = useToast()
 
   const [personFormData, setPersonFormData] = useState(getInitialFormData())

@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { Modal } from '@/components/ui/Modal'
-import { useUsers } from '@/hooks/useUsers'
+import { useUsersQuery } from '@/hooks/queries/useUsersQuery'
 import { useAuth } from '@/contexts/AuthContext'
+import { User } from '@minc-hub/shared/types'
 
 interface UserSelectionModalProps {
   isOpen: boolean
@@ -10,16 +11,16 @@ interface UserSelectionModalProps {
 }
 
 export function UserSelectionModal({ isOpen, onClose, onSelectUser }: UserSelectionModalProps) {
-  const { users, isLoading } = useUsers()
+  const { users, isLoading } = useUsersQuery()
   const { user: currentUser } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredUsers = useMemo(() => {
     if (!users) return []
     return users
-      .filter(u => u.id !== currentUser?.id) // Filter out current user
+      .filter((u: User) => u.id !== currentUser?.id) // Filter out current user
       .filter(
-        u =>
+        (u: User) =>
           u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           u.email.toLowerCase().includes(searchQuery.toLowerCase())
       )
@@ -76,7 +77,7 @@ export function UserSelectionModal({ isOpen, onClose, onSelectUser }: UserSelect
 
             return (
               <div className="divide-y divide-dark-100 dark:divide-dark-800">
-                {filteredUsers.map(user => (
+                {filteredUsers.map((user: User) => (
                   <button
                     key={user.id}
                     onClick={() => onSelectUser(user.id)}
