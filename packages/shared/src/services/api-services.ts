@@ -167,6 +167,16 @@ export function createApiServices(api: AxiosInstance) {
             },
           })
           .then(res => extractEntityData<Team>(res.data, 'Team not found')),
+      addMember: (teamId: string, data: { personId: string; memberType?: string }) =>
+        api
+          .post<ApiResponse<{ id: string; teamId: string; personId: string; memberType: string }>>(
+            `/teams/${teamId}/members`,
+            {
+              ...data,
+              memberType: data.memberType ?? 'fixed',
+            }
+          )
+          .then(res => extractEntityData(res.data, 'Failed to add member')),
       removeMember: (teamId: string, personId: string) =>
         api.delete<ApiResponse<void>>(`/teams/${teamId}/members/${personId}`).then(() => {
           // Delete doesn't return data

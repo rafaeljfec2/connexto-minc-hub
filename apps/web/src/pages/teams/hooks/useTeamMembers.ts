@@ -17,11 +17,13 @@ export function useTeamMembers(team: Team | null, shouldFetch: boolean): UseTeam
   const [leader, setLeader] = useState<Person | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [hasFetchedMembers, setHasFetchedMembers] = useState(false)
+  const [lastTeamId, setLastTeamId] = useState<string | null>(null)
 
   const fetchMembers = useCallback(async () => {
     if (!team?.memberIds?.length) {
       setMembers([])
       setLeader(null)
+      setHasFetchedMembers(true)
       return
     }
 
@@ -47,6 +49,14 @@ export function useTeamMembers(team: Team | null, shouldFetch: boolean): UseTeam
       setIsLoading(false)
     }
   }, [team?.memberIds, team?.leaderId])
+
+  // Reset fetch state when team ID changes
+  useEffect(() => {
+    if (team?.id !== lastTeamId) {
+      setHasFetchedMembers(false)
+      setLastTeamId(team?.id ?? null)
+    }
+  }, [team?.id, lastTeamId])
 
   useEffect(() => {
     if (shouldFetch && !hasFetchedMembers && team) {

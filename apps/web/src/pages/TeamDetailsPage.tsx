@@ -5,10 +5,12 @@ import { useMinistries } from '@/hooks/useMinistries'
 import { Team } from '@minc-hub/shared/types'
 import { useTeamMembers } from './teams/hooks/useTeamMembers'
 import { useTeamMemberRemoval } from './teams/hooks/useTeamMemberRemoval'
+import { useTeamMemberAddition } from './teams/hooks/useTeamMemberAddition'
 import { TeamHeader } from './teams/components/TeamHeader'
 import { TeamProfile } from './teams/components/TeamProfile'
 import { TeamTabs } from './teams/components/TeamTabs'
 import { MembersList } from './teams/components/MembersList'
+import { AddMemberModal } from './teams/components/AddMemberModal'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 
 type TabType = 'membros' | 'tarefas' | 'atividades'
@@ -36,6 +38,17 @@ export default function TeamDetailsPage() {
   const { memberToRemove, deleteMemberModal, handleDeleteMemberClick, handleRemoveMember, reset } =
     useTeamMemberRemoval()
 
+  const {
+    addMemberModal,
+    selectedPerson,
+    memberType,
+    setSelectedPerson,
+    setMemberType,
+    handleAddMember,
+    openModal,
+    closeModal,
+  } = useTeamMemberAddition()
+
   useEffect(() => {
     const loadTeam = async () => {
       if (id) {
@@ -60,12 +73,29 @@ export default function TeamDetailsPage() {
     })
   }
 
+  const handleAddMemberConfirm = async () => {
+    if (!id) return
+    await handleAddMember(id, async () => {
+      await refreshMembers()
+      await refreshTeams()
+      // Reload team to get updated memberIds
+      const updatedTeam = await getTeamById(id)
+      if (updatedTeam) {
+        setTeam(updatedTeam)
+      }
+    })
+  }
+
+  const existingMemberIds = useMemo(() => {
+    return team?.memberIds ?? []
+  }, [team?.memberIds])
+
   return (
     <>
       <div className="fixed lg:static top-[calc(4.5rem+env(safe-area-inset-top,0px))] lg:top-auto bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:bottom-auto left-0 right-0 lg:w-full lg:max-w-7xl lg:mx-auto lg:my-8 lg:h-[calc(100vh-8rem)] flex flex-col lg:flex-row overflow-hidden bg-white dark:bg-dark-900 lg:bg-white lg:dark:bg-dark-900 lg:rounded-2xl lg:shadow-xl lg:border lg:border-gray-200 lg:dark:border-dark-800">
         {/* Left Panel (Desktop: Sidebar / Mobile: Top) */}
         <div className="flex-shrink-0 lg:w-80 lg:border-r lg:border-gray-100 lg:dark:border-dark-800 lg:bg-gray-50/50 lg:dark:bg-dark-900/50 lg:overflow-y-auto">
-          <TeamHeader onBack={() => navigate(-1)} />
+          <TeamHeader onBack={() => navigate(-1)} onAddMember={openModal} />
           <TeamProfile team={team} ministryName={ministryName} />
         </div>
 
@@ -82,11 +112,23 @@ export default function TeamDetailsPage() {
                 leader={leader}
                 isLoading={isLoading}
                 onMemberDelete={handleDeleteMemberClick}
+                onAddMember={openModal}
               />
             )}
           </div>
         </div>
       </div>
+
+      <AddMemberModal
+        isOpen={addMemberModal.isOpen}
+        onClose={closeModal}
+        onSubmit={handleAddMemberConfirm}
+        selectedPerson={selectedPerson}
+        memberType={memberType}
+        onPersonChange={setSelectedPerson}
+        onMemberTypeChange={setMemberType}
+        existingMemberIds={existingMemberIds}
+      />
 
       <ConfirmDialog
         isOpen={deleteMemberModal.isOpen}
