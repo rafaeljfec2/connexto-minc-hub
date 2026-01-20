@@ -4,6 +4,7 @@ import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useToast } from '@/contexts/ToastContext'
+import { invalidatePersonQueries } from './utils/queryInvalidations'
 
 const apiServices = createApiServices(api)
 
@@ -43,6 +44,8 @@ export function usePeopleQuery() {
       queryClient.setQueryData<Person[]>(['people', companyId], old =>
         old ? [...old, newPerson] : [newPerson]
       )
+      // Invalidar queries relacionadas
+      invalidatePersonQueries(queryClient, { companyId })
       showSuccess('Servo criado com sucesso!')
     },
     onError: (error: Error) => {
@@ -60,6 +63,8 @@ export function usePeopleQuery() {
         old ? old.map(p => (p.id === id ? updatedPerson : p)) : [updatedPerson]
       )
       queryClient.setQueryData(['person', companyId, id], updatedPerson)
+      // Invalidar queries relacionadas
+      invalidatePersonQueries(queryClient, { companyId, personId: id })
       showSuccess('Servo atualizado com sucesso!')
     },
     onError: (error: Error) => {
@@ -76,6 +81,8 @@ export function usePeopleQuery() {
         old ? old.filter(p => p.id !== id) : []
       )
       queryClient.removeQueries({ queryKey: ['person', companyId, id] })
+      // Invalidar queries relacionadas
+      invalidatePersonQueries(queryClient, { companyId, personId: id })
       showSuccess('Servo excluído com sucesso!')
     },
     onError: (error: Error) => {

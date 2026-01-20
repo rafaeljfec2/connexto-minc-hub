@@ -6,6 +6,11 @@ import { useChurch } from '@/contexts/ChurchContext'
 import { useToast } from '@/contexts/ToastContext'
 import { useMemo } from 'react'
 import { useMinistriesQuery } from './useMinistriesQuery'
+import {
+  invalidateDependentQueries,
+  invalidateTeamQueries,
+  invalidateEntityQueries,
+} from './utils/queryInvalidations'
 
 const apiServices = createApiServices(api)
 
@@ -53,7 +58,8 @@ export function useTeamsQuery() {
   const createMutation = useMutation({
     mutationFn: (data: CreateTeam) => apiServices.teamsService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teams', companyId] })
+      invalidateEntityQueries(queryClient, 'teams', { companyId })
+      invalidateDependentQueries(queryClient, 'teams')
       showSuccess('Equipe criada com sucesso!')
     },
     onError: (error: Error) => {
@@ -66,8 +72,10 @@ export function useTeamsQuery() {
     mutationFn: ({ id, data }: { id: string; data: Partial<Team> }) =>
       apiServices.teamsService.update(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['teams', companyId] })
-      queryClient.invalidateQueries({ queryKey: ['team', companyId, id] })
+      invalidateEntityQueries(queryClient, 'teams', { companyId })
+      invalidateEntityQueries(queryClient, 'team', { companyId, id })
+      invalidateTeamQueries(queryClient, id, { companyId })
+      invalidateDependentQueries(queryClient, 'team')
       showSuccess('Equipe atualizada com sucesso!')
     },
     onError: (error: Error) => {
@@ -79,8 +87,10 @@ export function useTeamsQuery() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiServices.teamsService.delete(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['teams', companyId] })
+      invalidateEntityQueries(queryClient, 'teams', { companyId })
       queryClient.removeQueries({ queryKey: ['team', companyId, id] })
+      invalidateTeamQueries(queryClient, id, { companyId })
+      invalidateDependentQueries(queryClient, 'team')
       showSuccess('Equipe excluída com sucesso!')
     },
     onError: (error: Error) => {
@@ -98,8 +108,8 @@ export function useTeamsQuery() {
       data: { personId: string; memberType?: string }
     }) => apiServices.teamsService.addMember(teamId, data),
     onSuccess: (_, { teamId }) => {
-      queryClient.invalidateQueries({ queryKey: ['teams', companyId] })
-      queryClient.invalidateQueries({ queryKey: ['team', companyId, teamId] })
+      invalidateTeamQueries(queryClient, teamId, { companyId })
+      invalidateDependentQueries(queryClient, 'teamMembers')
       showSuccess('Membro adicionado com sucesso!')
     },
     onError: (error: Error) => {
@@ -112,8 +122,8 @@ export function useTeamsQuery() {
     mutationFn: ({ teamId, personId }: { teamId: string; personId: string }) =>
       apiServices.teamsService.removeMember(teamId, personId),
     onSuccess: (_, { teamId }) => {
-      queryClient.invalidateQueries({ queryKey: ['teams', companyId] })
-      queryClient.invalidateQueries({ queryKey: ['team', companyId, teamId] })
+      invalidateTeamQueries(queryClient, teamId, { companyId })
+      invalidateDependentQueries(queryClient, 'teamMembers')
       showSuccess('Membro removido com sucesso!')
     },
     onError: (error: Error) => {

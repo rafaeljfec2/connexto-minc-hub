@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
+import { invalidateDependentQueries } from './utils/queryInvalidations'
 
 const apiServices = createApiServices(api)
 
@@ -26,7 +27,7 @@ export function useMinistryLeadersQuery(ministryId: string | null) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ministryLeaders', ministryId] })
-      queryClient.invalidateQueries({ queryKey: ['ministries'] })
+      invalidateDependentQueries(queryClient, 'ministryLeaders')
       showSuccess('Líder adicionado com sucesso')
     },
     onError: (error: Error) => {
@@ -41,7 +42,7 @@ export function useMinistryLeadersQuery(ministryId: string | null) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ministryLeaders', ministryId] })
-      queryClient.invalidateQueries({ queryKey: ['ministries'] })
+      invalidateDependentQueries(queryClient, 'ministryLeaders')
       showSuccess('Líder removido com sucesso')
     },
     onError: (error: Error) => {

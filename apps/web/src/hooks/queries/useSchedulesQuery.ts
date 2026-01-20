@@ -4,6 +4,7 @@ import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useToast } from '@/contexts/ToastContext'
+import { invalidateEntityQueries, invalidateDependentQueries } from './utils/queryInvalidations'
 
 const apiServices = createApiServices(api)
 
@@ -39,7 +40,8 @@ export function useSchedulesQuery(serviceId?: string, startDate?: string, endDat
   const createMutation = useMutation({
     mutationFn: (data: CreateSchedule) => apiServices.schedulesService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['schedules', companyId] })
+      invalidateEntityQueries(queryClient, 'schedules', { companyId })
+      invalidateDependentQueries(queryClient, 'schedules')
       showSuccess('Escala criada com sucesso!')
     },
     onError: (error: Error) => {
@@ -52,8 +54,9 @@ export function useSchedulesQuery(serviceId?: string, startDate?: string, endDat
     mutationFn: ({ id, data }: { id: string; data: Partial<Schedule> }) =>
       apiServices.schedulesService.update(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules', companyId] })
-      queryClient.invalidateQueries({ queryKey: ['schedule', companyId, id] })
+      invalidateEntityQueries(queryClient, 'schedules', { companyId })
+      invalidateEntityQueries(queryClient, 'schedule', { companyId, id })
+      invalidateDependentQueries(queryClient, 'schedule')
       showSuccess('Escala atualizada com sucesso!')
     },
     onError: (error: Error) => {
@@ -65,8 +68,9 @@ export function useSchedulesQuery(serviceId?: string, startDate?: string, endDat
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiServices.schedulesService.delete(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['schedules', companyId] })
+      invalidateEntityQueries(queryClient, 'schedules', { companyId })
       queryClient.removeQueries({ queryKey: ['schedule', companyId, id] })
+      invalidateDependentQueries(queryClient, 'schedule')
       showSuccess('Escala excluída com sucesso!')
     },
     onError: (error: Error) => {

@@ -4,6 +4,11 @@ import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useChurch } from '@/contexts/ChurchContext'
 import { useToast } from '@/contexts/ToastContext'
+import {
+  invalidateEntityQueries,
+  invalidateDependentQueries,
+  invalidateMinistryQueries,
+} from './utils/queryInvalidations'
 
 const apiServices = createApiServices(api)
 
@@ -39,7 +44,8 @@ export function useMinistriesQuery() {
   const createMutation = useMutation({
     mutationFn: (data: CreateMinistry) => apiServices.ministriesService.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ministries', companyId] })
+      invalidateEntityQueries(queryClient, 'ministries', { companyId })
+      invalidateDependentQueries(queryClient, 'ministries')
       showSuccess('Ministério criado com sucesso!')
     },
     onError: (error: Error) => {
@@ -52,8 +58,10 @@ export function useMinistriesQuery() {
     mutationFn: ({ id, data }: { id: string; data: Partial<Ministry> }) =>
       apiServices.ministriesService.update(id, data),
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['ministries', companyId] })
-      queryClient.invalidateQueries({ queryKey: ['ministry', companyId, id] })
+      invalidateEntityQueries(queryClient, 'ministries', { companyId })
+      invalidateEntityQueries(queryClient, 'ministry', { companyId, id })
+      invalidateMinistryQueries(queryClient, id, { companyId })
+      invalidateDependentQueries(queryClient, 'ministry')
       showSuccess('Ministério atualizado com sucesso!')
     },
     onError: (error: Error) => {
@@ -65,8 +73,10 @@ export function useMinistriesQuery() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiServices.ministriesService.delete(id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ['ministries', companyId] })
+      invalidateEntityQueries(queryClient, 'ministries', { companyId })
       queryClient.removeQueries({ queryKey: ['ministry', companyId, id] })
+      invalidateMinistryQueries(queryClient, id, { companyId })
+      invalidateDependentQueries(queryClient, 'ministry')
       showSuccess('Ministério excluído com sucesso!')
     },
     onError: (error: Error) => {

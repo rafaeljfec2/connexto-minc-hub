@@ -5,6 +5,7 @@ import { useToast } from '@/contexts/ToastContext'
 import { useChurch } from '@/contexts/ChurchContext'
 import { User, ApiResponse } from '@minc-hub/shared/types'
 import { AxiosError } from 'axios'
+import { invalidatePersonQueries } from './utils/queryInvalidations'
 
 const apiServices = createApiServices(api)
 
@@ -50,6 +51,10 @@ export function useUsersQuery() {
       queryClient.setQueryData<User[]>(['users', selectedChurch?.id], old =>
         old ? [...old, newUser] : [newUser]
       )
+      // Invalidar person se houver relação
+      if (newUser.personId) {
+        invalidatePersonQueries(queryClient, { companyId: selectedChurch?.id })
+      }
       showSuccess('Usuário criado com sucesso!')
     },
     onError: error => {
@@ -68,6 +73,13 @@ export function useUsersQuery() {
       queryClient.setQueryData<User[]>(['users', selectedChurch?.id], old =>
         old ? old.map(user => (user.id === id ? updatedUser : user)) : [updatedUser]
       )
+      // Invalidar person se houver relação (avatar pode mudar)
+      if (updatedUser.personId) {
+        invalidatePersonQueries(queryClient, {
+          companyId: selectedChurch?.id,
+          personId: updatedUser.personId,
+        })
+      }
       showSuccess('Usuário atualizado com sucesso!')
     },
     onError: error => {
@@ -82,10 +94,12 @@ export function useUsersQuery() {
       }
       return apiServices.usersService.delete(id)
     },
-    onSuccess: (_, id) => {
+    onSuccess: (_, deletedId) => {
       queryClient.setQueryData<User[]>(['users', selectedChurch?.id], old =>
-        old ? old.filter(user => user.id !== id) : []
+        old ? old.filter(user => user.id !== deletedId) : []
       )
+      // Invalidar person se houver relação
+      invalidatePersonQueries(queryClient, { companyId: selectedChurch?.id })
       showSuccess('Usuário excluído com sucesso!')
     },
     onError: error => {

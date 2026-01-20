@@ -4,6 +4,7 @@ import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { useToast } from '@/contexts/ToastContext'
 import { useAuth } from '@/contexts/AuthContext'
+import { invalidateAllCompanyQueries } from './utils/queryInvalidations'
 
 const apiServices = createApiServices(api)
 
@@ -56,6 +57,8 @@ export function useChurchesQuery() {
         old ? old.map(c => (c.id === id ? updatedChurch : c)) : [updatedChurch]
       )
       queryClient.setQueryData(['church', id], updatedChurch)
+      // Invalidar todas as queries que dependem de companyId
+      invalidateAllCompanyQueries(queryClient)
       showSuccess('Igreja atualizada com sucesso!')
     },
     onError: (error: Error) => {
@@ -72,6 +75,8 @@ export function useChurchesQuery() {
         old ? old.filter(c => c.id !== id) : []
       )
       queryClient.removeQueries({ queryKey: ['church', id] })
+      // Invalidar todas as queries que dependem de companyId
+      invalidateAllCompanyQueries(queryClient)
       showSuccess('Igreja excluída com sucesso!')
     },
     onError: (error: Error) => {

@@ -62,7 +62,12 @@ apps/web/src/
 │       ├── useMinistriesQuery.ts   # ✅ Substituindo useMinistries
 │       ├── useSchedulesQuery.ts    # ✅ Substituindo useSchedules
 │       ├── useServicesQuery.ts     # ✅ Substituindo useServices
-│       └── useChurchesQuery.ts     # ✅ Substituindo useChurches
+│       ├── useChurchesQuery.ts     # ✅ Substituindo useChurches
+│       ├── useUsersQuery.ts        # ✅ Substituindo useUsers
+│       ├── useTeamMembersQuery.ts  # ✅ Gerenciamento de membros
+│       ├── useMinistryLeadersQuery.ts # ✅ Gerenciamento de líderes
+│       └── utils/
+│           └── queryInvalidations.ts # ✅ Utilitários de invalidação
 └── App.tsx                         # QueryClientProvider adicionado
 ```
 
@@ -174,9 +179,87 @@ export function usePeopleQuery() {
    - ✅ `useSchedulesQuery`
    - ✅ `useServicesQuery`
    - ✅ `useChurchesQuery`
+   - ✅ `useUsersQuery`
+   - ✅ `useTeamMembersQuery`
+   - ✅ `useMinistryLeadersQuery`
 3. ✅ **Implementado**: Todos os componentes atualizados
-4. ⏳ **Futuro**: Implementar Optimistic Updates onde fizer sentido
-5. ⏳ **Futuro**: Configurar cache strategies específicas por recurso
+4. ✅ **Implementado**: Sistema centralizado de invalidação de cache
+5. ⏳ **Futuro**: Implementar Optimistic Updates onde fizer sentido
+6. ⏳ **Futuro**: Configurar cache strategies específicas por recurso
+
+## 🔄 Sistema de Invalidação de Cache
+
+### Problema
+Quando uma entidade era criada, atualizada ou deletada, era necessário invalidar manualmente todas as queries relacionadas em cada hook, causando:
+- Código duplicado
+- Dificuldade de manutenção
+- Risco de esquecer invalidações importantes
+- Inconsistência de dados entre telas
+
+### Solução: Utilitários Centralizados
+
+Criamos o arquivo `apps/web/src/hooks/queries/utils/queryInvalidations.ts` que centraliza toda a lógica de invalidação:
+
+#### Mapeamento de Dependências
+
+```typescript
+const ENTITY_DEPENDENCIES: Record<EntityType, EntityType[]> = {
+  people: ['teamMembers', 'schedules', 'teams'],
+  teams: ['teamMembers', 'schedules', 'ministries'],
+  teamMembers: ['teams', 'team', 'people'],
+  ministries: ['teams', 'ministryLeaders'],
+  // ...
+}
+```
+
+#### Funções Utilitárias
+
+- `invalidateEntityQueries()`: Invalida queries de uma entidade específica
+- `invalidateDependentQueries()`: Invalida todas as queries dependentes
+- `invalidateEntityAndDependencies()`: Invalida entidade e dependências
+- `invalidateAllCompanyQueries()`: Invalida todas as queries que dependem de `companyId`
+- `invalidateTeamQueries()`: Invalida queries relacionadas a uma equipe específica
+- `invalidateMinistryQueries()`: Invalida queries relacionadas a um ministério específico
+- `invalidatePersonQueries()`: Invalida queries relacionadas a uma pessoa específica
+
+### Exemplo de Uso
+
+#### Antes (Código Duplicado):
+```typescript
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: ['teamMembers'], exact: false })
+  queryClient.invalidateQueries({ queryKey: ['schedules'], exact: false })
+  queryClient.invalidateQueries({ queryKey: ['teams'], exact: false })
+}
+```
+
+#### Depois (Centralizado):
+```typescript
+import { invalidatePersonQueries } from './utils/queryInvalidations'
+
+onSuccess: (updatedPerson, { id }) => {
+  // Atualiza cache local
+  queryClient.setQueryData(['people', companyId], ...)
+  // Invalida todas as dependências automaticamente
+  invalidatePersonQueries(queryClient, { companyId, personId: id })
+}
+```
+
+### Benefícios
+
+1. **DRY (Don't Repeat Yourself)**: Lógica de invalidação em um único lugar
+2. **Manutenibilidade**: Mudanças nas dependências são feitas em um único arquivo
+3. **Consistência**: Garante que todas as invalidações necessárias sejam feitas
+4. **Legibilidade**: Código mais limpo e fácil de entender
+5. **Escalabilidade**: Fácil adicionar novas entidades e dependências
+
+### Cobertura Completa
+
+Todas as mutations agora invalidam automaticamente:
+- ✅ Queries da entidade modificada
+- ✅ Queries de entidades dependentes
+- ✅ Queries relacionadas (ex: teamMembers quando Person muda)
+- ✅ Queries de contexto (ex: todas as queries quando Church muda)
 
 ## 📚 Referências
 

@@ -3,6 +3,7 @@ import { createApiServices } from '@minc-hub/shared/services'
 import { api } from '@/lib/api'
 import { TeamMemberRole } from '@minc-hub/shared/types'
 import { useToast } from '@/contexts/ToastContext'
+import { invalidateDependentQueries } from './utils/queryInvalidations'
 
 const apiServices = createApiServices(api)
 
@@ -27,7 +28,7 @@ export function useTeamMembersQuery(teamId: string | null) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamMembers', teamId] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
+      invalidateDependentQueries(queryClient, 'teamMembers')
       showSuccess('Membro adicionado com sucesso')
     },
     onError: (error: Error) => {
@@ -45,7 +46,7 @@ export function useTeamMembersQuery(teamId: string | null) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamMembers', teamId] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
+      invalidateDependentQueries(queryClient, 'teamMembers')
       showSuccess('Função do membro atualizada com sucesso')
     },
     onError: (error: Error) => {
@@ -60,7 +61,7 @@ export function useTeamMembersQuery(teamId: string | null) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teamMembers', teamId] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
+      invalidateDependentQueries(queryClient, 'teamMembers')
       showSuccess('Membro removido com sucesso')
     },
     onError: (error: Error) => {
