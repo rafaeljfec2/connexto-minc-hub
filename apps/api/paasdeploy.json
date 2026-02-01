@@ -1,0 +1,26 @@
+{
+  "$schema": "../../paasdeploy.schema.json",
+  "name": "minc-teams-api",
+  "build": {
+    "type": "dockerfile",
+    "dockerfile": "./Dockerfile",
+    "context": "../.."
+  },
+  "healthcheck": {
+    "path": "/minc-teams/v1/health",
+    "interval": "30s",
+    "timeout": "10s",
+    "retries": 3,
+    "startPeriod": "60s"
+  },
+  "port": 3000,
+  "hostPort": 3002,
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3000"
+  },
+  "resources": {
+    "memory": "512m",
+    "cpu": "1"
+  }
+}
