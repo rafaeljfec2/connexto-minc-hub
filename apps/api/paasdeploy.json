@@ -1,5 +1,6 @@
 {
   "$schema": "../../paasdeploy.schema.json",
+  "runtime": "nestjs",
   "name": "minc-teams-api",
   "build": {
     "type": "dockerfile",
