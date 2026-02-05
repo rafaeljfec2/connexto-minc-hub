@@ -34,3 +34,4 @@ lerna-debug.log*
 
 # TypeORM
 ormconfig.json
+.env.prod
