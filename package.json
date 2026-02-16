@@ -2,6 +2,7 @@
   "name": "connexto-minc-hub",
   "version": "1.0.0",
   "private": true,
+  "license": "UNLICENSED",
   "description": "Sistema de gestão dos times da MINC TEAMS - Minha Igreja na Cidade",
   "scripts": {
     "dev": "turbo run dev",
