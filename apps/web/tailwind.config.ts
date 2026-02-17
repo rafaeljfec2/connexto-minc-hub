@@ -38,8 +38,10 @@ const config: Config = {
         },
       },
       backgroundImage: {
-        'gradient-warm': 'linear-gradient(135deg, #1a1a1a 0%, #431407 25%, #c2410c 50%, #f97316 75%, #1a1a1a 100%)',
-        'gradient-warm-grain': 'radial-gradient(circle at 20% 50%, rgba(249, 115, 22, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(194, 65, 12, 0.4) 0%, transparent 50%), linear-gradient(135deg, #09090b 0%, #431407 25%, #c2410c 50%, #f97316 75%, #09090b 100%)',
+        'gradient-warm':
+          'linear-gradient(135deg, #1a1a1a 0%, #431407 25%, #c2410c 50%, #f97316 75%, #1a1a1a 100%)',
+        'gradient-warm-grain':
+          'radial-gradient(circle at 20% 50%, rgba(249, 115, 22, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(194, 65, 12, 0.4) 0%, transparent 50%), linear-gradient(135deg, #09090b 0%, #431407 25%, #c2410c 50%, #f97316 75%, #09090b 100%)',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
@@ -69,12 +71,28 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'scale(0.95)' },
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
-        'shimmer': {
+        shimmer: {
           '0%': { backgroundPosition: '-1000px 0' },
           '100%': { backgroundPosition: '1000px 0' },
         },
         'pulse-slow': {
           '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'reveal-up': {
+          '0%': { opacity: '0', transform: 'translateY(30px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'reveal-scale': {
+          '0%': { opacity: '0', transform: 'scale(0.9)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { opacity: '0.4' },
           '50%': { opacity: '0.8' },
         },
       },
@@ -85,8 +103,12 @@ const config: Config = {
         'slide-in-right': 'slide-in-right 0.3s ease-out',
         'slide-in-left': 'slide-in-left 0.3s ease-out',
         'scale-in': 'scale-in 0.2s ease-out',
-        'shimmer': 'shimmer 2s linear infinite',
+        shimmer: 'shimmer 2s linear infinite',
         'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+        float: 'float 6s ease-in-out infinite',
+        'reveal-up': 'reveal-up 0.7s ease-out forwards',
+        'reveal-scale': 'reveal-scale 0.6s ease-out forwards',
+        'glow-pulse': 'glow-pulse 4s ease-in-out infinite',
       },
     },
   },

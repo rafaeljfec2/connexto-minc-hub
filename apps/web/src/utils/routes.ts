@@ -6,18 +6,25 @@
  */
 
 // Rotas públicas que não devem verificar autenticação
-const PUBLIC_ROUTES = ['/login', '/activate'] as const
+const PUBLIC_ROUTES_PREFIX = ['/login', '/activate'] as const
+const PUBLIC_ROUTES_EXACT = ['/'] as const
 
-export type PublicRoute = (typeof PUBLIC_ROUTES)[number]
+export type PublicRoute =
+  | (typeof PUBLIC_ROUTES_PREFIX)[number]
+  | (typeof PUBLIC_ROUTES_EXACT)[number]
+
+function matchesPublicRoute(pathname: string): boolean {
+  if ((PUBLIC_ROUTES_EXACT as readonly string[]).includes(pathname)) return true
+  return PUBLIC_ROUTES_PREFIX.some(route => pathname.startsWith(route))
+}
 
 /**
  * Verifica se a rota atual é uma rota pública
  * @returns true se a rota atual não requer autenticação
  */
 export function isPublicRoute(): boolean {
-  if (typeof window === 'undefined') return false
-  const pathname = window.location.pathname
-  return PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+  if (globalThis.window === undefined) return false
+  return matchesPublicRoute(globalThis.window.location.pathname)
 }
 
 /**
@@ -26,7 +33,7 @@ export function isPublicRoute(): boolean {
  * @returns true se o pathname não requer autenticação
  */
 export function isPublicPathname(pathname: string): boolean {
-  return PUBLIC_ROUTES.some(route => pathname.startsWith(route))
+  return matchesPublicRoute(pathname)
 }
 
 /**
@@ -34,5 +41,5 @@ export function isPublicPathname(pathname: string): boolean {
  * @returns Array com as rotas públicas
  */
 export function getPublicRoutes(): readonly string[] {
-  return PUBLIC_ROUTES
+  return [...PUBLIC_ROUTES_EXACT, ...PUBLIC_ROUTES_PREFIX]
 }

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -15,6 +15,7 @@ import { protectedRoutes, publicRoutes } from './navigator/routes'
 import { ROUTES } from './navigator/routes.constants'
 import type { RouteConfig } from './navigator/routes.types'
 
+const LandingPage = lazy(() => import('@/pages/LandingPage'))
 const LoginPage = lazy(() => import('@/pages/LoginPage'))
 
 const PageLoader = () => (
@@ -73,7 +74,14 @@ function App() {
                   />
                   {publicRoutes.map(renderPublicRoute)}
                   {protectedRoutes.map(renderProtectedRoute)}
-                  <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
+                  <Route
+                    path="/"
+                    element={
+                      <Suspense fallback={<PageLoader />}>
+                        <LandingPage />
+                      </Suspense>
+                    }
+                  />
                 </Routes>
                 <ToastContainer />
               </ChurchProvider>
