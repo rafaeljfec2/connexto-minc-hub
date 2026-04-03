@@ -1,8 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useCallback, useMemo, useState } from 'react'
+import { createContext, useCallback, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { type Language, getTranslation } from '../i18n/translations'
-import { LanguageContext } from './languageContext'
+
+export interface LanguageContextType {
+  readonly language: Language
+  readonly toggleLanguage: () => void
+  readonly t: (path: string) => string
+  readonly tArray: (path: string) => readonly string[]
+}
+
+export const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 interface LanguageProviderProps {
   readonly children: ReactNode
