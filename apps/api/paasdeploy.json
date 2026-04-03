@@ -4,7 +4,7 @@
   "build": {
     "type": "dockerfile",
     "dockerfile": "Dockerfile",
-    "context": "../.."
+    "context": "."
   },
   "healthcheck": {
     "path": "/minc-teams/v1/health",
