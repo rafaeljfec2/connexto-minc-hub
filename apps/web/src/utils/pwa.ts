@@ -70,8 +70,10 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       })
     })
 
-    // Escutar mensagens do Service Worker
     navigator.serviceWorker.addEventListener('message', event => {
+      if (event.origin && event.origin !== globalThis.window.location.origin) return
+      if (!(event.source instanceof ServiceWorker)) return
+
       if (event.data?.type === 'SW_UPDATED') {
         logger.info('Service Worker atualizado', 'PWA')
         if (updateAvailableCallback) {

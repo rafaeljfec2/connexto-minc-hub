@@ -4,21 +4,38 @@ import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { useLongPress } from '@/hooks/useLongPress'
 import { AudioPreview } from './AudioPreview'
+import DOMPurify from 'dompurify'
 import { sanitizeText, sanitizeUrl, isValidUrl } from '@/lib/sanitize'
 
 type MessageStatus = 'sending' | 'sent' | 'read'
 
+const SAFE_PROTOCOLS = ['https:', 'http:'] as const
+
+function ensureSafeHref(url: string): string {
+  const cleaned = DOMPurify.sanitize(url)
+  try {
+    const parsed = new URL(cleaned, globalThis.window?.location?.origin)
+    if ((SAFE_PROTOCOLS as readonly string[]).includes(parsed.protocol)) {
+      return parsed.href
+    }
+  } catch {
+    /* invalid URL */
+  }
+  return ''
+}
+
 async function downloadFile(url: string, filename: string): Promise<void> {
   const sanitizedUrl = sanitizeUrl(url)
+  const safeHref = ensureSafeHref(sanitizedUrl)
   const sanitizedFilename = sanitizeText(filename)
 
-  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+  if (!safeHref || !isValidUrl(safeHref)) {
     console.error('Invalid URL for download')
     return
   }
 
   try {
-    const response = await fetch(sanitizedUrl)
+    const response = await fetch(safeHref)
     const blob = await response.blob()
     const blobUrl = globalThis.URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -494,8 +511,9 @@ function MediaPreview({
 function ImagePreview({ url, name }: Readonly<{ url: string; name: string }>) {
   const sanitizedUrl = sanitizeUrl(url)
   const sanitizedName = sanitizeText(name)
+  const safeHref = ensureSafeHref(sanitizedUrl)
 
-  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+  if (!safeHref || !isValidUrl(safeHref)) {
     return (
       <div className="w-full h-32 flex items-center justify-center bg-dark-100 dark:bg-dark-800 text-dark-500 dark:text-dark-400">
         <span className="text-sm">Imagem inválida ou não permitida</span>
@@ -504,9 +522,9 @@ function ImagePreview({ url, name }: Readonly<{ url: string; name: string }>) {
   }
 
   return (
-    <a href={sanitizedUrl} target="_blank" rel="noopener noreferrer" className="block">
+    <a href={safeHref} target="_blank" rel="noopener noreferrer" className="block">
       <img
-        src={sanitizedUrl}
+        src={safeHref}
         alt={sanitizedName}
         className="w-full max-h-64 object-cover"
         loading="lazy"
@@ -522,8 +540,9 @@ function VideoPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
   const handleClose = useCallback(() => setShowPlayer(false), [])
 
   const sanitizedUrl = sanitizeUrl(url)
+  const safeHref = ensureSafeHref(sanitizedUrl)
 
-  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+  if (!safeHref || !isValidUrl(safeHref)) {
     return (
       <div className="w-full h-32 flex items-center justify-center bg-dark-100 dark:bg-dark-800 text-dark-500 dark:text-dark-400">
         <span className="text-sm">Vídeo inválido ou não permitido</span>
@@ -534,7 +553,7 @@ function VideoPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
   if (showPlayer) {
     return (
       <div className="relative">
-        <video src={sanitizedUrl} controls autoPlay className="w-full max-h-64 bg-black">
+        <video src={safeHref} controls autoPlay className="w-full max-h-64 bg-black">
           <track kind="captions" />
         </video>
         <button
@@ -554,11 +573,7 @@ function VideoPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
       className="relative cursor-pointer group w-full block"
       onClick={handlePlay}
     >
-      <video
-        src={sanitizedUrl}
-        className="w-full max-h-64 object-cover bg-black"
-        preload="metadata"
-      >
+      <video src={safeHref} className="w-full max-h-64 object-cover bg-black" preload="metadata">
         <track kind="captions" />
       </video>
       <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
@@ -572,8 +587,9 @@ function VideoPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
 
 function PdfPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
   const sanitizedUrl = sanitizeUrl(url)
+  const safeHref = ensureSafeHref(sanitizedUrl)
 
-  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+  if (!safeHref || !isValidUrl(safeHref)) {
     return (
       <div className="w-full h-32 flex items-center justify-center bg-dark-100 dark:bg-dark-800 text-dark-500 dark:text-dark-400">
         <span className="text-sm">Documento inválido ou não permitido</span>
@@ -582,7 +598,7 @@ function PdfPreview({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
   }
 
   return (
-    <a href={sanitizedUrl} target="_blank" rel="noopener noreferrer" className="block relative">
+    <a href={safeHref} target="_blank" rel="noopener noreferrer" className="block relative">
       <div
         className={`h-32 flex items-center justify-center ${isMe ? 'bg-primary-600' : 'bg-dark-300 dark:bg-dark-700'}`}
       >
@@ -620,15 +636,16 @@ function MediaActions({ attachment, mediaType, isMe }: Readonly<MediaActionsProp
 
 function ImageAction({ url, isMe }: Readonly<{ url: string; isMe: boolean }>) {
   const sanitizedUrl = sanitizeUrl(url)
+  const safeHref = ensureSafeHref(sanitizedUrl)
 
-  if (!sanitizedUrl || !isValidUrl(sanitizedUrl)) {
+  if (!safeHref || !isValidUrl(safeHref)) {
     return null
   }
 
   return (
     <div className="flex items-center gap-2">
       <a
-        href={sanitizedUrl}
+        href={safeHref}
         target="_blank"
         rel="noopener noreferrer"
         className={`flex items-center gap-1 text-xs ${

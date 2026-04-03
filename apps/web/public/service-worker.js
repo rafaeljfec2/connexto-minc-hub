@@ -188,17 +188,34 @@ async function staleWhileRevalidateStrategy(request) {
   return cachedResponse || fetchPromise
 }
 
-// Mensagem para atualizar cache manualmente (opcional)
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting()
+globalThis.addEventListener('message', event => {
+  if (!event.source) return
+  if (event.origin !== globalThis.location.origin) return
+  try {
+    const sourceOrigin = new URL(event.source.url).origin
+    if (sourceOrigin !== globalThis.location.origin) return
+  } catch {
+    return
   }
 
-  if (event.data && event.data.type === 'CACHE_URLS') {
+  if (event.data?.type === 'SKIP_WAITING') {
+    globalThis.skipWaiting()
+  }
+
+  if (event.data?.type === 'CACHE_URLS') {
     const urls = event.data.urls || []
+    const safeUrls = urls.filter(url => {
+      try {
+        const parsed = new URL(url, globalThis.location.origin)
+        return parsed.origin === globalThis.location.origin
+      } catch {
+        return false
+      }
+    })
+    if (safeUrls.length === 0) return
     event.waitUntil(
       caches.open(CACHE_NAME).then(cache => {
-        return cache.addAll(urls)
+        return cache.addAll(safeUrls)
       })
     )
   }

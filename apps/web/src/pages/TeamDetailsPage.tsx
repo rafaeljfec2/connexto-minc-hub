@@ -73,12 +73,11 @@ export default function TeamDetailsPage() {
   // Abrir modal de adicionar membro se vier da navegação com estado
   useEffect(() => {
     const state = location.state as { openAddMemberModal?: boolean } | null
-    if (state?.openAddMemberModal) {
+    if (state?.openAddMemberModal && id) {
       openModal()
-      // Limpar o estado para não abrir novamente ao navegar
-      navigate(location.pathname, { replace: true, state: {} })
+      navigate(`/teams/${encodeURIComponent(id)}`, { replace: true, state: {} })
     }
-  }, [location.state, location.pathname, navigate, openModal])
+  }, [location.state, id, navigate, openModal])
 
   const handleRemoveMemberConfirm = async () => {
     if (!id || !memberToRemove) return

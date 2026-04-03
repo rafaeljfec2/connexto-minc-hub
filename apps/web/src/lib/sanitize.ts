@@ -46,71 +46,54 @@ export function sanitizeText(text: string): string {
  */
 export function sanitizeUrl(
   url: string,
-  allowedProtocols: string[] = ['https:', 'http:', 'data:']
+  allowedProtocols: readonly string[] = ['https:', 'http:', 'data:']
 ): string {
   if (!url) return ''
 
   try {
-    // Parse URL relative to current origin if needed
-    const parsed = new URL(url, typeof window !== 'undefined' ? window.location.origin : undefined)
+    const origin = globalThis.window === undefined ? undefined : globalThis.window.location.origin
+    const parsed = new URL(url, origin)
 
-    // Check if protocol is allowed
     if (!allowedProtocols.includes(parsed.protocol)) {
       return ''
     }
 
-    // Additional validation: prevent javascript: and data: URLs with scripts
     if (parsed.protocol === 'javascript:') {
       return ''
     }
 
     if (parsed.protocol === 'data:') {
-      // Only allow safe data URLs (images, etc.)
       const dataUrlPattern = /^data:(image|video|audio)\/[^;]+;base64,/
       if (!dataUrlPattern.test(url)) {
         return ''
       }
+      return url
     }
 
-    // Use DOMPurify to sanitize the URL
-    const sanitized = DOMPurify.sanitize(url, {
-      ALLOWED_URI_REGEXP: new RegExp(
-        `^(${allowedProtocols.map(p => p.replace(':', '')).join('|')}):`
-      ),
-    })
-
-    return sanitized
+    return parsed.href
   } catch {
-    // Invalid URL
     return ''
   }
 }
 
-/**
- * Validates if a URL is safe to use
- * @param url - URL to validate
- * @param allowedProtocols - Array of allowed protocols
- * @returns true if URL is safe, false otherwise
- */
 export function isValidUrl(
   url: string,
-  allowedProtocols: string[] = ['https:', 'http:', 'data:']
+  allowedProtocols: readonly string[] = ['https:', 'http:', 'data:']
 ): boolean {
   if (!url) return false
 
   try {
-    const parsed = new URL(url, typeof window !== 'undefined' ? window.location.origin : undefined)
+    const origin = globalThis.window === undefined ? undefined : globalThis.window.location.origin
+    const parsed = new URL(url, origin)
 
     if (!allowedProtocols.includes(parsed.protocol)) {
       return false
     }
 
-    // Block javascript: protocol
     if (parsed.protocol === 'javascript:') {
       return false
     }
 
-    // Validate data URLs
     if (parsed.protocol === 'data:') {
       const dataUrlPattern = /^data:(image|video|audio)\/[^;]+;base64,/
       return dataUrlPattern.test(url)
