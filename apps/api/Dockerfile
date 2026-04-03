@@ -3,8 +3,8 @@ RUN apk add --no-cache python3 make g++
 
 FROM base AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json ./
+RUN npm install
 
 FROM base AS builder
 WORKDIR /app
@@ -14,8 +14,8 @@ RUN npm run build
 
 FROM base AS prod-deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+COPY package.json ./
+RUN npm install --omit=dev
 
 FROM node:22-alpine AS runner
 WORKDIR /app
