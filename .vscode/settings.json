@@ -23,5 +23,7 @@
   "eslint.format.enable": true,
   "typescript.preferences.removeUnusedImports": false,
   "typescript.suggest.autoImports": true,
-  "cSpell.enabled": false
+  "cSpell.enabled": false,
+  "snyk.advanced.organization": "121cccf5-70af-49f3-9ee8-09d17a5ecd33",
+  "snyk.advanced.autoSelectOrganization": true
 }

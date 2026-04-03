@@ -1,11 +1,10 @@
 {
-  "$schema": "../../paasdeploy.schema.json",
   "runtime": "nodejs",
   "name": "minc-teams-api",
   "build": {
     "type": "dockerfile",
-    "dockerfile": "./Dockerfile",
-    "context": "../.."
+    "dockerfile": "apps/api/Dockerfile",
+    "context": "."
   },
   "healthcheck": {
     "path": "/minc-teams/v1/health",
