@@ -1,13 +1,13 @@
 FROM node:22-alpine AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && npm install -g turbo
+RUN corepack enable && npm install -g turbo@^2.7.5
 
 # Prune the workspace to only include the api and its deps
 FROM base AS prune
 WORKDIR /app
 COPY . .
-RUN turbo prune --scope=@minc-teams/api --docker
+RUN turbo prune @minc-teams/api --docker
 
 # Install dev dependencies (needed for build)
 FROM base AS dev-deps
@@ -30,7 +30,6 @@ COPY --from=dev-deps /app/ .
 COPY --from=prune /app/out/full/ .
 RUN turbo run build --filter=@minc-teams/api
 
-# Production stage
 # Production stage
 FROM base AS runner
 WORKDIR /app

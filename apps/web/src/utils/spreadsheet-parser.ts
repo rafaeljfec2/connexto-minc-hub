@@ -1,5 +1,5 @@
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { normalizePhone } from './phone-normalizer'
 import { logger } from '../lib/logger'
 
@@ -12,9 +12,6 @@ export interface ParsedRow {
   errors: string[]
 }
 
-/**
- * Detecta o tipo de arquivo e chama o parser apropriado.
- */
 export async function parseSpreadsheet(file: File): Promise<ParsedRow[]> {
   const fileExtension = file.name.split('.').pop()?.toLowerCase()
 
@@ -27,9 +24,6 @@ export async function parseSpreadsheet(file: File): Promise<ParsedRow[]> {
   }
 }
 
-/**
- * Parseia um arquivo CSV.
- */
 async function parseCSV(file: File): Promise<ParsedRow[]> {
   return new Promise((resolve, reject) => {
     Papa.parse(file, {
@@ -51,49 +45,50 @@ async function parseCSV(file: File): Promise<ParsedRow[]> {
   })
 }
 
-/**
- * Parseia um arquivo Excel.
- */
 async function parseExcel(file: File): Promise<ParsedRow[]> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = e => {
-      try {
-        const data = e.target?.result
-        const workbook = XLSX.read(data, { type: 'binary' })
-        const sheetName = workbook.SheetNames[0]
-        const worksheet = workbook.Sheets[sheetName]
-        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as string[][]
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.load(arrayBuffer)
 
-        // Assume a primeira linha como cabeçalho
-        if (json.length === 0) {
-          resolve([])
-          return
+    const worksheet = workbook.getWorksheet(1)
+    if (!worksheet || worksheet.rowCount === 0) {
+      return []
+    }
+
+    const headerRow = worksheet.getRow(1)
+    const headers: string[] = []
+    headerRow.eachCell((cell, colNumber) => {
+      headers[colNumber] = String(cell.value ?? '')
+        .toLowerCase()
+        .trim()
+    })
+
+    const rows: Record<string, string>[] = []
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return
+
+      const rowData: Record<string, string> = {}
+      const isEmpty =
+        row.values === undefined ||
+        (Array.isArray(row.values) &&
+          row.values.every(v => v === undefined || v === null || v === ''))
+      if (isEmpty) return
+
+      row.eachCell((cell, colNumber) => {
+        const header = headers[colNumber]
+        if (header) {
+          rowData[header] = String(cell.value ?? '')
         }
-        const headers = json[0].map(h =>
-          String(h ?? '')
-            .toLowerCase()
-            .trim()
-        )
-        const rows = json.slice(1).map(row => {
-          const rowData: Record<string, string> = {}
-          headers.forEach((header, index) => {
-            rowData[header] = String(row[index] ?? '')
-          })
-          return rowData
-        })
-        resolve(validateAndNormalizeRows(rows))
-      } catch (error) {
-        logger.error('Erro ao parsear Excel', 'SpreadsheetParser', error)
-        reject(new Error('Erro ao parsear arquivo Excel.'))
-      }
-    }
-    reader.onerror = err => {
-      logger.error('Erro ao ler arquivo Excel', 'SpreadsheetParser', err)
-      reject(new Error('Erro ao ler arquivo Excel.'))
-    }
-    reader.readAsBinaryString(file)
-  })
+      })
+      rows.push(rowData)
+    })
+
+    return validateAndNormalizeRows(rows)
+  } catch (error) {
+    logger.error('Erro ao parsear Excel', 'SpreadsheetParser', error)
+    throw new Error('Erro ao parsear arquivo Excel.')
+  }
 }
 
 /**

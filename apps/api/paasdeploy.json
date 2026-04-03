@@ -3,7 +3,7 @@
   "name": "minc-teams-api",
   "build": {
     "type": "dockerfile",
-    "dockerfile": "Dockerfile",
+    "dockerfile": "apps/api/Dockerfile",
     "context": "."
   },
   "healthcheck": {
