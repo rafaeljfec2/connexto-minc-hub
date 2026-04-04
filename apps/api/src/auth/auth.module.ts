@@ -27,7 +27,9 @@ import { ChurchEntity } from '../churches/entities/church.entity';
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN ?? '24h' },
+      signOptions: {
+        expiresIn: (process.env.JWT_EXPIRES_IN ?? '24h') as `${number}h`,
+      },
     }),
     TypeOrmModule.forFeature([
       RefreshTokenEntity,
