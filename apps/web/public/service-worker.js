@@ -169,11 +169,9 @@ async function staleWhileRevalidateStrategy(request) {
 }
 
 globalThis.addEventListener('message', event => {
-  if (!event.source || typeof event.source.url !== 'string') return
-
   const expectedOrigin = globalThis.location.origin
-  const isOriginValid = event.origin === '' || event.origin === expectedOrigin
-  if (!isOriginValid) return
+  if (event.origin !== '' && event.origin !== expectedOrigin) return
+  if (!event.source || typeof event.source.url !== 'string') return
 
   try {
     const sourceOrigin = new URL(event.source.url).origin
