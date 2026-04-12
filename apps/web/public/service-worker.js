@@ -189,22 +189,31 @@ async function staleWhileRevalidateStrategy(request) {
 }
 
 globalThis.addEventListener('message', event => {
-  if (!event.source) return
-  if (event.origin !== globalThis.location.origin) return
+  if (!event.source || typeof event.source.url !== 'string') return
+
+  const expectedOrigin = globalThis.location.origin
+  const isOriginValid = event.origin === '' || event.origin === expectedOrigin
+  if (!isOriginValid) return
+
   try {
     const sourceOrigin = new URL(event.source.url).origin
-    if (sourceOrigin !== globalThis.location.origin) return
+    if (sourceOrigin !== expectedOrigin) return
   } catch {
     return
   }
 
-  if (event.data?.type === 'SKIP_WAITING') {
+  if (typeof event.data !== 'object' || event.data === null) return
+  const { type } = event.data
+
+  if (type === 'SKIP_WAITING') {
     globalThis.skipWaiting()
   }
 
-  if (event.data?.type === 'CACHE_URLS') {
-    const urls = event.data.urls || []
+  if (type === 'CACHE_URLS') {
+    const urls = event.data.urls
+    if (!Array.isArray(urls)) return
     const safeUrls = urls.filter(url => {
+      if (typeof url !== 'string') return false
       try {
         const parsed = new URL(url, globalThis.location.origin)
         return parsed.origin === globalThis.location.origin

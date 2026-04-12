@@ -71,8 +71,18 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     })
 
     navigator.serviceWorker.addEventListener('message', event => {
-      if (event.origin && event.origin !== globalThis.window.location.origin) return
       if (!(event.source instanceof ServiceWorker)) return
+
+      const expectedOrigin = globalThis.window.location.origin
+      const isOriginValid = event.origin === '' || event.origin === expectedOrigin
+      if (!isOriginValid) return
+
+      try {
+        const sourceOrigin = new URL(event.source.scriptURL).origin
+        if (sourceOrigin !== expectedOrigin) return
+      } catch {
+        return
+      }
 
       if (event.data?.type === 'SW_UPDATED') {
         logger.info('Service Worker atualizado', 'PWA')

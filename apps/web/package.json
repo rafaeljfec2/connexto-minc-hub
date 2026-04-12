@@ -22,7 +22,7 @@
     "@tanstack/react-query": "^5.90.19",
     "@tanstack/react-query-devtools": "^5.91.2",
     "@types/dompurify": "^3.2.0",
-    "axios": "^1.14.0",
+    "axios": "1.15.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.0.6",
     "dompurify": "^3.3.3",

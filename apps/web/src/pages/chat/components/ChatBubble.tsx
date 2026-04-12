@@ -37,14 +37,22 @@ async function downloadFile(url: string, filename: string): Promise<void> {
   try {
     const response = await fetch(safeHref)
     const blob = await response.blob()
-    const blobUrl = globalThis.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = blobUrl
-    link.download = sanitizedFilename
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    globalThis.URL.revokeObjectURL(blobUrl)
+    const contentType = blob.type
+    const safeMimeTypes = /^(image|video|audio|application|text)\//
+    if (!safeMimeTypes.test(contentType)) {
+      console.error('Unsupported content type for download')
+      return
+    }
+    const safeBlob = new Blob([blob], { type: contentType })
+    const blobUrl = globalThis.URL.createObjectURL(safeBlob)
+    try {
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = sanitizedFilename
+      link.click()
+    } finally {
+      globalThis.URL.revokeObjectURL(blobUrl)
+    }
   } catch (error) {
     console.error('Download failed:', error)
     // Only open if URL is valid

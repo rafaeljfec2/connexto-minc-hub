@@ -408,8 +408,8 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
       axios:
-        specifier: ^1.14.0
-        version: 1.14.0
+        specifier: 1.15.0
+        version: 1.15.0
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
@@ -508,8 +508,8 @@ importers:
   packages/shared:
     dependencies:
       axios:
-        specifier: ^1.14.0
-        version: 1.14.0
+        specifier: 1.15.0
+        version: 1.15.0
       date-fns:
         specifier: ^3.0.6
         version: 3.6.0
@@ -5649,8 +5649,8 @@ packages:
     dependencies:
       possible-typed-array-names: 1.1.0
 
-  /axios@1.14.0:
-    resolution: {integrity: sha512-3Y8yrqLSwjuzpXuZ0oIYZ/XGgLwUIBU3uLvbcpb0pidD9ctpShJd43KSlEEkVQg6DS0G9NKyzOvBfUtDKEyHvQ==}
+  /axios@1.15.0:
+    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.5
