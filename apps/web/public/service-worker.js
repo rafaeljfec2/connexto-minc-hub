@@ -30,44 +30,31 @@ const CACHE_FIRST_EXTENSIONS = [
 // URLs de API que devem usar Network First
 const API_PATTERNS = ['/minc-teams/v1/']
 
-// Install event - cachear assets estáticos
-self.addEventListener('install', event => {
-  console.log('[Service Worker] Installing...', CACHE_VERSION)
+globalThis.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('[Service Worker] Caching static assets')
-      return cache.addAll(STATIC_ASSETS).catch(err => {
-        console.warn('[Service Worker] Failed to cache some assets:', err)
-        // Não falhar a instalação se alguns assets não puderem ser cacheados
-        return Promise.resolve()
-      })
+      return cache.addAll(STATIC_ASSETS).catch(() => undefined)
     })
   )
-  // Forçar ativação imediata do novo service worker
-  self.skipWaiting()
+  globalThis.skipWaiting()
 })
 
-// Activate event - limpar caches antigos
-self.addEventListener('activate', event => {
-  console.log('[Service Worker] Activating...', CACHE_VERSION)
+globalThis.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cacheName)
             return caches.delete(cacheName)
           }
         })
       )
     })
   )
-  // Assumir controle imediato de todas as páginas
-  return self.clients.claim()
+  return globalThis.clients.claim()
 })
 
-// Fetch event - estratégias de cache
-self.addEventListener('fetch', event => {
+globalThis.addEventListener('fetch', event => {
   const { request } = event
   const url = new URL(request.url)
 
@@ -111,7 +98,7 @@ function isApiRequest(url) {
 // Verificar se é um asset estático
 function isStaticAsset(url) {
   // Mesmo domínio e extensão conhecida
-  if (url.origin !== self.location.origin) {
+  if (url.origin !== globalThis.location.origin) {
     return false
   }
   return CACHE_FIRST_EXTENSIONS.some(ext => url.pathname.endsWith(ext))
@@ -131,8 +118,6 @@ async function networkFirstStrategy(request) {
 
     return networkResponse
   } catch (error) {
-    console.log('[Service Worker] Network failed, trying cache:', request.url)
-
     // Se rede falhar, tentar cache
     const cachedResponse = await caches.match(request)
     if (cachedResponse) {
@@ -153,18 +138,13 @@ async function cacheFirstStrategy(request) {
     return cachedResponse
   }
 
-  try {
-    const networkResponse = await fetch(request)
+  const networkResponse = await fetch(request)
 
-    if (networkResponse.ok) {
-      cache.put(request, networkResponse.clone())
-    }
-
-    return networkResponse
-  } catch (error) {
-    console.error('[Service Worker] Failed to fetch:', request.url, error)
-    throw error
+  if (networkResponse.ok) {
+    cache.put(request, networkResponse.clone())
   }
+
+  return networkResponse
 }
 
 // Estratégia: Stale While Revalidate (para outros recursos)

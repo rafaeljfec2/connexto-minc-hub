@@ -138,7 +138,7 @@ export function ChatBubble({
   const [showContextMenu, setShowContextMenu] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 })
-  const bubbleRef = useRef<HTMLDivElement>(null)
+  const bubbleRef = useRef<HTMLButtonElement>(null)
 
   const handleContextMenu = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
@@ -156,13 +156,11 @@ export function ChatBubble({
       let clientX, clientY
 
       if ('touches' in e) {
-        // Touch event
         clientX = e.touches[0].clientX
         clientY = e.touches[0].clientY
       } else {
-        // Mouse event
-        clientX = (e as React.MouseEvent).clientX
-        clientY = (e as React.MouseEvent).clientY
+        clientX = e.clientX
+        clientY = e.clientY
       }
 
       const MENU_WIDTH = 180 // Approximate width (min-w-[160px] + padding)
@@ -234,11 +232,10 @@ export function ChatBubble({
         {!isMe && senderName && (
           <span className="text-xs text-gray-400 mb-1 ml-1 block">{sanitizeText(senderName)}</span>
         )}
-        <div
+        <button
+          type="button"
           ref={bubbleRef}
-          role="button"
-          tabIndex={0}
-          className={`relative max-w-[85%] sm:max-w-[75%] px-4 py-2 rounded-2xl text-sm italic border select-none ${
+          className={`relative max-w-[85%] sm:max-w-[75%] px-4 py-2 rounded-2xl text-sm text-left italic border select-none ${
             isMe
               ? 'bg-primary-50 border-primary-200 text-gray-500 rounded-tr-none'
               : 'bg-gray-50 border-gray-200 text-gray-500 rounded-tl-none'
@@ -260,7 +257,6 @@ export function ChatBubble({
             <span>Mensagem excluída</span>
           </div>
 
-          {/* Context Menu for deleted message (only delete for me) */}
           {showContextMenu && (
             <div
               role="menu"
@@ -283,7 +279,7 @@ export function ChatBubble({
               </button>
             </div>
           )}
-        </div>
+        </button>
       </div>
     )
   }
@@ -303,23 +299,11 @@ export function ChatBubble({
 
   return (
     <>
-      <div
+      <button
+        type="button"
         ref={bubbleRef}
-        role="button"
-        tabIndex={0}
         onContextMenu={e => {
           e.preventDefault()
-          // Do NOT call handleContextMenu here to avoid double trigger with longPress
-          // But for desktop right click we might want it.
-          // useLongPress handles mouse down/up, but context menu event is separate.
-          // Let's rely on longPressProps for consistency or handle context menu specifically for desktop right click?
-          // Actually context menu event is good for right click.
-          // But on mobile native context menu fires on long press.
-          // If we prevent default here, native menu is blocked.
-          // Then useLongPress triggers our menu.
-          // For desktop right click, we need to manually trigger if useLongPress doesn't cover it (it covers left click hold).
-          // Let's checking if event is right click?
-          // native contextmenu event usually means right click on desktop.
           handleContextMenu(e)
         }}
         {...longPressProps}
@@ -328,7 +312,7 @@ export function ChatBubble({
             handleContextMenu(e as unknown as React.MouseEvent)
           }
         }}
-        className={`mb-3 max-w-[80%] px-4 py-2 rounded-2xl cursor-pointer select-none ${
+        className={`mb-3 max-w-[80%] px-4 py-2 rounded-2xl cursor-pointer select-none text-left ${
           isMe
             ? 'ml-auto bg-primary-500 text-white rounded-br-sm'
             : 'mr-auto bg-dark-200 dark:bg-dark-800 text-dark-900 dark:text-dark-50 rounded-bl-sm'
@@ -346,7 +330,7 @@ export function ChatBubble({
           {sanitizeText(message)}
         </p>
         <BubbleFooter time={time} isMe={isMe} status={status} isEdited={isEdited} />
-      </div>
+      </button>
       {showContextMenu && (
         <div
           role="menu"
