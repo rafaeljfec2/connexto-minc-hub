@@ -1,68 +1,44 @@
-# Configuração EAS Build para TestFlight (iOS)
+# EAS Build for TestFlight (iOS)
 
-Este guia explica como configurar e fazer build do app iOS para TestFlight.
+This guide explains how to configure EAS and ship iOS builds to TestFlight.
 
-## Pré-requisitos
+## Prerequisites
 
-1. **Conta Apple Developer**
-
-   - Acesse: https://developer.apple.com
-   - É necessário ser membro do Apple Developer Program ($99/ano)
-
-2. **EAS CLI instalado**
+1. **Apple Developer Program** membership ($99/year) — https://developer.apple.com
+2. **EAS CLI**
 
    ```bash
    npm install -g eas-cli
    ```
 
-3. **Login no Expo**
+3. **Expo login**
+
    ```bash
    eas login
    ```
 
-## Passo 1: Configurar o Projeto EAS
+## Step 1: Initialize the EAS project
 
 ```bash
 cd apps/mobile
 eas init
 ```
 
-Isso criará o projeto na sua conta Expo (se ainda não existir).
+## Step 2: iOS credentials
 
-## Passo 2: Configurar Credenciais
-
-### Opção A: Deixar o EAS gerenciar automaticamente (recomendado)
-
-O EAS pode gerar e gerenciar automaticamente os certificados e perfis de provisionamento:
+### Option A: EAS-managed credentials (recommended)
 
 ```bash
 eas credentials
 ```
 
-Selecione:
+Select platform **iOS** and profile **production**. EAS can create the App ID, distribution certificate, and provisioning profile.
 
-- Platform: `ios`
-- Para TestFlight, use o perfil `production`
+### Option B: Existing credentials
 
-O EAS irá:
+Run `eas credentials` and choose **Use existing** for each credential type.
 
-- Criar App ID na Apple Developer
-- Gerar certificados de distribuição
-- Criar perfis de provisionamento
-
-### Opção B: Usar credenciais existentes
-
-Se você já tem certificados e perfis de provisionamento:
-
-```bash
-eas credentials
-```
-
-E selecione "Use existing" para cada tipo de credencial.
-
-## Passo 3: Configurar app.json
-
-Verifique se o `app.json` tem as configurações corretas:
+## Step 3: Configure `app.json`
 
 ```json
 {
@@ -75,65 +51,43 @@ Verifique se o `app.json` tem as configurações corretas:
 }
 ```
 
-⚠️ **Importante**: O `bundleIdentifier` deve ser único e corresponder ao App ID na Apple Developer.
+The **bundle identifier** must be unique and match App Store Connect / Apple Developer.
 
-## Passo 4: Build para TestFlight
-
-Para TestFlight, use o perfil `production`:
+## Step 4: Build for TestFlight
 
 ```bash
-# Build iOS para produção (TestFlight)
 pnpm build:ios -- --profile production
-
-# Ou usando EAS diretamente
+# or
 eas build --platform ios --profile production
 ```
 
-O build vai:
+EAS produces a signed **`.ipa`** for App Store distribution.
 
-1. Compilar o app
-2. Assinar com o certificado de distribuição
-3. Gerar um `.ipa` pronto para TestFlight
+## Step 5: Submit to TestFlight
 
-## Passo 5: Submeter para TestFlight
-
-### Via EAS Submit (recomendado)
+### EAS Submit (recommended)
 
 ```bash
-# Submeter o último build para TestFlight
 eas submit --platform ios --profile production
-
-# Ou submeter um build específico
 eas submit --platform ios --latest
 ```
 
-### Via App Store Connect (manual)
+### App Store Connect (manual)
 
-1. Acesse: https://appstoreconnect.apple.com
-2. Vá em "Meus Apps" > Seu App > "TestFlight"
-3. Faça upload do arquivo `.ipa` gerado pelo EAS
-4. Após processamento, adicione testadores
+1. https://appstoreconnect.apple.com
+2. **My Apps** → your app → **TestFlight**
+3. Upload the `.ipa` from EAS
+4. Add testers after processing completes
 
-## Passo 6: Configurar TestFlight
+## Step 6: TestFlight setup
 
-1. **Adicionar Informações de Teste**
+1. **What to test** — release notes for testers
+2. **Testers**
+   - **Internal**: up to 100 team members
+   - **External**: up to 10,000 (requires Apple review on first external build)
+3. Assign the processed build to tester groups
 
-   - Em App Store Connect > TestFlight
-   - Adicione "O que testar" e notas de versão
-
-2. **Adicionar Testadores**
-
-   - **Testadores Internos**: Até 100 pessoas (membros da equipe)
-   - **Testadores Externos**: Até 10.000 pessoas (requer revisão da Apple)
-
-3. **Distribuir Build**
-   - Selecione o build processado
-   - Adicione aos grupos de testadores
-   - Testadores receberão email com convite
-
-## Configuração do eas.json
-
-O arquivo `eas.json` já está configurado com o perfil `production` para iOS:
+## `eas.json` production profile
 
 ```json
 {
@@ -149,84 +103,45 @@ O arquivo `eas.json` já está configurado com o perfil `production` para iOS:
 }
 ```
 
-### Configurações importantes:
+- **`distribution: "store"`** — App Store / TestFlight
+- **`buildConfiguration: "Release"`** — optimized release build
 
-- **distribution: "store"** - Build para App Store/TestFlight
-- **buildConfiguration: "Release"** - Build otimizado para produção
-- **resourceClass: "m-medium"** - Recursos de build (pode ajustar conforme necessidade)
-
-## Verificar Status do Build
+## Check build status
 
 ```bash
-# Listar builds
 eas build:list --platform ios
-
-# Ver detalhes de um build específico
 eas build:view [BUILD_ID]
 ```
 
 ## Troubleshooting
 
-### Erro: "No Apple Team ID found"
+| Issue | Action |
+| ----- | ------ |
+| No Apple Team ID | Set in `eas credentials` or `eas.json` (`appleTeamId`) |
+| Bundle ID already in use | Change `ios.bundleIdentifier` in `app.json` |
+| Signing failed | Regenerate credentials via `eas credentials` |
+| Build not in TestFlight | Wait 10–30 minutes for processing; check `eas submit:list` |
 
-- Configure o Team ID: `eas credentials`
-- Ou defina no `eas.json`: `"appleTeamId": "YOUR_TEAM_ID"`
-
-### Erro: "Bundle identifier already exists"
-
-- O bundle identifier já está em uso
-- Altere o `bundleIdentifier` no `app.json` para algo único
-
-### Build falha na assinatura
-
-- Verifique as credenciais: `eas credentials`
-- Regenere os certificados se necessário
-
-### App não aparece no TestFlight
-
-- Verifique se o build foi processado (pode levar 10-30 minutos)
-- Verifique se foi submetido corretamente: `eas submit:list`
-
-## Comandos Úteis
+## Useful commands
 
 ```bash
-# Login no Expo
 eas login
-
-# Ver informações da conta
 eas whoami
-
-# Inicializar projeto EAS
 eas init
-
-# Configurar credenciais iOS
 eas credentials --platform ios
-
-# Build iOS para produção
 eas build --platform ios --profile production
-
-# Submeter para TestFlight
 eas submit --platform ios --latest
-
-# Ver builds
 eas build:list --platform ios
-
-# Ver submissões
 eas submit:list --platform ios
 ```
 
-## Notas Importantes
+## Notes
 
-1. **Primeiro Build**: Pode demorar mais (15-30 minutos) devido à configuração inicial
-2. **TestFlight Review**: Primeira submissão para testadores externos requer revisão da Apple (1-2 dias)
-3. **Build Number**: Incremente o `buildNumber` no `app.json` para cada novo build
-4. **Version**: Incremente o `version` no `app.json` quando publicar nova versão
+1. First iOS builds often take 15–30 minutes
+2. External TestFlight testing requires Apple review (often 1–2 days the first time)
+3. Increment **`buildNumber`** for every new binary
+4. Bump **`version`** when releasing a new user-visible version
 
-## Próximos Passos
+## Next steps
 
-Após testar no TestFlight:
-
-1. Corrigir bugs encontrados
-2. Incrementar `buildNumber` no `app.json`
-3. Fazer novo build: `eas build --platform ios --profile production`
-4. Submeter novamente: `eas submit --platform ios --latest`
+After TestFlight feedback, fix issues, increment `buildNumber`, rebuild, and resubmit.

@@ -1,140 +1,114 @@
-# Implementação do React Query
+# React Query Implementation
 
-## 🎯 Problema Resolvido
+## Problem solved
 
-O sistema estava fazendo **requisições duplicadas** aos mesmos endpoints, causando:
+The web app was issuing **duplicate HTTP requests** to the same endpoints, which caused slow loads, wasted bandwidth, extra backend load, and a poor user experience.
 
-- Lentidão no carregamento das páginas
-- Uso desnecessário de banda de rede
-- Sobrecarga no servidor backend
-- Experiência ruim para o usuário
+### Example (Dashboard before migration)
 
-### Exemplo do Problema Antes:
+Loading the dashboard could trigger:
 
-Ao carregar o Dashboard, eram feitas:
+- 7× `churches`
+- 4× `ministries`
+- 2× `persons`
+- 3× `teams`
+- 2× `schedules`
+- 2× `services`
 
-- 7 requisições para `churches`
-- 4 requisições para `ministries`
-- 2 requisições para `persons`
-- 3 requisições para `teams`
-- 2 requisições para `schedules`
-- 2 requisições para `services`
+**~20 redundant requests** for one page view.
 
-**Total: ~20 requisições duplicadas!**
+## Solution: TanStack Query (React Query)
 
-## ✅ Solução: React Query (TanStack Query)
+We adopted **React Query**, aligned with patterns from the `air-finance-app` project.
 
-Implementamos o **React Query**, seguindo o padrão usado no projeto `air-finance-app`.
+### Benefits
 
-### Benefícios:
+1. **Automatic cache keyed by `queryKey`**
+2. **Request deduplication** when multiple components share a key
+3. **Targeted invalidation** after mutations
+4. **Optimistic updates** (where applicable)
+5. **DevTools** for cache inspection
 
-1. **Cache Automático com QueryKey**
-   - Cada query possui uma chave única (`queryKey`)
-   - Dados são armazenados em cache automaticamente
-   - Requisições duplicadas são evitadas
-
-2. **Compartilhamento Automático de Promises**
-   - Se múltiplos componentes usam a mesma `queryKey`, React Query compartilha automaticamente a mesma requisição
-   - **Elimina requisições duplicadas sem código adicional**
-
-3. **Invalidação Inteligente**
-   - Após mutações (criar/atualizar/deletar), apenas as queries necessárias são invalidadas
-   - Cache é atualizado automaticamente
-
-4. **Optimistic Updates**
-   - UI atualiza instantaneamente antes da resposta do servidor
-   - Melhora a percepção de velocidade
-
-5. **DevTools**
-   - Ferramentas de desenvolvimento para inspecionar queries e cache
-   - Facilita debug e otimização
-
-## 📁 Estrutura de Arquivos
+## File structure
 
 ```
 apps/web/src/
 ├── lib/
-│   └── queryClient.ts              # Configuração do QueryClient
+│   └── queryClient.ts
 ├── hooks/
-│   └── queries/                    # Novos hooks com React Query
-│       ├── usePeopleQuery.ts       # ✅ Substituindo usePeople
-│       ├── useTeamsQuery.ts        # ✅ Substituindo useTeams
-│       ├── useMinistriesQuery.ts   # ✅ Substituindo useMinistries
-│       ├── useSchedulesQuery.ts    # ✅ Substituindo useSchedules
-│       ├── useServicesQuery.ts     # ✅ Substituindo useServices
-│       ├── useChurchesQuery.ts     # ✅ Substituindo useChurches
-│       ├── useUsersQuery.ts        # ✅ Substituindo useUsers
-│       ├── useTeamMembersQuery.ts  # ✅ Gerenciamento de membros
-│       ├── useMinistryLeadersQuery.ts # ✅ Gerenciamento de líderes
+│   └── queries/
+│       ├── usePeopleQuery.ts
+│       ├── useTeamsQuery.ts
+│       ├── useMinistriesQuery.ts
+│       ├── useSchedulesQuery.ts
+│       ├── useServicesQuery.ts
+│       ├── useChurchesQuery.ts
+│       ├── useUsersQuery.ts
+│       ├── useTeamMembersQuery.ts
+│       ├── useMinistryLeadersQuery.ts
 │       └── utils/
-│           └── queryInvalidations.ts # ✅ Utilitários de invalidação
-└── App.tsx                         # QueryClientProvider adicionado
+│           └── queryInvalidations.ts
+└── App.tsx                 # QueryClientProvider
 ```
 
-## 🔧 Configuração
+## Configuration
 
-### queryClient.ts
+### `queryClient.ts`
 
 ```typescript
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // Cache por 5 minutos
-      gcTime: 10 * 60 * 1000, // Manter em cache por 10 minutos
-      refetchOnWindowFocus: false, // Não refetch ao focar
-      refetchOnReconnect: false, // Não refetch ao reconectar
-      retry: 1, // Retry 1 vez em erro
-      refetchOnMount: false, // Não refetch em mount se fresco
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      retry: 1,
+      refetchOnMount: false,
     },
   },
 })
 ```
 
-### App.tsx
+### `App.tsx`
 
 ```typescript
 <QueryClientProvider client={queryClient}>
-  {/* ...resto da aplicação... */}
+  {/* app routes */}
   <ReactQueryDevtools initialIsOpen={false} />
 </QueryClientProvider>
 ```
 
-## 📖 Exemplo de Uso
+## Usage example
 
-### Antes (usePeople):
+**Before (`usePeople` + `useEffect`):**
 
 ```typescript
 const { people, fetchPeople, isLoading } = usePeople()
-
 useEffect(() => {
   fetchPeople()
 }, [selectedChurch])
 ```
 
-### Depois (usePeopleQuery):
+**After (`usePeopleQuery`):**
 
 ```typescript
 const { people, isLoading } = usePeopleQuery()
-// Pronto! Sem useEffect, sem duplicações
 ```
 
-## 🎨 Padrão de Hooks
-
-Todos os hooks seguem o mesmo padrão:
+## Hook pattern
 
 ```typescript
 export function usePeopleQuery() {
   const { selectedChurch } = useChurch()
   const queryClient = useQueryClient()
 
-  // Query para listar (com cache automático)
   const { data: people = [], isLoading } = useQuery({
     queryKey: ['people', selectedChurch?.id],
     queryFn: () => apiServices.peopleService.getAll(),
     enabled: !!selectedChurch?.id,
   })
 
-  // Mutation para criar (invalida cache)
   const createMutation = useMutation({
     mutationFn: data => apiServices.peopleService.create(data),
     onSuccess: () => {
@@ -142,65 +116,35 @@ export function usePeopleQuery() {
     },
   })
 
-  return {
-    people,
-    isLoading,
-    createPerson: createMutation.mutate,
-    // ...
-  }
+  return { people, isLoading, createPerson: createMutation.mutate }
 }
 ```
 
-## 🚀 Resultado Esperado
+## Expected results
 
-### Depois da Implementação:
+| Metric | Before | After |
+| ------ | ------ | ----- |
+| Dashboard requests | ~20 | ~5 |
+| Load time | ~2–3 s | ~0.5–1 s |
+| Duplicate requests | Many | None (deduped) |
 
-- ✅ Dashboard: **~20 requisições → ~5 requisições**
-- ✅ Cada endpoint é chamado apenas **1 vez**
-- ✅ Cache inteligente reduz requisições subsequentes
-- ✅ UI mais rápida e responsiva
-- ✅ Melhor experiência do usuário
+## Implementation status
 
-## 📊 Métricas de Performance
+- QueryClient and provider: done
+- Core entity hooks migrated: done
+- Components updated: done
+- Centralized invalidation helpers: done
+- Future: optimistic updates, per-resource cache tuning
 
-| Métrica                  | Antes  | Depois   | Melhoria            |
-| ------------------------ | ------ | -------- | ------------------- |
-| Requisições no Dashboard | ~20    | ~5       | **75% menos**       |
-| Tempo de carregamento    | ~2-3s  | ~0.5-1s  | **70% mais rápido** |
-| Requisições duplicadas   | Muitas | **Zero** | **100% eliminadas** |
+## Cache invalidation
 
-## 🔄 Status da Implementação
+### Problem
 
-1. ✅ **Implementado**: QueryClient e configuração
-2. ✅ **Implementado**: Hooks principais migrados para React Query:
-   - ✅ `usePeopleQuery`
-   - ✅ `useTeamsQuery`
-   - ✅ `useMinistriesQuery`
-   - ✅ `useSchedulesQuery`
-   - ✅ `useServicesQuery`
-   - ✅ `useChurchesQuery`
-   - ✅ `useUsersQuery`
-   - ✅ `useTeamMembersQuery`
-   - ✅ `useMinistryLeadersQuery`
-3. ✅ **Implementado**: Todos os componentes atualizados
-4. ✅ **Implementado**: Sistema centralizado de invalidação de cache
-5. ⏳ **Futuro**: Implementar Optimistic Updates onde fizer sentido
-6. ⏳ **Futuro**: Configurar cache strategies específicas por recurso
+Manual `invalidateQueries` in every mutation duplicated logic and was easy to miss.
 
-## 🔄 Sistema de Invalidação de Cache
+### Solution: `queryInvalidations.ts`
 
-### Problema
-Quando uma entidade era criada, atualizada ou deletada, era necessário invalidar manualmente todas as queries relacionadas em cada hook, causando:
-- Código duplicado
-- Dificuldade de manutenção
-- Risco de esquecer invalidações importantes
-- Inconsistência de dados entre telas
-
-### Solução: Utilitários Centralizados
-
-Criamos o arquivo `apps/web/src/hooks/queries/utils/queryInvalidations.ts` que centraliza toda a lógica de invalidação:
-
-#### Mapeamento de Dependências
+Dependency map example:
 
 ```typescript
 const ENTITY_DEPENDENCIES: Record<EntityType, EntityType[]> = {
@@ -208,23 +152,19 @@ const ENTITY_DEPENDENCIES: Record<EntityType, EntityType[]> = {
   teams: ['teamMembers', 'schedules', 'ministries'],
   teamMembers: ['teams', 'team', 'people'],
   ministries: ['teams', 'ministryLeaders'],
-  // ...
 }
 ```
 
-#### Funções Utilitárias
+Helpers:
 
-- `invalidateEntityQueries()`: Invalida queries de uma entidade específica
-- `invalidateDependentQueries()`: Invalida todas as queries dependentes
-- `invalidateEntityAndDependencies()`: Invalida entidade e dependências
-- `invalidateAllCompanyQueries()`: Invalida todas as queries que dependem de `companyId`
-- `invalidateTeamQueries()`: Invalida queries relacionadas a uma equipe específica
-- `invalidateMinistryQueries()`: Invalida queries relacionadas a um ministério específico
-- `invalidatePersonQueries()`: Invalida queries relacionadas a uma pessoa específica
+- `invalidateEntityQueries`
+- `invalidateDependentQueries`
+- `invalidateEntityAndDependencies`
+- `invalidateAllCompanyQueries`
+- `invalidateTeamQueries` / `invalidateMinistryQueries` / `invalidatePersonQueries`
 
-### Exemplo de Uso
+**Before (duplicated):**
 
-#### Antes (Código Duplicado):
 ```typescript
 onSuccess: () => {
   queryClient.invalidateQueries({ queryKey: ['teamMembers'], exact: false })
@@ -233,42 +173,24 @@ onSuccess: () => {
 }
 ```
 
-#### Depois (Centralizado):
+**After:**
+
 ```typescript
 import { invalidatePersonQueries } from './utils/queryInvalidations'
 
-onSuccess: (updatedPerson, { id }) => {
-  // Atualiza cache local
-  queryClient.setQueryData(['people', companyId], ...)
-  // Invalida todas as dependências automaticamente
+onSuccess: (_updated, { id }) => {
   invalidatePersonQueries(queryClient, { companyId, personId: id })
 }
 ```
 
-### Benefícios
+Mutations invalidate the entity and related queries consistently.
 
-1. **DRY (Don't Repeat Yourself)**: Lógica de invalidação em um único lugar
-2. **Manutenibilidade**: Mudanças nas dependências são feitas em um único arquivo
-3. **Consistência**: Garante que todas as invalidações necessárias sejam feitas
-4. **Legibilidade**: Código mais limpo e fácil de entender
-5. **Escalabilidade**: Fácil adicionar novas entidades e dependências
+## References
 
-### Cobertura Completa
-
-Todas as mutations agora invalidam automaticamente:
-- ✅ Queries da entidade modificada
-- ✅ Queries de entidades dependentes
-- ✅ Queries relacionadas (ex: teamMembers quando Person muda)
-- ✅ Queries de contexto (ex: todas as queries quando Church muda)
-
-## 📚 Referências
-
-- [React Query Docs](https://tanstack.com/query/latest)
-- [Exemplo: air-finance-app](file:///home/rafael/dev-rafael/air-finance-app/apps/web/src/hooks/)
-- [Best Practices](https://tkdodo.eu/blog/practical-react-query)
+- [TanStack Query docs](https://tanstack.com/query/latest)
+- [Practical React Query](https://tkdodo.eu/blog/practical-react-query)
 
 ---
 
-**Implementado por**: Cursor AI  
-**Data**: Janeiro 2026  
-**Status**: ✅ Em produção
+**Implemented:** January 2026  
+**Status:** Production

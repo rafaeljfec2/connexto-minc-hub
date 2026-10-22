@@ -1,384 +1,235 @@
-# Configuração Android com WSL2 + SDK no Windows
+# Android SDK on Windows with WSL2
 
-Este guia explica como usar o Android SDK instalado no Windows a partir do WSL2.
+This guide explains how to use the Android SDK installed on Windows from a WSL2 Linux environment.
 
-## Situação
+## Context
 
-- **Código**: WSL2 (Linux)
+- **Code**: WSL2 (Linux)
 - **Android SDK**: Windows
-- **Desafio**: WSL2 precisa acessar o SDK do Windows
+- **Challenge**: WSL2 must invoke Windows SDK tools and reach devices/emulators
 
-## Soluções
+## Options
 
-### Opção 1: Usar ADB do Windows via WSL2 (Recomendado)
+### Option 1: Use Windows ADB from WSL2 (recommended)
 
-WSL2 pode executar executáveis do Windows diretamente.
+WSL2 can run Windows executables directly.
 
-#### Passo 1: Encontrar Caminho do SDK no Windows
+#### Step 1: Locate the SDK on Windows
 
-O SDK geralmente está em:
+Typical path:
+
 ```
-C:\Users\[SEU_USUARIO]\AppData\Local\Android\Sdk
-```
-
-No WSL2, esse caminho é acessível via:
-```
-/mnt/c/Users/[SEU_USUARIO]/AppData/Local/Android/Sdk
+C:\Users\[YOUR_USER]\AppData\Local\Android\Sdk
 ```
 
-#### Passo 2: Adicionar ao PATH no WSL2
+In WSL2:
 
-Edite seu `~/.bashrc` ou `~/.zshrc`:
+```
+/mnt/c/Users/[YOUR_USER]/AppData/Local/Android/Sdk
+```
+
+#### Step 2: Add to PATH in WSL2
+
+Edit `~/.bashrc` or `~/.zshrc`:
 
 ```bash
-# Android SDK do Windows
-export ANDROID_HOME=/mnt/c/Users/[SEU_USUARIO]/AppData/Local/Android/Sdk
+export ANDROID_HOME=/mnt/c/Users/[YOUR_USER]/AppData/Local/Android/Sdk
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 export PATH=$PATH:$ANDROID_HOME/tools
 export PATH=$PATH:$ANDROID_HOME/tools/bin
 export PATH=$PATH:$ANDROID_HOME/emulator
 ```
 
-**Ou usando executáveis do Windows diretamente:**
+**Or use Windows binaries via aliases:**
 
 ```bash
-# Usar adb.exe do Windows
-alias adb='/mnt/c/Users/[SEU_USUARIO]/AppData/Local/Android/Sdk/platform-tools/adb.exe'
-
-# Usar emulator.exe do Windows
-alias emulator='/mnt/c/Users/[SEU_USUARIO]/AppData/Local/Android/Sdk/emulator/emulator.exe'
+alias adb='/mnt/c/Users/[YOUR_USER]/AppData/Local/Android/Sdk/platform-tools/adb.exe'
+alias emulator='/mnt/c/Users/[YOUR_USER]/AppData/Local/Android/Sdk/emulator/emulator.exe'
 ```
 
-#### Passo 3: Recarregar o Shell
+#### Step 3: Reload the shell
 
 ```bash
 source ~/.bashrc
-# ou
-source ~/.zshrc
 ```
 
-#### Passo 4: Verificar
+#### Step 4: Verify
 
 ```bash
-# Verificar se adb funciona
 adb version
-
-# Ver dispositivos (deve funcionar)
 adb devices
 ```
 
-### Opção 2: Usar ADB Server do Windows
+### Option 2: Connect to the Windows ADB server
 
-O ADB do Windows já está rodando no Windows. Você pode se conectar a ele.
-
-#### Passo 1: Iniciar ADB Server no Windows
-
-No PowerShell do Windows (como Administrador):
+#### Step 1: Start ADB on Windows (PowerShell as Administrator)
 
 ```powershell
-# Ir para o SDK
 cd $env:LOCALAPPDATA\Android\Sdk\platform-tools
-
-# Iniciar servidor ADB
 .\adb.exe start-server
-
-# Verificar dispositivos
 .\adb.exe devices
 ```
 
-#### Passo 2: Conectar do WSL2
+#### Step 2: Use from WSL2
 
-No WSL2, o ADB pode se conectar ao servidor do Windows usando TCP/IP:
+Install Linux `adb` if needed:
 
 ```bash
-# Instalar adb no WSL2 (se não tiver)
 sudo apt update
 sudo apt install android-tools-adb
-
-# Conectar ao ADB do Windows via TCP
-adb connect localhost:5037
-
-# Ou usar adb.exe do Windows diretamente
-/mnt/c/Users/[SEU_USUARIO]/AppData/Local/Android/Sdk/platform-tools/adb.exe devices
 ```
 
-### Opção 3: Usar Expo Go no Dispositivo Físico (Mais Simples)
+Then call the Windows binary directly:
 
-Se você tem um dispositivo físico Android, pode usar o Expo Go:
+```bash
+/mnt/c/Users/[YOUR_USER]/AppData/Local/Android/Sdk/platform-tools/adb.exe devices
+```
 
-#### Passo 1: Iniciar Expo no WSL2
+### Option 3: Expo Go on a physical device (simplest)
+
+#### Step 1: Start Expo in WSL2
 
 ```bash
 cd apps/mobile
 pnpm start
 ```
 
-#### Passo 2: Ler QR Code no Dispositivo
+#### Step 2: Open the app on the device
 
-1. Instale **Expo Go** no seu dispositivo Android (Play Store)
-2. Abra o Expo Go
-3. Escaneie o QR Code que aparece no terminal
+1. Install **Expo Go** from the Play Store
+2. Scan the QR code shown in the terminal
 
-**OU** usar o túnel:
+**Or use a tunnel:**
 
 ```bash
 pnpm start --tunnel
 ```
 
-Isso cria um link público que funciona mesmo em redes diferentes.
+### Option 4: Windows emulator + TCP from WSL2
 
-### Opção 4: Configurar Emulador no Windows e Conectar via TCP
-
-#### Passo 1: Iniciar Emulador no Windows
-
-No PowerShell do Windows:
+#### Step 1: Start the emulator on Windows
 
 ```powershell
-# Listar AVDs
 cd $env:LOCALAPPDATA\Android\Sdk\emulator
 .\emulator.exe -list-avds
-
-# Iniciar emulador
-.\emulator.exe -avd [NOME_DO_AVD]
+.\emulator.exe -avd [AVD_NAME]
 ```
 
-#### Passo 2: Conectar do WSL2
-
-O emulador cria uma conexão TCP na porta 5554. Do WSL2:
+#### Step 2: Connect from WSL2
 
 ```bash
-# Conectar ao emulador do Windows
 adb connect 127.0.0.1:5554
-# ou
-adb connect localhost:5554
-
-# Verificar
 adb devices
 ```
 
-Se não funcionar, pode ser necessário usar o IP do Windows:
+If that fails, find the Windows host IP (`ipconfig` in PowerShell, often a `172.x.x.x` WSL adapter) and connect with:
 
-1. Descubra o IP do Windows (no PowerShell do Windows):
-   ```powershell
-   ipconfig
-   ```
-   Procure por "WSL" ou "vEthernet" - geralmente algo como `172.x.x.x`
+```bash
+adb connect 172.x.x.x:5554
+```
 
-2. Do WSL2, conecte usando esse IP:
-   ```bash
-   adb connect 172.x.x.x:5554
-   ```
+## Recommended WSL2 setup script
 
-## Configuração Recomendada para WSL2
-
-### Script de Setup Automático
-
-Crie um arquivo `setup-android-wsl2.sh`:
+Create `setup-android-wsl2.sh`:
 
 ```bash
 #!/bin/bash
-
-# Configurar variáveis (ajuste o usuário)
-WINDOWS_USER="seu_usuario"  # SUBSTITUA pelo seu usuário do Windows
+WINDOWS_USER="your_windows_user"
 ANDROID_SDK_WIN="/mnt/c/Users/$WINDOWS_USER/AppData/Local/Android/Sdk"
 
-# Adicionar ao PATH
 export ANDROID_HOME=$ANDROID_SDK_WIN
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-export PATH=$PATH:$ANDROID_HOME/tools
-export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/emulator
 
-# Aliases para usar executáveis do Windows
 alias adb="$ANDROID_SDK_WIN/platform-tools/adb.exe"
 alias emulator="$ANDROID_SDK_WIN/emulator/emulator.exe"
 
-echo "Android SDK configurado do Windows"
+echo "Android SDK (Windows) configured"
 echo "ANDROID_HOME: $ANDROID_HOME"
-echo ""
-echo "Teste com: adb devices"
+echo "Try: adb devices"
 ```
 
-Adicione ao seu `~/.bashrc`:
+Source it from `~/.bashrc` if desired.
 
-```bash
-# Android SDK do Windows
-source /caminho/para/setup-android-wsl2.sh
-```
+## Simplest path: Expo Go
 
-### Alternativa: Usar Diretamente no package.json
+**Advantages:**
 
-Você pode criar scripts que usam o caminho do Windows diretamente:
+- No ADB configuration required
+- Works over the network
+- Hot reload works
+- Often faster than an emulator
 
-```json
-{
-  "scripts": {
-    "android:windows": "/mnt/c/Users/[USUARIO]/AppData/Local/Android/Sdk/platform-tools/adb.exe devices",
-    "android:start": "expo start --android"
-  }
-}
-```
-
-## Solução Mais Simples: Expo Go
-
-Para desenvolvimento, a forma mais simples é usar **Expo Go** no dispositivo físico:
-
-### Vantagens:
-- ✅ Não precisa configurar ADB
-- ✅ Funciona via rede
-- ✅ Hot Reload funciona
-- ✅ Mais rápido que emulador
-
-### Como usar:
-
-1. **No WSL2:**
-   ```bash
-   cd apps/mobile
-   pnpm start --tunnel
-   ```
-
-2. **No dispositivo Android:**
-   - Instale Expo Go (Play Store)
-   - Abra Expo Go
-   - Escaneie o QR Code
-
-3. **Pronto!** O app carrega no dispositivo
-
-## Testando a Configuração
-
-### Verificar se ADB funciona:
-
-```bash
-# Versão
-adb version
-
-# Listar dispositivos
-adb devices
-
-# Se aparecer "List of devices attached" e dispositivos, está funcionando!
-```
-
-### Testar Expo:
+**Usage:**
 
 ```bash
 cd apps/mobile
-
-# Iniciar Expo
-pnpm start
-
-# Se usar dispositivo físico com Expo Go:
-# - Pressione 't' para abrir no túnel
-# - Escaneie QR Code no dispositivo
-
-# Se usar emulador/ADB configurado:
-# - Pressione 'a' para Android
-# - Expo tentará abrir no dispositivo conectado
+pnpm start --tunnel
 ```
 
-## Troubleshooting WSL2 + Windows SDK
+Scan the QR code with Expo Go on your phone.
 
-### Erro: "adb: command not found"
+## Verify configuration
 
-**Solução 1**: Usar executável do Windows diretamente:
 ```bash
-/mnt/c/Users/[USUARIO]/AppData/Local/Android/Sdk/platform-tools/adb.exe devices
+adb version
+adb devices
+cd apps/mobile && pnpm start
+# 't' for tunnel, or 'a' for Android when adb sees a device
 ```
 
-**Solução 2**: Adicionar ao PATH (veja Opção 1 acima)
+## Troubleshooting
 
-### Erro: "no devices/emulators found"
+### `adb: command not found`
 
-**Solução 1**: Certifique-se que emulador/dispositivo está rodando no Windows
+Use the full path to `adb.exe` or add SDK paths to `PATH` (option 1).
 
-**Solução 2**: Conectar via TCP:
-```bash
-# Descobrir IP do Windows
-ipconfig  # no PowerShell do Windows
+### `no devices/emulators found`
 
-# Conectar do WSL2
-adb connect [IP_DO_WINDOWS]:5554
-```
+- Ensure an emulator or device is running on Windows
+- Try `adb connect` over TCP
+- Prefer Expo Go with `--tunnel`
 
-**Solução 3**: Usar Expo Go (mais simples)
+### `cannot connect to daemon`
 
-### Erro: "cannot connect to daemon"
+Start the server on Windows:
 
-**Solução**: O ADB server precisa estar rodando no Windows:
 ```powershell
-# No PowerShell do Windows
 cd $env:LOCALAPPDATA\Android\Sdk\platform-tools
 .\adb.exe start-server
 ```
 
-### Expo não encontra dispositivo
+### Expo cannot find a device
 
-**Solução 1**: Use túnel (recomendado):
 ```bash
 pnpm start --tunnel
-```
-
-**Solução 2**: Certifique-se que adb funciona:
-```bash
 adb devices
-# Deve listar dispositivos
 ```
 
-**Solução 3**: Use Expo Go (mais confiável)
-
-### Emulador lento no Windows
-
-Isso é normal. Considere:
-- Usar dispositivo físico
-- Reduzir RAM do emulador
-- Usar Expo Go (mais rápido)
-
-## Comandos Úteis WSL2 + Windows
+## Useful commands
 
 ```bash
-# Verificar se adb funciona
 adb version
-
-# Ver dispositivos (conectados no Windows)
 adb devices
-
-# Conectar ao emulador do Windows
 adb connect 127.0.0.1:5554
-
-# Ver logs (do dispositivo conectado)
-adb logcat
-
-# Filtrar logs React Native
 adb logcat *:S ReactNative:V ReactNativeJS:V
-
-# Limpar cache Expo
 npx expo start --clear
-
-# Iniciar com túnel (funciona melhor no WSL2)
 npx expo start --tunnel
 ```
 
-## Recomendação Final
+## Recommendation
 
-Para desenvolvimento com WSL2 + SDK no Windows:
+For day-to-day development on WSL2:
 
-1. **Use Expo Go no dispositivo físico** (mais simples e rápido)
-   ```bash
-   cd apps/mobile
-   pnpm start --tunnel
-   ```
+1. **Expo Go + `--tunnel`** on a physical device (fastest setup), or
+2. **Windows SDK on PATH / aliases** + emulator started on Windows
 
-2. **OU configure ADB para usar executáveis do Windows**
-   - Adicione ao PATH ou use aliases
-   - Inicie emulador no Windows
-   - Conecte do WSL2 via TCP
+Production builds do not require a local SDK when using **EAS Build**.
 
-3. **Para builds de produção**, use EAS Build (não precisa do SDK local)
+## Next steps
 
-## Próximos Passos
+1. Pick an option above and verify `pnpm start`
+2. When ready:
 
-1. Escolha a opção que preferir (recomendo Expo Go)
-2. Configure conforme a opção escolhida
-3. Teste: `cd apps/mobile && pnpm start`
-4. Quando estiver pronto, faça build com EAS:
    ```bash
    pnpm build:android -- --profile preview
    ```

@@ -1,16 +1,16 @@
-# Integração React Query com Chat WebSocket
+# React Query Integration with Chat WebSocket
 
-## 📋 Visão Geral
+## 📋 Overview
 
-O sistema de chat agora utiliza **React Query** para gerenciamento de estado e cache, mantendo a funcionalidade de **atualização em tempo real via WebSocket**.
+The chat system now uses **React Query** for state management and cache, while keeping **real-time updates via WebSocket**.
 
-## 🔧 Como Funciona
+## 🔧 How It Works
 
-### 1. Hooks React Query
+### 1. React Query Hooks
 
 #### `useConversationsQuery`
 
-Gerencia a lista de conversas do usuário.
+Manages the user's conversation list.
 
 ```typescript
 const {
@@ -23,15 +23,15 @@ const {
 } = useConversationsQuery()
 ```
 
-**Funções de Cache:**
+**Cache Functions:**
 
-- `updateConversationInCache(id, updater)` - Atualiza uma conversa específica
-- `addConversationToCache(conversation)` - Adiciona nova conversa
-- `sortConversationsByLastUpdate()` - Reordena por última atualização
+- `updateConversationInCache(id, updater)` - Update a specific conversation
+- `addConversationToCache(conversation)` - Add a new conversation
+- `sortConversationsByLastUpdate()` - Reorder by last update
 
 #### `useMessagesQuery`
 
-Gerencia as mensagens de uma conversa específica.
+Manages messages for a specific conversation.
 
 ```typescript
 const {
@@ -44,52 +44,52 @@ const {
 } = useMessagesQuery(conversationId)
 ```
 
-**Funções de Cache:**
+**Cache Functions:**
 
-- `addMessageToCache(message)` - Adiciona nova mensagem (chamado pelo WebSocket)
-- `updateMessageInCache(id, updater)` - Atualiza mensagem (edição/deleção)
-- `markMessagesAsReadInCache(ids?)` - Marca mensagens como lidas
+- `addMessageToCache(message)` - Add a new message (called by WebSocket)
+- `updateMessageInCache(id, updater)` - Update message (edit/delete)
+- `markMessagesAsReadInCache(ids?)` - Mark messages as read
 
-### 2. Integração com WebSocket
+### 2. WebSocket Integration
 
-O `ChatContext` utiliza o React Query para armazenar dados, mas o **WebSocket continua funcionando normalmente** para atualizações em tempo real.
+`ChatContexto` uses React Query to store data, but the **WebSocket continues to work normally** for real-time updates.
 
-#### Fluxo de Atualização:
+#### Update Flow:
 
 ```
-WebSocket Event → Chat Event Handler → queryClient.setQueryData() → UI Atualizada
+WebSocket Event → Chat Event Handler → queryClient.setQueryData() → UI Updated
 ```
 
-**Eventos WebSocket Tratados:**
+**WebSocket Events Handled:**
 
-- `new-message` - Nova mensagem recebida
-- `conversation-updated` - Conversa atualizada
-- `message-read` - Mensagem marcada como lida
-- `message:edited` - Mensagem editada
-- `message:deleted` - Mensagem deletada
+- `new-message` - New message received
+- `conversation-updated` - Conversation updated
+- `message-read` - Message marked as read
+- `message:edited` - Message edited
+- `message:deleted` - Message deleted
 
-#### Exemplo de Integração:
+#### Integration Example:
 
 ```typescript
-// Em useChatEventHandlers.ts
+// In useChatEventHandlers.ts
 const handleNewMessage = (message: Message) => {
-  // Atualiza o cache do React Query via setMessages
+  // Updates React Query cache via setMessages
   setMessages(prev => [...prev, message])
 
-  // O setMessages agora usa queryClient.setQueryData internamente
+  // setMessages now uses queryClient.setQueryData internally
 }
 ```
 
-### 3. ChatContext Modificado
+### 3. Modified ChatContexto
 
-O `ChatContext` agora:
+`ChatContexto` now:
 
-1. **Usa React Query** para buscar e cachear dados
-2. **Mantém WebSocket** para atualizações em tempo real
-3. **Sincroniza** WebSocket com cache do React Query via `setMessages` e `setConversations`
+1. **Uses React Query** to fetch and cache data
+2. **Keeps WebSocket** for real-time updates
+3. **Syncs** WebSocket with React Query cache via `setMessages` and `setConversations`
 
 ```typescript
-// Setters atualizados para usar React Query
+// Setters updated to use React Query
 const setMessages = useCallback(
   updater => {
     queryClient.setQueryData(['messages', selectedChurch?.id, conversationId], old =>
@@ -100,120 +100,120 @@ const setMessages = useCallback(
 )
 ```
 
-## ✅ Benefícios
+## ✅ Benefits
 
-### 1. **Cache Inteligente**
+### 1. **Smart Cache**
 
-- Conversas e mensagens são cacheadas
-- Reduz chamadas à API
-- Navegação mais rápida entre conversas
+- Conversations and messages are cached
+- Fewer API calls
+- Faster navigation between conversations
 
-### 2. **WebSocket em Tempo Real**
+### 2. **Real-Time WebSocket**
 
-- Mensagens chegam instantaneamente
-- Indicadores de "lido" em tempo real
-- Notificações de edição/deleção
+- Messages arrive instantly
+- Real-time read indicators
+- Edit/delete notifications
 
-### 3. **Sincronização Automática**
+### 3. **Automatic Sync**
 
-- WebSocket atualiza o cache do React Query
-- UI sempre sincronizada
-- Sem duplicação de requisições
+- WebSocket updates React Query cache
+- UI always in sync
+- No duplicate requests
 
 ### 4. **Performance**
 
-- Apenas conversas ativas buscam mensagens
-- Cache compartilhado entre componentes
-- Invalidação inteligente
+- Only active conversations fetch messages
+- Cache shared across components
+- Smart invalidation
 
 ## 🎯 Query Keys
 
 ```typescript
-// Conversas
+// Conversations
 ;['conversations', churchId, userId][
-  // Mensagens de uma conversa
+  // Messages for a conversation
   ('messages', churchId, conversationId)
 ]
 ```
 
-## 📊 Estado de Carregamento
+## 📊 Loading State
 
 ```typescript
 const { conversations, isLoading } = useConversationsQuery()
-// isLoading: true quando buscando conversas
+// isLoading: true while fetching conversations
 
 const { messages, isLoading } = useMessagesQuery(conversationId)
-// isLoading: true quando buscando mensagens
+// isLoading: true while fetching messages
 ```
 
-## 🔄 Fluxo Completo de Mensagem
+## 🔄 Full Message Flow
 
-### Envio de Mensagem:
+### Sending a Message:
 
-1. Usuário digita e envia mensagem
-2. `sendMessage()` envia via WebSocket
-3. Optimistic update adiciona mensagem temporária no cache
-4. Servidor processa e retorna mensagem confirmada
-5. WebSocket emite evento `new-message`
-6. Event handler atualiza cache do React Query
-7. Mensagem temporária é substituída pela real
-8. UI atualizada automaticamente
+1. User types and sends a message
+2. `sendMessage()` sends via WebSocket
+3. Optimistic update adds a temporary message to cache
+4. Server processes and returns confirmed message
+5. WebSocket emits `new-message` event
+6. Event handler updates React Query cache
+7. Temporary message is replaced with the real one
+8. UI updates automatically
 
-### Recebimento de Mensagem:
+### Receiving a Message:
 
-1. WebSocket recebe evento `new-message`
-2. Event handler chama `setMessages()`
-3. `setMessages()` atualiza cache via `queryClient.setQueryData()`
-4. React Query notifica componentes
-5. UI renderiza nova mensagem
-6. Se conversa está ativa, marca como lida automaticamente
+1. WebSocket receives `new-message` event
+2. Event handler calls `setMessages()`
+3. `setMessages()` updates cache via `queryClient.setQueryData()`
+4. React Query notifies components
+5. UI renders the new message
+6. If conversation is active, marks as read automatically
 
-## 🚀 Como Testar
+## 🚀 How to Test
 
-1. Abra duas abas do navegador
-2. Faça login com usuários diferentes
-3. Inicie uma conversa
-4. Envie mensagens de ambos os lados
-5. Observe atualização em tempo real
+1. Open two browser tabs
+2. Log in with different users
+3. Start a conversation
+4. Send messages from both sides
+5. Observe real-time updates
 
-## ⚠️ Considerações Importantes
+## ⚠️ Important Considerations
 
-### 1. **Não Remova WebSocket**
+### 1. **Do Not Remove WebSocket**
 
-O WebSocket é essencial para atualizações em tempo real. O React Query apenas gerencia o cache, não substitui a comunicação em tempo real.
+WebSocket is essential for real-time updates. React Query only manages cache; it does not replace real-time communication.
 
 ### 2. **Cache Invalidation**
 
-O cache é atualizado automaticamente via WebSocket. Não é necessário invalidar manualmente, exceto em casos especiais.
+Cache is updated automatically via WebSocket. Manual invalidation is not needed except in special cases.
 
-### 3. **Query Keys Únicos**
+### 3. **Unique Query Keys**
 
-Sempre incluir `churchId` nas query keys para evitar conflitos entre igrejas diferentes.
+Always include `churchId` in query keys to avoid conflicts between different churches.
 
 ### 4. **Optimistic Updates**
 
-Mensagens temporárias são substituídas quando a resposta do servidor chega via WebSocket.
+Temporary messages are replaced when the server response arrives via WebSocket.
 
-## 📝 Logs de Debug
+## 📝 Debug Logs
 
-Para debug, você pode verificar:
+For debugging, you can check:
 
 ```typescript
-// No Chrome DevTools
+// In Chrome DevTools
 window.__REACT_QUERY_DEVTOOLS__
 
-// Ou usar o React Query DevTools (já integrado)
-// Canto inferior direito da tela
+// Or use React Query DevTools (already integrated)
+// Bottom-right corner of the screen
 ```
 
-## 🔮 Próximas Melhorias
+## 🔮 Future Improvements
 
-- [ ] Implementar `useMutation` para operações de chat
-- [ ] Adicionar retry logic específico para chat
-- [ ] Implementar prefetching de conversas recentes
+- [ ] Implement `useMutation` for chat operations
+- [ ] Add chat-specific retry logic
+- [ ] Implement prefetching of recent conversations
 - [ ] Cache persistence (localStorage)
 
 ---
 
-**Última Atualização**: Janeiro 2026
-**Status**: ✅ Implementado e Funcionando
+**Last Updated**: January 2026
+**Status**: ✅ Implemented and Working

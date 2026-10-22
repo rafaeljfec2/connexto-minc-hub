@@ -1,10 +1,10 @@
-# Configuração Manual no Dashboard da Vercel
+# Manual Configuration in the Vercel Dashboard
 
-## ⚠️ Situação Atual
+## ⚠️ Current Situation
 
-Você tem **Root Directory = `apps/web`** configurado no Dashboard.
+You have **Root Directory = `apps/web`** configured in the Dashboard.
 
-## ✅ Configuração Correta para Root Directory = `apps/web`
+## ✅ Correct Configuration for Root Directory = `apps/web`
 
 ### Settings > Build & Development Settings
 
@@ -34,28 +34,28 @@ cd ../.. && pnpm dev --filter=@minc-hub/web
 
 ### Settings > Git > Ignored Build Step
 
-**Selecione:** "Only build if there are changes in a folder"
+**Select:** "Only build if there are changes in a folder"
 
 **Configure:**
 
 - **Folder:** `apps/web`
 
-**OU configure manualmente:**
+**OR configure manually:**
 
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/
 ```
 
-**OU deixe como "Automatic"** para sempre fazer deploy.
+**OR leave as "Automatic"** to always deploy.
 
-## ✅ Alternativa: Usar Raiz do Projeto (Recomendado)
+## ✅ Alternative: Use Project Root (Recommended)
 
-Se preferir usar a **raiz do projeto** (melhor para monorepo):
+If you prefer the **project root** (better for monorepos):
 
 ### 1. Settings > General > Root Directory
 
-- **Deixe VAZIO** (ou configure como `.`)
-- **Desabilite** o toggle "Include files outside the root directory"
+- Leave **EMPTY** (or set to `.`)
+- **Disable** the toggle "Include files outside the root directory"
 
 ### 2. Settings > Build & Development Settings
 
@@ -85,24 +85,24 @@ pnpm install --frozen-lockfile
 git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json
 ```
 
-**OU selecione:** "Only build if there are changes in a folder"
+**OR select:** "Only build if there are changes in a folder"
 
 - **Folder:** `apps/web`
 
-## 📝 Arquivos Criados
+## 📝 Files Created
 
-1. ✅ `vercel.json` na raiz (para usar raiz)
-2. ✅ `apps/web/vercel.json` (para usar root=apps/web)
+1. ✅ `vercel.json` at repo root (for root deploy)
+2. ✅ `apps/web/vercel.json` (for root=apps/web)
 
-A Vercel vai usar o `vercel.json` que estiver no Root Directory configurado.
+Vercel uses the `vercel.json` in the configured Root Directory.
 
-## 🧪 Teste
+## 🧪 Test
 
-Após configurar, faça um commit vazio:
+After configuring, make an empty commit:
 
 ```bash
 git commit --allow-empty -m "test: trigger Vercel deploy"
 git push
 ```
 
-Se aparecer um novo deploy, está funcionando! 🎉
+If a new deploy appears, it is working 🎉

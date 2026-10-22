@@ -1,8 +1,8 @@
 # MINC Teams Mobile
 
-Aplicativo mobile para o sistema de gestão de times da MINC (Minha Igreja na Cidade).
+Mobile app for the MINC (Minha Church na Cidade) team management system.
 
-## Tecnologias
+## Technologies
 
 - React Native
 - Expo
@@ -10,35 +10,35 @@ Aplicativo mobile para o sistema de gestão de times da MINC (Minha Igreja na Ci
 - React Navigation
 - Expo Camera (QR Code)
 
-## Desenvolvimento
+## Development
 
 ```bash
-# Instalar dependências (do root do monorepo)
+# Install dependencies (from monorepo root)
 pnpm install
 
-# Iniciar servidor de desenvolvimento
+# Start development server
 pnpm --filter mobile start
 
-# Iniciar no Android
+# Start on Android
 pnpm --filter mobile android
 
-# Iniciar no iOS
+# Start on iOS
 pnpm --filter mobile ios
 ```
 
 ## Build
 
-### Desenvolvimento (EAS Build)
+### Development (EAS Build)
 
 ```bash
-# Build Android APK (desenvolvimento)
+# Build Android APK (development)
 pnpm --filter mobile build:android -- --profile development
 
-# Build iOS (desenvolvimento)
+# Build iOS (development)
 pnpm --filter mobile build:ios -- --profile development
 ```
 
-### Produção
+### Production
 
 ```bash
 # Build Android
@@ -47,56 +47,56 @@ pnpm --filter mobile build:android -- --profile production
 # Build iOS
 pnpm --filter mobile build:ios -- --profile production
 
-# Build ambas plataformas
+# Build both platforms
 pnpm --filter mobile build:all -- --profile production
 ```
 
-## Submissão
+## Submission
 
 ```bash
-# Submeter Android para Google Play
+# Submit Android to Google Play
 pnpm --filter mobile submit:android
 
-# Submeter iOS para App Store
+# Submit iOS to App Store
 pnpm --filter mobile submit:ios
 ```
 
-## Estrutura
+## Structure
 
 ```
 apps/mobile/
 ├── src/
 │   ├── App.tsx              # Entry point
-│   ├── components/          # Componentes reutilizáveis
-│   ├── contexts/            # Contextos (Auth, Theme)
-│   ├── navigator/           # Configuração de navegação
-│   ├── screens/             # Telas da aplicação
+│   ├── components/          # Reusable components
+│   ├── contexts/            # Contexts (Auth, Theme)
+│   ├── navigator/           # Navigation configuration
+│   ├── screens/             # Application screens
 │   ├── theme/               # Design tokens
-│   └── lib/                 # Utilitários e API client
-├── app.json                 # Configuração Expo
-├── eas.json                 # Configuração EAS Build
+│   └── lib/                 # Utilities and API client
+├── app.json                 # Expo configuration
+├── eas.json                 # EAS Build configuration
 └── package.json
 ```
 
-## Variáveis de Ambiente
+## Environment Variables
 
-Criar arquivo `.env`:
+Create a `.env` file:
 
 ```
 EXPO_PUBLIC_API_URL=https://api.minc-teams.com
 EXPO_PUBLIC_MOCK_MODE=false
 ```
 
-## Permissões
+## Permissions
 
-O app requer as seguintes permissões:
+The app requires the following permissions:
 
-- **Câmera**: Para escanear QR codes (funcionalidade crítica)
+- **Camera**: To scan QR codes (critical feature)
 
-Configuradas automaticamente via `app.json`.
+Configured automatically via `app.json`.
 
-## Notas
+## Notes
 
-- O app usa `@minc-teams/shared` para compartilhar types, services e utils com o web
-- Navegação híbrida: Stack Navigator + Tab Navigator
-- Design system baseado em tokens compartilhados
+- The app uses `@minc-teams/shared` to share types, services, and utils with the web app
+- Hybrid navigation: Stack Navigator + Tab Navigator
+- Design system based on shared tokens

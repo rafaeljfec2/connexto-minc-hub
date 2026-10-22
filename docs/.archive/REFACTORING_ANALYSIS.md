@@ -1,10 +1,10 @@
-# Análise de Refatoração - App Web
+# Refactoring Analysis - Web App
 
-## 🔍 Pontos Identificados para Refatoração
+## 🔍 Refactoring Opportunities Identified
 
-### 1. ⚠️ CRÍTICO - Duplicação de PlusIcon
+### 1. ⚠️ CRITICAL - PlusIcon Duplication
 
-**Problema**: Função `PlusIcon` duplicada em 6 arquivos diferentes
+**Problem**: `PlusIcon` function duplicated in 6 files
 
 - `ChurchesPage.tsx`
 - `MinistriesPage.tsx`
@@ -13,138 +13,138 @@
 - `SchedulesPage.tsx`
 - `PeoplePage.tsx`
 
-**Solução**: Mover para `components/icons/index.tsx`
+**Solution**: Move to `components/icons/index.tsx`
 
 ---
 
-### 2. ⚠️ CRÍTICO - Rotas Duplicadas no App.tsx
+### 2. ⚠️ CRITICAL - Duplicated Routes in App.tsx
 
-**Problema**: Padrão repetitivo de `MOCK_MODE` em todas as rotas
+**Problem**: Repeated `MOCK_MODE` pattern on every route
 
-- Código duplicado ~200 linhas
-- Difícil manutenção
-- Propenso a erros
+- ~200 duplicated lines
+- Hard to maintain
+- Error-prone
 
-**Solução**: Criar componente `ProtectedRouteWrapper` ou helper function
-
----
-
-### 3. ⚠️ ALTO - Lógica de Modal/Formulário Duplicada
-
-**Problema**: Padrão repetido em todas as páginas CRUD:
-
-- `handleOpenModal` - similar em todas
-- `handleCloseModal` - similar em todas
-- `handleSubmit` - similar em todas
-- `handleDeleteClick` - similar em todas
-- `handleDeleteConfirm` - similar em todas
-
-**Solução**: Criar hook `useCrudForm` que encapsula toda essa lógica
+**Solution**: Create `ProtectedRouteWrapper` component or helper
 
 ---
 
-### 4. ⚠️ MÉDIO - Mock Data Duplicado
+### 3. ⚠️ HIGH - Duplicated Modal/Form Logic
 
-**Problema**: Dados mock aparecem em múltiplos arquivos
+**Problem**: Repeated pattern on every CRUD page:
 
-- `MOCK_MINISTRIES` em PeoplePage e TeamsPage
-- `MOCK_TEAMS` em PeoplePage e TeamsPage
-- `MOCK_PEOPLE` em TeamsPage
+- `handleOpenModal` - similar everywhere
+- `handleCloseModal` - similar everywhere
+- `handleSubmit` - similar everywhere
+- `handleDeleteClick` - similar everywhere
+- `handleDeleteConfirm` - similar everywhere
 
-**Solução**: Centralizar em `lib/mockData.ts` ou `services/mockData.ts`
-
----
-
-### 5. ⚠️ MÉDIO - Filtro de Busca Duplicado
-
-**Problema**: Lógica de `filteredItems` com `useMemo` repetida
-
-- Padrão similar em todas as páginas
-- Pode ser extraído para hook
-
-**Solução**: Melhorar `useSearch` ou criar `useFilteredItems`
+**Solution**: Create `useCrudForm` hook encapsulating this logic
 
 ---
 
-### 6. ⚠️ BAIXO - Componente PageWithCrud Não Utilizado
+### 4. ⚠️ MEDIUM - Duplicated Mock Data
 
-**Problema**: Componente existe mas não está sendo usado
+**Problem**: Mock data appears in multiple files
 
-- Todas as páginas usam `CrudPageLayout` agora
-- `PageWithCrud` pode ser removido ou atualizado
+- `MOCK_MINISTRIES` in PeoplePage and TeamsPage
+- `MOCK_TEAMS` in PeoplePage and TeamsPage
+- `MOCK_PEOPLE` in TeamsPage
 
-**Solução**: Remover ou atualizar para usar novos componentes
+**Solution**: Centralize in `lib/mockData.ts` or `services/mockData.ts`
 
 ---
 
-### 7. ⚠️ BAIXO - Constante MOCK_MODE Duplicada
+### 5. ⚠️ MEDIUM - Duplicated Search Filter
 
-**Problema**: `MOCK_MODE` definida em múltiplos lugares
+**Problem**: `filteredItems` with `useMemo` logic repeated
+
+- Similar pattern on every page
+- Could be extracted to a hook
+
+**Solution**: Improve `useSearch` or create `useFilteredItems`
+
+---
+
+### 6. ⚠️ LOW - PageWithCrud Not Used
+
+**Problem**: Component exists but is unused
+
+- All pages use `CrudPageLayout` now
+- `PageWithCrud` can be removed or updated
+
+**Solution**: Remove or update to use new components
+
+---
+
+### 7. ⚠️ LOW - Duplicated MOCK_MODE Constant
+
+**Problem**: `MOCK_MODE` defined in multiple places
 
 - `App.tsx` (2x)
 - `ProtectedRoute`
 
-**Solução**: Centralizar em `lib/constants.ts` ou hook `useMockMode`
+**Solution**: Centralize in `lib/constants.ts` or `useMockMode` hook
 
 ---
 
-### 8. ⚠️ BAIXO - Funções Helper Duplicadas
+### 8. ⚠️ LOW - Duplicated Helper Functions
 
-**Problema**: Funções como `getChurchName`, `getMinistryName`, `getTeamName` duplicadas
+**Problem**: Functions like `getChurchName`, `getMinistryName`, `getTeamName` duplicated
 
-- Aparecem em múltiplas páginas
-- Lógica similar
+- Appear on multiple pages
+- Similar logic
 
-**Solução**: Criar helpers em `lib/helpers.ts` ou hooks específicos
-
----
-
-## 📋 Plano de Refatoração
-
-### Fase 1: Componentes e Icons
-
-1. ✅ Mover `PlusIcon` para `components/icons`
-2. ✅ Atualizar todas as importações
-
-### Fase 2: Hooks Customizados
-
-1. ✅ Criar `useCrudForm` hook
-2. ✅ Criar `useMockMode` hook
-3. ✅ Melhorar `useSearch` para incluir filtros customizados
-
-### Fase 3: Centralização de Dados
-
-1. ✅ Centralizar mock data
-2. ✅ Centralizar constantes
-
-### Fase 4: Rotas e Layout
-
-1. ✅ Refatorar `App.tsx` para reduzir duplicação
-2. ✅ Criar helper para rotas protegidas
-
-### Fase 5: Limpeza
-
-1. ✅ Remover `PageWithCrud` se não usado
-2. ✅ Remover código morto
-3. ✅ Atualizar imports
+**Solution**: Create helpers in `lib/helpers.ts` or specific hooks
 
 ---
 
-## 🎯 Priorização
+## 📋 Refactoring Plan
 
-### Prioridade Alta
+### Phase 1: Components and Icons
 
-1. PlusIcon duplicado
-2. Rotas duplicadas no App.tsx
-3. Lógica de modal/formulário duplicada
+1. ✅ Move `PlusIcon` to `components/icons`
+2. ✅ Update all imports
 
-### Prioridade Média
+### Phase 2: Custom Hooks
 
-4. Mock data duplicado
-5. Filtro de busca duplicado
+1. ✅ Create `useCrudForm` hook
+2. ✅ Create `useMockMode` hook
+3. ✅ Improve `useSearch` for custom filters
 
-### Prioridade Baixa
+### Phase 3: Data Centralization
 
-6. PageWithCrud não utilizado
-7. Constante MOCK_MODE duplicada
-8. Funções helper duplicadas
+1. ✅ Centralize mock data
+2. ✅ Centralize constants
+
+### Phase 4: Routes and Layout
+
+1. ✅ Refactor `App.tsx` to reduce duplication
+2. ✅ Create helper for protected routes
+
+### Phase 5: Cleanup
+
+1. ✅ Remove `PageWithCrud` if unused
+2. ✅ Remove dead code
+3. ✅ Update imports
+
+---
+
+## 🎯 Prioritization
+
+### High Priority
+
+1. Duplicated PlusIcon
+2. Duplicated routes in App.tsx
+3. Duplicated modal/form logic
+
+### Medium Priority
+
+4. Duplicated mock data
+5. Duplicated search filter
+
+### Low Priority
+
+6. Unused PageWithCrud
+7. Duplicated MOCK_MODE constant
+8. Duplicated helper functions

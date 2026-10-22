@@ -1,10 +1,10 @@
-# Resumo da Migração para React Query
+# React Query Migration Summary
 
-## ✅ Status: Migração Concluída
+## ✅ Status: Migration Completed
 
-### 📊 Progresso Atual
+### 📊 Current Progress
 
-**Hooks Criados (100%):**
+**Hooks Created (100%):**
 
 - ✅ `usePeopleQuery.ts`
 - ✅ `useTeamsQuery.ts`
@@ -13,82 +13,82 @@
 - ✅ `useServicesQuery.ts`
 - ✅ `useChurchesQuery.ts`
 
-**Componentes Migrados:**
+**Migrated Components:**
 
-- ✅ `App.tsx` - QueryClientProvider configurado
-- ✅ `DashboardPage.tsx` - Usando todos os hooks Query
-- ✅ `PeoplePage.tsx` - Migrado
-- ✅ `TeamsPage.tsx` - Migrado
-- ✅ `MinistriesPage.tsx` - Migrado
-- ✅ `SchedulesPage.tsx` - Migrado
-- ✅ `ServicesPage.tsx` - Migrado
-- ✅ `AccessCodesPage.tsx` - Migrado
-- ✅ `UsersPage.tsx` - Migrado
-- ✅ `ChurchesPage.tsx` - Migrado
-- ✅ `TeamDetailsPage.tsx` - Em ajuste
-- ✅ `PersonFormPage.tsx` - Em ajuste
-- ✅ `SchedulePlanningConfigPage.tsx` - Migrado
-- ✅ `AddMemberModal.tsx` - Migrado
-- ✅ `GuestVolunteerModal.tsx` - Migrado
-- ✅ `ChurchContext.tsx` - Migrado
-- ✅ `SidebarChurchSelector.tsx` - Migrado
-- ✅ `Header.tsx` - Migrado
-- ✅ `DashboardHeaderMobile.tsx` - Migrado
+- ✅ `App.tsx` - QueryClientProvider configured
+- ✅ `DashboardPage.tsx` - Using all Query hooks
+- ✅ `PeoplePage.tsx` - Migrated
+- ✅ `TeamsPage.tsx` - Migrated
+- ✅ `MinistriesPage.tsx` - Migrated
+- ✅ `SchedulesPage.tsx` - Migrated
+- ✅ `ServicesPage.tsx` - Migrated
+- ✅ `AccessCodesPage.tsx` - Migrated
+- ✅ `UsersPage.tsx` - Migrated
+- ✅ `ChurchesPage.tsx` - Migrated
+- ✅ `TeamDetailsPage.tsx` - Adjustments in progress
+- ✅ `PersonFormPage.tsx` - Adjustments in progress
+- ✅ `SchedulePlanningConfigPage.tsx` - Migrated
+- ✅ `AddMemberModal.tsx` - Migrated
+- ✅ `GuestVolunteerModal.tsx` - Migrated
+- ✅ `ChurchContexto.tsx` - Migrated
+- ✅ `SidebarChurchSelector.tsx` - Migrated
+- ✅ `Header.tsx` - Migrated
+- ✅ `DashboardHeaderMobile.tsx` - Migrated
 
-### 🔧 Ajustes Necessários
+### 🔧 Required Adjustments
 
-**Arquivos Corrigidos:**
+**Fixed Files:**
 
-1. ✅ `MinistriesPage.tsx` - Ajustado chamada de `updateMinistry`
-2. ✅ `SchedulesPage.tsx` - Ajustado chamada de `updateSchedule`
-3. ✅ `ServicesPage.tsx` - Ajustado chamada de `updateService`
-4. ✅ `TeamsPage.tsx` - Ajustado chamada de `updateTeam`
-5. ✅ `TeamDetailsPage.tsx` - Criado `useTeamByIdQuery` para substituir `getTeamById`
-6. ✅ `PersonFormPage.tsx` - Criado `usePersonByIdQuery` para substituir `getPersonById`
+1. ✅ `MinistriesPage.tsx` - Adjusted `updateMinistry` call
+2. ✅ `SchedulesPage.tsx` - Adjusted `updateSchedule` call
+3. ✅ `ServicesPage.tsx` - Adjusted `updateService` call
+4. ✅ `TeamsPage.tsx` - Adjusted `updateTeam` call
+5. ✅ `TeamDetailsPage.tsx` - Created `useTeamByIdQuery` to replace `getTeamById`
+6. ✅ `PersonFormPage.tsx` - Created `usePersonByIdQuery` to replace `getPersonById`
 
-**Padrão de Correção:**
+**Fix Pattern:**
 
 ```typescript
-// ❌ Formato antigo
+// ❌ Old format
 await updateMinistry(id, data)
 
-// ✅ Formato React Query
+// ✅ React Query format
 await updateMinistry({ id, data })
 ```
 
-### 📈 Benefícios Alcançados
+### 📈 Benefits Achieved
 
-1. **Redução de Requisições Duplicadas**
-   - Antes: ~20 requisições no Dashboard
-   - Depois: ~5-6 requisições
-   - **Redução de 75%**
+1. **Fewer Duplicate Requests**
+   - Before: ~20 requests on the Dashboard
+   - After: ~5-6 requests
+   - **75% reduction**
 
-2. **Cache Inteligente**
-   - Dados compartilhados entre componentes
-   - Menos chamadas à API
-   - Performance melhorada
+2. **Smart Cache**
+   - Data shared across components
+   - Fewer API calls
+   - Improved performance
 
 3. **DevTools**
-   - Inspeção de queries em tempo real
-   - Debug facilitado
-   - Visualização do cache
+   - Real-time query inspection
+   - Easier debugging
+   - Cache visualization
 
-### 🎯 Próximos Passos
+### 🎯 Next Steps
 
-1. ✅ **Corrigir Erros de Build** (concluído)
-   - ✅ Ajustar chamadas de mutations
-   - ✅ Substituir métodos `getById` por queries
-   - ✅ Criar hooks `useTeamByIdQuery` e `usePersonByIdQuery`
+1. ✅ **Fix Build Errors** (completed)
+   - ✅ Adjust mutation calls
+   - ✅ Replace `getById` methods with queries
+   - ✅ Create `useTeamByIdQuery` and `usePersonByIdQuery` hooks
 
-2. **Testar Funcionalidades** (em andamento)
-   - CRUD de pessoas
-   - CRUD de times
-   - CRUD de ministérios
-   - CRUD de escalas
-   - CRUD de cultos
-   - Seleção de igrejas
+2. **Test Functionality** (in progress)
+   - People CRUD
+   - Teams CRUD
+   - Ministries CRUD
+   - Schedules CRUD
+   - Services CRUD
+   - Church selection
 
-3. **Remover Hooks Antigos** (após testes)
+3. **Remove Legacy Hooks** (after testing)
    - `usePeople.ts`
    - `useTeams.ts`
    - `useMinistries.ts`
@@ -96,39 +96,39 @@ await updateMinistry({ id, data })
    - `useServices.ts`
    - `useChurches.ts`
 
-4. **Otimizações Futuras**
-   - Implementar Optimistic Updates
-   - Ajustar tempos de cache por recurso
-   - Adicionar prefetching onde necessário
+4. **Future Optimizations**
+   - Implement optimistic updates
+   - Tune cache times per resource
+   - Add prefetching where needed
 
-### 📝 Notas Técnicas
+### 📝 Technical Notes
 
-**Diferenças Importantes:**
+**Important Differences:**
 
-- Hooks antigos: `fetchData()` → Hooks Query: `refresh()`
-- Hooks antigos: `getById(id)` → Hooks Query: `useGetEntity(id)` (hook separado)
-- Mutations agora recebem objeto: `{ id, data }` em vez de parâmetros separados
+- Legacy hooks: `fetchData()` → Query hooks: `refresh()`
+- Legacy hooks: `getById(id)` → Query hooks: `useGetEntity(id)` (separate hook)
+- Mutations now take an object: `{ id, data }` instead of separate parameters
 
-**Configuração do QueryClient:**
+**QueryClient Configuration:**
 
-- `staleTime`: 5 minutos
-- `gcTime`: 10 minutos
+- `staleTime`: 5 minutes
+- `gcTime`: 10 minutes
 - `refetchOnWindowFocus`: false
 - `refetchOnReconnect`: false
 - `retry`: 1
 
-### 🐛 Problemas Conhecidos
+### 🐛 Known Issues
 
-1. Alguns componentes ainda usam `getById` diretamente
-   - Solução: Usar o hook `useGetEntity` retornado pelos hooks Query
+1. Some components still use `getById` directly
+   - Fix: Use the `useGetEntity` hook returned by Query hooks
 
-2. Algumas mutations ainda usam formato antigo
-   - Solução: Passar objeto `{ id, data }` em vez de parâmetros separados
+2. Some mutations still use the old format
+   - Fix: Pass `{ id, data }` instead of separate parameters
 
 ---
 
-**Última Atualização**: Janeiro 2026
-**Status**: 🟢 Concluído (100% completo)
+**Last Updated**: January 2026
+**Status**: 🟢 Completed (100% complete)
 
 ### 🎉 Build Status: ✅ PASSING
 

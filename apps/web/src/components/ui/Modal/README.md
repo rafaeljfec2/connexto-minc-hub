@@ -1,81 +1,80 @@
 # Modal Component
 
-Componente Modal refatorado seguindo boas práticas de engenharia de software.
+Refactored Modal component following software engineering best practices.
 
-## Estrutura
+## Structure
 
 ```
 Modal/
-├── Modal.tsx              # Componente principal
-├── index.ts               # Exportações públicas
+├── Modal.tsx              # Main component
+├── index.ts               # Public exports
 ├── hooks/
-│   ├── useModalBodyLock.ts    # Gerenciamento de scroll do body
-│   └── useModalKeyboard.ts    # Eventos de teclado (ESC)
+│   ├── useModalBodyLock.ts    # Body scroll management
+│   └── useModalKeyboard.ts    # Keyboard events (ESC)
 ├── components/
-│   ├── ModalBackdrop.tsx      # Backdrop do modal
-│   ├── ModalContainer.tsx     # Container principal
-│   ├── ModalHeader.tsx        # Cabeçalho com título e botão fechar
-│   └── ModalContent.tsx       # Área de conteúdo
+│   ├── ModalBackdrop.tsx      # Modal backdrop
+│   ├── ModalContainer.tsx     # Main container
+│   ├── ModalHeader.tsx        # Header with title and close button
+│   └── ModalContent.tsx       # Content area
 └── utils/
-    └── modalSizes.ts          # Constantes de tamanhos
+    └── modalSizes.ts          # Size constants
 ```
 
-## Uso
+## Usage
 
 ```tsx
 import { Modal } from '@/components/ui/Modal'
-
-;<Modal isOpen={isOpen} onClose={handleClose} title="Título do Modal" size="lg">
-  {/* Conteúdo do modal */}
+;<Modal isOpen={isOpen} onClose={handleClose} title="Modal Title" size="lg">
+  {/* Modal content */}
 </Modal>
 ```
 
-## Funcionalidades
+## Features
 
-- ✅ Bloqueio de scroll do body quando aberto
-- ✅ Fechamento com tecla ESC
-- ✅ Fechamento ao clicar no backdrop
-- ✅ Suporte a touch events no mobile
-- ✅ Timeout de segurança para restaurar scroll
-- ✅ Restauração automática em eventos globais
-- ✅ Responsivo (mobile e desktop)
-- ✅ Acessibilidade (ARIA labels)
+- ✅ Body scroll lock when open
+- ✅ Close with ESC key
+- ✅ Close on backdrop click
+- ✅ Touch event support on mobile
+- ✅ Safety timeout to restore scroll
+- ✅ Automatic restore on global events
+- ✅ Responsive (mobile and desktop)
+- ✅ Accessibility (ARIA labels)
 
 ## Hooks
 
 ### `useModalBodyLock`
 
-Gerencia o bloqueio do scroll do body e inclui timeout de segurança.
+Manages body scroll lock and includes a safety timeout.
 
 ### `useModalKeyboard`
 
-Gerencia eventos de teclado, especialmente ESC para fechar.
+Handles keyboard events, especially ESC to close.
 
 ### `useModalSafetyRestore`
 
-Garante que o overflow seja sempre restaurado em eventos globais.
+Ensures overflow is always restored on global events.
 
-## Componentes
+## Components
 
 ### `ModalBackdrop`
 
-Backdrop escuro que cobre a tela e permite fechar ao clicar.
+Dark backdrop that covers the screen and allows closing on click.
 
 ### `ModalContainer`
 
-Container principal com estilos responsivos e animações.
+Main container with responsive styles and animations.
 
 ### `ModalHeader`
 
-Cabeçalho com título e botão de fechar.
+Header with title and close button.
 
 ### `ModalContent`
 
-Área de conteúdo com padding responsivo.
+Content area with responsive padding.
 
-## Tamanhos
+## Sizes
 
 - `sm`: max-w-md
-- `md`: max-w-lg (padrão)
+- `md`: max-w-lg (default)
 - `lg`: max-w-3xl
 - `xl`: max-w-5xl

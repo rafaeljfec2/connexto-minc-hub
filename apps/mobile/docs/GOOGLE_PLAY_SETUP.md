@@ -1,69 +1,59 @@
-# Configuração EAS Build para Google Play (Android)
+# EAS Build for Google Play (Android)
 
-Este guia explica como configurar e fazer build do app Android para Google Play.
+This guide explains how to configure EAS and build the Android app for Google Play.
 
-## Pré-requisitos
+## Prerequisites
 
-1. **Conta Google Play Developer**
-   - Acesse: https://play.google.com/console
-   - Taxa única: $25 (paga uma vez)
+1. **Google Play Developer account**
+   - https://play.google.com/console
+   - One-time registration fee ($25)
 
-2. **EAS CLI instalado**
+2. **EAS CLI**
+
    ```bash
    npm install -g eas-cli
    ```
 
-3. **Login no Expo**
+3. **Expo login**
+
    ```bash
    eas login
    ```
 
-## Passo 1: Configurar o Projeto EAS
+## Step 1: Initialize the EAS project
 
 ```bash
 cd apps/mobile
 eas init
 ```
 
-Isso criará o projeto na sua conta Expo (se ainda não existir).
+This creates or links the project in your Expo account.
 
-## Passo 2: Configurar Credenciais Android
+## Step 2: Android credentials
 
-### Opção A: Deixar o EAS gerenciar automaticamente (recomendado)
-
-O EAS pode gerar e gerenciar automaticamente a keystore:
+### Option A: Let EAS manage credentials (recommended)
 
 ```bash
 eas credentials
 ```
 
-Selecione:
+Select:
+
 - Platform: `android`
-- Para Google Play, use o perfil `production`
+- Profile: `production` (for Google Play)
 
-O EAS irá:
-- Gerar uma keystore automaticamente
-- Gerenciar a assinatura do app
-- Armazenar as credenciais de forma segura
+EAS will generate and store a keystore securely.
 
-⚠️ **Importante**: Salve a senha da keystore em local seguro. Se perder, não poderá atualizar o app.
+> **Important:** Store the keystore password in a secure location. If you lose it, you cannot update the same app listing.
 
-### Opção B: Usar keystore existente
+### Option B: Use an existing keystore
 
-Se você já tem uma keystore:
+Run `eas credentials`, choose **Use existing**, and provide:
 
-```bash
-eas credentials
-```
+- Path to `.jks` or `.keystore`
+- Key alias and passwords
 
-E selecione "Use existing" e forneça:
-- Caminho para o arquivo `.jks` ou `.keystore`
-- Alias da keystore
-- Senhas (keystore e key)
-
-## Passo 3: Configurar app.json
-
-Verifique se o `app.json` tem as configurações corretas:
+## Step 3: Configure `app.json`
 
 ```json
 {
@@ -76,67 +66,42 @@ Verifique se o `app.json` tem as configurações corretas:
 }
 ```
 
-⚠️ **Importante**: 
-- O `package` deve ser único e corresponder ao Package Name no Google Play Console
-- O `versionCode` deve incrementar a cada build (inteiro sequencial)
+- **`package`** must be unique and match the Play Console application ID
+- **`versionCode`** must increase on every upload (integer)
 
-## Passo 4: Criar App no Google Play Console
+## Step 4: Create the app in Play Console
 
-1. Acesse: https://play.google.com/console
-2. Clique em "Criar app"
-3. Preencha:
-   - Nome do app: "MINC Hub"
-   - Idioma padrão: Português (Brasil)
-   - Tipo de app: App
-   - Gratuito ou pago: Gratuito
-4. Aceite os termos e crie
+1. Open https://play.google.com/console
+2. **Create app**
+3. Fill in app name, default language, app type, and pricing
+4. Accept terms and create
 
-## Passo 5: Configurar Service Account (para submissão automática)
+## Step 5: Service account (automated submit)
 
-### Criar Service Account
+### Create a service account
 
-1. No Google Play Console, vá em:
-   - **Configurações** > **Acesso à API**
-2. Link sua conta do Google Cloud Platform
-3. Crie um projeto (ou selecione existente)
-4. Crie um Service Account:
-   - Vá para: https://console.cloud.google.com/iam-admin/serviceaccounts
-   - Clique em "Criar conta de serviço"
-   - Nome: "EAS Submit" (ou qualquer nome)
-   - Clique em "Criar e continuar"
-   - Role: Deixe vazio (será configurado depois)
-   - Clique em "Concluído"
+1. Play Console: **Settings** > **API access**
+2. Link a Google Cloud project
+3. In Google Cloud IAM: https://console.cloud.google.com/iam-admin/serviceaccounts
+4. **Create service account** (e.g. `EAS Submit`)
+5. Create a **JSON key** and download it
 
-### Conceder Permissões
+### Grant Play Console access
 
-1. Volte ao Google Play Console:
-   - **Configurações** > **Acesso à API**
-2. Na seção "Contas de serviço", encontre a conta criada
-3. Clique em "Conceder acesso"
-4. Role: Selecione **Administrador**
-5. Salve
+1. Play Console: **Settings** > **API access**
+2. Find the service account and **Grant access**
+3. Role: **Admin** (or the minimum required for your submit flow)
 
-### Baixar Chave JSON
+### Store the key safely
 
-1. No Google Cloud Console:
-   - Vá para a conta de serviço criada
-   - Aba "Chaves"
-   - Clique em "Adicionar chave" > "Criar nova chave"
-   - Tipo: JSON
-   - Criar
-   - O arquivo JSON será baixado
+Save as e.g. `apps/mobile/google-play-key.json` and add to `.gitignore`:
 
-2. Salve o arquivo JSON em local seguro (ex: `apps/mobile/google-play-key.json`)
+```
+google-play-key.json
+*.json
+```
 
-3. ⚠️ **IMPORTANTE**: Adicione ao `.gitignore`:
-   ```
-   *.json
-   google-play-key.json
-   ```
-
-### Atualizar eas.json
-
-Atualize o caminho no `eas.json`:
+### Update `eas.json`
 
 ```json
 {
@@ -151,69 +116,42 @@ Atualize o caminho no `eas.json`:
 }
 ```
 
-**Tracks disponíveis:**
-- `internal` - Teste interno (até 100 testadores)
-- `alpha` - Teste fechado Alpha
-- `beta` - Teste fechado Beta
-- `production` - Produção
+**Tracks:** `internal`, `alpha`, `beta`, `production`
 
-## Passo 6: Build para Google Play
-
-Para Google Play, use o perfil `production`:
+## Step 6: Build for Google Play
 
 ```bash
-# Build Android para produção (Google Play)
 pnpm build:android -- --profile production
-
-# Ou usando EAS diretamente
+# or
 eas build --platform android --profile production
 ```
 
-O build vai:
-1. Compilar o app
-2. Assinar com a keystore
-3. Gerar um `.aab` (Android App Bundle) pronto para Google Play
+Output is a signed **`.aab`** (Android App Bundle).
 
-## Passo 7: Submeter para Google Play
+## Step 7: Submit to Google Play
 
-### Via EAS Submit (recomendado)
+### EAS Submit (recommended)
 
 ```bash
-# Submeter o último build para Google Play
 eas submit --platform android --profile production
-
-# Ou submeter um build específico
 eas submit --platform android --latest
 ```
 
-### Via Google Play Console (manual)
+### Manual upload
 
-1. Acesse: https://play.google.com/console
-2. Vá em seu app > **Produção** (ou **Teste interno**)
-3. Clique em **Criar nova versão**
-4. Faça upload do arquivo `.aab` gerado pelo EAS
-5. Preencha as informações da versão
-6. Revise e publique
+1. Play Console → your app → **Production** or **Internal testing**
+2. **Create new release**
+3. Upload the `.aab` from EAS
+4. Complete release notes and publish
 
-## Passo 8: Configurar Testes
+## Step 8: Testing tracks
 
-### Teste Interno
+- **Internal testing**: up to 100 testers by email
+- **Closed testing (alpha/beta)**: tester lists or open links
 
-1. No Google Play Console, vá em **Teste interno**
-2. Adicione testadores (até 100 emails)
-3. Publique o build
-4. Testadores receberão link para testar
+## `eas.json` production profile
 
-### Teste Fechado (Alpha/Beta)
-
-1. Vá em **Teste** > **Criar lista de testes**
-2. Nome: "Alpha Test" ou "Beta Test"
-3. Adicione testadores ou crie link público
-4. Publique o build na track desejada
-
-## Configuração do eas.json
-
-O arquivo `eas.json` já está configurado com o perfil `production` para Android:
+Typical settings:
 
 ```json
 {
@@ -229,146 +167,74 @@ O arquivo `eas.json` já está configurado com o perfil `production` para Androi
 }
 ```
 
-### Configurações importantes:
+- **`distribution: "store"`** — store release
+- **`buildType: "app-bundle"`** — required format for Play
 
-- **distribution: "store"** - Build para Google Play
-- **buildType: "app-bundle"** - Formato obrigatório para Google Play
-- **gradleCommand: ":app:bundleRelease"** - Comando para gerar AAB
-
-## Verificar Status do Build
+## Check build status
 
 ```bash
-# Listar builds
 eas build:list --platform android
-
-# Ver detalhes de um build específico
 eas build:view [BUILD_ID]
 ```
 
 ## Troubleshooting
 
-### Erro: "No keystore found"
-- Configure a keystore: `eas credentials --platform android`
-- Escolha "Set up new keystore" para criar uma nova
+| Issue | Action |
+| ----- | ------ |
+| No keystore | `eas credentials --platform android` → set up new keystore |
+| Package name taken | Change `android.package` in `app.json` |
+| Service account key missing | Verify path in `eas.json` and file permissions |
+| Upload failed | Confirm API access and JSON validity |
+| Version code already used | Increment `versionCode` in `app.json` |
 
-### Erro: "Package name already exists"
-- O package name já está em uso
-- Altere o `package` no `app.json` para algo único
-
-### Erro: "Service account key not found"
-- Verifique o caminho no `eas.json`
-- Certifique-se de que o arquivo JSON existe
-- Verifique as permissões do arquivo
-
-### Erro: "Upload failed"
-- Verifique se o Service Account tem permissões corretas
-- Certifique-se de que o arquivo JSON está válido
-- Verifique se o app existe no Google Play Console
-
-### Build falha na assinatura
-- Verifique as credenciais: `eas credentials`
-- Regenere a keystore se necessário (⚠️ apenas se for novo app)
-
-### Version code já usado
-- Incremente o `versionCode` no `app.json`
-- Cada build deve ter um `versionCode` único e maior que o anterior
-
-## Comandos Úteis
+## Useful commands
 
 ```bash
-# Login no Expo
 eas login
-
-# Ver informações da conta
 eas whoami
-
-# Inicializar projeto EAS
 eas init
-
-# Configurar credenciais Android
 eas credentials --platform android
-
-# Build Android para produção
 eas build --platform android --profile production
-
-# Submeter para Google Play
 eas submit --platform android --latest
-
-# Ver builds
 eas build:list --platform android
-
-# Ver submissões
 eas submit:list --platform android
 ```
 
-## Versionamento
+## Versioning
 
-### Version Code vs Version Name
+- **`versionCode`**: integer, not shown to users, must increase every build
+- **`version`**: semver string shown in the store (e.g. `1.0.0`)
 
-- **versionCode** (app.json): Número inteiro sequencial (1, 2, 3...)
-  - Deve incrementar a cada build
-  - Usado pelo Google Play para identificar versões
-  - Não visível para usuários
+Example bump:
 
-- **version** (app.json): String de versão (1.0.0, 1.0.1, 1.1.0...)
-  - Visível para usuários
-  - Formato: MAJOR.MINOR.PATCH
-
-### Exemplo de versionamento:
-
-```json
-{
-  "expo": {
-    "version": "1.0.0",
-    "android": {
-      "versionCode": 1
-    }
-  }
-}
-```
-
-Para próxima versão:
 ```json
 {
   "expo": {
     "version": "1.0.1",
-    "android": {
-      "versionCode": 2
-    }
+    "android": { "versionCode": 2 }
   }
 }
 ```
 
-## Checklist de Lançamento
+## Release checklist
 
-- [ ] EAS CLI instalado
-- [ ] Login no Expo (`eas login`)
-- [ ] Projeto inicializado (`eas init`)
-- [ ] Credenciais configuradas (`eas credentials`)
-- [ ] App criado no Google Play Console
-- [ ] Service Account criado e configurado
-- [ ] Chave JSON baixada e salva
-- [ ] `eas.json` atualizado com caminho da chave
-- [ ] `app.json` com package name único
-- [ ] `versionCode` configurado e incrementado
-- [ ] Build realizado (`eas build --platform android --profile production`)
-- [ ] Build submetido (`eas submit --platform android --latest`)
-- [ ] Testadores adicionados (Teste Interno)
-- [ ] App testado antes de publicar
+- [ ] EAS CLI installed and logged in
+- [ ] `eas init` completed
+- [ ] Android credentials configured
+- [ ] App created in Play Console
+- [ ] Service account created and JSON key stored (not in git)
+- [ ] `eas.json` submit path configured
+- [ ] Unique `package` and incremented `versionCode`
+- [ ] Production build succeeded
+- [ ] Submit to internal track and test before production
 
-## Notas Importantes
+## Notes
 
-1. **Primeiro Build**: Pode demorar mais (15-30 minutos) devido à configuração inicial
-2. **Keystore**: Se perder a keystore, não poderá atualizar o app existente (será necessário criar novo app)
-3. **AAB vs APK**: Google Play exige AAB (Android App Bundle) para novas submissões
-4. **Version Code**: Sempre incremente para cada novo build
-5. **Review Time**: Primeira publicação pode levar algumas horas para revisão do Google
+1. First builds may take 15–30 minutes
+2. Losing the upload keystore blocks updates to the same app ID
+3. Google Play requires **AAB** for new apps
+4. First store review can take several hours
 
-## Próximos Passos
+## Next steps
 
-Após testar no Teste Interno:
-1. Corrigir bugs encontrados
-2. Incrementar `versionCode` no `app.json`
-3. Fazer novo build: `eas build --platform android --profile production`
-4. Submeter para track desejada: `eas submit --platform android --latest`
-5. Quando estiver pronto, promover para Produção
+After internal testing, fix issues, bump `versionCode`, rebuild, submit, and promote to production when ready.

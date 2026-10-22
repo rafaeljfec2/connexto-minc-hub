@@ -1,104 +1,104 @@
-# Estrutura do Mobile WebView App
+# Mobile WebView App Structure
 
-Aplicativo React Native Expo refatorado seguindo as melhores práticas de engenharia de software.
+Refactored React Native Expo app following software engineering best practices.
 
-## 📁 Estrutura de Diretórios
+## 📁 Directory Structure
 
 ```
 src/
-├── components/          # Componentes reutilizáveis de UI
+├── components/          # Reusable UI components
 │   ├── LoadingScreen.tsx
 │   ├── ErrorScreen.tsx
 │   └── index.ts
-├── hooks/              # Hooks customizados para lógica reutilizável
+├── hooks/              # Custom hooks for reusable logic
 │   ├── useAuthToken.ts
 │   ├── useWebViewNavigation.ts
 │   ├── useWebViewLoading.ts
 │   └── index.ts
-├── constants/          # Constantes e configurações
+├── constants/          # Constants and configuration
 │   ├── webview.ts
 │   └── index.ts
-├── types/             # Definições de tipos TypeScript
+├── types/             # TypeScript type definitions
 │   ├── webview.ts
 │   └── index.ts
-├── App.tsx            # Componente principal (limpo e organizado)
-└── README.md          # Esta documentação
+├── App.tsx            # Main component (clean and organized)
+└── README.md          # This documentation
 ```
 
-## 🎯 Separação de Responsabilidades
+## 🎯 Separation of Concerns
 
 ### Components (`/components`)
-Componentes de UI isolados e reutilizáveis:
-- **LoadingScreen**: Tela de carregamento com logo e spinner
-- **ErrorScreen**: Tela de erro com opção de retry
+Isolated, reusable UI components:
+- **LoadingScreen**: Loading screen with logo and spinner
+- **ErrorScreen**: Error screen with retry option
 
 ### Hooks (`/hooks`)
-Lógica de negócio encapsulada em hooks customizados:
-- **useAuthToken**: Gerencia autenticação e comunicação de tokens com o WebView
-- **useWebViewNavigation**: Controla navegação, back button e validação de domínios
-- **useWebViewLoading**: Gerencia estados de loading, erro e retry
+Business logic encapsulated in custom hooks:
+- **useAuthToken**: Manages authentication and token communication with the WebView
+- **useWebViewNavigation**: Controls navigation, back button, and domain validation
+- **useWebViewLoading**: Manages loading, error, and retry states
 
 ### Constants (`/constants`)
-Configurações centralizadas:
-- URL do website
-- Domínios permitidos
-- Chaves de armazenamento
+Centralized configuration:
+- Website URL
+- Allowed domains
+- Storage keys
 - User agent
 
 ### Types (`/types`)
-Definições de tipos TypeScript para garantir type-safety.
+TypeScript type definitions for full type safety.
 
-## 🔧 Como Funciona
+## 🔧 How It Works
 
-### Fluxo de Autenticação
-1. App inicia e `useAuthToken` verifica se existe token salvo
-2. Se existe, injeta no localStorage do WebView antes de carregar
-3. WebView envia mensagens para salvar/remover tokens
-4. Tokens são armazenados com segurança via Expo SecureStore
+### Authentication Flow
+1. App starts and `useAuthToken` checks for a saved token
+2. If present, injects it into WebView localStorage before load
+3. WebView sends messages to save/remove tokens
+4. Tokens are stored securely via Expo SecureStore
 
-### Fluxo de Navegação
-1. `useWebViewNavigation` monitora mudanças de URL
-2. Valida se a URL pertence aos domínios permitidos
-3. Gerencia botão "voltar" do Android
-4. Bloqueia navegação para domínios não autorizados
+### Navigation Flow
+1. `useWebViewNavigation` monitors URL changes
+2. Validates that the URL belongs to allowed domains
+3. Handles the Android back button
+4. Blocks navigation to unauthorized domains
 
-### Fluxo de Loading
-1. `useWebViewLoading` gerencia estados de loading e erro
-2. Exibe splash screen por no mínimo 2 segundos
-3. Detecta erros de rede e exibe tela de erro
-4. Permite retry em caso de falha
+### Loading Flow
+1. `useWebViewLoading` manages loading and error states
+2. Shows splash screen for at least 2 seconds
+3. Detects network errors and shows error screen
+4. Allows retry on failure
 
-## 🎨 Benefícios da Refatoração
+## 🎨 Refactoring Benefits
 
-### Antes
-- ❌ 263 linhas em um único arquivo
-- ❌ Lógica misturada com UI
-- ❌ Difícil de testar
-- ❌ Difícil de manter
+### Before
+- ❌ 263 lines in a single file
+- ❌ Logic mixed with UI
+- ❌ Hard to test
+- ❌ Hard to maintain
 
-### Depois
-- ✅ Código modular e organizado
-- ✅ Responsabilidades bem definidas
-- ✅ Fácil de testar cada parte isoladamente
-- ✅ Fácil de adicionar novas funcionalidades
-- ✅ Reutilização de código
-- ✅ Type-safety completo
+### After
+- ✅ Modular, organized code
+- ✅ Well-defined responsibilities
+- ✅ Easy to test each part in isolation
+- ✅ Easy to add new features
+- ✅ Code reuse
+- ✅ Full type safety
 
-## 📝 Exemplo de Uso
+## 📝 Usage Example
 
 ```typescript
-// App.tsx - Componente principal limpo e legível
+// App.tsx - Clean, readable main component
 export default function App() {
   const webViewRef = useRef<WebView>(null)
 
-  // Cada hook gerencia uma responsabilidade específica
+  // Each hook manages a specific responsibility
   const { initialScript, handleMessage } = useAuthToken()
   const { handleNavigationStateChange, shouldStartLoadWithRequest } =
     useWebViewNavigation(webViewRef)
   const { isLoading, hasError, handleLoadStart, handleLoadEnd, handleError, handleRetry } =
     useWebViewLoading(webViewRef, initialScript)
 
-  // Renderização condicional simples
+  // Simple conditional rendering
   if (hasError) {
     return <ErrorScreen onRetry={handleRetry} />
   }
@@ -109,7 +109,7 @@ export default function App() {
         ref={webViewRef}
         onNavigationStateChange={handleNavigationStateChange}
         onMessage={handleMessage}
-        {/* ... outras props */}
+        {/* ... other props */}
       />
       {isLoading && <LoadingScreen />}
     </View>
@@ -117,18 +117,18 @@ export default function App() {
 }
 ```
 
-## 🧪 Testabilidade
+## 🧪 Testability
 
-Cada módulo pode ser testado isoladamente:
-- Hooks podem ser testados com `@testing-library/react-hooks`
-- Componentes podem ser testados com `@testing-library/react-native`
-- Lógica de negócio está desacoplada da UI
+Each module can be tested in isolation:
+- Hooks can be tested with `@testing-library/react-hooks`
+- Components can be tested with `@testing-library/react-native`
+- Business logic is decoupled from UI
 
-## 🔄 Manutenção Futura
+## 🔄 Future Maintenance
 
-Para adicionar novas funcionalidades:
-1. Crie novos hooks em `/hooks` para lógica complexa
-2. Crie novos componentes em `/components` para UI
-3. Adicione novas constantes em `/constants`
-4. Defina novos tipos em `/types`
-5. Mantenha o `App.tsx` limpo e focado apenas em composição
+To add new features:
+1. Create new hooks in `/hooks` for complex logic
+2. Create new components in `/components` for UI
+3. Add new constants in `/constants`
+4. Define new types in `/types`
+5. Keep `App.tsx` clean and focused on composition only

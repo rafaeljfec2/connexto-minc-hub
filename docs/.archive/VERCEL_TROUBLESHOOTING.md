@@ -1,28 +1,28 @@
-# Troubleshooting Deploy Vercel - Monorepo
+# Vercel Deploy Troubleshooting - Monorepo
 
-## Problema: Deploys não são criados após o primeiro push
+## Problem: Deploys are not created after the first push
 
-### Possíveis Causas
+### Possible Causes
 
-1. **Configuração incorreta do `vercel.json`**
-2. **Cache do Turborepo impedindo detecção de mudanças**
-3. **Configuração do projeto na Vercel Dashboard**
+1. **Incorrect `vercel.json` configuration**
+2. **Turborepo cache preventing change detection**
+3. **Project settings in Vercel Dashboard**
 
-## Soluções
+## Solutions
 
-### 1. Verificar Configuração do Projeto na Vercel
+### 1. Verify Project Settings on Vercel
 
-No painel da Vercel, verifique:
+In the Vercel dashboard, verify:
 
-- **Root Directory:** Deixe vazio (raiz do projeto) ou configure como `.`
+- **Root Directory:** Leave empty (project root) or set to `.`
 - **Framework Preset:** Vite
-- **Build Command:** Deve estar vazio (usa o `vercel.json`) ou `pnpm build --filter=@minc-hub/web`
+- **Build Command:** Should be empty (uses `vercel.json`) or `pnpm build --filter=@minc-hub/web`
 - **Output Directory:** `apps/web/dist`
-- **Install Command:** Deve estar vazio (usa o `vercel.json`) ou `pnpm install`
+- **Install Command:** Should be empty (uses `vercel.json`) or `pnpm install`
 
-### 2. Verificar `vercel.json`
+### 2. Verify `vercel.json`
 
-O arquivo `vercel.json` na raiz deve ter:
+Root `vercel.json` should contain:
 
 ```json
 {
@@ -34,44 +34,44 @@ O arquivo `vercel.json` na raiz deve ter:
 }
 ```
 
-### 3. Limpar Cache do Turborepo
+### 3. Clear Turborepo Cache
 
-Se o problema persistir, pode ser cache do Turborepo. Na Vercel:
+If the problem persists, it may be Turborepo cache. On Vercel:
 
-1. Vá em **Settings > Build & Development Settings**
-2. Adicione nas **Environment Variables**:
-   - `TURBO_TOKEN` (se usar Remote Cache)
-   - `TURBO_TEAM` (se usar Remote Cache)
-3. Ou desabilite o cache adicionando: `TURBO_FORCE=true`
+1. Go to **Settings > Build & Development Settings**
+2. Add **Environment Variables**:
+   - `TURBO_TOKEN` (if using Remote Cache)
+   - `TURBO_TEAM` (if using Remote Cache)
+3. Or disable cache with: `TURBO_FORCE=true`
 
-### 4. Forçar Novo Deploy
+### 4. Force New Deploy
 
-1. Na Vercel Dashboard, vá em **Deployments**
-2. Clique nos três pontos do último deploy
-3. Selecione **Redeploy**
-4. Ou faça um commit vazio: `git commit --allow-empty -m "Trigger deploy" && git push`
+1. In Vercel Dashboard, go to **Deployments**
+2. Click the three dots on the latest deploy
+3. Select **Redeploy**
+4. Or empty commit: `git commit --allow-empty -m "Trigger deploy" && git push`
 
-### 5. Verificar Logs de Build
+### 5. Check Build Logs
 
-1. Vá em **Deployments** na Vercel
-2. Clique no deploy que falhou ou não foi criado
-3. Verifique os logs de build para erros
+1. Go to **Deployments** on Vercel
+2. Open the failed or missing deploy
+3. Check build logs for errors
 
-### 6. Configuração Manual na Vercel Dashboard
+### 6. Manual Dashboard Configuration
 
-Se o `vercel.json` não estiver sendo respeitado:
+If `vercel.json` is not respected:
 
-1. Vá em **Settings > General**
-2. Em **Build & Development Settings**, configure:
-   - **Root Directory:** `.` (raiz)
+1. Go to **Settings > General**
+2. Under **Build & Development Settings**, configure:
+   - **Root Directory:** `.` (root)
    - **Build Command:** `pnpm build --filter=@minc-hub/web`
    - **Output Directory:** `apps/web/dist`
    - **Install Command:** `pnpm install`
-   - **Node.js Version:** 18.x ou superior
+   - **Node.js Version:** 18.x or higher
 
-### 7. Verificar Git Hooks
+### 7. Verify Git Hooks
 
-Certifique-se de que os arquivos estão sendo commitados:
+Ensure files are committed:
 
 ```bash
 git status
@@ -80,30 +80,30 @@ git commit -m "Your message"
 git push
 ```
 
-### 8. Verificar Branch
+### 8. Verify Branch
 
-A Vercel só faz deploy automático de:
-- Branch principal (geralmente `main` ou `master`)
-- Branches configuradas em **Settings > Git**
+Vercel auto-deploys only:
+- Main branch (usually `main` or `master`)
+- Branches configured in **Settings > Git**
 
-Verifique se você está fazendo push para a branch correta.
+Verify you are pushing to correct branch.
 
-## Comandos Úteis
+## Useful Commands
 
-### Testar Build Localmente
+### Test Build Locally
 
 ```bash
 pnpm install
 pnpm build --filter=@minc-hub/web
 ```
 
-### Verificar Estrutura
+### Verify Structure
 
 ```bash
 ls -la apps/web/dist
 ```
 
-### Limpar e Rebuild
+### Clean and Rebuild
 
 ```bash
 pnpm clean
@@ -112,39 +112,39 @@ pnpm build --filter=@minc-hub/web
 
 ## Checklist
 
-- [ ] `vercel.json` está na raiz do projeto
-- [ ] Comandos no `vercel.json` estão corretos
-- [ ] `package.json` na raiz tem o script `build`
-- [ ] `apps/web/package.json` tem o script `build`
-- [ ] Projeto está conectado ao repositório Git correto
-- [ ] Branch principal está configurada na Vercel
-- [ ] Variáveis de ambiente estão configuradas
-- [ ] Node.js version está configurada (18+)
-- [ ] PNPM está sendo usado (detectado automaticamente)
-- [ ] **Ignored Build Step** está configurado corretamente (ou removido)
-- [ ] Webhook do GitHub está funcionando
+- [ ] `vercel.json` is at project root
+- [ ] Commands in `vercel.json` are correct
+- [ ] Root `package.json` has `build` script
+- [ ] `apps/web/package.json` has `build` script
+- [ ] Project is connected to correct Git repository
+- [ ] Main branch is configured on Vercel
+- [ ] Environment variables are configured
+- [ ] Node.js version is set (18+)
+- [ ] PNPM is used (detected automatically)
+- [ ] **Ignored Build Step** is configured correctly (or removed)
+- [ ] GitHub webhook is working
 
-## Configuração Manual no Dashboard da Vercel
+## Manual Configuration in Vercel Dashboard
 
-Se os deploys automáticos não funcionarem, configure manualmente:
+If automatic deploys of the not work, configure manually:
 
 ### Settings > Git
 
-1. Verifique se o repositório está conectado
-2. Verifique se a branch principal está correta (geralmente `main` ou `master`)
-3. Clique em **"Disconnect"** e reconecte se necessário
+1. Verify repository is connected
+2. Verify main branch (usually `main` or `master`)
+3. Click **"Disconnect"** and reconnect if needed
 
 ### Settings > Build & Development Settings
 
-**IMPORTANTE:** Deixe estes campos **VAZIOS** para usar o `vercel.json`:
+**IMPORTANT:** Leave these fields **EMPTY** to use `vercel.json`:
 
-- **Root Directory:** (vazio)
-- **Build Command:** (vazio - usa do vercel.json)
-- **Output Directory:** (vazio - usa do vercel.json)
-- **Install Command:** (vazio - usa do vercel.json)
-- **Development Command:** (vazio)
+- **Root Directory:** (empty)
+- **Build Command:** (empty - from vercel.json)
+- **Output Directory:** (empty - from vercel.json)
+- **Install Command:** (empty - from vercel.json)
+- **Development Command:** (empty)
 
-**OU configure manualmente:**
+**OR configure manually:**
 
 - **Root Directory:** `.`
 - **Build Command:** `pnpm build --filter=@minc-hub/web`
@@ -153,27 +153,27 @@ Se os deploys automáticos não funcionarem, configure manualmente:
 
 ### Settings > Git > Ignored Build Step
 
-**IMPORTANTE:** Este campo deve estar **VAZIO** ou configurado como:
+**IMPORTANT:** This field should be **EMPTY** or set to:
 
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json
 ```
 
-Isso garante que o deploy só seja ignorado se NENHUMA mudança relevante foi feita.
+This ensures deploy is skipped only when NO relevant change was made.
 
-### Verificar Webhooks
+### Verify Webhooks
 
-1. Vá em **Settings > Git**
-2. Verifique se há webhooks configurados
-3. Se não houver, a Vercel deve criar automaticamente ao conectar o repositório
-4. No GitHub, vá em **Settings > Webhooks** do repositório
-5. Verifique se há um webhook da Vercel ativo
+1. Go to **Settings > Git**
+2. Verify webhooks are configured
+3. If not, Vercel should create them when connecting the repo
+4. On GitHub, go to **Settings > Webhooks** for the repository
+5. Verify an active Vercel webhook exists
 
-## Forçar Deploy Manual
+## Force Manual Deploy
 
-Se nada funcionar, force um deploy:
+If nothing works, force a deploy:
 
-1. Na Vercel Dashboard, vá em **Deployments**
-2. Clique nos três pontos do último deploy
-3. Selecione **Redeploy**
-4. Ou use a CLI: `vercel --prod`
+1. In Vercel Dashboard, go to **Deployments**
+2. Click the three dots on the latest deploy
+3. Select **Redeploy**
+4. Or use CLI: `vercel --prod`

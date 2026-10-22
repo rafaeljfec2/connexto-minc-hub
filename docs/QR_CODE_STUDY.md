@@ -1,141 +1,118 @@
-# Estudo Técnico - Sistema de QR Code para Check-in
+# QR Code Check-in — Technical Study
 
-## 📋 Objetivo
+## Objective
 
-Implementar um sistema de check-in via QR Code que permita aos líderes de equipe validar a presença dos servos nos cultos de forma rápida e segura.
-
----
-
-## 🎯 Requisitos Funcionais
-
-### RF-001: Geração de QR Code
-- Servo deve poder gerar seu QR Code único
-- QR Code deve ser vinculado ao ID do servo e data/hora
-- QR Code deve ter validade temporal (ex: 1 hora)
-- QR Code deve ser atualizável pelo servo
-
-### RF-002: Leitura de QR Code
-- Líder de equipe deve poder ler QR Code via câmera do dispositivo
-- Sistema deve validar QR Code em tempo real
-- Sistema deve registrar check-in automaticamente após validação
-- Sistema deve exibir confirmação visual e sonora
-
-### RF-003: Validações
-- Verificar se QR Code é válido
-- Verificar se QR Code não expirou
-- Verificar se servo pertence à equipe do líder
-- Verificar se servo está na escala do dia/culto
-- Verificar se check-in já foi realizado
-
-### RF-004: Check-in Manual
-- Líder de equipe deve poder fazer check-in manual
-- Lista de servos da equipe na escala
-- Marcação individual de presença
-- Campo para justificativa de ausência
+Design a QR Code check-in system that lets team leaders validate volunteer attendance at worship services quickly and securely.
 
 ---
 
-## 🔒 Requisitos Não Funcionais
+## Functional requirements
 
-### RNF-001: Segurança
-- QR Code deve ser criptografado
-- QR Code deve conter assinatura digital
-- Prevenção de replay attacks
-- Validação server-side obrigatória
+### FR-001: QR Code generation
 
-### RNF-002: Performance
-- Leitura de QR Code em < 2 segundos
-- Validação server-side em < 500ms
-- Suporte a múltiplas leituras simultâneas
+- Volunteers can generate a unique QR Code
+- QR Code is bound to volunteer ID and timestamp
+- QR Code has a time limit (e.g. one hour)
+- Volunteers can refresh the QR Code
 
-### RNF-003: Usabilidade
-- Interface intuitiva para leitura
-- Feedback visual claro
-- Suporte a diferentes condições de iluminação
-- Funcionamento offline (com sincronização posterior)
+### FR-002: QR Code scanning
+
+- Team leaders scan via device camera
+- Server validates in real time
+- Successful validation records check-in automatically
+- UI provides visual and optional audio confirmation
+
+### FR-003: Validation rules
+
+- QR Code signature and payload integrity
+- Expiration not passed
+- Volunteer belongs to the leader’s team
+- Volunteer is on the schedule for that service/day
+- Duplicate check-in rejected
+
+### FR-004: Manual check-in
+
+- Team leaders can mark attendance manually
+- List volunteers on the schedule for the team
+- Per-person present/absent with optional absence reason
 
 ---
 
-## 🏗️ Arquitetura Proposta
+## Non-functional requirements
 
-### Estrutura do QR Code
+### NFR-001: Security
+
+- Signed payload (HMAC or asymmetric signature)
+- Server-side validation only
+- Replay protection (expiry + optional one-time use)
+
+### NFR-002: Performance
+
+- Scan decode under ~2 seconds on client
+- Server validation under ~500 ms
+- Support concurrent scans
+
+### NFR-003: Usability
+
+- Clear scanning UI and error messages
+- Works in varied lighting
+- Optional offline queue with later sync
+
+---
+
+## Proposed architecture
+
+### Payload structure
 
 ```json
 {
-  "servoId": "uuid-do-servo",
+  "volunteerId": "uuid",
   "timestamp": "2024-01-15T10:30:00Z",
   "expiresAt": "2024-01-15T11:30:00Z",
   "version": "1.0",
-  "signature": "hash-assinatura"
+  "signature": "hmac-hex"
 }
 ```
 
-### Fluxo de Geração
+### Generation flow
 
-1. Servo solicita geração de QR Code
-2. Backend gera payload com dados do servo
-3. Backend assina digitalmente o payload
-4. Backend retorna QR Code codificado (Base64 ou URL)
-5. Frontend exibe QR Code para o servo
+1. Volunteer requests a QR Code
+2. Backend builds payload and signs it
+3. Backend returns encoded data (JSON + Base64 or URL)
+4. Client renders QR image
 
-### Fluxo de Leitura
+### Scan flow
 
-1. Líder de equipe abre tela de leitura
-2. Câmera é ativada
-3. QR Code é escaneado
-4. Payload é decodificado
-5. Validações são executadas:
-   - Assinatura digital
-   - Expiração
-   - Pertencimento à equipe
-   - Escala do dia
-6. Check-in é registrado
-7. Confirmação é exibida
+1. Leader opens scan screen and enables camera
+2. Client decodes payload
+3. Backend validates signature, expiry, team, schedule
+4. Check-in persisted; UI confirms success or shows error
 
 ---
 
-## 📚 Bibliotecas Recomendadas
+## Recommended libraries
 
-### Frontend (React)
+### Web (React)
 
-#### Geração de QR Code
-- **qrcode.react** ou **react-qr-code**
-  - Leve e performático
-  - Suporte a customização
-  - Bom para exibição
-
-#### Leitura de QR Code
-- **react-qr-reader** ou **@zxing/library**
-  - Suporte a câmera
-  - Boa performance
-  - Suporte a múltiplos formatos
+- **Display:** `qrcode.react` or `react-qr-code`
+- **Scan:** `@zxing/library` or `html5-qrcode`
 
 ### Backend (NestJS)
 
-#### Geração
-- **qrcode** (Node.js)
-  - Biblioteca padrão
-  - Suporte a múltiplos formatos
-  - Customização de tamanho/erro
-
-#### Validação e Criptografia
-- **crypto** (Node.js nativo)
-  - Assinatura digital
-  - Hash de validação
-  - Criptografia simétrica/assimétrica
+- **Display encoding:** `qrcode` (Node.js)
+- **Crypto:** Node.js `crypto` (HMAC-SHA256)
 
 ---
 
-## 🔐 Segurança
+## Security
 
-### Assinatura Digital
+### Signing example
 
 ```typescript
-// Exemplo de assinatura
 const payload = {
-  servoId: 'uuid',
+  volunteerId: 'uuid',
   timestamp: Date.now(),
-  expiresAt: Date.now() + 3600000 // 1 hora
+  expiresAt: Date.now() + 3_600_000,
 }
 
 const signature = crypto
@@ -143,92 +120,68 @@ const signature = crypto
   .update(JSON.stringify(payload))
   .digest('hex')
 
-const qrCodeData = {
-  ...payload,
-  signature
-}
+const qrCodeData = { ...payload, signature }
 ```
 
-### Validação
+### Validation example
 
 ```typescript
-// Validação no backend
 function validateQRCode(qrData: QRCodeData): boolean {
-  // 1. Verificar expiração
-  if (Date.now() > qrData.expiresAt) {
-    return false
-  }
+  if (Date.now() > qrData.expiresAt) return false
 
-  // 2. Verificar assinatura
   const { signature, ...payload } = qrData
-  const expectedSignature = crypto
+  const expected = crypto
     .createHmac('sha256', SECRET_KEY)
     .update(JSON.stringify(payload))
     .digest('hex')
 
-  if (signature !== expectedSignature) {
-    return false
-  }
+  if (signature !== expected) return false
 
-  // 3. Verificar se servo existe e está ativo
-  // 4. Verificar se servo pertence à equipe do líder
-  // 5. Verificar se servo está na escala do dia
-
+  // Load volunteer, team membership, schedule, duplicate check-in
   return true
 }
 ```
 
-### Prevenção de Replay Attacks
+### Replay mitigation
 
-- Timestamp obrigatório
-- Expiração curta (1 hora)
-- Registro de QR Codes usados (cache Redis)
-- Validação de unicidade por timestamp
+- Short TTL (e.g. one hour)
+- Optional Redis set of used `(volunteerId, scheduleId, window)` keys
 
 ---
 
-## 📱 Implementação Mobile vs Web
+## Web vs mobile
 
-### Web (Líder de Equipe)
-- Leitura via câmera do computador
-- Melhor para gestão em desktop
-- Suporte a múltiplas câmeras
-
-### Mobile (React Native)
-- Leitura nativa via câmera
-- Melhor experiência para check-in
-- Funcionamento offline
+| Platform | Leader scan | Volunteer display |
+| -------- | ----------- | ----------------- |
+| Web      | Webcam      | Browser           |
+| Mobile   | Native camera | Native app      |
 
 ---
 
-## 🗄️ Modelo de Dados
+## Data model (reference)
 
-### Tabela: check_ins
+### `check_ins`
 
 ```sql
 CREATE TABLE check_ins (
   id UUID PRIMARY KEY,
-  servo_id UUID NOT NULL REFERENCES pessoas(id),
+  volunteer_id UUID NOT NULL REFERENCES persons(id),
   schedule_id UUID NOT NULL REFERENCES schedules(id),
   checked_in_at TIMESTAMP NOT NULL,
-  checked_in_by UUID NOT NULL REFERENCES usuarios(id), -- Líder que fez check-in
-  method VARCHAR(20) NOT NULL, -- 'qr_code' ou 'manual'
-  qr_code_data JSONB, -- Dados do QR Code usado (se método for qr_code)
+  checked_in_by UUID NOT NULL REFERENCES users(id),
+  method VARCHAR(20) NOT NULL, -- 'qr_code' | 'manual'
+  qr_code_data JSONB,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
-
-CREATE INDEX idx_check_ins_servo ON check_ins(servo_id);
-CREATE INDEX idx_check_ins_schedule ON check_ins(schedule_id);
-CREATE INDEX idx_check_ins_date ON check_ins(checked_in_at);
 ```
 
-### Tabela: qr_code_logs (Auditoria)
+### `qr_code_logs` (audit)
 
 ```sql
 CREATE TABLE qr_code_logs (
   id UUID PRIMARY KEY,
-  servo_id UUID NOT NULL,
+  volunteer_id UUID NOT NULL,
   qr_code_data JSONB NOT NULL,
   scanned_at TIMESTAMP NOT NULL,
   scanned_by UUID NOT NULL,
@@ -240,204 +193,71 @@ CREATE TABLE qr_code_logs (
 
 ---
 
-## 🎨 Interface do Usuário
+## UX wireframes (reference)
 
-### Tela: Geração de QR Code (Servo)
+**Volunteer — My QR Code:** large QR, expiry countdown, refresh button.
 
-```
-┌─────────────────────────────┐
-│   Meu QR Code               │
-├─────────────────────────────┤
-│                             │
-│     [QR CODE IMAGE]          │
-│                             │
-│  Válido por: 1 hora         │
-│  Expira em: 10:30           │
-│                             │
-│  [Atualizar QR Code]         │
-│                             │
-└─────────────────────────────┘
-```
+**Leader — Scan:** camera view, switch camera, link to manual check-in.
 
-### Tela: Leitura de QR Code (Líder)
-
-```
-┌─────────────────────────────┐
-│   Check-in - Equipe Manhã   │
-├─────────────────────────────┤
-│                             │
-│   [CAMERA VIEW]             │
-│                             │
-│   Aponte a câmera para      │
-│   o QR Code do servo        │
-│                             │
-│   [Alternar Câmera]        │
-│   [Check-in Manual]         │
-│                             │
-└─────────────────────────────┘
-```
-
-### Tela: Confirmação de Check-in
-
-```
-┌─────────────────────────────┐
-│   ✓ Check-in Realizado!     │
-├─────────────────────────────┤
-│                             │
-│   João Silva                │
-│   Equipe Manhã              │
-│   15/01/2024 - 10:30        │
-│                             │
-│   [OK]                      │
-│                             │
-└─────────────────────────────┘
-```
+**Success:** volunteer name, team, timestamp, OK dismiss.
 
 ---
 
-## 🔄 Fluxos de Uso
+## User flows
 
-### Fluxo 1: Check-in via QR Code (Sucesso)
-
-1. Servo gera QR Code no app
-2. No dia do culto, servo apresenta QR Code
-3. Líder abre app e acessa "Check-in"
-4. Líder seleciona equipe e culto
-5. Líder ativa câmera
-6. Líder escaneia QR Code
-7. Sistema valida:
-   - ✅ QR Code válido
-   - ✅ Não expirado
-   - ✅ Servo na equipe
-   - ✅ Servo na escala
-8. Sistema registra check-in
-9. Confirmação é exibida
-10. Lista de check-ins é atualizada
-
-### Fluxo 2: Check-in via QR Code (Erro)
-
-1-6. (Mesmo do Fluxo 1)
-7. Sistema valida:
-   - ❌ QR Code expirado
-8. Erro é exibido: "QR Code expirado. Peça ao servo para gerar um novo."
-9. Líder pode tentar novamente ou fazer check-in manual
-
-### Fluxo 3: Check-in Manual
-
-1. Líder acessa "Check-in Manual"
-2. Líder seleciona equipe e culto
-3. Lista de servos da escala é exibida
-4. Líder marca presença de cada servo
-5. Para ausentes, pode adicionar justificativa
-6. Líder confirma check-in
-7. Sistema registra todos os check-ins
-8. Confirmação é exibida
+1. **QR success:** generate → scan → validate → record → confirm
+2. **QR failure:** show specific error (expired, wrong team, not scheduled, duplicate)
+3. **Manual:** pick schedule/team → mark roster → save batch check-ins
 
 ---
 
-## 🧪 Casos de Teste
+## Test cases (summary)
 
-### CT-001: Geração de QR Code
-- ✅ Servo pode gerar QR Code
-- ✅ QR Code contém dados corretos
-- ✅ QR Code tem assinatura válida
-- ✅ QR Code expira após 1 hora
-
-### CT-002: Leitura de QR Code
-- ✅ Líder pode ler QR Code válido
-- ✅ Check-in é registrado corretamente
-- ✅ Confirmação é exibida
-
-### CT-003: Validações
-- ✅ QR Code expirado é rejeitado
-- ✅ QR Code inválido é rejeitado
-- ✅ Servo de outra equipe é rejeitado
-- ✅ Servo não na escala é rejeitado
-- ✅ Check-in duplicado é rejeitado
-
-### CT-004: Check-in Manual
-- ✅ Líder pode fazer check-in manual
-- ✅ Lista mostra apenas servos da equipe
-- ✅ Justificativa de ausência é salva
+- Generation: valid signature, correct expiry
+- Scan: happy path registers attendance
+- Validation: reject expired, invalid signature, wrong team, not on schedule, duplicate
+- Manual: leader permissions and absence notes
 
 ---
 
-## 📊 Métricas
+## Metrics
 
-### Métricas a Acompanhar
-
-- Taxa de check-in via QR Code vs Manual
-- Tempo médio de check-in
-- Taxa de erro de leitura
-- Taxa de QR Codes expirados
-- Satisfação dos usuários
+- QR vs manual check-in ratio
+- Average time to check in
+- Scan error rate
+- User satisfaction
 
 ---
 
-## 🚀 Roadmap de Implementação
+## Implementation roadmap
 
-### Fase 1: Estudo e Prototipagem (1 semana)
-- [ ] Pesquisa de bibliotecas
-- [ ] Protótipo de geração
-- [ ] Protótipo de leitura
-- [ ] Testes de segurança
-
-### Fase 2: Backend (2 semanas)
-- [ ] Endpoint de geração
-- [ ] Endpoint de validação
-- [ ] Modelo de dados
-- [ ] Testes unitários
-
-### Fase 3: Frontend Web (2 semanas)
-- [ ] Tela de geração (servo)
-- [ ] Tela de leitura (líder)
-- [ ] Integração com câmera
-- [ ] Testes E2E
-
-### Fase 4: Mobile (2 semanas)
-- [ ] Adaptação para React Native
-- [ ] Câmera nativa
-- [ ] Testes em dispositivos
-
-### Fase 5: Refinamentos (1 semana)
-- [ ] Melhorias de UX
-- [ ] Performance
-- [ ] Documentação
+| Phase | Scope |
+| ----- | ----- |
+| 1 | Library spike, security prototype |
+| 2 | Backend generate + validate APIs, migrations |
+| 3 | Web volunteer display + leader scanner |
+| 4 | React Native camera integration |
+| 5 | UX polish, performance, documentation |
 
 ---
 
-## 📝 Notas Técnicas
+## Technical notes
 
-### Formato do QR Code
-
-- **Tipo**: QR Code (não Data Matrix)
-- **Nível de correção de erro**: M (15%)
-- **Tamanho**: 256x256 pixels (mínimo)
-- **Formato de dados**: JSON compactado + Base64
-
-### Performance
-
-- Geração: < 100ms
-- Leitura: < 2s
-- Validação: < 500ms
-- Cache de QR Codes válidos: 5 minutos
-
-### Offline
-
-- QR Code pode ser gerado offline
-- Check-in pode ser feito offline (com sincronização)
-- Validação completa requer conexão
+- QR type: standard QR (not Data Matrix)
+- Error correction level: M (~15%)
+- Minimum render size: 256×256 px
+- Target: generation &lt; 100 ms, validation &lt; 500 ms
 
 ---
 
-## 🔗 Referências
+## References
 
-- [QR Code Specification](https://www.qrcode.com/en/)
-- [ZXing Library](https://github.com/zxing/zxing)
-- [Node.js Crypto](https://nodejs.org/api/crypto.html)
-- [React QR Code](https://www.npmjs.com/package/qrcode.react)
+- [QR Code specification](https://www.qrcode.com/en/)
+- [ZXing](https://github.com/zxing/zxing)
+- [Node.js crypto](https://nodejs.org/api/crypto.html)
+- [qrcode.react](https://www.npmjs.com/package/qrcode.react)
 
 ---
 
-**Última atualização**: 2024-01-XX
-**Versão**: 1.0.0
+**Last updated:** 2024-01-XX  
+**Version:** 1.0.0

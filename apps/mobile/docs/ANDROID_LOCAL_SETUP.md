@@ -1,20 +1,19 @@
-# Testando Android Localmente (Windows)
+# Testing Android Locally (Windows)
 
-Este guia explica como testar o app Android localmente usando Android Studio e emulador/dispositivo físico.
+This guide explains how to run and test the Android app locally using Android Studio with an emulator or a physical device.
 
-## Pré-requisitos
+## Prerequisites
 
-1. **Android Studio instalado** (com Android SDK)
-
+1. **Android Studio** (with Android SDK)
    - Download: https://developer.android.com/studio
-   - Durante instalação, instale:
+   - During installation, include:
      - Android SDK
      - Android SDK Platform
      - Android Virtual Device (AVD)
 
-2. **Variáveis de Ambiente configuradas**
+2. **Environment variables**
 
-   Adicione ao PATH do Windows:
+   Add these to your Windows `PATH`:
 
    ```
    %LOCALAPPDATA%\Android\Sdk\platform-tools
@@ -22,291 +21,227 @@ Este guia explica como testar o app Android localmente usando Android Studio e e
    %LOCALAPPDATA%\Android\Sdk\emulator
    ```
 
-   Ou caminho completo (se instalado em outro local):
+   Or use the full path if the SDK is installed elsewhere:
 
    ```
-   C:\Users\[SEU_USUARIO]\AppData\Local\Android\Sdk\platform-tools
-   C:\Users\[SEU_USUARIO]\AppData\Local\Android\Sdk\tools
-   C:\Users\[SEU_USUARIO]\AppData\Local\Android\Sdk\emulator
+   C:\Users\[YOUR_USER]\AppData\Local\Android\Sdk\platform-tools
+   C:\Users\[YOUR_USER]\AppData\Local\Android\Sdk\tools
+   C:\Users\[YOUR_USER]\AppData\Local\Android\Sdk\emulator
    ```
 
-3. **Java JDK instalado** (Android Studio geralmente inclui)
+3. **Java JDK** (usually bundled with Android Studio)
 
-## Passo 1: Verificar Android SDK
+## Step 1: Verify Android SDK
 
-Abra o PowerShell ou CMD e verifique:
+Open PowerShell or CMD and run:
 
 ```powershell
-# Verificar se adb está disponível
 adb version
-
-# Verificar se emulator está disponível
 emulator -list-avds
 ```
 
-Se não funcionar, adicione as variáveis de ambiente.
+If commands fail, configure the environment variables above.
 
-## Passo 2: Configurar Emulador (OPÇÃO 1 - Recomendado)
+## Step 2: Configure an emulator (option 1 — recommended)
 
-### Criar AVD (Android Virtual Device)
+### Create an AVD (Android Virtual Device)
 
-1. Abra **Android Studio**
-2. Vá em **Tools** > **Device Manager**
-3. Clique em **Create Device**
-4. Escolha um dispositivo (ex: Pixel 5)
-5. Escolha uma imagem do sistema (ex: Android 13 - API 33)
-6. Clique em **Finish**
+1. Open **Android Studio**
+2. Go to **Tools** > **Device Manager**
+3. Click **Create Device**
+4. Choose a device profile (e.g. Pixel 5)
+5. Choose a system image (e.g. Android 13 — API 33)
+6. Click **Finish**
 
-### Iniciar Emulador
+### Start the emulator
 
-1. No **Device Manager**, clique em ▶️ no AVD criado
-2. Ou via linha de comando:
+1. In **Device Manager**, click ▶ on the AVD
+2. Or from the command line:
+
    ```powershell
-   emulator -avd [NOME_DO_AVD]
+   emulator -avd [AVD_NAME]
    ```
 
-### Listar AVDs disponíveis
+### List available AVDs
 
 ```powershell
 emulator -list-avds
 ```
 
-## Passo 3: Usar Dispositivo Físico (OPÇÃO 2)
+## Step 3: Use a physical device (option 2)
 
-### Habilitar Modo Desenvolvedor
+### Enable developer mode
 
-1. No dispositivo Android:
+1. On the Android device:
+   - Go to **Settings** > **About phone**
+   - Tap **Build number** seven times to enable developer options
 
-   - Vá em **Configurações** > **Sobre o telefone**
-   - Toque 7 vezes em **Número da versão** (ativa modo desenvolvedor)
+2. Enable **USB debugging**:
+   - Go to **Settings** > **System** > **Developer options**
+   - Turn on **USB debugging**
 
-2. Ativar **Depuração USB**:
-   - Vá em **Configurações** > **Sistema** > **Opções do desenvolvedor**
-   - Ative **Depuração USB**
+### Connect the device
 
-### Conectar Dispositivo
-
-1. Conecte o dispositivo via USB
-2. Aceite a mensagem de autorização no dispositivo
-3. Verifique conexão:
+1. Connect via USB
+2. Accept the authorization prompt on the device
+3. Verify the connection:
 
    ```powershell
    adb devices
    ```
 
-   Deve aparecer algo como:
+   Expected output:
 
    ```
    List of devices attached
    ABC123XYZ    device
    ```
 
-## Passo 4: Executar o App
+## Step 4: Run the app
 
-### Opção A: Usando pnpm (Recomendado)
+### Option A: pnpm (recommended)
 
 ```powershell
-# No diretório do monorepo
 cd apps/mobile
-
-# Iniciar Expo
 pnpm start
 
-# Em outro terminal, iniciar Android
+# In another terminal
 pnpm android
 ```
 
-### Opção B: Usando npm scripts do monorepo
+### Option B: Monorepo filter
 
 ```powershell
-# Do root do monorepo
 pnpm --filter @minc-teams/mobile start
-
-# Em outro terminal
 pnpm --filter @minc-teams/mobile android
 ```
 
-### Opção C: Usando Expo CLI diretamente
+### Option C: Expo CLI
 
 ```powershell
 cd apps/mobile
-
-# Iniciar Expo
 npx expo start
-
-# Pressionar 'a' para Android
-# Ou
+# Press 'a' for Android, or:
 npx expo start --android
 ```
 
-## Passo 5: O que Esperar
+## Step 5: What to expect
 
-1. **Metro Bundler inicia**:
-
-   ```
-   Metro waiting on exp://192.168.x.x:8081
-   ```
-
-2. **App compila** (primeira vez pode demorar)
-
-3. **App abre no emulador/dispositivo**
-
-4. **Hot Reload funciona** - Mudanças no código atualizam automaticamente
+1. **Metro Bundler** starts (`Metro waiting on exp://192.168.x.x:8081`)
+2. **First build** may take several minutes
+3. **The app opens** on the emulator or device
+4. **Fast Refresh** applies code changes automatically
 
 ## Troubleshooting
 
-### Erro: "adb: command not found"
+### `adb: command not found`
 
-**Solução**: Adicione Android SDK ao PATH:
+Add the Android SDK paths to the Windows **Path** environment variable (see Prerequisites).
 
-1. Pesquise "Variáveis de Ambiente" no Windows
-2. Edite variável **Path**
-3. Adicione caminhos do Android SDK (veja acima)
+### `No devices/emulators found`
 
-### Erro: "No devices/emulators found"
-
-**Para Emulador**:
+**Emulator:**
 
 ```powershell
-# Listar AVDs
 emulator -list-avds
-
-# Iniciar emulador
-emulator -avd [NOME_DO_AVD]
+emulator -avd [AVD_NAME]
 ```
 
-**Para Dispositivo Físico**:
+**Physical device:**
 
 ```powershell
-# Verificar se dispositivo está conectado
 adb devices
-
-# Se não aparecer, tente:
 adb kill-server
 adb start-server
 adb devices
 ```
 
-### Erro: "Java not found"
+### `Java not found`
 
-**Solução**: Instale Java JDK ou use o que vem com Android Studio:
+Install a JDK or point `JAVA_HOME` to Android Studio’s bundled runtime, for example:
 
-1. Configure variável `JAVA_HOME`:
-   ```
-   C:\Program Files\Android\Android Studio\jbr
-   ```
+```
+C:\Program Files\Android\Android Studio\jbr
+```
 
-### Emulador muito lento
+### Slow emulator
 
-**Soluções**:
+- Enable hardware acceleration (Intel HAXM or Windows Hypervisor Platform)
+- Reduce emulator RAM (2 GB is often enough)
+- Prefer a physical device for better performance
 
-1. **Ativar HAXM/HAXM** (Intel) ou **Hyper-V** (AMD)
-2. **Reduzir RAM** do emulador (2GB pode ser suficiente)
-3. **Usar dispositivo físico** (mais rápido)
-
-### Porta 8081 já está em uso
+### Port 8081 already in use
 
 ```powershell
-# Encontrar processo usando a porta
 netstat -ano | findstr :8081
-
-# Matar processo (substitua PID)
 taskkill /PID [PID] /F
-
-# Ou use outra porta
 npx expo start --port 8082
 ```
 
-### App não carrega / Erro de conexão
+### App does not load / connection errors
 
-1. **Verifique se Metro está rodando**
-2. **Verifique firewall** - permita Node.js
-3. **Use túnel** (se em redes diferentes):
+1. Confirm Metro is running
+2. Allow Node.js through the firewall
+3. On different networks, use a tunnel:
+
    ```powershell
    npx expo start --tunnel
    ```
 
-### Erro de permissões (Câmera)
+### Camera permission errors
 
-O app precisa de permissão de câmera. No emulador:
+On the emulator: **Settings** > **Apps** > **MINC Teams** > **Permissions** > enable **Camera**.
 
-1. Vá em **Configurações** > **Apps** > **MINC Teams** > **Permissões**
-2. Ative **Câmera**
-
-## Comandos Úteis
+## Useful commands
 
 ```powershell
-# Ver dispositivos conectados
 adb devices
-
-# Ver logs do Android
 adb logcat
-
-# Filtrar logs do React Native
 adb logcat *:S ReactNative:V ReactNativeJS:V
-
-# Reiniciar adb
-adb kill-server
-adb start-server
-
-# Instalar app diretamente (se tiver APK)
+adb kill-server && adb start-server
 adb install app.apk
-
-# Abrir shell do dispositivo
 adb shell
-
-# Limpar cache do Metro
 npx expo start --clear
-
-# Reinstalar dependências
-cd apps/mobile
-rm -rf node_modules
-pnpm install
+cd apps/mobile && rm -rf node_modules && pnpm install
 ```
 
-## Configuração Recomendada para Desenvolvimento
+## Recommended development setup
 
-### AVD Recomendado
+### AVD
 
-- **Dispositivo**: Pixel 5 ou Pixel 6
-- **Android Version**: Android 13 (API 33) ou Android 14 (API 34)
-- **RAM**: 2-4GB
-- **Armazenamento**: 4GB+
+- **Device**: Pixel 5 or Pixel 6
+- **Android**: API 33 or 34
+- **RAM**: 2–4 GB
+- **Storage**: 4 GB+
 
-### Performance
+### Performance tips
 
-- **Ative Hardware Acceleration** no emulador
-- **Use Snapshots** para iniciar rápido
-- **Considere dispositivo físico** para melhor performance
+- Enable hardware acceleration
+- Use AVD snapshots for faster boot
+- Use a physical device when possible
 
-## Workflow de Desenvolvimento
+## Development workflow
 
-1. **Iniciar emulador/dispositivo**
-2. **Iniciar Expo**:
-   ```powershell
-   cd apps/mobile
-   pnpm start
-   ```
-3. **Pressionar 'a' para Android** (ou usar `pnpm android`)
-4. **Desenvolver** - mudanças aparecem automaticamente
-5. **Testar QR Code**:
-   - No emulador: Use a câmera virtual
-   - Em dispositivo físico: Use câmera real
+1. Start emulator or connect a device
+2. Run `pnpm start` in `apps/mobile`
+3. Press `a` or run `pnpm android`
+4. Develop with Fast Refresh
+5. Test QR Code (virtual camera on emulator, real camera on device)
 
-## Próximos Passos
+## Next steps
 
-Após testar localmente:
+After local testing:
 
-1. Testar todas as funcionalidades
-2. Testar QR Code (funcionalidade crítica)
-3. Quando estiver pronto, fazer build com EAS:
+1. Exercise all core flows
+2. Test QR Code thoroughly
+3. When ready, create an EAS build:
+
    ```powershell
    pnpm build:android -- --profile preview
    ```
 
-## Notas
+## Notes
 
-- **Primeira execução**: Pode demorar (download de dependências)
-- **Hot Reload**: Funciona automaticamente ao salvar arquivos
-- **Fast Refresh**: Atualiza componentes sem perder estado
-- **Debug**: Use `adb logcat` ou React Native Debugger
+- **First run** may download dependencies and take longer
+- **Hot Reload / Fast Refresh** update the UI on save
+- **Debugging**: use `adb logcat` or React Native Debugger

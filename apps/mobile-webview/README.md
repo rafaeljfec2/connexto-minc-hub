@@ -1,45 +1,45 @@
 # MINC Teams WebView App
 
-Aplicativo React Native Expo que exibe o site MINC Teams em um WebView.
+React Native Expo app that displays the MINC Teams site in a WebView.
 
-## Estrutura
+## Structure
 
 ```
 apps/mobile-webview/
 ├── src/
-│   └── App.tsx          # Componente principal com WebView
-├── assets/              # Ícones e splash screen
+│   └── App.tsx          # Main component with WebView
+├── assets/              # Icons and splash screen
 ├── index.ts             # Entry point
-├── app.json             # Configuração Expo
-├── package.json         # Dependências
+├── app.json             # Expo configuration
+├── package.json         # Dependencies
 ├── tsconfig.json        # TypeScript config
 └── babel.config.js      # Babel config
 ```
 
-## Funcionalidades
+## Features
 
-- ✅ WebView apontando para https://mincteams.com.br
+- ✅ WebView pointing to https://mincteams.com.br
 - ✅ Splash screen
 - ✅ Loading indicator
-- ✅ Bloqueio de domínios externos
-- ✅ Suporte ao botão voltar do Android
-- ✅ Tratamento de erros de conexão
-- ✅ Fallback offline com retry
+- ✅ External domain blocking
+- ✅ Android back button support
+- ✅ Connection error handling
+- ✅ Offline fallback with retry
 - ✅ TypeScript
-- ✅ Configuração para EAS Build
+- ✅ EAS Build configuration
 
-## Como Usar
+## Usage
 
-### Desenvolvimento
+### Development
 
 ```bash
 cd apps/mobile-webview
 pnpm start
 ```
 
-Escaneie o QR code com o app Expo Go (Android/iOS).
+Scan the QR code with the Expo Go app (Android/iOS).
 
-### Build para Produção
+### Production Build
 
 ```bash
 # Android
@@ -49,14 +49,14 @@ eas build --platform android
 eas build --platform ios
 ```
 
-## Configuração
+## Configuration
 
-- **URL do site**: Edite `WEBSITE_URL` em `src/App.tsx`
-- **Domínios permitidos**: Edite `ALLOWED_DOMAINS` em `src/App.tsx`
-- **Bundle IDs**: Edite `app.json` para alterar identificadores
+- **Site URL**: Edit `WEBSITE_URL` in `src/App.tsx`
+- **Allowed domains**: Edit `ALLOWED_DOMAINS` in `src/App.tsx`
+- **Bundle IDs**: Edit `app.json` to change identifiers
 
-## Notas
+## Notes
 
-- Baseado na configuração do `apps/mobile`
-- Usa Expo SDK 54 com React 19 e React Native 0.81
-- Para desenvolvimento com Expo Go, pode ser necessário fazer build standalone
+- Based on the configuration of `apps/mobile`
+- Uses Expo SDK 54 with React 19 and React Native 0.81
+- For development with Expo Go, a standalone build may be required

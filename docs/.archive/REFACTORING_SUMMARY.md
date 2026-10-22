@@ -1,13 +1,13 @@
-# Resumo das Refatorações Realizadas
+# Refactoring Summary
 
-## ✅ Refatorações Concluídas
+## ✅ Completed Refactorings
 
-### 1. ✅ PlusIcon Centralizado
-**Problema**: Função `PlusIcon` duplicada em 6 arquivos diferentes.
+### 1. ✅ PlusIcon Centralized
+**Problem**: `PlusIcon` function duplicated across 6 files.
 
-**Solução**: 
-- Movido para `components/icons/index.tsx`
-- Atualizadas todas as importações nas páginas:
+**Solution**: 
+- Moved to `components/icons/index.tsx`
+- Updated imports in pages:
   - `PeoplePage.tsx`
   - `ChurchesPage.tsx`
   - `MinistriesPage.tsx`
@@ -15,32 +15,32 @@
   - `ServicesPage.tsx`
   - `SchedulesPage.tsx`
 
-**Impacto**: Redução de ~120 linhas de código duplicado.
+**Impact**: ~120 lines of duplicated code removed.
 
 ---
 
-### 2. ✅ Rotas Refatoradas no App.tsx
-**Problema**: Padrão repetitivo de `MOCK_MODE` em todas as rotas (~200 linhas duplicadas).
+### 2. ✅ Routes Refactored in App.tsx
+**Problem**: Repeated `MOCK_MODE` pattern on every route (~200 duplicated lines).
 
-**Solução**:
-- Criado `components/routing/ProtectedRouteWrapper.tsx`
-- Criado `components/routing/ProtectedRoute.tsx`
-- Criado `components/routing/AppLayout.tsx`
-- Refatorado `App.tsx` para usar array de rotas
+**Solution**:
+- Created `components/routing/ProtectedRouteWrapper.tsx`
+- Created `components/routing/ProtectedRoute.tsx`
+- Created `components/routing/AppLayout.tsx`
+- Refactored `App.tsx` to use a route array
 
-**Impacto**: 
-- Redução de ~180 linhas de código
-- Manutenção mais fácil
-- Adicionar novas rotas agora é mais simples
+**Impact**: 
+- ~180 lines removed
+- Easier maintenance
+- Adding routes is simpler
 
 ---
 
-### 3. ✅ Mock Data Centralizado
-**Problema**: Dados mock duplicados em múltiplos arquivos.
+### 3. ✅ Mock Data Centralized
+**Problem**: Mock data duplicated across multiple files.
 
-**Solução**:
-- Criado `lib/mockData.ts` com todos os dados mock
-- Atualizadas todas as páginas para importar de `lib/mockData.ts`:
+**Solution**:
+- Created `lib/mockData.ts` with all mock data
+- Updated pages to import from `lib/mockData.ts`:
   - `PeoplePage.tsx`
   - `ChurchesPage.tsx`
   - `MinistriesPage.tsx`
@@ -48,58 +48,58 @@
   - `ServicesPage.tsx`
   - `SchedulesPage.tsx`
 
-**Impacto**: 
-- Fonte única de verdade para dados mock
-- Facilita manutenção e atualização
-- Redução de ~200 linhas de código duplicado
+**Impact**: 
+- Single source of truth for mock data
+- Easier maintenance and updates
+- ~200 lines of duplication removed
 
 ---
 
-### 4. ✅ Hook useMockMode Criado
-**Problema**: Constante `MOCK_MODE` definida em múltiplos lugares.
+### 4. ✅ useMockMode Hook Created
+**Problem**: `MOCK_MODE` constant defined in multiple places.
 
-**Solução**:
-- Criado `hooks/useMockMode.ts`
-- Centraliza a lógica de verificação de modo mock
+**Solution**:
+- Created `hooks/useMockMode.ts`
+- Centralizes mock mode checks
 
-**Impacto**: 
-- Fonte única de verdade
-- Facilita mudanças futuras
+**Impact**: 
+- Single source of truth
+- Easier future changes
 
 ---
 
-### 5. ✅ Hook useCrudForm Criado
-**Problema**: Lógica de modal/formulário duplicada em todas as páginas CRUD.
+### 5. ✅ useCrudForm Hook Created
+**Problem**: Modal/form logic duplicated on every CRUD page.
 
-**Solução**:
-- Criado `hooks/useCrudForm.ts`
-- Encapsula toda a lógica de:
+**Solution**:
+- Created `hooks/useCrudForm.ts`
+- Encapsulates:
   - `handleOpenModal`
   - `handleCloseModal`
   - `handleSubmit`
   - `handleDeleteClick`
   - `handleDeleteConfirm`
-  - Gerenciamento de estado de formulário
+  - Form state management
 
-**Impacto**: 
-- Redução de ~50 linhas por página CRUD
-- Lógica reutilizável
-- Facilita manutenção
+**Impact**: 
+- ~50 lines saved per CRUD page
+- Reusable logic
+- Easier maintenance
 
-**Nota**: Este hook está pronto para uso, mas ainda não foi aplicado nas páginas. Pode ser aplicado em uma próxima iteração.
+**Note**: Hook is ready but not yet applied to pages. Can be rolled out in a follow-up iteration.
 
 ---
 
-## 📊 Estatísticas
+## 📊 Statistics
 
-### Código Removido
-- **PlusIcon duplicado**: ~120 linhas
-- **Rotas duplicadas**: ~180 linhas
-- **Mock data duplicado**: ~200 linhas
-- **Total**: ~500 linhas de código duplicado removidas
+### Code Removed
+- **Duplicated PlusIcon**: ~120 lines
+- **Duplicated routes**: ~180 lines
+- **Duplicated mock data**: ~200 lines
+- **Total**: ~500 lines of duplication removed
 
-### Arquivos Criados
-- `components/icons/index.tsx` (PlusIcon adicionado)
+### Files Created
+- `components/icons/index.tsx` (PlusIcon added)
 - `components/routing/ProtectedRouteWrapper.tsx`
 - `components/routing/ProtectedRoute.tsx`
 - `components/routing/AppLayout.tsx`
@@ -107,52 +107,52 @@
 - `hooks/useCrudForm.ts`
 - `lib/mockData.ts`
 
-### Arquivos Modificados
-- `App.tsx` (refatorado completamente)
-- `PeoplePage.tsx` (imports atualizados)
-- `ChurchesPage.tsx` (imports atualizados)
-- `MinistriesPage.tsx` (imports atualizados)
-- `TeamsPage.tsx` (imports atualizados)
-- `ServicesPage.tsx` (imports atualizados)
-- `SchedulesPage.tsx` (imports atualizados)
+### Files Modified
+- `App.tsx` (fully refactored)
+- `PeoplePage.tsx` (imports updated)
+- `ChurchesPage.tsx` (imports updated)
+- `MinistriesPage.tsx` (imports updated)
+- `TeamsPage.tsx` (imports updated)
+- `ServicesPage.tsx` (imports updated)
+- `SchedulesPage.tsx` (imports updated)
 
 ---
 
-## 🔄 Próximos Passos Sugeridos
+## 🔄 Suggested Next Steps
 
-### Prioridade Alta
-1. **Aplicar useCrudForm nas páginas CRUD**
-   - Reduzirá ainda mais duplicação
-   - Padronizará o comportamento
+### High Priority
+1. **Apply useCrudForm on CRUD pages**
+   - Further reduces duplication
+   - Standardizes behavior
 
-2. **Remover PageWithCrud se não utilizado**
-   - Verificar se ainda é usado
-   - Remover se obsoleto
+2. **Remove PageWithCrud if unused**
+   - Verify usage
+   - Remove if obsolete
 
-### Prioridade Média
-3. **Criar helpers para funções duplicadas**
+### Medium Priority
+3. **Create helpers for duplicated functions**
    - `getChurchName`, `getMinistryName`, `getTeamName`
-   - Centralizar em `lib/helpers.ts`
+   - Centralize in `lib/helpers.ts`
 
-4. **Melhorar useSearch para incluir filtros customizados**
-   - Atualmente cada página tem sua própria lógica de filtro
-   - Pode ser unificado
-
----
-
-## ✅ Validação
-
-- ✅ Build passando
-- ✅ Sem erros de TypeScript
-- ✅ Sem erros de lint (apenas 1 warning menor)
-- ✅ Todas as importações funcionando
-- ✅ Código mais limpo e manutenível
+4. **Improve useSearch for custom filters**
+   - Each page has its own filter logic today
+   - Could be unified
 
 ---
 
-## 📝 Notas
+## ✅ Validation
 
-- Todas as refatorações foram testadas e validadas
-- O código está mais organizado e fácil de manter
-- A base está pronta para futuras melhorias
-- O hook `useCrudForm` está pronto para ser aplicado nas páginas quando necessário
+- ✅ Build passing
+- ✅ No TypeScript errors
+- ✅ No lint errors (one minor warning only)
+- ✅ All imports working
+- ✅ Cleaner, more maintainable code
+
+---
+
+## 📝 Notes
+
+- All refactorings were tested and validated
+- Code is more organized and maintainable
+- Foundation is ready for future improvements
+- `useCrudForm` is ready to apply to pages when needed

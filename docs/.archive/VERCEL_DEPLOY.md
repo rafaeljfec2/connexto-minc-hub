@@ -1,27 +1,27 @@
-# Deploy na Vercel - MINC Teams
+# Deploy on Vercel - MINC Teams
 
-Este documento contém instruções completas para fazer deploy do projeto na Vercel.
+Complete instructions for deploying the project on Vercel.
 
-## Pré-requisitos
+## Prerequisites
 
-1. Conta na Vercel (https://vercel.com)
-2. Repositório Git (GitHub, GitLab ou Bitbucket)
-3. Projeto conectado ao repositório
+1. Vercel account (https://vercel.com)
+2. Git repository (GitHub, GitLab, or Bitbucket)
+3. Project connected to repository
 
-## Configuração Inicial
+## Initial Setup
 
-### 1. Conectar o Projeto
+### 1. Connect the Project
 
-1. Acesse [Vercel Dashboard](https://vercel.com/dashboard)
-2. Clique em "Add New Project"
-3. Importe o repositório do GitHub/GitLab/Bitbucket
-4. Configure o projeto:
+1. Open [Vercel Dashboard](https://vercel.com/dashboard)
+2. Click "Add New Project"
+3. Import the GitHub/GitLab/Bitbucket repository
+4. Configure the project:
 
-### 2. Configurações do Projeto na Vercel
+### 2. Vercel Project Settings
 
 **Framework Preset:** Vite
 
-**Root Directory:** Deixe vazio (raiz do projeto)
+**Root Directory:** Leave empty (project root)
 
 **Build Command:**
 
@@ -41,11 +41,11 @@ apps/web/dist
 pnpm install
 ```
 
-### 3. Variáveis de Ambiente
+### 3. Environment Variables
 
-Configure as seguintes variáveis de ambiente no painel da Vercel:
+Configure these in the Vercel dashboard:
 
-#### Produção
+#### Production
 
 ```
 VITE_API_URL=https://api.minc-teams.com
@@ -59,109 +59,109 @@ VITE_API_URL=https://api-staging.minc-teams.com
 VITE_MOCK_MODE=false
 ```
 
-#### Desenvolvimento (Branch)
+#### Development (Branch)
 
 ```
 VITE_API_URL=http://localhost:3001
 VITE_MOCK_MODE=true
 ```
 
-### 4. Configurações Adicionais
+### 4. Additional Settings
 
-**Node.js Version:** 18.x ou superior
+**Node.js Version:** 18.x or higher
 
-**PNPM Version:** 8.x ou superior (a Vercel detecta automaticamente)
+**PNPM Version:** 8.x or higher (Vercel detects automatically)
 
-## Otimizações Implementadas
+## Implemented Optimizations
 
 ### Build
 
-- ✅ Minificação com esbuild
-- ✅ Code splitting automático
-- ✅ Chunks separados para React e UI vendors
-- ✅ CSS minificado
-- ✅ Source maps desabilitados em produção
+- ✅ Minification with esbuild
+- ✅ Automatic code splitting
+- ✅ Separate chunks for React and UI vendors
+- ✅ Minified CSS
+- ✅ Source maps disabled in production
 
 ### Cache
 
-- ✅ Assets estáticos com cache de 1 ano
-- ✅ Cache imutável para arquivos versionados
+- ✅ Static assets cached for 1 year
+- ✅ Immutable cache for versioned files
 
 ### Routing
 
-- ✅ SPA routing configurado (todas as rotas redirecionam para index.html)
+- ✅ SPA routing configured (all routes rewrite to index.html)
 
-## Estrutura do Projeto
+## Project Structure
 
-O projeto é um monorepo com Turborepo:
+The project is a Turborepo monorepo:
 
-- **Raiz:** Configurações do monorepo
-- **apps/web:** Aplicação frontend React + Vite
+- **Root:** Monorepo configuration
+- **apps/web:** React + Vite frontend application
 
-## Comandos de Build
+## Build Commands
 
-O arquivo `vercel.json` já está configurado com os comandos corretos:
+`vercel.json` is already configured with the correct commands:
 
 - Build: `cd apps/web && pnpm build`
 - Output: `apps/web/dist`
 
-## Verificação Pós-Deploy
+## Post-Deploy Verification
 
-Após o deploy, verifique:
+After deploy, verify:
 
-1. ✅ A aplicação carrega corretamente
-2. ✅ As rotas funcionam (teste navegação)
-3. ✅ As variáveis de ambiente estão configuradas
-4. ✅ O modo mock está desabilitado em produção
-5. ✅ A API está acessível
+1. ✅ Application loads correctly
+2. ✅ Routes work (test navigation)
+3. ✅ Environment variables are set
+4. ✅ Mock mode is disabled in production
+5. ✅ API is reachable
 
 ## Troubleshooting
 
-### Erro: "Build failed"
+### Error: "Build failed"
 
-- Verifique se todas as dependências estão no `package.json`
-- Confirme que o Node.js version está correto (18+)
-- Verifique os logs de build na Vercel
+- Verify all dependencies are in `package.json`
+- Confirm Node.js version is correct (18+)
+- Check build logs on Vercel
 
-### Erro: "404 em rotas"
+### Error: "404 on routes"
 
-- Verifique se o `vercel.json` tem a configuração de `rewrites`
-- Confirme que o `outputDirectory` está correto
+- Verify `vercel.json` has `rewrites` configuration
+- Confirm `outputDirectory` is correct
 
-### Erro: "Variáveis de ambiente não encontradas"
+### Error: "Environment variables not found"
 
-- Verifique se as variáveis começam com `VITE_`
-- Confirme que foram configuradas no painel da Vercel
-- Faça um novo deploy após adicionar variáveis
+- Verify variables start with `VITE_`
+- Confirm they were set in the Vercel dashboard
+- Redeploy after adding variables
 
-## Domínio Customizado
+## Custom Domain
 
-Para configurar um domínio customizado:
+To configure a custom domain:
 
-1. Vá em Settings > Domains
-2. Adicione seu domínio
-3. Configure os registros DNS conforme instruções da Vercel
+1. Go to Settings > Domains
+2. Add your domain
+3. Configure DNS records per Vercel instructions
 
 ## CI/CD
 
-A Vercel faz deploy automaticamente quando você:
+Vercel deploys automatically when you:
 
-- Faz push para a branch principal (produção)
-- Cria um Pull Request (preview)
-- Faz push para outras branches (preview)
+- Push to main branch (production)
+- Open a Pull Request (preview)
+- Push to other branches (preview)
 
-## Monitoramento
+## Monitoring
 
-A Vercel fornece:
+Vercel provides:
 
-- Analytics de performance
-- Logs de erro
-- Métricas de build
-- Analytics de visitantes (opcional)
+- Performance analytics
+- Error logs
+- Build metrics
+- Visitor analytics (optional)
 
-## Suporte
+## Support
 
-Para mais informações, consulte:
+For more information, see:
 
-- [Documentação Vercel](https://vercel.com/docs)
+- [Vercel Documentation](https://vercel.com/docs)
 - [Vite + Vercel](https://vercel.com/docs/frameworks/vite)

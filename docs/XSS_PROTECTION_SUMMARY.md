@@ -1,10 +1,10 @@
-# Resumo Completo: Proteção XSS Implementada
+# Complete Summary: XSS Protection Implementation
 
-## Visão Geral
+## Overview
 
-Implementação completa de proteções contra vulnerabilidades XSS (Cross-Site Scripting) no frontend da aplicação, incluindo CSP, Trusted Types, sanitização e monitoramento.
+Complete implementation of Cross-Site Scripting (XSS) protections in the application frontend, including CSP, Trusted Types, sanitization, and monitoring.
 
-## Arquitetura de Segurança
+## Security Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -30,27 +30,27 @@ Implementação completa de proteções contra vulnerabilidades XSS (Cross-Site 
 ├─────────────────────────────────────────────────────────────┤
 │  ┌──────────────────────────────────────────────────────┐  │
 │  │  POST /minc-teams/v1/security/csp-report            │  │
-│  │  - Recebe relatórios CSP                            │  │
-│  │  - Valida com DTOs                                  │  │
-│  │  - Processa e identifica violações críticas         │  │
-│  │  - Logs estruturados                                │  │
+│  │  - Receives CSP reports                             │  │
+│  │  - Validates with DTOs                                │  │
+│  │  - Processes and flags critical violations          │  │
+│  │  - Structured logs                                  │  │
 │  └──────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Componentes Implementados
+## Implemented Components
 
 ### 1. Content-Security-Policy (CSP)
 
-**Localização**: `apps/web/index.html`
+**Location**: `apps/web/index.html`
 
-**Configuração**:
-- Modo: Report-Only (monitoramento sem bloqueio)
-- Trusted Types habilitado
-- Diretivas configuradas para recursos externos
-- Endpoint de relatório: `/minc-teams/v1/security/csp-report`
+**Configuration**:
+- Mode: Report-Only (monitoring without blocking)
+- Trusted Types enabled
+- Directives configured for external resources
+- Report endpoint: `/minc-teams/v1/security/csp-report`
 
-**Política Atual**:
+**Current Policy**:
 ```
 default-src 'self';
 script-src 'self' 'unsafe-inline' 'unsafe-eval';
@@ -69,151 +69,151 @@ trusted-types default;
 
 ### 2. Trusted Types API
 
-**Localização**: `apps/web/src/lib/trusted-types.ts`
+**Location**: `apps/web/src/lib/trusted-types.ts`
 
-**Políticas**:
-- **default**: Sanitização de HTML com DOMPurify
-- **createScriptURL**: Validação de URLs de scripts (apenas HTTPS ou relativas)
-- **createURL**: Validação e sanitização de URLs
-- **script**: Bloqueio de criação dinâmica de scripts
+**Policies**:
+- **default**: HTML sanitization with DOMPurify
+- **createScriptURL**: Script URL validation (HTTPS or relative only)
+- **createURL**: URL validation and sanitization
+- **script**: Blocks dynamic script creation
 
-**Inicialização**: `apps/web/src/main.tsx` (antes do React renderizar)
+**Initialization**: `apps/web/src/main.tsx` (before React renders)
 
-### 3. Sanitização com DOMPurify
+### 3. Sanitization with DOMPurify
 
-**Localização**: `apps/web/src/lib/sanitize.ts`
+**Location**: `apps/web/src/lib/sanitize.ts`
 
-**Funções**:
-- `sanitizeHtml()`: Sanitização de HTML com configurações seguras
-- `sanitizeText()`: Remoção de HTML de texto simples
-- `sanitizeUrl()`: Validação e sanitização de URLs
-- `isValidUrl()`: Validação de protocolos permitidos
-- `sanitizeObject()`: Sanitização recursiva de objetos
+**Functions**:
+- `sanitizeHtml()`: HTML sanitization with safe settings
+- `sanitizeText()`: Strip HTML from plain text
+- `sanitizeUrl()`: URL validation and sanitization
+- `isValidUrl()`: Allowed protocol validation
+- `sanitizeObject()`: Recursive object sanitization
 
 **Hook React**: `apps/web/src/hooks/useSanitize.ts`
 
-### 4. Aplicação em Componentes
+### 4. Component Usage
 
-**Componentes Protegidos**:
-- `ChatBubble.tsx`: Mensagens, URLs de anexos, nomes sanitizados
-- `AudioPreview.tsx`: URLs de áudio e avatar validadas
+**Protected Components**:
+- `ChatBubble.tsx`: Messages, attachment URLs, sanitized names
+- `AudioPreview.tsx`: Validated audio and avatar URLs
 
-### 5. Endpoint de Relatório CSP
+### 5. CSP Report Endpoint
 
-**Localização**: `apps/api/src/security/`
+**Location**: `apps/api/src/security/`
 
-**Arquivos**:
-- `security.module.ts`: Módulo NestJS
-- `security.controller.ts`: Controller com endpoint POST
-- `security.service.ts`: Processamento e logging
-- `dto/csp-report.dto.ts`: Validação de dados
+**Files**:
+- `security.module.ts`: NestJS module
+- `security.controller.ts`: Controller with POST endpoint
+- `security.service.ts`: Processing and logging
+- `dto/csp-report.dto.ts`: Data validation
 
 **Endpoint**: `POST /minc-teams/v1/security/csp-report`
 
-**Funcionalidades**:
-- Recebe relatórios CSP do navegador
-- Valida formato com DTOs
-- Identifica violações críticas
-- Logs estruturados (WARN para normais, ERROR para críticas)
+**Features**:
+- Receives CSP reports from the browser
+- Validates format with DTOs
+- Identifies critical violations
+- Structured logs (WARN for normal, ERROR for critical)
 
-## Ferramentas de Teste
+## Testing Tools
 
-### Script de Teste Backend
+### Backend Test Script
 
-**Localização**: `apps/api/src/security/scripts/test-csp-report.ts`
+**Location**: `apps/api/src/security/scripts/test-csp-report.ts`
 
-**Uso**:
+**Usage**:
 ```bash
 cd apps/api
 pnpm ts-node src/security/scripts/test-csp-report.ts
 ```
 
-### Utilitário de Teste Frontend
+### Frontend Test Utility
 
-**Localização**: `apps/web/src/utils/test-csp-violation.ts`
+**Location**: `apps/web/src/utils/test-csp-violation.ts`
 
-**Uso**:
+**Usage**:
 ```javascript
 import { triggerCspViolation, testCommonCspViolations } from '@/utils/test-csp-violation'
 
-// Testar violação específica
+// Test a specific violation
 triggerCspViolation('script-src', 'inline')
 
-// Testar violações comuns
+// Test common violations
 testCommonCspViolations()
 ```
 
-## Documentação
+## Documentation
 
-1. **Guia de Monitoramento**: `docs/CSP_MONITORING_GUIDE.md`
-   - Como monitorar violações CSP
-   - Como analisar relatórios
-   - Como ajustar política CSP
-   - Como ativar Enforcement
+1. **Monitoring guide**: `docs/CSP_MONITORING_GUIDE.md`
+   - How to monitor CSP violations
+   - How to analyze reports
+   - How to adjust CSP policy
+   - How to enable enforcement
 
-2. **Checklist de Ativação**: `apps/web/CSP_ENFORCEMENT_CHECKLIST.md`
-   - Checklist completo antes de ativar Enforcement
-   - Plano de ativação gradual
-   - Plano de rollback
+2. **Activation checklist**: `apps/web/CSP_ENFORCEMENT_CHECKLIST.md`
+   - Full checklist before enabling enforcement
+   - Gradual activation plan
+   - Rollback plan
 
-3. **README do Módulo**: `apps/api/src/security/README.md`
-   - Documentação do endpoint CSP
-   - Exemplos de uso
-   - Próximos passos
+3. **Module README**: `apps/api/src/security/README.md`
+   - CSP endpoint documentation
+   - Usage examples
+   - Next steps
 
-## Fluxo de Monitoramento
+## Monitoring Flow
 
-1. **Violação CSP ocorre** no navegador
-2. **Navegador envia relatório** para `/minc-teams/v1/security/csp-report`
-3. **Backend valida** e processa o relatório
-4. **Serviço identifica** se é violação crítica
-5. **Logs são gerados**:
-   - WARN para violações normais
-   - ERROR para violações críticas
-6. **Equipe monitora** logs e ajusta política conforme necessário
+1. **CSP violation occurs** in the browser
+2. **Browser sends report** to `/minc-teams/v1/security/csp-report`
+3. **Backend validates** and processes the report
+4. **Service determines** if it is a critical violation
+5. **Logs are generated**:
+   - WARN for normal violations
+   - ERROR for critical violations
+6. **Team monitors** logs and adjusts policy as needed
 
-## Próximos Passos Recomendados
+## Recommended Next Steps
 
-### Curto Prazo (1-2 semanas)
+### Short Term (1-2 weeks)
 
-1. ✅ **Monitorar Relatórios**: Coletar e analisar violações CSP
-2. ✅ **Ajustar Política**: Resolver violações legítimas
-3. ✅ **Testar Funcionalidades**: Garantir que tudo funciona
+1. ✅ **Monitor reports**: Collect and analyze CSP violations
+2. ✅ **Adjust policy**: Resolve legitimate violations
+3. ✅ **Test functionality**: Ensure everything works
 
-### Médio Prazo (1 mês)
+### Medium Term (1 month)
 
-1. **Ativar Enforcement**: Mudar de Report-Only para Enforcement
-2. **Integrar Monitoramento**: Conectar com Sentry/DataDog
-3. **Criar Dashboard**: Visualizar violações CSP
+1. **Enable enforcement**: Switch from Report-Only to enforcement
+2. **Integrate monitoring**: Connect to Sentry/DataDog
+3. **Build dashboard**: Visualize CSP violations
 
-### Longo Prazo (3+ meses)
+### Long Term (3+ months)
 
-1. **Armazenar em BD**: Salvar relatórios para análise histórica
-2. **Alertas Automáticos**: Notificar equipe em violações críticas
-3. **Otimizar CSP**: Remover `unsafe-inline` e `unsafe-eval` se possível
+1. **Store in DB**: Save reports for historical analysis
+2. **Automatic alerts**: Notify the team on critical violations
+3. **Optimize CSP**: Remove `unsafe-inline` and `unsafe-eval` if possible
 
-## Métricas de Sucesso
+## Success Metrics
 
-- ✅ Zero violações críticas após ajustes
-- ✅ Menos de 10 violações por dia (após ajustes)
-- ✅ Aplicação funciona 100% com CSP Enforcement
-- ✅ Tempo de resposta do endpoint < 100ms
+- ✅ Zero critical violations after adjustments
+- ✅ Fewer than 10 violations per day (after adjustments)
+- ✅ Application works 100% with CSP enforcement
+- ✅ Endpoint response time < 100ms
 
-## Recursos Adicionais
+## Additional Resources
 
 - [MDN: Content-Security-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
 - [MDN: Trusted Types](https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API)
 - [DOMPurify Documentation](https://github.com/cure53/DOMPurify)
 - [CSP Evaluator](https://csp-evaluator.withgoogle.com/)
 
-## Status Atual
+## Current Status
 
-✅ **Implementação Completa**
-- CSP configurado em Report-Only
-- Trusted Types implementado
-- Sanitização aplicada
-- Endpoint de relatório funcionando
-- Documentação completa
-- Ferramentas de teste criadas
+✅ **Complete Implementation**
+- CSP configured in Report-Only mode
+- Trusted Types implemented
+- Sanitization applied
+- Report endpoint working
+- Complete documentation
+- Test tools created
 
-🔄 **Próxima Fase**: Monitoramento e Ajustes
+🔄 **Next Phase**: Monitoring and Adjustments

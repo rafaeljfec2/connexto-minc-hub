@@ -1,20 +1,20 @@
-# Chat API - Especificação de Endpoints e WebSocket
+# Chat API - Endpoint and WebSocket Specification
 
-## Visão Geral
+## Overview
 
-Este documento especifica os endpoints REST e eventos WebSocket necessários para implementar o sistema de chat no backend, baseado na implementação realizada no aplicativo mobile.
+This document specifies the REST endpoints and WebSocket events required to implement the chat system on the backend, based on the mobile app implementation.
 
-**Arquitetura:**
+**Architecture:**
 
-- **REST API**: Para operações CRUD, listagem e histórico
-- **WebSocket**: Para comunicação em tempo real (obrigatório)
-  - Novas mensagens
-  - Status de leitura
-  - Indicador de digitação
-  - Status online/offline
-  - Atualizações de conversa
+- **REST API**: For CRUD operations, listing, and history
+- **WebSocket**: For real-time communication (required)
+  - New messages
+  - Read status
+  - Typing indicator
+  - Online/offline status
+  - Conversation updates
 
-## Modelos de Dados
+## Data Models
 
 ### Message
 
@@ -44,7 +44,7 @@ interface Conversation {
 }
 ```
 
-### ChatUser (Simplificado para Chat)
+### ChatUser (Chat Simplified)
 
 ```typescript
 interface ChatUser {
@@ -57,11 +57,11 @@ interface ChatUser {
 
 ## Endpoints
 
-### 1. Listar Conversas
+### 1. List Conversations
 
 **GET** `/api/chat/conversations`
 
-Retorna a lista de conversas do usuário autenticado, ordenadas pela última mensagem.
+Returns the authenticated user's conversations, sorted by last message.
 
 **Headers:**
 
@@ -86,7 +86,7 @@ Authorization: Bearer <token>
       ],
       "lastMessage": {
         "id": "msg-1",
-        "text": "Precisamos alinhar a escala de domingo.",
+        "text": "We need to align the Sunday schedule.",
         "senderId": "user-2",
         "timestamp": "2024-03-10T10:32:00Z",
         "read": false
@@ -101,16 +101,16 @@ Authorization: Bearer <token>
 
 **Query Parameters:**
 
-- `limit` (opcional): Número máximo de conversas (padrão: 50)
-- `offset` (opcional): Offset para paginação (padrão: 0)
+- `limit` (optional): Maximum number of conversations (default: 50)
+- `offset` (optional): Pagination offset (default: 0)
 
 ---
 
-### 2. Obter Mensagens de uma Conversa
+### 2. Get Conversation Messages
 
 **GET** `/api/chat/conversations/:conversationId/messages`
 
-Retorna as mensagens de uma conversa específica, ordenadas por timestamp (mais antigas primeiro).
+Returns messages for a specific conversation, sorted by timestamp (oldest first).
 
 **Headers:**
 
@@ -125,7 +125,7 @@ Authorization: Bearer <token>
   "data": [
     {
       "id": "msg-1",
-      "text": "Olá Rafael, tudo bem?",
+      "text": "Hi Rafael, how are you?",
       "senderId": "user-2",
       "timestamp": "2024-03-10T10:30:00Z",
       "read": true,
@@ -135,7 +135,7 @@ Authorization: Bearer <token>
     },
     {
       "id": "msg-2",
-      "text": "Oi Ana! Tudo ótimo e com você?",
+      "text": "Hi Ana! Great, and you?",
       "senderId": "user-1",
       "timestamp": "2024-03-10T10:31:00Z",
       "read": true,
@@ -154,19 +154,19 @@ Authorization: Bearer <token>
 
 **Query Parameters:**
 
-- `limit` (opcional): Número máximo de mensagens (padrão: 50)
-- `offset` (opcional): Offset para paginação (padrão: 0)
-- `before` (opcional): Timestamp ISO para carregar mensagens anteriores (para scroll infinito)
+- `limit` (optional): Maximum number of messages (default: 50)
+- `offset` (optional): Pagination offset (default: 0)
+- `before` (optional): ISO timestamp to load earlier messages (infinite scroll)
 
 ---
 
-### 3. Enviar Mensagem
+### 3. Send Message
 
 **POST** `/api/chat/conversations/:conversationId/messages`
 
-> **⚠️ DEPRECATED**: Este endpoint REST está deprecado. Use o evento WebSocket `send-message` para enviar mensagens em tempo real. Este endpoint pode ser mantido apenas para compatibilidade ou casos especiais.
+> **⚠️ DEPRECATED**: This REST endpoint is deprecated. Use the WebSocket `send-message` event to send messages in real time. This endpoint may be kept only for compatibility or special cases.
 
-Cria uma nova mensagem em uma conversa.
+Creates a new message in a conversation.
 
 **Headers:**
 
@@ -179,7 +179,7 @@ Content-Type: application/json
 
 ```json
 {
-  "text": "Olá, como posso ajudar?"
+  "text": "Hello, how can I help?"
 }
 ```
 
@@ -189,7 +189,7 @@ Content-Type: application/json
 {
   "data": {
     "id": "msg-3",
-    "text": "Olá, como posso ajudar?",
+    "text": "Hello, how can I help?",
     "senderId": "user-1",
     "timestamp": "2024-03-10T10:35:00Z",
     "read": false,
@@ -200,24 +200,24 @@ Content-Type: application/json
 }
 ```
 
-**Validação:**
+**Validation:**
 
-- `text`: obrigatório, string não vazia, máximo 5000 caracteres
-- `conversationId`: deve existir e o usuário deve ser participante
+- `text`: required, non-empty string, maximum 5000 characters
+- `conversationId`: must exist and the user must be a participant
 
-**Erros:**
+**Errors:**
 
-- `400`: Texto vazio ou muito longo
-- `403`: Usuário não é participante da conversa
-- `404`: Conversa não encontrada
+- `400`: Empty or too long text
+- `403`: User is not a conversation participant
+- `404`: Conversation not found
 
 ---
 
-### 4. Criar ou Obter Conversa
+### 4. Create or Get Conversation
 
 **POST** `/api/chat/conversations`
 
-Cria uma nova conversa entre o usuário autenticado e outro usuário, ou retorna a conversa existente.
+Creates a new conversation between the authenticated user and another user, or returns the existing conversation.
 
 **Headers:**
 
@@ -234,7 +234,7 @@ Content-Type: application/json
 }
 ```
 
-**Response 200 (conversa existente) ou 201 (nova conversa):**
+**Response 200 (existing conversation) or 201 (new conversation):**
 
 ```json
 {
@@ -262,24 +262,24 @@ Content-Type: application/json
 }
 ```
 
-**Validação:**
+**Validation:**
 
-- `participantId`: obrigatório, deve ser um ID de usuário válido e diferente do usuário autenticado
+- `participantId`: required, must be a valid user ID different from the authenticated user
 
-**Erros:**
+**Errors:**
 
-- `400`: participantId inválido ou igual ao usuário autenticado
-- `404`: Usuário participante não encontrado
+- `400`: Invalid participantId or same as authenticated user
+- `404`: Participant user not found
 
 ---
 
-### 5. Marcar Mensagens como Lidas
+### 5. Mark Messages as Read
 
 **PUT** `/api/chat/conversations/:conversationId/messages/read`
 
-> **⚠️ DEPRECATED**: Este endpoint REST está deprecado. Use o evento WebSocket `mark-read` para marcar mensagens como lidas em tempo real. Este endpoint pode ser mantido apenas para compatibilidade ou casos especiais.
+> **⚠️ DEPRECATED**: This REST endpoint is deprecated. Use the WebSocket `mark-read` event to mark messages as read in real time. This endpoint may be kept only for compatibility or special cases.
 
-Marca todas as mensagens não lidas de uma conversa como lidas.
+Marks all messages unread in a conversation as read.
 
 **Headers:**
 
@@ -297,18 +297,18 @@ Authorization: Bearer <token>
 }
 ```
 
-**Erros:**
+**Errors:**
 
-- `403`: Usuário não é participante da conversa
-- `404`: Conversa não encontrada
+- `403`: User is not a conversation participant
+- `404`: Conversation not found
 
 ---
 
-### 6. Obter Status Online de Usuários
+### 6. Get User Online Status
 
 **GET** `/api/chat/users/:userId/status`
 
-Retorna o status online de um usuário específico.
+Returns the online status of a specific user.
 
 **Headers:**
 
@@ -330,11 +330,11 @@ Authorization: Bearer <token>
 
 ---
 
-### 7. Obter Contagem de Mensagens Não Lidas
+### 7. Get Unread Message Count
 
 **GET** `/api/chat/conversations/unread-count`
 
-Retorna o total de mensagens não lidas do usuário autenticado.
+Returns the total unread message count for the authenticated user.
 
 **Headers:**
 
@@ -352,35 +352,35 @@ Authorization: Bearer <token>
 }
 ```
 
-## WebSocket (Obrigatório - Comunicação em Tempo Real)
+## WebSocket (Required - Real-Time Communication)
 
-O chat utiliza WebSocket para comunicação em tempo real. **TODOS os eventos de chat (novas mensagens, status de leitura, digitação, status online) DEVEM ser transmitidos via WebSocket.**
+Chat uses WebSocket for real-time communication. **ALL chat events (new messages, read status, typing, online status) MUST be sent over WebSocket.**
 
-**IMPORTANTE**: 
-- **Envio de mensagens**: Use exclusivamente o evento WebSocket `send-message`. NÃO use o endpoint REST POST.
-- **Marcar como lida**: Use exclusivamente o evento WebSocket `mark-read`. NÃO use o endpoint REST PUT.
-- **Recebimento de mensagens**: Mensagens são recebidas exclusivamente via evento WebSocket `new-message`.
-- **Histórico inicial**: O endpoint REST GET `/api/chat/conversations/:conversationId/messages` pode ser usado APENAS para carregar o histórico inicial quando uma conversa é aberta pela primeira vez. Após isso, todas as mensagens devem ser recebidas via WebSocket.
+**IMPORTANT**: 
+- **Sending messages**: Use only the WebSocket `send-message` event. Do NOT use the REST POST endpoint.
+- **Mark as read**: Use only the WebSocket `mark-read` event. Do NOT use the REST PUT endpoint.
+- **Receiving messages**: Messages are received only via the WebSocket `new-message` event.
+- **Initial history**: The REST GET `/api/chat/conversations/:conversationId/messages` endpoint may be used ONLY to load initial history when a conversation is opened for the first time. After that, all messages must be received via WebSocket.
 
-### Conexão WebSocket
+### WebSocket Connection
 
-**URL:** `ws://localhost:3001/chat` (desenvolvimento) ou `wss://api.example.com/chat` (produção)
+**URL:** `ws://localhost:3001/chat` (development) or `wss://api.example.com/chat` (production)
 
-**Autenticação:**
-O cliente deve enviar o token JWT no header de conexão ou como query parameter:
+**Authentication:**
+The client must send the JWT token in the connection header or as a query parameter:
 
 - Header: `Authorization: Bearer <token>`
 - Query: `?token=<jwt-token>`
 
-**Conexão:**
+**Connection:**
 
 ```javascript
 const ws = new WebSocket('ws://localhost:3001/chat?token=YOUR_JWT_TOKEN');
 ```
 
-### Eventos do Cliente para o Servidor
+### Client-to-Server Events
 
-Todos os eventos devem seguir o formato:
+All events must follow the format:
 
 ```json
 {
@@ -389,7 +389,7 @@ Todos os eventos devem seguir o formato:
 }
 ```
 
-1. **join-conversation**: Entrar em uma conversa (receber atualizações em tempo real)
+1. **join-conversation**: Join a conversation (receive real-time updates)
 
    ```json
    {
@@ -400,10 +400,10 @@ Todos os eventos devem seguir o formato:
    }
    ```
 
-   - O servidor deve adicionar o cliente à sala da conversa
-   - O cliente começará a receber eventos relacionados a essa conversa
+   - The server must add the client to conversation room
+   - The client will start receiving events for that conversation
 
-2. **leave-conversation**: Sair de uma conversa (parar de receber atualizações)
+2. **leave-conversation**: Leave a conversation (stop receiving updates)
 
    ```json
    {
@@ -414,24 +414,24 @@ Todos os eventos devem seguir o formato:
    }
    ```
 
-3. **send-message**: Enviar mensagem via WebSocket (**OBRIGATÓRIO - Use este método ao invés de REST**)
+3. **send-message**: Send message via WebSocket (**REQUIRED - Use this method instead of REST**)
 
    ```json
    {
      "event": "send-message",
      "data": {
        "conversationId": "conv-1",
-       "text": "Olá, como posso ajudar?"
+       "text": "Hello, how can I help?"
      }
    }
    ```
 
-   - **Este é o método preferido e obrigatório para envio de mensagens**
-   - O servidor deve criar a mensagem e broadcast para todos os participantes
-   - Resposta: evento `new-message` para todos os participantes
-   - **NÃO use o endpoint REST POST `/api/chat/conversations/:conversationId/messages` para envio de mensagens**
+   - **This is the preferred and required method for sending messages**
+   - The server must create the message and broadcast to all participants
+   - Response: `new-message` event to all participants
+   - **Do NOT use the REST POST `/api/chat/conversations/:conversationId/messages` endpoint to send messages**
 
-4. **typing**: Indicar que está digitando
+4. **typing**: Indicate typing
 
    ```json
    {
@@ -443,26 +443,26 @@ Todos os eventos devem seguir o formato:
    }
    ```
 
-   - Enviar `isTyping: true` quando começar a digitar
-   - Enviar `isTyping: false` quando parar de digitar (ou após 3 segundos de inatividade)
+   - Send `isTyping: true` when starting to type
+   - Send `isTyping: false` when stopping (or after 3 seconds of inactivity)
 
-5. **mark-read**: Marcar mensagens como lidas via WebSocket (**OBRIGATÓRIO - Use este método ao invés de REST**)
+5. **mark-read**: Mark messages as read via WebSocket (**REQUIRED - Use this method instead of REST**)
    ```json
    {
      "event": "mark-read",
      "data": {
        "conversationId": "conv-1",
-       "messageIds": ["msg-1", "msg-2"] // opcional, se não enviar marca todas como lidas
+       "messageIds": ["msg-1", "msg-2"] // optional; if omitted, marks all as read
      }
    }
    ```
    
-   - **Este é o método preferido e obrigatório para marcar mensagens como lidas**
-   - **NÃO use o endpoint REST PUT `/api/chat/conversations/:conversationId/messages/read` para marcar como lida**
+   - **This is the preferred and required method for marking messages as read**
+   - **Do NOT use the REST PUT `/api/chat/conversations/:conversationId/messages/read` endpoint to mark as read**
 
-### Eventos do Servidor para o Cliente
+### Server-to-Client Events
 
-Todos os eventos seguem o formato:
+All events follow the format:
 
 ```json
 {
@@ -472,7 +472,7 @@ Todos os eventos seguem o formato:
 }
 ```
 
-1. **connected**: Confirmação de conexão bem-sucedida
+1. **connected**: Successful connection confirmation
 
    ```json
    {
@@ -485,17 +485,17 @@ Todos os eventos seguem o formato:
    }
    ```
 
-   - Enviado imediatamente após conexão bem-sucedida
-   - Confirma que o usuário está autenticado e conectado
+   - Sent immediately after a successful connection
+   - Confirms the user is authenticated and connected
 
-2. **new-message**: Nova mensagem recebida
+2. **new-message**: New message received
 
    ```json
    {
      "event": "new-message",
      "data": {
        "id": "msg-3",
-       "text": "Olá, como posso ajudar?",
+       "text": "Hello, how can I help?",
        "senderId": "user-2",
        "timestamp": "2024-03-10T10:35:00Z",
        "read": false,
@@ -505,10 +505,10 @@ Todos os eventos seguem o formato:
    }
    ```
 
-   - Enviado para todos os participantes da conversa (exceto o remetente, se necessário)
-   - Atualiza a lista de conversas automaticamente no cliente
+   - Sent to all conversation participants (except sender if needed)
+   - Updates the conversation list on the client automatically
 
-3. **message-read**: Mensagem marcada como lida
+3. **message-read**: Message marked as read
 
    ```json
    {
@@ -522,10 +522,10 @@ Todos os eventos seguem o formato:
    }
    ```
 
-   - Enviado para todos os participantes da conversa
-   - Permite atualizar indicadores de leitura em tempo real
+   - Sent to all conversation participants
+   - Enables real-time read indicator updates
 
-4. **user-typing**: Usuário está digitando
+4. **user-typing**: User is typing
 
    ```json
    {
@@ -540,10 +540,10 @@ Todos os eventos seguem o formato:
    }
    ```
 
-   - Enviado apenas para outros participantes (não para o próprio usuário)
-   - O servidor deve enviar automaticamente `isTyping: false` após 3 segundos de inatividade
+   - Sent only to other participants (not to typing user)
+   - The server must automatically send `isTyping: false` after 3 seconds of inactivity
 
-5. **user-online-status**: Status online de um usuário mudou
+5. **user-online-status**: User online status changed
 
    ```json
    {
@@ -557,10 +557,10 @@ Todos os eventos seguem o formato:
    }
    ```
 
-   - Enviado para todos os usuários que têm conversas com o usuário
-   - Atualizado quando usuário conecta/desconecta do WebSocket
+   - Sent to all users who have conversations with that user
+   - Updated when the user connects/disconnects from WebSocket
 
-6. **conversation-updated**: Conversa foi atualizada (nova mensagem, mudança de participantes, etc.)
+6. **conversation-updated**: Conversation was updated (new message, participant change, etc.)
 
    ```json
    {
@@ -569,7 +569,7 @@ Todos os eventos seguem o formato:
        "conversationId": "conv-1",
        "lastMessage": {
          "id": "msg-3",
-         "text": "Olá, como posso ajudar?",
+         "text": "Hello, how can I help?",
          "senderId": "user-2",
          "timestamp": "2024-03-10T10:35:00Z"
        },
@@ -579,28 +579,28 @@ Todos os eventos seguem o formato:
    }
    ```
 
-   - Enviado para todos os participantes
-   - Permite atualizar a lista de conversas sem recarregar
+   - Sent to all participants
+   - Updates the conversation list without reloading
 
-7. **error**: Erro ocorreu
+7. **error**: Error occurred
    ```json
    {
      "event": "error",
      "data": {
        "code": "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "VALIDATION_ERROR" | "INTERNAL_ERROR",
-       "message": "Mensagem de erro descritiva",
+       "message": "Descriptive error message",
        "details": {}
      },
      "timestamp": "2024-03-10T10:35:00Z"
    }
    ```
 
-   - Enviado quando ocorre um erro ao processar um evento
-   - Após erro de autenticação, a conexão deve ser fechada
+   - Sent when an error occurs processing an event
+   - After an authentication error, the connection must be closed
 
-## Estrutura de Banco de Dados Sugerida
+## Suggested Database Schema
 
-### Tabela: conversations
+### Table: conversations
 
 ```sql
 CREATE TABLE conversations (
@@ -620,7 +620,7 @@ CREATE INDEX idx_conversation_participants_user ON conversation_participants(use
 CREATE INDEX idx_conversation_participants_conversation ON conversation_participants(conversation_id);
 ```
 
-### Tabela: messages
+### Table: messages
 
 ```sql
 CREATE TABLE messages (
@@ -638,7 +638,7 @@ CREATE INDEX idx_messages_sender ON messages(sender_id);
 CREATE INDEX idx_messages_unread ON messages(conversation_id, read) WHERE read = FALSE;
 ```
 
-### Tabela: user_online_status (Opcional)
+### Table: user_online_status (Optional)
 
 ```sql
 CREATE TABLE user_online_status (
@@ -651,83 +651,83 @@ CREATE TABLE user_online_status (
 CREATE INDEX idx_user_online_status_online ON user_online_status(is_online) WHERE is_online = TRUE;
 ```
 
-## Regras de Negócio
+## Business Rules
 
-1. **Criação de Conversa:**
-   - Uma conversa pode ter 2 ou mais participantes
-   - Se já existir uma conversa entre os mesmos participantes, retornar a existente
-   - O usuário autenticado é automaticamente adicionado como participante
+1. **Conversation Creation:**
+   - A conversation can have 2 or more participants
+   - If a conversation already exists between the same participants, return the existing one
+   - The authenticated user is automatically added as a participant
 
-2. **Envio de Mensagem:**
-   - Apenas participantes da conversa podem enviar mensagens
-   - Mensagens são criadas com `read: false` para todos os participantes exceto o remetente
-   - A conversa é atualizada com a última mensagem e timestamp
+2. **Sending Messages:**
+   - Only conversation participants can send messages
+   - Messages are created with `read: false` for all participants except the sender
+   - The conversation is updated with the last message and timestamp
 
-3. **Marcação como Lida:**
-   - Apenas o destinatário pode marcar mensagens como lidas
-   - Ao marcar como lida, atualizar o `unreadCount` da conversa
+3. **Mark as Read:**
+   - Only the recipient can mark messages as read
+   - When marking as read, update the conversation `unreadCount`
 
-4. **Status Online:**
-   - Atualizar `last_seen` sempre que o usuário fizer uma requisição autenticada
-   - Considerar usuário online se `last_seen` foi atualizado nos últimos 5 minutos
-   - Implementar heartbeat via WebSocket para status em tempo real
+4. **Online Status:**
+   - Update `last_seen` whenever the user makes an authenticated request
+   - Consider the user online if `last_seen` was updated in the last 5 minutes
+   - Implement WebSocket heartbeat for real-time status
 
-5. **Permissões:**
-   - Usuários só podem ver conversas das quais são participantes
-   - Usuários só podem enviar mensagens em conversas das quais são participantes
-   - Administradores podem ver todas as conversas (opcional)
+5. **Permissions:**
+   - Users can only see conversations they participate in
+   - Users can only send messages in conversations they participate in
+   - Administrators can see all conversations (optional)
 
-## Notas de Implementação
+## Implementation Notes
 
-1. **Paginação:**
-   - Implementar paginação cursor-based para melhor performance em listas grandes
-   - Usar `created_at` como cursor para mensagens
+1. **Pagination:**
+   - Implement cursor-based pagination for better performance on large lists
+   - Use `created_at` as the cursor for messages
 
 2. **Performance:**
-   - Indexar `conversation_id` e `created_at` na tabela de mensagens
-   - Cachear lista de conversas com TTL curto (30-60 segundos)
-   - Usar Redis para status online em tempo real
+   - Índice `conversation_id` and `created_at` on the messages table
+   - Cache conversation list with a short TTL (30-60 seconds)
+   - Use Redis for real-time online status
 
-3. **Segurança:**
-   - Validar que o usuário é participante antes de retornar dados da conversa
-   - Sanitizar texto das mensagens para prevenir XSS
-   - Limitar taxa de envio de mensagens por usuário (rate limiting)
+3. **Security:**
+   - Validate the user is a participant before returning conversation data
+   - Sanitize message text to prevent XSS
+   - Rate-limit message sending per user
 
-4. **Notificações Push (Futuro):**
-   - Enviar notificação push quando nova mensagem chegar e usuário não estiver online
-   - Integrar com serviço de notificações push (FCM, APNS)
+4. **Push Notifications (Future):**
+   - Send push notification when a new message arrives and the user is offline
+   - Integrate with a push notification service (FCM, APNS)
 
-## Exemplo de Uso
+## Usage Example
 
-### Fluxo Completo
+### Full Flow
 
-1. **Listar conversas:**
+1. **List conversations:**
 
    ```bash
    GET /api/chat/conversations
    ```
 
-2. **Criar/obter conversa:**
+2. **Create/get conversation:**
 
    ```bash
    POST /api/chat/conversations
    Body: { "participantId": "user-2" }
    ```
 
-3. **Enviar mensagem:**
+3. **Send message:**
 
    ```bash
    POST /api/chat/conversations/conv-1/messages
-   Body: { "text": "Olá!" }
+   Body: { "text": "Hello!" }
    ```
 
-4. **Obter mensagens:**
+4. **Get messages:**
 
    ```bash
    GET /api/chat/conversations/conv-1/messages
    ```
 
-5. **Marcar como lida:**
+5. **Mark as read:**
    ```bash
    PUT /api/chat/conversations/conv-1/messages/read
    ```

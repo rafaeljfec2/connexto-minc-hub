@@ -41,10 +41,7 @@ All API responses follow a consistent structure:
   "success": false,
   "statusCode": 400,
   "message": "Validation failed",
-  "errors": [
-    "name should not be empty",
-    "email must be an email"
-  ],
+  "errors": ["name should not be empty", "email must be an email"],
   "timestamp": "2024-01-15T10:30:00.000Z",
   "path": "/minc-teams/v1/churches"
 }
@@ -52,15 +49,15 @@ All API responses follow a consistent structure:
 
 ## Response Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | boolean | Indicates if the request was successful |
-| `statusCode` | number | HTTP status code |
-| `message` | string | Human-readable message describing the result |
-| `data` | object/array/null | Response data payload (only present on success) |
-| `errors` | object/array/null | Error details (only present on failure) |
-| `timestamp` | string | ISO 8601 timestamp of the response |
-| `path` | string | Request path that generated this response |
+| Field        | Type              | Description                                     |
+| ------------ | ----------------- | ----------------------------------------------- |
+| `success`    | boolean           | Indicates if the request was successful         |
+| `statusCode` | number            | HTTP status code                                |
+| `message`    | string            | Human-readable message describing the result    |
+| `data`       | object/array/null | Response data payload (only present on success) |
+| `errors`     | object/array/null | Error details (only present on failure)         |
+| `timestamp`  | string            | ISO 8601 timestamp of the response              |
+| `path`       | string            | Request path that generated this response       |
 
 ## HTTP Status Codes
 
@@ -85,6 +82,7 @@ All response messages are in **English** to ensure consistency and international
 ### GET /minc-teams/v1/churches
 
 **Success Response (200):**
+
 ```json
 {
   "success": true,
@@ -93,8 +91,8 @@ All response messages are in **English** to ensure consistency and international
   "data": [
     {
       "id": "uuid",
-      "name": "Minha Igreja",
-      "address": "Rua Exemplo, 123",
+      "name": "Minha Church",
+      "address": "123 Example St",
       "createdAt": "2024-01-01T00:00:00.000Z"
     }
   ],
@@ -106,6 +104,7 @@ All response messages are in **English** to ensure consistency and international
 ### POST /minc-teams/v1/churches
 
 **Success Response (201):**
+
 ```json
 {
   "success": true,
@@ -113,7 +112,7 @@ All response messages are in **English** to ensure consistency and international
   "message": "Operation completed successfully",
   "data": {
     "id": "uuid",
-    "name": "Nova Igreja",
+    "name": "Nova Church",
     "address": "Rua Nova, 456",
     "createdAt": "2024-01-15T10:30:00.000Z"
   },
@@ -125,6 +124,7 @@ All response messages are in **English** to ensure consistency and international
 ### GET /minc-teams/v1/churches/invalid-id
 
 **Error Response (404):**
+
 ```json
 {
   "success": false,
@@ -136,18 +136,16 @@ All response messages are in **English** to ensure consistency and international
 }
 ```
 
-### POST /minc-teams/v1/churches (with invalid data)
+### POST /minc-teams/v1/churches (com invalid data)
 
-**Validation Error Response (400):**
+​**Validation Error Response (400):**
+
 ```json
 {
   "success": false,
   "statusCode": 400,
   "message": "Validation failed",
-  "errors": [
-    "name should not be empty",
-    "address should not be empty"
-  ],
+  "errors": ["name should not be empty", "address should not be empty"],
   "timestamp": "2024-01-15T10:30:00.000Z",
   "path": "/minc-teams/v1/churches"
 }

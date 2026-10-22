@@ -1,43 +1,43 @@
-# Garantia de Vínculo Person-User na Ativação
+# Person–User Link Guarantee on Activation
 
-## Fluxo de Ativação e Vínculo
+## Activation and Link Flow
 
-### 1. Busca da Pessoa pelo Telefone
+### 1. Look Up Person by Phone
 
-**Processo:**
+**Process:**
 
-1. Usuário digita telefone no frontend (ex: `(11) 98765-4321`)
-2. Frontend normaliza removendo formatação: `11987654321`
-3. Backend recebe telefone normalizado
-4. Backend busca pessoa comparando telefones normalizados (apenas números)
+1. User enters phone on the frontend (e.g. `(11) 98765-4321`)
+2. Frontend normalizes by stripping formatting: `11987654321`
+3. Backend receives normalized phone
+4. Backend finds person by comparing normalized phones (digits only)
 
-**Normalização:**
+**Normalization:**
 
-- Remove todos os caracteres não numéricos: `(11) 98765-4321` → `11987654321`
-- Comparação case-insensitive e format-agnostic
-- Aceita telefones com ou sem formatação no banco
+- Strip non-digits: `(11) 98765-4321` → `11987654321`
+- Case-insensitive, format-agnostic comparison
+- Accepts formatted or unformatted phones in the database
 
-**Query Otimizada:**
+**Optimized query:**
 
 ```typescript
-// Busca pessoas não deletadas com telefone
-// Normaliza telefones em memória e compara
+// Find non-deleted persons with phone
+// Normalize phones in memory and compare
 const person = await this.findPersonByPhone(normalizedPhone)
 ```
 
-### 2. Validações Antes de Criar User
+### 2. Validations Before Creating User
 
-**Validações realizadas:**
+**Checks performed:**
 
-1. ✅ Pessoa existe no banco
-2. ✅ Pessoa não tem User vinculado (`findByPersonId`)
-3. ✅ Email não está em uso (`findByEmail`)
-4. ✅ Pessoa pertence ao escopo do código de acesso
-5. ✅ Código de acesso está válido e ativo
+1. ✅ Person exists in the database
+2. ✅ Person has no linked User (`findByPersonId`)
+3. ✅ Email is not in use (`findByEmail`)
+4. ✅ Person belongs to access code scope
+5. ✅ Access code is valid and active
 
-### 3. Criação do User com Vínculo
+### 3. Create User with Link
 
-**Código crítico:**
+**Critical code:**
 
 ```typescript
 const user = await this.usersService.create({
@@ -45,51 +45,51 @@ const user = await this.usersService.create({
   passwordHash,
   name: person.name,
   role: UserRole.SERVO,
-  personId: person.id, // ⚠️ VÍNCULO CRÍTICO
+  personId: person.id, // ⚠️ CRITICAL LINK
   canCheckIn: false,
 })
 ```
 
-**Validação pós-criação:**
+**Post-create validation:**
 
 ```typescript
-// Verifica se o vínculo foi criado corretamente
+// Verify link was created correctly
 if (!user.personId || user.personId !== person.id) {
-  throw new BadRequestException('Erro ao vincular usuário à pessoa')
+  throw new BadRequestException('Failed to link user to person')
 }
 
-// Garante que o usuário está ativo
+// Ensure user is active
 if (!user.isActive) {
   user.isActive = true
   await this.usersService.update(user.id, { isActive: true })
 }
 ```
 
-### 4. Login Automático Após Ativação
+### 4. Automatic Login After Activation
 
-**Fluxo:**
+**Flow:**
 
-1. User é criado com `personId` vinculado
-2. Token JWT é gerado com dados do User
-3. Token é salvo no localStorage do frontend
-4. User é salvo no localStorage do frontend
-5. `login()` é chamado para atualizar o contexto React
-6. Usuário é redirecionado para o dashboard
+1. User is created with linked `personId`
+2. JWT is generated with User data
+3. Token is stored in frontend localStorage
+4. User is stored in frontend localStorage
+5. `login()` updates React context
+6. User is redirected to the dashboard
 
-**Garantias:**
+**Guarantees:**
 
-- ✅ User tem `personId` correto
-- ✅ User está `isActive = true`
-- ✅ Token JWT contém `sub` (userId), `email`, `role`
-- ✅ Frontend tem token e user salvos
-- ✅ Contexto React está atualizado
+- ✅ User has correct `personId`
+- ✅ User has `isActive = true`
+- ✅ JWT contains `sub` (userId), `email`, `role`
+- ✅ Frontend has token and user saved
+- ✅ React context is updated
 
-## Estrutura do Vínculo
+## Link Structure
 
-### Relacionamento no Banco
+### Database Relationship
 
 ```sql
--- Tabela users
+-- users table
 users (
   id UUID PRIMARY KEY,
   person_id UUID REFERENCES persons(id),
@@ -100,7 +100,7 @@ users (
   ...
 )
 
--- Tabela persons
+-- persons table
 persons (
   id UUID PRIMARY KEY,
   phone VARCHAR,
@@ -109,7 +109,7 @@ persons (
 )
 ```
 
-### Relacionamento TypeORM
+### TypeORM Relationship
 
 ```typescript
 // UserEntity
@@ -125,38 +125,36 @@ personId: string | null;
 user: UserEntity | null;
 ```
 
-## Validações de Segurança
+## Security Validations
 
-### 1. Telefone Único por Pessoa
+### 1. Unique Phone per Person
 
-- Cada pessoa tem um telefone único
-- Busca normaliza telefones antes de comparar
-- Aceita diferentes formatos: `(11) 98765-4321`, `11987654321`, `+55 11 98765-4321`
+- Each person has a unique phone
+- Lookup normalizes phones before compare
+- Accepts formats: `(11) 98765-4321`, `11987654321`, `+55 11 98765-4321`
 
-### 2. Pessoa Não Pode Ter Múltiplos Users
+### 2. Person Cannot Have Multiple Users
 
-- Validação antes de criar: `findByPersonId(person.id)`
-- Se já existe User, lança `ConflictException`
-- Garante relação 1:1 entre Person e User
+- Pre-create check: `findByPersonId(person.id)`
+- If User exists, throw `ConflictException`
+- Enforces 1:1 Person–User
 
-### 3. Email Único no Sistema
+### 3. Unique Email in the System
 
-- Validação antes de criar: `findByEmail(email)`
-- Se email já existe, lança `ConflictException`
-- Garante que cada User tem email único
+- Pre-create check: `findByEmail(email)`
+- If email exists, throw `ConflictException`
 
-### 4. Escopo do Código
+### 4. Code Scope
 
-- Pessoa deve pertencer ao escopo do código (Igreja/Ministério/Time)
-- Validação antes de gerar token temporário
-- Garante que apenas pessoas autorizadas podem ativar
+- Person must belong to code scope (Church/Ministry/Team)
+- Validated before temporary token is issued
 
-## Logs e Monitoramento
+## Logs and Monitoring
 
-### Logs de Sucesso
+### Success Logs
 
 ```
-[ActivationService] Usuário criado e vinculado com sucesso {
+[ActivationService] User created and linked successfully {
   userId: 'uuid',
   personId: 'uuid',
   email: 'user@example.com',
@@ -164,113 +162,111 @@ user: UserEntity | null;
 }
 ```
 
-### Logs de Erro
+### Error Logs
 
 ```
-[ActivationService] Erro crítico: Vínculo Person-User não foi criado corretamente {
+[ActivationService] Critical error: Person–User link was not created correctly {
   userId: 'uuid',
   personId: 'uuid',
   userPersonId: null
 }
 ```
 
-### Eventos de Segurança
+### Security Events
 
-- `activation_check_success`: Validação bem-sucedida
-- `activation_completed`: User criado com sucesso
-- `activation_check_failed`: Falha na validação (vários motivos)
-- `activation_complete_failed`: Falha ao criar User
+- `activation_check_success`: Validation succeeded
+- `activation_completed`: User created successfully
+- `activation_check_failed`: Validation failed (various reasons)
+- `activation_complete_failed`: Failed to create User
 
 ## Troubleshooting
 
-### Problema: "Telefone não encontrado"
+### Issue: "Phone not found"
 
-**Possíveis causas:**
+**Possible causes:**
 
-1. Telefone não foi importado na base de dados
-2. Formato do telefone diferente do esperado
-3. Telefone está em outra pessoa
+1. Phone was not imported
+2. Unexpected phone format
+3. Phone belongs to another person
 
-**Solução:**
+**Fix:**
 
-- Verificar se pessoa existe: `SELECT * FROM persons WHERE phone LIKE '%11987654321%'`
-- Verificar formato: Telefones devem ter pelo menos 10 dígitos
-- Normalizar telefone manualmente e buscar
+- Check person: `SELECT * FROM persons WHERE phone LIKE '%11987654321%'`
+- Phones should have at least 10 digits
+- Normalize manually and search again
 
-### Problema: "Esta pessoa já possui uma conta ativada"
+### Issue: "This person already has an activated account"
 
-**Possíveis causas:**
+**Possible causes:**
 
-1. Pessoa já tem User vinculado
-2. User foi criado anteriormente
+1. Person already has linked User
+2. User was created earlier
 
-**Solução:**
+**Fix:**
 
-- Verificar vínculo: `SELECT * FROM users WHERE person_id = 'person-uuid'`
-- Se User existe, pessoa deve fazer login normalmente
-- Se User não existe mas erro persiste, verificar dados inconsistentes
+- Check link: `SELECT * FROM users WHERE person_id = 'person-uuid'`
+- If User exists, person should log in normally
+- If no User but error persists, check inconsistent data
 
-### Problema: User criado mas não consegue fazer login
+### Issue: User created but cannot log in
 
-**Possíveis causas:**
+**Possible causes:**
 
-1. User não está ativo (`isActive = false`)
-2. Token não foi salvo corretamente
-3. Vínculo Person-User não foi criado
+1. User not active (`isActive = false`)
+2. Token not saved correctly
+3. Person–User link missing
 
-**Solução:**
+**Fix:**
 
-- Verificar `isActive`: `SELECT is_active FROM users WHERE id = 'user-uuid'`
-- Verificar `personId`: `SELECT person_id FROM users WHERE id = 'user-uuid'`
-- Verificar logs do backend para erros durante criação
-- Verificar localStorage do frontend (token e user)
+- Check `isActive`: `SELECT is_active FROM users WHERE id = 'user-uuid'`
+- Check `personId`: `SELECT person_id FROM users WHERE id = 'user-uuid'`
+- Check backend logs during creation
+- Check frontend localStorage (token and user)
 
-### Problema: User criado mas não aparece vinculado à Person
+### Issue: User created but not linked to Person in UI
 
-**Possíveis causas:**
+**Possible causes:**
 
-1. `personId` não foi salvo no banco
-2. Relacionamento TypeORM não foi carregado
+1. `personId` not persisted
+2. TypeORM relation not loaded
 
-**Solução:**
+**Fix:**
 
-- Verificar banco diretamente: `SELECT person_id FROM users WHERE id = 'user-uuid'`
-- Verificar se `personId` está sendo passado corretamente no `create()`
-- Verificar logs para erros durante criação
-- Recarregar User do banco após criação
+- Query DB: `SELECT person_id FROM users WHERE id = 'user-uuid'`
+- Verify `personId` passed to `create()`
+- Check creation logs
+- Reload User from DB after creation
 
-## Testes Recomendados
+## Recommended Tests
 
-### Teste 1: Busca por Telefone
+### Test 1: Phone Lookup
 
 ```typescript
-// Teste com diferentes formatos
+// Different formats
 normalizePhone('(11) 98765-4321') === '11987654321'
 normalizePhone('11987654321') === '11987654321'
 normalizePhone('+55 11 98765-4321') === '5511987654321'
 ```
 
-### Teste 2: Criação de User com Vínculo
+### Test 2: Create User with Link
 
 ```typescript
-// Verificar após criação
 const user = await usersService.create({ ..., personId: 'person-id' });
 expect(user.personId).toBe('person-id');
 expect(user.isActive).toBe(true);
 ```
 
-### Teste 3: Login Após Ativação
+### Test 3: Login After Activation
 
 ```typescript
-// Verificar que User consegue fazer login
 const loginResult = await authService.login(user.email, password)
 expect(loginResult.user.personId).toBe('person-id')
 expect(loginResult.token).toBeDefined()
 ```
 
-## Melhorias Futuras
+## Future Improvements
 
-1. **Índice no Telefone Normalizado**: Criar coluna `phone_normalized` com índice para busca mais rápida
-2. **Cache de Busca**: Cachear resultados de busca por telefone para melhor performance
-3. **Validação de Telefone**: Validar formato brasileiro (10 ou 11 dígitos)
-4. **Histórico de Ativações**: Tabela para rastrear todas as ativações realizadas
+1. **Normalized phone index**: Add `phone_normalized` column with index for faster lookup
+2. **Lookup cache**: Cache phone lookup results
+3. **Phone validation**: Validate Brazilian format (10 or 11 digits)
+4. **Activation history**: Table to track all activations

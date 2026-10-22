@@ -1,72 +1,72 @@
-# Configuração Correta do Ignored Build Step
+# Correct Ignored Build Step Configuration
 
-## ✅ Configuração Atual no Dashboard
+## ✅ Current Dashboard Configuration
 
-Você tem configurado:
+You have configured:
 - **Behavior:** "Only build if there are changes in a folder"
 - **Command:** `git diff HEAD^ HEAD --quiet -- ./apps/web`
 
-## 🔧 Correção Necessária
+## 🔧 Required Fix
 
-O comando está **quase correto**, mas precisa de um pequeno ajuste:
+The command is **almost correct**, but needs a small adjustment:
 
-### Opção 1: Comando Simplificado (Recomendado)
+### Option 1: Simplified Command (Recommended)
 
 **Command:**
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/
 ```
 
-**Por quê?**
-- Remove o `--` que não é necessário
-- Adiciona `/` no final para garantir que detecta mudanças na pasta
-- Mais simples e direto
+**Why?**
+- Removes unnecessary `--`
+- Adds trailing `/` to ensure folder changes are detected
+- Simpler and more direct
 
-### Opção 2: Comando Mais Específico
+### Option 2: More Specific Command
 
-Se quiser detectar mudanças em arquivos de configuração também:
+If you also want to detect changes in config files:
 
 **Command:**
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json
 ```
 
-**Nota:** Se o Root Directory for `apps/web`, os caminhos `package.json`, etc. precisam ser relativos à raiz do repositório, então use `../package.json`.
+**Note:** If Root Directory is `apps/web`, paths like `package.json` must be relative to repo root, so use `../package.json`.
 
-## 📝 Passos para Corrigir
+## 📝 Steps to Fix
 
-1. **No Dashboard da Vercel:**
-   - Vá em **Settings > Git > Ignored Build Step**
-   - Na seção **"Project Settings"**
-   - Altere o **Command** para:
+1. **In the Vercel Dashboard:**
+   - Go to **Settings > Git > Ignored Build Step**
+   - Under **"Project Settings"**
+   - Change **Command** to:
      ```bash
      git diff HEAD^ HEAD --quiet apps/web/
      ```
-   - Clique em **"Save"**
+   - Click **"Save"**
 
-2. **Sincronizar Production Overrides:**
-   - Expanda **"Production Overrides"**
-   - Se o campo Command estiver vazio, copie o mesmo comando
-   - Isso vai remover o aviso amarelo
+2. **Sync Production Overrides:**
+   - Expand **"Production Overrides"**
+   - If the Command field is empty, copy the same command
+   - This removes the yellow warning
 
-## 🧪 Testar
+## 🧪 Test
 
-Após salvar, faça um commit vazio:
+After saving, make an empty commit:
 
 ```bash
-git commit --allow-empty -m "test: verificar deploy automático"
+git commit --allow-empty -m "test: verify automatic deploy"
 git push
 ```
 
-Se um novo deploy for criado, está funcionando! 🎉
+If a new deploy is created, it is working 🎉
 
-## ⚠️ Importante
+## ⚠️ Important
 
-- **Exit code 0** = Não há mudanças = **NÃO faz deploy**
-- **Exit code 1** = Há mudanças = **FAZ deploy**
+- **Exit code 0** = No changes = **Does NOT deploy**
+- **Exit code 1** = Changes present = **Deploys**
 
-O comando `git diff HEAD^ HEAD --quiet` retorna:
-- `0` se não houver diferenças (quiet mode)
-- `1` se houver diferenças
+The command `git diff HEAD^ HEAD --quiet` returns:
+- `0` if there are no differences (quiet mode)
+- `1` if there are differences
 
-Por isso funciona perfeitamente para o Ignored Build Step!
+That is why it works perfectly for Ignored Build Step!

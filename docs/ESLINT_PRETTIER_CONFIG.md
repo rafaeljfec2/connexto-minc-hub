@@ -1,64 +1,58 @@
-# Configuração ESLint e Prettier
+# ESLint and Prettier Configuration
 
-## 📋 Visão Geral
+## Overview
 
-Este documento descreve a configuração do ESLint e Prettier para formatação automática de código e remoção de imports não utilizados.
+This document describes ESLint and Prettier setup for automatic formatting and removal of unused imports.
 
 ---
 
-## ✅ Configurações Implementadas
+## Implemented settings
 
 ### 1. ESLint
 
-**Arquivo**: `apps/web/.eslintrc.cjs`
+**File:** `apps/web/.eslintrc.cjs`
 
-#### Plugins Adicionados:
-- `eslint-plugin-unused-imports` - Remove imports não utilizados automaticamente
+#### Plugins
 
-#### Regras Configuradas:
-- ✅ `unused-imports/no-unused-imports`: Remove imports não utilizados
-- ✅ `unused-imports/no-unused-vars`: Detecta variáveis não utilizadas
-- ✅ `prefer-const`: Força uso de `const` quando possível
-- ✅ `no-var`: Proíbe uso de `var`
-- ✅ `object-shorthand`: Força uso de shorthand em objetos
-- ✅ `prefer-arrow-callback`: Prefere arrow functions
-- ✅ `prefer-template`: Prefere template strings
-- ✅ `no-console`: Avisa sobre console.log (permite console.warn e console.error)
+- `eslint-plugin-unused-imports` — removes unused imports on fix
+
+#### Rules
+
+- `unused-imports/no-unused-imports`: error on unused imports
+- `unused-imports/no-unused-vars`: warn on unused variables
+- `prefer-const`: prefer `const` when reassignment is not needed
+- `no-var`: disallow `var`
+- `object-shorthand`: require object shorthand where possible
+- `prefer-arrow-callback`: prefer arrow functions for callbacks
+- `prefer-template`: prefer template literals
+- `no-console`: warn on `console.log` (allows `console.warn` and `console.error`)
 
 ---
 
 ### 2. Prettier
 
-**Arquivo**: `.prettierrc`
+**File:** `.prettierrc`
 
-#### Configurações:
-- `semi: false` - Sem ponto e vírgula
-- `singleQuote: true` - Aspas simples
-- `tabWidth: 2` - 2 espaços para indentação
-- `trailingComma: "es5"` - Vírgula final quando possível
-- `printWidth: 100` - 100 caracteres por linha
-- `arrowParens: "avoid"` - Evita parênteses em arrow functions com um parâmetro
-- `endOfLine: "lf"` - Fim de linha LF
-- `bracketSpacing: true` - Espaços em objetos
-- `jsxSingleQuote: false` - Aspas duplas em JSX
+| Option | Value |
+| ------ | ----- |
+| `semi` | `false` |
+| `singleQuote` | `true` |
+| `tabWidth` | `2` |
+| `trailingComma` | `"es5"` |
+| `printWidth` | `100` |
+| `arrowParens` | `"avoid"` |
+| `endOfLine` | `"lf"` |
+| `bracketSpacing` | `true` |
+| `jsxSingleQuote` | `false` |
 
-**Arquivo**: `.prettierignore`
-
-Ignora:
-- `node_modules`
-- `dist`
-- `build`
-- `.next`
-- `.turbo`
-- `coverage`
-- Arquivos minificados
-- Lock files
+**File:** `.prettierignore` ignores `node_modules`, build outputs, `.turbo`, `coverage`, minified files, and lockfiles.
 
 ---
 
-### 3. Scripts NPM
+### 3. npm scripts
 
-#### Root (`package.json`):
+#### Root (`package.json`)
+
 ```json
 {
   "lint": "turbo run lint",
@@ -68,7 +62,8 @@ Ignora:
 }
 ```
 
-#### Web App (`apps/web/package.json`):
+#### Web app (`apps/web/package.json`)
+
 ```json
 {
   "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -82,69 +77,58 @@ Ignora:
 
 ### 4. Turborepo
 
-**Arquivo**: `turbo.json`
+**File:** `turbo.json`
 
-#### Tasks Adicionadas:
-- `lint:fix` - Executa lint com correção automática (sem cache)
-- `format` - Formata código com Prettier (sem cache)
-- `format:check` - Verifica formatação sem alterar arquivos (sem cache)
+Tasks (typically without cache):
+
+- `lint:fix`
+- `format`
+- `format:check`
 
 ---
 
-## 🚀 Como Usar
+## Usage
 
-### Formatar Código
+### Format code
 
 ```bash
-# Formatar todos os arquivos
 pnpm format
-
-# Verificar formatação sem alterar
 pnpm format:check
 ```
 
-### Lint e Correção Automática
+### Lint and auto-fix
 
 ```bash
-# Verificar problemas
 pnpm lint
-
-# Corrigir problemas automaticamente (remove imports não utilizados)
 pnpm lint:fix
 ```
 
-### Executar Ambos
+### Format and lint together
 
 ```bash
-# Formatar e corrigir lint
 pnpm format && pnpm lint:fix
 ```
 
 ---
 
-## 📝 O que é Corrigido Automaticamente
+## What auto-fix changes
 
-### ESLint (`lint:fix`):
-- ✅ Remove imports não utilizados
-- ✅ Remove variáveis não utilizadas
-- ✅ Converte `var` para `const`/`let`
-- ✅ Converte para arrow functions quando apropriado
-- ✅ Converte para template strings
-- ✅ Aplica object shorthand
+### ESLint (`lint:fix`)
 
-### Prettier (`format`):
-- ✅ Formatação de código (indentação, espaços, quebras de linha)
-- ✅ Aspas simples/duplas
-- ✅ Ponto e vírgula
-- ✅ Comprimento de linha
+- Removes unused imports and variables
+- Converts `var` to `const` / `let` where applicable
+- Applies arrow callbacks, template strings, and object shorthand
+
+### Prettier (`format`)
+
+- Indentation, spacing, line breaks
+- Quote style and line width
 
 ---
 
-## ⚙️ Integração com Editor
+## Editor integration (VS Code)
 
-### VS Code
-
-Adicione ao `.vscode/settings.json`:
+Example `.vscode/settings.json`:
 
 ```json
 {
@@ -162,15 +146,14 @@ Adicione ao `.vscode/settings.json`:
 }
 ```
 
-### Extensões Recomendadas:
-- ESLint (`dbaeumer.vscode-eslint`)
-- Prettier (`esbenp.prettier-vscode`)
+**Recommended extensions:** ESLint, Prettier.
 
 ---
 
-## 🔍 Exemplos
+## Example
 
-### Antes (com imports não utilizados):
+**Before:**
+
 ```typescript
 import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -178,34 +161,34 @@ import { Card } from '@/components/ui/Card'
 
 export default function MyComponent() {
   const [count, setCount] = useState(0)
-  
+
   return <Button>Click</Button>
 }
 ```
 
-### Depois (`pnpm lint:fix`):
+**After `pnpm lint:fix`:**
+
 ```typescript
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 
 export default function MyComponent() {
   const [count, setCount] = useState(0)
-  
+
   return <Button>Click</Button>
 }
 ```
 
 ---
 
-## 📊 Status
+## Status
 
-- ✅ ESLint configurado
-- ✅ Prettier configurado
-- ✅ Plugin de imports não utilizados instalado
-- ✅ Scripts NPM criados
-- ✅ Turborepo configurado
-- ✅ Arquivos formatados
+- ESLint configured
+- Prettier configured
+- Unused-imports plugin installed
+- npm and Turborepo scripts wired
+- Repository formatted per these rules
 
 ---
 
-**Última atualização**: 2025-01-04
+**Last updated:** 2025-01-04

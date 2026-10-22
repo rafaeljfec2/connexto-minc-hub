@@ -1,108 +1,108 @@
-# Guia de Debug no VSCode
+# VSCode Debug Guide
 
-Este documento explica como usar as configurações de debug do VSCode para o projeto MINC Hub.
+This document explains how to use VSCode debug configurations for the MINC Hub project.
 
-## 📋 Pré-requisitos
+## 📋 Prerequisites
 
-- VSCode instalado
-- Extensões recomendadas:
-  - **Debugger for Chrome** (para debug web no Chrome)
-  - **Debugger for Microsoft Edge** (para debug web no Edge)
+- VSCode installed
+- Recommended extensions:
+  - **Debugger for Chrome** (for web debugging in Chrome)
+  - **Debugger for Microsoft Edge** (for web debugging in Edge)
 
-## 🎯 Configurações Disponíveis
+## 🎯 Available Configurations
 
 ### 1. Debug API (NestJS)
 
-**Nome:** `Debug API (NestJS)`
+**Name:** `Debug API (NestJS)`
 
-Inicia a API em modo debug usando o nodemon. Esta configuração:
+Starts the API in debug mode using nodemon. This configuration:
 
-- Executa `pnpm run dev` na pasta `apps/api`
-- Habilita source maps para debug do TypeScript
-- Reinicia automaticamente quando há mudanças no código
-- Usa o terminal integrado do VSCode
+- Runs `pnpm run dev` in `apps/api`
+- Enables source maps for TypeScript debugging
+- Restarts automatically when code changes
+- Uses the VSCode integrated terminal
 
-**Como usar:**
+**How to use:**
 
-1. Pressione `F5` ou vá em "Run and Debug" (Ctrl+Shift+D)
-2. Selecione "Debug API (NestJS)" no dropdown
-3. Clique no botão play verde ou pressione `F5`
-4. Coloque breakpoints nos arquivos `.ts` da API
-5. Faça requisições para a API e o debugger vai parar nos breakpoints
+1. Press `F5` or open "Run and Debug" (Ctrl+Shift+D)
+2. Select "Debug API (NestJS)" from the dropdown
+3. Click the green play button or press `F5`
+4. Set breakpoints in API `.ts` files
+5. Send requests to the API and the debugger will stop at breakpoints
 
 ### 2. Debug API (Attach)
 
-**Nome:** `Debug API (Attach)`
+**Name:** `Debug API (Attach)`
 
-Conecta o debugger a uma instância da API já em execução.
+Attaches the debugger to an already running API instance.
 
-**Como usar:**
+**How to use:**
 
-1. Primeiro, inicie a API manualmente com `pnpm run dev` na pasta `apps/api`
-2. No VSCode, selecione "Debug API (Attach)"
-3. Pressione `F5`
-4. O debugger vai se conectar à porta 9229
+1. First, start the API manually with `pnpm run dev` in `apps/api`
+2. In VSCode, select "Debug API (Attach)"
+3. Press `F5`
+4. The debugger connects to port 9229
 
-**Quando usar:** Útil quando você já tem a API rodando em um terminal e quer apenas conectar o debugger.
+**When to use:** Useful when the API is already running in a terminal and you only want to attach the debugger.
 
 ### 3. Debug Web (Chrome)
 
-**Nome:** `Debug Web (Chrome)`
+**Name:** `Debug Web (Chrome)`
 
-Abre o Chrome com o debugger conectado ao frontend.
+Opens Chrome with the debugger attached to the frontend.
 
-**Como usar:**
+**How to use:**
 
-1. Certifique-se de que o dev server está rodando (`pnpm run dev` em `apps/web`)
-2. Selecione "Debug Web (Chrome)" no VSCode
-3. Pressione `F5`
-4. O Chrome vai abrir em `http://localhost:5173`
-5. Coloque breakpoints nos arquivos `.ts` e `.tsx` do frontend
-6. Interaja com a aplicação e o debugger vai parar nos breakpoints
+1. Ensure the dev server is running (`pnpm run dev` in `apps/web`)
+2. Select "Debug Web (Chrome)" in VSCode
+3. Press `F5`
+4. Chrome opens at `http://localhost:5173`
+5. Set breakpoints in frontend `.ts` and `.tsx` files
+6. Interact with the app and the debugger will stop at breakpoints
 
-**Recursos:**
+**Features:**
 
-- Debug de código TypeScript/React
-- Inspeção de variáveis
-- Console integrado
-- Source maps habilitados
+- TypeScript/React code debugging
+- Variable inspection
+- Integrated console
+- Source maps enabled
 
 ### 4. Debug Web (Edge)
 
-**Nome:** `Debug Web (Edge)`
+**Name:** `Debug Web (Edge)`
 
-Igual ao Debug Web (Chrome), mas usa o Microsoft Edge.
+Same as Debug Web (Chrome), but uses Microsoft Edge.
 
-**Como usar:** Mesmo processo do Chrome, mas abre no Edge.
+**How to use:** Same steps as Chrome; Edge opens instead of Chrome.
 
 ### 5. Debug Full Stack (API + Web Chrome)
 
-**Nome:** `Debug Full Stack (API + Web Chrome)`
+**Name:** `Debug Full Stack (API + Web Chrome)`
 
-Inicia **simultaneamente** a API e o frontend no Chrome.
+Starts the API and frontend in Chrome **simultaneously**.
 
-**Como usar:**
+**How to use:**
 
-1. Selecione "Debug Full Stack (API + Web Chrome)"
-2. Pressione `F5`
-3. Ambos os debuggers vão iniciar
-4. Você pode debugar tanto o backend quanto o frontend ao mesmo tempo
+1. Select "Debug Full Stack (API + Web Chrome)"
+2. Press `F5`
+3. Both debuggers start
+4. You can debug backend and frontend at the same time
 
-**Recursos:**
+**Features:**
 
-- Debug full-stack em uma única sessão
-- Breakpoints funcionam em ambos API e Web
-- Perfeito para debugar fluxos completos (ex: requisição do frontend → processamento na API → resposta)
+- Full-stack debugging in a single session
+- Breakpoints work in both API and Web
+- Perfect for full flows (e.g., frontend request → API processing → response)
 
 ### 6. Debug Full Stack (API + Web Edge)
 
-**Nome:** `Debug Full Stack (API + Web Edge)`
+**Name:** `Debug Full Stack (API + Web Edge)`
 
-Igual ao anterior, mas usa o Edge ao invés do Chrome.
+Same as above, but uses Edge instead of Chrome.
 
-## 🔧 Configuração do Nodemon
+## 🔧 Nodemon Configuration
 
-O arquivo `apps/api/nodemon.json` foi configurado para suportar debug:
+The `apps/api/nodemon.json` file is configured to support debugging:
 
 ```json
 {
@@ -110,63 +110,63 @@ O arquivo `apps/api/nodemon.json` foi configurado para suportar debug:
 }
 ```
 
-A flag `--inspect=0.0.0.0:9229` habilita o debugger na porta 9229.
+The `--inspect=0.0.0.0:9229` flag enables the debugger on port 9229.
 
-## 💡 Dicas de Uso
+## 💡 Usage Tips
 
 ### Breakpoints
 
-- Clique na margem esquerda do editor (ao lado dos números de linha) para adicionar breakpoints
-- Breakpoints condicionais: clique com botão direito no breakpoint → "Edit Breakpoint"
-- Logpoints: adicione logs sem modificar o código
+- Click the left editor margin (next to line numbers) to add breakpoints
+- Conditional breakpoints: right-click a breakpoint → "Edit Breakpoint"
+- Logpoints: add logs without changing code
 
 ### Debug Console
 
-- Use o Debug Console (Ctrl+Shift+Y) para executar código no contexto atual
-- Avalie variáveis, execute funções, etc.
+- Use the Debug Console (Ctrl+Shift+Y) to run code in the current context
+- Evaluate variables, run functions, etc.
 
 ### Watch
 
-- Adicione expressões na aba "Watch" para monitorar valores em tempo real
-- Útil para acompanhar mudanças em objetos complexos
+- Add expressions in the "Watch" tab to monitor values in real time
+- Useful for tracking changes in complex objects
 
 ### Call Stack
 
-- Veja a pilha de chamadas na aba "Call Stack"
-- Navegue entre diferentes frames para inspecionar o contexto
+- View the call stack in the "Call Stack" tab
+- Navigate frames to inspect context
 
 ### Variables
 
-- Inspecione todas as variáveis no escopo atual
-- Expanda objetos para ver suas propriedades
+- Inspect all variables in the current scope
+- Expand objects to see their properties
 
 ## 🐛 Troubleshooting
 
-### API não conecta ao debugger
+### API does not connect to the debugger
 
-- Verifique se a porta 9229 não está em uso
-- Reinicie o VSCode
-- Verifique se o nodemon está configurado corretamente
+- Verify port 9229 is not in use
+- Restart VSCode
+- Verify nodemon is configured correctly
 
-### Web não abre no navegador
+### Web does not open in the browser
 
-- Certifique-se de que o dev server está rodando em `http://localhost:5173`
-- Verifique se a porta 5173 está livre
-- Instale a extensão "Debugger for Chrome" ou "Debugger for Microsoft Edge"
+- Ensure the dev server is running at `http://localhost:5173`
+- Verify port 5173 is available
+- Install "Debugger for Chrome" or "Debugger for Microsoft Edge"
 
-### Breakpoints não funcionam
+### Breakpoints do not work
 
-- Verifique se os source maps estão habilitados
-- Certifique-se de que o código está compilado
-- Tente recarregar a janela do VSCode (Ctrl+Shift+P → "Reload Window")
+- Verify source maps are enabled
+- Ensure code is compiled
+- Try reloading the VSCode window (Ctrl+Shift+P → "Reload Window")
 
-### Debug Full Stack não inicia
+### Debug Full Stack does not start
 
-- Verifique se ambas as aplicações podem iniciar individualmente
-- Certifique-se de que não há conflitos de porta
-- Tente iniciar cada debugger separadamente primeiro
+- Verify both apps can start individually
+- Ensure there are no port conflicts
+- Try starting each debugger separately first
 
-## 📚 Recursos Adicionais
+## 📚 Additional Resources
 
 - [VSCode Debugging Guide](https://code.visualstudio.com/docs/editor/debugging)
 - [Node.js Debugging](https://code.visualstudio.com/docs/nodejs/nodejs-debugging)

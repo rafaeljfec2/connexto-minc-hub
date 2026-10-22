@@ -1,246 +1,243 @@
-# Guia de Uso: Onboarding em Massa via Código de Acesso
+# Usage Guide: Bulk Onboarding via Access Code
 
-## 📋 Visão Geral
+## 📋 Overview
 
-Este sistema permite que líderes criem códigos de acesso compartilhados para ativar contas de voluntários em massa, eliminando a necessidade de SMS ou convites individuais.
+This system lets leaders create shared access codes to activate volunteer accounts in bulk, removing the need for SMS or individual invites.
 
-## 👥 Para Líderes (Criar Códigos)
+## 👥 For Leaders (Create Codes)
 
-### Passo 1: Acessar a Página de Códigos de Acesso
+### Step 1: Open the Access Codes Page
 
-1. Faça login no sistema
-2. Navegue até **"Códigos de Acesso"** no menu (ou acesse `/access-codes`)
-3. Você verá:
-   - Lista de códigos criados por você
-   - Estatísticas (códigos ativos, expirados, total de ativações)
-   - Botão "Criar Novo Código"
+1. Log in to the system
+2. Go to **"Access Codes"** in the menu (or open `/access-codes`)
+3. You will see:
+   - List of codes you created
+   - Statistics (active codes, expired, total activations)
+   - **"Create New Code"** button
 
-### Passo 2: Criar um Código
+### Step 2: Create a Code
 
-1. Clique em **"Criar Novo Código"**
-2. Preencha o formulário:
-   - **Código**: Digite um código único (ex: `MINC2024`, `BOASVINDAS2024`)
-     - Apenas letras maiúsculas e números
-     - Mínimo 4 caracteres
-   - **Tipo de Escopo**: Escolha entre:
-     - **Igreja**: Código válido para toda a igreja
-     - **Ministério**: Código válido para um ministério específico
-     - **Time**: Código válido para um time específico
-   - **Selecione o Escopo**: Escolha a igreja, ministério ou time conforme o tipo selecionado
-   - **Dias de Validade**: Quantos dias o código ficará válido (padrão: 30 dias)
-   - **Limite de Usos** (opcional): Quantas pessoas podem usar o código (deixe vazio para ilimitado)
-3. Clique em **"Criar Código"**
+1. Click **"Create New Code"**
+2. Fill in the form:
+   - **Code**: Enter a unique code (e.g. `MINC2024`, `BOASVINDAS2024`)
+     - Uppercase letters and numbers only
+     - Minimum 4 characters
+   - **Scope type**: Choose one of:
+     - **Church**: Valid for the whole church
+     - **Ministry**: Valid for a specific ministry
+     - **Team**: Valid for a specific team
+   - **Select scope**: Pick the church, ministry, or team for the selected type
+   - **Validity (days)**: How long the code stays valid (default: 30 days)
+   - **Usage limit** (optional): How many people may use the code (leave empty for unlimited)
+3. Click **"Create Code"**
 
-### Passo 3: Divulgar o Código
+### Step 3: Share the Code
 
-1. Copie o código criado
-2. Envie uma única mensagem no grupo do WhatsApp da igreja/time:
+1. Copy the created code
+2. Send a single message in the church/team WhatsApp group:
    ```
-   Pessoal, nosso sistema está no ar! 🎉
+   Everyone, our system is live! 🎉
    
-   Para ativar sua conta:
-   1. Acesse: [URL_DO_SISTEMA]/activate
-   2. Digite seu telefone cadastrado
-   3. Digite o código: MINC2024
+   To activate your account:
+   1. Go to: [SYSTEM_URL]/activate
+   2. Enter your registered phone number
+   3. Enter the code: MINC2024
    
-   Qualquer dúvida, me chamem!
+   Questions? Message me!
    ```
 
-### Passo 4: Acompanhar Ativações
+### Step 4: Track Activations
 
-- Na página de Códigos de Acesso, você pode ver:
-  - Quantas vezes cada código foi usado
-  - Status (ativo/expirado/desativado)
-  - Data de expiração
-- Para desativar um código antes do prazo, clique em **"Desativar"**
+- On the Access Codes page you can see:
+  - How many times each code was used
+  - Status (active/expired/deactivated)
+  - Expiration date
+- To deactivate a code early, click **"Deactivate"**
 
-## 👤 Para Voluntários (Ativar Conta)
+## 👤 For Volunteers (Activate Account)
 
-### Passo 1: Acessar a Página de Ativação
+### Step 1: Open the Activation Page
 
-1. Acesse: `[URL_DO_SISTEMA]/activate`
-2. Você verá um formulário com dois campos:
-   - Telefone
-   - Código de Acesso
+1. Go to: `[SYSTEM_URL]/activate`
+2. You will see a form with two fields:
+   - Phone
+   - Access code
 
-### Passo 2: Verificar Dados
+### Step 2: Verify Details
 
-1. Digite seu **telefone** (com DDD)
-   - O sistema aplica máscara automaticamente
-   - Exemplo: `(11) 98765-4321`
-2. Digite o **código de acesso** fornecido pelo líder
-   - Exemplo: `MINC2024`
-   - O código é convertido automaticamente para maiúsculas
-3. Clique em **"Verificar"**
+1. Enter your **phone** (with area code)
+   - The system applies masking automatically
+   - Example: `(11) 98765-4321`
+2. Enter the **access code** from your leader
+   - Example: `MINC2024`
+   - The code is uppercased automatically
+3. Click **"Verify"**
 
-### Passo 3: Completar Ativação
+### Step 3: Complete Activation
 
-Se os dados estiverem corretos, você será redirecionado para a página de completar ativação:
+If the data is correct, you are redirected to complete activation:
 
-1. Você verá: **"Olá, [Seu Nome]!"**
-2. Preencha:
-   - **Email**: Seu email pessoal (será usado para login)
-   - **Senha**: Crie uma senha segura (mínimo 6 caracteres)
-   - **Confirmar Senha**: Digite a senha novamente
-3. Clique em **"Ativar Conta"**
+1. You will see: **"Hello, [Your Name]!"**
+2. Fill in:
+   - **Email**: Your personal email (used for login)
+   - **Password**: Create a secure password (minimum 6 characters)
+   - **Confirm password**: Re-enter the password
+3. Click **"Activate Account"**
 
-### Passo 4: Login Automático
+### Step 4: Automatic Login
 
-Após ativar, você será automaticamente logado e redirecionado para o dashboard!
+After activation you are logged in automatically and redirected to the dashboard.
 
-## 🔐 Permissões
+## 🔐 Permissions
 
-### Quem pode criar códigos?
+### Who can create codes?
 
-- **Admin/Pastor**: Pode criar códigos para qualquer escopo (igreja, ministério ou time)
-- **Líder de Ministério**: Pode criar códigos para:
-  - Seu ministério
-  - Times do seu ministério
-- **Líder de Equipe**: Pode criar códigos apenas para seu time
+- **Admin/Pastor**: Any scope (church, ministry, or team)
+- **Ministry leader**: Codes for:
+  - Their ministry
+  - Teams in their ministry
+- **Team leader**: Codes only for their team
 
-## ⚠️ Validações e Regras
+## ⚠️ Validations and Rules
 
-### Validações do Sistema
+### System validations
 
-1. **Telefone deve existir na base de dados**
-   - O telefone deve ter sido importado previamente
-   - O formato é normalizado automaticamente
+1. **Phone must exist in the database**
+   - Phone must have been imported beforehand
+   - Format is normalized automatically
 
-2. **Código deve estar válido**
-   - Código existe
-   - Código está ativo
-   - Código não expirou
-   - Código não atingiu limite de usos (se houver)
+2. **Code must be valid**
+   - Code exists
+   - Code is active
+   - Code has not expired
+   - Code has not hit usage limit (if set)
 
-3. **Pessoa deve pertencer ao escopo**
-   - Se o código é para um time, a pessoa deve estar vinculada a esse time
-   - Se o código é para um ministério, a pessoa deve estar vinculada a esse ministério
-   - Se o código é para uma igreja, a pessoa deve estar vinculada a algum ministério dessa igreja
+3. **Person must belong to scope**
+   - Team code → person linked to that team
+   - Ministry code → person linked to that ministry
+   - Church code → person linked to a ministry in that church
 
-4. **Pessoa não pode ter conta já ativada**
-   - Se a pessoa já possui uma conta, será exibida mensagem de erro
+4. **Person must not already have an activated account**
 
-5. **Email não pode estar em uso**
-   - O email deve ser único no sistema
+5. **Email must be unique**
 
-### Limites de Segurança
+### Security limits
 
-- **Rate Limiting**: Máximo 5 tentativas de ativação por minuto por IP
-- **Token Temporário**: Válido por 24 horas após verificação
-- **Token Single-Use**: Cada token só pode ser usado uma vez
+- **Rate limiting**: Max 5 activation attempts per minute per IP
+- **Temporary token**: Valid 24 hours after verification
+- **Single-use token**: Each token can be used once
 
-## 📊 Exemplos de Uso
+## 📊 Usage Examples
 
-### Exemplo 1: Código para Time Específico
+### Example 1: Code for a Specific Team
 
-**Cenário**: Líder quer ativar apenas pessoas do "Time Boas-Vindas"
+**Scenario**: Leader activates only "Welcome Team" members
 
-1. Criar código com:
-   - Código: `BOASVINDAS2024`
-   - Escopo: Time
-   - Time: "Time Boas-Vindas"
-   - Validade: 30 dias
-   - Limite: Ilimitado
+1. Create code with:
+   - Code: `BOASVINDAS2024`
+   - Scope: Team
+   - Team: "Welcome Team"
+   - Validity: 30 days
+   - Limit: Unlimited
 
-2. Divulgar apenas para membros do Time Boas-Vindas
+2. Share only with Welcome Team members
 
-### Exemplo 2: Código para Ministério
+### Example 2: Ministry Code
 
-**Cenário**: Líder quer ativar todas as pessoas do Ministério de Música
+**Scenario**: Leader activates all Music Ministry members
 
-1. Criar código com:
-   - Código: `MUSICA2024`
-   - Escopo: Ministério
-   - Ministério: "Ministério de Música"
-   - Validade: 60 dias
-   - Limite: 100 usos
+1. Create code with:
+   - Code: `MUSICA2024`
+   - Scope: Ministry
+   - Ministry: "Music Ministry"
+   - Validity: 60 days
+   - Limit: 100 uses
 
-2. Divulgar para todos os membros do ministério
+2. Share with all ministry members
 
-### Exemplo 3: Código para Igreja Inteira
+### Example 3: Whole-Church Code
 
-**Cenário**: Pastor quer ativar todas as pessoas da igreja
+**Scenario**: Pastor activates all church members
 
-1. Criar código com:
-   - Código: `MINC2024`
-   - Escopo: Igreja
-   - Igreja: "Minha Igreja na Cidade"
-   - Validade: 90 dias
-   - Limite: Ilimitado
+1. Create code with:
+   - Code: `MINC2024`
+   - Scope: Church
+   - Church: "My City Church"
+   - Validity: 90 days
+   - Limit: Unlimited
 
-2. Divulgar para toda a igreja
+2. Share with the whole church
 
-## 🐛 Solução de Problemas
+## 🐛 Troubleshooting
 
-### "Telefone não encontrado na base de dados"
+### "Phone not found in database"
 
-- Verifique se o telefone foi importado corretamente
-- Confirme que o formato está correto (com DDD)
-- Entre em contato com o líder para verificar se você está na lista
+- Confirm the phone was imported correctly
+- Check format (with area code)
+- Contact your leader to verify you are on the list
 
-### "Código de acesso inválido"
+### "Invalid access code"
 
-- Verifique se digitou o código corretamente
-- Confirme que o código não expirou
-- Verifique se o código não foi desativado
-- Entre em contato com o líder para obter um novo código
+- Check the code was typed correctly
+- Confirm the code has not expired
+- Confirm the code was not deactivated
+- Contact your leader for a new code
 
-### "Você não pertence ao escopo deste código"
+### "You do not belong to this code's scope"
 
-- O código foi criado para um escopo específico (time/ministério/igreja)
-- Você precisa estar vinculado a esse escopo na base de dados
-- Entre em contato com o líder para verificar seu vínculo
+- The code targets a specific team/ministry/church
+- You must be linked to that scope in the database
+- Contact your leader to verify your link
 
-### "Esta pessoa já possui uma conta ativada"
+### "This person already has an activated account"
 
-- Você já ativou sua conta anteriormente
-- Tente fazer login com seu email e senha
-- Se esqueceu a senha, use a opção "Esqueci minha senha"
+- You already activated previously
+- Try logging in with email and password
+- Use "Forgot password" if needed
 
-### "Email já está em uso"
+### "Email already in use"
 
-- Este email já está cadastrado no sistema
-- Tente usar outro email
-- Se você já tem conta, faça login normalmente
+- Try another email
+- If you already have an account, log in normally
 
-## 📝 Notas Importantes
+## 📝 Important Notes
 
-1. **Importação Prévia**: As pessoas precisam estar importadas na base de dados antes de usar o código
-2. **Telefone Único**: Cada pessoa deve ter um telefone único cadastrado
-3. **Código Case-Insensitive**: O código pode ser digitado em maiúsculas ou minúsculas
-4. **Expiração Automática**: Códigos expiram automaticamente na data definida
-5. **Desativação Manual**: Líderes podem desativar códigos a qualquer momento
+1. **Prior import**: People must be imported before using a code
+2. **Unique phone**: Each person needs a unique registered phone
+3. **Case-insensitive code**: Code may be typed in upper or lower case
+4. **Automatic expiration**: Codes expire on the defined date
+5. **Manual deactivation**: Leaders can deactivate codes anytime
 
-## 🔄 Fluxo Completo
+## 🔄 End-to-end flow
 
 ```mermaid
 sequenceDiagram
-    participant L as Líder
-    participant S as Sistema
-    participant V as Voluntário
+    participant L as Leader
+    participant S as System
+    participant V as Volunteer
 
-    L->>S: Criar código MINC2024
-    S->>S: Validar permissões
-    S->>S: Salvar código
-    S-->>L: Código criado
+    L->>S: Create code MINC2024
+    S->>S: Validate permissions
+    S->>S: Save code
+    S-->>L: Code created
     
-    L->>V: Enviar código no WhatsApp
+    L->>V: Send code on WhatsApp
     
-    V->>S: Acessar /activate
-    V->>S: Digitar telefone + código
-    S->>S: Validar telefone e código
-    S->>S: Verificar escopo
-    S-->>V: Token temporário + nome
+    V->>S: Open /activate
+    V->>S: Enter phone + code
+    S->>S: Validate phone and code
+    S->>S: Verify scope
+    S-->>V: Temporary token + name
     
-    V->>S: Completar ativação (email + senha)
-    S->>S: Criar usuário vinculado
-    S->>S: Gerar token de login
-    S-->>V: Login automático
+    V->>S: Complete activation (email + password)
+    S->>S: Create linked user
+    S->>S: Generate login token
+    S-->>V: Automatic login
 ```
 
-## 📞 Suporte
+## 📞 Support
 
-Em caso de dúvidas ou problemas:
-1. Verifique este guia
-2. Entre em contato com o líder do seu time/ministério
-3. Entre em contato com o administrador do sistema
+If you have questions or problems:
+1. Check this guide
+2. Contact your team/ministry leader
+3. Contact the system administrator

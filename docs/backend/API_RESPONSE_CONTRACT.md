@@ -93,8 +93,8 @@ All response messages are in **English** to ensure consistency and international
   "data": [
     {
       "id": "uuid",
-      "name": "Minha Igreja",
-      "address": "Rua Exemplo, 123",
+      "name": "Minha Church",
+      "address": "123 Example St",
       "createdAt": "2024-01-01T00:00:00.000Z"
     }
   ],
@@ -113,7 +113,7 @@ All response messages are in **English** to ensure consistency and international
   "message": "Operation completed successfully",
   "data": {
     "id": "uuid",
-    "name": "Nova Igreja",
+    "name": "Nova Church",
     "address": "Rua Nova, 456",
     "createdAt": "2024-01-15T10:30:00.000Z"
   },
@@ -136,7 +136,7 @@ All response messages are in **English** to ensure consistency and international
 }
 ```
 
-### POST /minc-teams/v1/churches (with invalid data)
+### POST /minc-teams/v1/churches (com invalid data)
 
 **Validation Error Response (400):**
 ```json

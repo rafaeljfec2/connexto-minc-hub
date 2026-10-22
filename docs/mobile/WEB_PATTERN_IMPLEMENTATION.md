@@ -1,142 +1,151 @@
-# Implementação Mobile no Padrão da Web
+# Mobile Implementation Using Web Patterns
 
-Este documento descreve como as screens mobile serão implementadas seguindo o mesmo padrão funcional da versão web.
+This document describes how mobile screens are implemented following the same functional patterns as the web version.
 
-## 📋 Padrão Identificado da Web
+## Web patterns identified
 
 ### 1. DashboardPage
-- **Estrutura**: Grid de cards com estatísticas
-- **Componentes**: Cards com título e valor
-- **Funcionalidades**: 
-  - Total de Servos
-  - Equipes Ativas
-  - Próximo Culto
-  - Presença (Mês)
-  - Atividades Recentes
-  - Próximas Escalas
 
-### 2. Páginas CRUD (People, Teams, Schedules)
-- **Estrutura**: CrudPageLayout + CrudFilters + CrudView
-- **Componentes**:
-  - PageHeader (título, descrição, ícone, botão criar)
-  - CrudFilters (busca + filtros)
-  - CrudView (grid cards ou list table)
-  - Cards específicos (ServoCard, TeamCard, ScheduleCard)
-- **Funcionalidades**:
-  - Listar itens (grid ou list)
-  - Buscar
-  - Filtrar
-  - Criar (modal)
-  - Editar (modal)
-  - Deletar (confirm dialog)
-  - useCrud hook para gerenciar estado
+- **Structure**: Grid of stat cards
+- **Components**: Cards with title and value
+- **Features**:
+  - Total volunteers
+  - Active teams
+  - Next worship service
+  - Attendance (month)
+  - Recent activity
+  - Upcoming schedules
+
+### 2. CRUD pages (People, Teams, Schedules)
+
+- **Structure**: `CrudPageLayout` + `CrudFilters` + `CrudView`
+- **Components**:
+  - PageHeader (title, description, icon, create button)
+  - CrudFilters (search + filters)
+  - CrudView (grid cards or list table)
+  - Specific cards (`VolunteerCard`, `TeamCard`, `ScheduleCard`)
+- **Features**:
+  - List items (grid or list)
+  - Search
+  - Filter
+  - Create (modal)
+  - Edit (modal)
+  - Delete (confirm dialog)
+  - `useCrud` hook for state management
 
 ### 3. ProfilePage
-- **Estrutura**: PageHeader + Cards com formulários
-- **Componentes**:
-  - PageHeader (título, descrição)
-  - Card com formulário de informações pessoais
-  - Card com formulário de alterar senha
-  - Botão logout
-- **Funcionalidades**:
-  - Exibir informações do usuário
-  - Editar informações
-  - Alterar senha (futuro)
+
+- **Structure**: PageHeader + form cards
+- **Components**:
+  - PageHeader (title, description)
+  - Card with personal information form
+  - Card with change-password form
+  - Logout button
+- **Features**:
+  - Display user information
+  - Edit information
+  - Change password (future)
   - Logout
 
-## 📱 Adaptação para Mobile
+## Mobile adaptation
 
-### Mobile-First Design
-- **Listagens**: FlatList com cards (não usa table)
-- **Busca**: SearchBar no topo (Input com ícone)
-- **Filtros**: Select/Picker (dropdown nativo)
-- **Modals**: Bottom sheet ou Modal nativo
-- **Formulários**: ScrollView com Inputs
-- **Navegação**: Stack Navigator + Bottom Tab Navigator
+### Mobile-first design
 
-### Componentes Mobile Equivalentes
+- **Lists**: `FlatList` with cards (no table)
+- **Search**: SearchBar at the top (input with icon)
+- **Filters**: Select/Picker (native dropdown)
+- **Modals**: Bottom sheet or native modal
+- **Forms**: `ScrollView` with inputs
+- **Navigation**: Stack Navigator + bottom tab navigator
+
+### Mobile equivalents
 
 | Web | Mobile |
 |-----|--------|
-| `CrudPageLayout` | Screen com ScrollView/FlatList |
-| `PageHeader` | View com Text (título) + Text (descrição) |
-| `CrudFilters` | View com Input (busca) + Picker (filtros) |
-| `CrudView` | FlatList com cards |
-| `ServoCard` | Card component (React Native) |
+| `CrudPageLayout` | Screen with `ScrollView`/`FlatList` |
+| `PageHeader` | View with title + description text |
+| `CrudFilters` | View with search input + picker filters |
+| `CrudView` | `FlatList` with cards |
+| `VolunteerCard` | Card component (React Native) |
 | `TeamCard` | Card component (React Native) |
 | `ScheduleCard` | Card component (React Native) |
-| `Modal` | Modal (React Native) |
-| `ConfirmDialog` | Alert ou Modal customizado |
+| `Modal` | React Native `Modal` |
+| `ConfirmDialog` | `Alert` or custom modal |
 
-## 🎯 Estrutura de Implementação
+## Implementation structure
 
 ### PeopleScreen
+
 ```typescript
-// Estrutura similar a PeoplePage
-- useState para dados
-- useMemo para filtros
-- FlatList com ServoCard
+// Similar structure to PeoplePage
+- useState for data
+- useMemo for filters
+- FlatList with VolunteerCard
 - SearchBar
-- Filtros (Ministry, Team)
-- Modal para criar/editar
-- ConfirmDialog para deletar
+- Filters (ministry, team)
+- Modal for create/edit
+- ConfirmDialog for delete
 ```
 
 ### TeamsScreen
+
 ```typescript
-// Estrutura similar a TeamsPage
-- useState para dados
-- useMemo para filtros
-- FlatList com TeamCard
+// Similar structure to TeamsPage
+- useState for data
+- useMemo for filters
+- FlatList with TeamCard
 - SearchBar
-- Modal para criar/editar
-- ConfirmDialog para deletar
+- Modal for create/edit
+- ConfirmDialog for delete
 ```
 
 ### SchedulesScreen
+
 ```typescript
-// Estrutura similar a SchedulesPage
-- useState para dados
-- useMemo para filtros
-- FlatList com ScheduleCard
+// Similar structure to SchedulesPage
+- useState for data
+- useMemo for filters
+- FlatList with ScheduleCard
 - SearchBar
-- Modal para criar/editar
-- ConfirmDialog para deletar
+- Modal for create/edit
+- ConfirmDialog for delete
 ```
 
 ### ProfileScreen
+
 ```typescript
-// Estrutura similar a ProfilePage
-- useState para formData
-- ScrollView com Cards
+// Similar structure to ProfilePage
+- useState for formData
+- ScrollView with cards
 - Input components
-- Button logout
+- Logout button
 ```
 
 ### DashboardScreen
+
 ```typescript
-// Estrutura similar a DashboardPage
-- Grid de cards com estatísticas (2 colunas no mobile)
-- Cards de atividades recentes
-- Cards de próximas escalas
+// Similar structure to DashboardPage
+- Grid of stat cards (2 columns on mobile)
+- Recent activity cards
+- Upcoming schedule cards
 ```
 
-## 📝 Notas de Implementação
+## Implementation notes
 
-1. **Dados**: Usar os mesmos mock data da web (`@minc-hub/shared` ou criar versão mobile)
-2. **Services**: Usar os services compartilhados (`peopleService`, `teamsService`, etc.)
-3. **Types**: Usar types compartilhados (`@minc-hub/shared/types`)
-4. **Design System**: Usar theme compartilhado (já implementado)
-5. **Hooks**: Criar hooks similares se necessário (useCrud para mobile?)
+1. **Data**: Use the same mock data as the web (`@minc-hub/shared`) or a mobile-specific variant
+2. **Services**: Use shared services (`peopleService`, `teamsService`, etc.)
+3. **Types**: Use shared types (`@minc-hub/shared/types`)
+4. **Design system**: Use the shared theme (already implemented)
+5. **Hooks**: Add mobile-specific hooks if needed (e.g. mobile `useCrud`)
 
-## ✅ Checklist de Implementação
+## Implementation checklist
 
-- [ ] DashboardScreen (estatísticas)
-- [ ] PeopleScreen (FlatList + ServoCard + Search + Filters)
-- [ ] TeamsScreen (FlatList + TeamCard + Search)
-- [ ] SchedulesScreen (FlatList + ScheduleCard + Search)
-- [ ] ProfileScreen (ScrollView + Form + Logout)
-- [ ] Componentes de Card (ServoCard, TeamCard, ScheduleCard)
+- [ ] DashboardScreen (statistics)
+- [ ] PeopleScreen (`FlatList` + `VolunteerCard` + search + filters)
+- [ ] TeamsScreen (`FlatList` + `TeamCard` + search)
+- [ ] SchedulesScreen (`FlatList` + `ScheduleCard` + search)
+- [ ] ProfileScreen (`ScrollView` + form + logout)
+- [ ] Card components (`VolunteerCard`, `TeamCard`, `ScheduleCard`)
 - [ ] SearchBar component
-- [ ] Modal component (se necessário)
-- [ ] ConfirmDialog component (se necessário)
+- [ ] Modal component (if needed)
+- [ ] ConfirmDialog component (if needed)

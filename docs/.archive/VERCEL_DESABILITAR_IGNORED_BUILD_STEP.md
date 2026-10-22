@@ -1,58 +1,58 @@
-# Desabilitar Ignored Build Step no Dashboard da Vercel
+# Disable Ignored Build Step in the Vercel Dashboard
 
-## ⚠️ Problema
+## ⚠️ Problem
 
-O comando `git diff` não funciona no ambiente de build da Vercel, causando erro `exit code 129`.
+The `git diff` command does not work in the Vercel build environment, causing `exit code 129`.
 
-## ✅ Solução: Desabilitar ou Usar "Automatic"
+## ✅ Solution: Disable or Use "Automatic"
 
-### Opção 1: Desabilitar Ignored Build Step (Recomendado)
+### Option 1: Disable Ignored Build Step (Recommended)
 
-1. Vá para o **Dashboard da Vercel**
-2. Selecione seu projeto
-3. Vá em **Settings > Git**
-4. Encontre a seção **"Ignored Build Step"**
-5. Na seção **"Project Settings"**, selecione:
-   - **"Automatic"** no dropdown
-   - OU **"Don't build anything"** e depois mude para **"Automatic"**
-6. Clique em **"Save"**
+1. Go to **Vercel Dashboard**
+2. Select your project
+3. Go to **Settings > Git**
+4. Find the **"Ignored Build Step"** section
+5. Under **"Project Settings"**, select:
+   - **"Automatic"** in the dropdown
+   - OR **"Don't build anything"** and then switch to **"Automatic"**
+6. Click **"Save"**
 
-Isso fará com que a Vercel use sua própria lógica para determinar quando fazer deploy, sem executar comandos git customizados.
+This makes Vercel use its own logic to decide when to deploy, without running custom git commands.
 
-### Opção 2: Remover Completamente
+### Option 2: Remove Completely
 
-Se a opção "Automatic" não estiver disponível:
+If the "Automatic" option is not available:
 
-1. Na seção **"Project Settings"**
-2. Deixe o campo **Command** completamente **VAZIO**
-3. Clique em **"Save"**
+1. Under **"Project Settings"**
+2. Leave the **Command** field completely **EMPTY**
+3. Click **"Save"**
 
-### Opção 3: Usar "Only build if there are changes in a folder" (Sem Comando)
+### Option 3: Use "Only build if there are changes in a folder" (No Command)
 
-1. Selecione: **"Only build if there are changes in a folder"**
-2. Configure o **Folder** como: `apps/web`
-3. **NÃO configure** um comando customizado
-4. Clique em **"Save"**
+1. Select: **"Only build if there are changes in a folder"**
+2. Set **Folder** to: `apps/web`
+3. **Do NOT** configure a custom command
+4. Click **"Save"**
 
-## 🧪 Testar
+## 🧪 Test
 
-Após configurar:
+After configuring:
 
 ```bash
-git commit --allow-empty -m "test: verificar deploy após desabilitar ignoreCommand"
+git commit --allow-empty -m "test: verify deploy after disabling ignoreCommand"
 git push
 ```
 
-## 📝 Nota
+## 📝 Note
 
-- O `vercel.json` **não tem** `ignoreCommand` (já removido)
-- A Vercel tem sua própria lógica para detectar mudanças
-- O Ignored Build Step customizado está causando problemas no ambiente de build
-- É melhor deixar a Vercel gerenciar isso automaticamente
+- `vercel.json` **does not** include `ignoreCommand` (already removed)
+- Vercel has its own change detection logic
+- A custom Ignored Build Step is causing problems in the build environment
+- It is better to let Vercel manage this automatically
 
-## ✅ Resultado Esperado
+## ✅ Expected Result
 
-Após desabilitar, os deploys devem funcionar normalmente:
-- ✅ Deploys automáticos quando houver mudanças
-- ✅ Sem erros de `exit code 129`
-- ✅ Build funcionando corretamente
+After disabling, deploys should work normally:
+- ✅ Automatic deploys when there are changes
+- ✅ No `exit code 129` errors
+- ✅ Build working correctly

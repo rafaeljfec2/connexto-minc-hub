@@ -5,26 +5,26 @@
 
 ## Overview
 
-Guia completo para deploy do MINC Teams na plataforma Vercel, incluindo configuração, troubleshooting e boas práticas.
+Complete guide for deploying MINC Teams on Vercel, including configuration, troubleshooting, and best practices.
 
 ## Table of Contents
 
-- [Configuração Inicial](#configuração-inicial)
-- [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Initial Setup](#initial-setup)
+- [Environment Variables](#environment-variables)
 - [Build Settings](#build-settings)
 - [Ignored Build Step](#ignored-build-step)
 - [Troubleshooting](#troubleshooting)
 
 ---
 
-## Configuração Inicial
+## Initial Setup
 
-### 1. Conectar Repositório
+### 1. Connect Repository
 
-1. Acesse [vercel.com](https://vercel.com)
-2. Clique em "Add New Project"
-3. Conecte seu repositório GitHub
-4. Selecione o repositório `connexto-minc-hub`
+1. Go to [vercel.com](https://vercel.com)
+2. Click "Add New Project"
+3. Connect your GitHub repository
+4. Select the `connexto-minc-hub` repository
 
 ### 2. Framework Preset
 
@@ -35,9 +35,9 @@ Guia completo para deploy do MINC Teams na plataforma Vercel, incluindo configur
 
 ---
 
-## Variáveis de Ambiente
+## Environment Variables
 
-Configure as seguintes variáveis no painel da Vercel:
+Configure these in the Vercel dashboard:
 
 ### Production
 
@@ -72,20 +72,20 @@ VITE_MOCK_MODE=false
 ### Root Directory
 
 - **Root Directory**: `./` (monorepo root)
-- Não usar `apps/web` como root
+- Do not use `apps/web` as root
 
 ---
 
 ## Ignored Build Step
 
-Para evitar builds desnecessários em mudanças que não afetam o web app:
+To avoid unnecessary builds when changes of the not affect the web app:
 
-### Script Recomendado
+### Recommended Script
 
 ```bash
 #!/bin/bash
 
-# Verifica se houve mudanças em apps/web ou packages/shared
+# Check for changes in apps/web or packages/shared
 if git diff HEAD^ HEAD --quiet apps/web packages/shared; then
   echo "🛑 No changes in web app or shared packages"
   exit 0
@@ -95,10 +95,10 @@ else
 fi
 ```
 
-### Configuração no Vercel
+### Vercel Configuration
 
-1. Acesse Project Settings → Git
-2. Em "Ignored Build Step", adicione:
+1. Go to Project Settings → Git
+2. Under "Ignored Build Step", add:
    ```bash
    git diff HEAD^ HEAD --quiet apps/web packages/shared
    ```
@@ -107,42 +107,42 @@ fi
 
 ## Troubleshooting
 
-### Build Falha
+### Build Fails
 
-**Problema**: Build falha com erro de módulo não encontrado
+**Problem**: Build fails with module not found error
 
-**Solução**:
+**Solution**:
 
-1. Verificar se `pnpm-workspace.yaml` está correto
-2. Garantir que `turbo.json` está configurado
-3. Limpar cache: Settings → General → Clear Build Cache
+1. Verify `pnpm-workspace.yaml` is correct
+2. Ensure `turbo.json` is configured
+3. Clear cache: Settings → General → Clear Build Cache
 
-### Variáveis de Ambiente Não Carregam
+### Environment Variables Not Loading
 
-**Problema**: Variáveis `VITE_*` não estão disponíveis
+**Problem**: `VITE_*` variables are not available
 
-**Solução**:
+**Solution**:
 
-1. Verificar que variáveis começam com `VITE_`
-2. Redeployar após adicionar variáveis
-3. Verificar em qual ambiente (Production/Preview) estão configuradas
+1. Verify variables start with `VITE_`
+2. Redeploy after adding variables
+3. Check which environment (Production/Preview) they are set for
 
-### Deploy Demora Muito
+### Deploy Takes Too Long
 
-**Problema**: Deploy leva mais de 5 minutos
+**Problem**: Deploy takes more than 5 minutes
 
-**Solução**:
+**Solution**:
 
-1. Implementar Ignored Build Step
-2. Usar cache de dependências
-3. Otimizar `turbo.json` para cache
+1. Implement Ignored Build Step
+2. Use dependency caching
+3. Optimize `turbo.json` for cache
 
-### Erro 404 em Rotas
+### 404 on Routes
 
-**Problema**: Rotas do React Router retornam 404
+**Problem**: React Router routes return 404
 
-**Solução**:
-Adicionar `vercel.json` na raiz do projeto:
+**Solution**:
+Add `vercel.json` at the project root:
 
 ```json
 {
@@ -157,41 +157,41 @@ Adicionar `vercel.json` na raiz do projeto:
 
 ---
 
-## Boas Práticas
+## Best Practices
 
 ### 1. Preview Deployments
 
-- Cada PR gera um preview deployment automático
-- Testar em preview antes de merge
-- Compartilhar URL de preview para revisão
+- Each PR gets an automatic preview deployment
+- Test on preview before merge
+- Shared preview URL for review
 
 ### 2. Production Deployments
 
-- Apenas branch `main` faz deploy para production
-- Usar tags para releases importantes
-- Monitorar logs após deploy
+- Only `main` branch deploys to production
+- Use tags for important releases
+- Monitor logs after deploy
 
-### 3. Monitoramento
+### 3. Monitoring
 
-- Configurar alertas de erro
-- Monitorar métricas de performance
-- Revisar logs regularmente
+- Configure error alerts
+- Monitor performance metrics
+- Review logs regularly
 
 ### 4. Rollback
 
-Se necessário fazer rollback:
+If rollback is needed:
 
-1. Acesse Deployments
-2. Encontre deployment anterior estável
-3. Clique em "Promote to Production"
+1. Go to Deployments
+2. Find a stable previous deployment
+3. Click "Promote to Production"
 
 ---
 
-## Related Documentation
+## Related documentation
 
 - [ENV_VARIABLES](./ENV_VARIABLES.md)
 - [Frontend Patterns](../frontend/WEB_PATTERNS.md)
 
 ## Changelog
 
-- 2026-01-10: Consolidação de todos os documentos Vercel
+- 2026-01-10: Consolidated all Vercel documents

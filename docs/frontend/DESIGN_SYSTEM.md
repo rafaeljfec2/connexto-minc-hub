@@ -1,180 +1,79 @@
 # Design System
 
-> **Last Updated**: 2026-01-10  
-> **Status**: Active
+> **Last updated:** 2026-01-10  
+> **Status:** Active
 
 ## Overview
 
-Este documento define o Design System do MINC Teams, um sistema de gestão para o Time Boas-Vindas da Minha Igreja na Cidade. O design é inspirado no site [minhaigrejanacidade.com](https://minhaigrejanacidade.com/), utilizando uma paleta quente com gradientes e textura grain.
+MINC Teams design system for the Welcome ministry at Minha Igreja na Cidade. Visual language inspired by [minhachurchnacidade.com](https://minhachurchnacidade.com/): warm orange/red gradients and subtle grain texture.
 
-## Table of Contents
+## Table of contents
 
-- [Princípios de Design](#princípios-de-design)
-- [Paleta de Cores](#paleta-de-cores)
-- [Tipografia](#tipografia)
-- [Espaçamentos](#espaçamentos)
-- [Componentes Base](#componentes-base)
-- [Responsividade](#responsividade)
-- [Acessibilidade](#acessibilidade)
-- [Animações](#animações)
-- [Convenções de Nomenclatura](#convenções-de-nomenclatura)
-
----
-
-## Princípios de Design
-
-### 1. Mobile-First
-
-Todos os componentes são desenvolvidos priorizando dispositivos móveis, com melhorias progressivas para telas maiores.
-
-### 2. Dark Mode por Padrão
-
-O tema escuro é o padrão, com suporte completo para tema claro através da classe `light`.
-
-### 3. Consistência Visual
-
-Todos os componentes seguem os mesmos padrões de espaçamento, cores e tipografia.
-
-### 4. Acessibilidade
-
-Componentes seguem as diretrizes WCAG 2.1 AA, com foco em contraste, navegação por teclado e leitores de tela.
-
-### 5. Performance
-
-Animações otimizadas com `transform` e `opacity`, evitando reflows desnecessários.
+- [Principles](#principles)
+- [Color palette](#color-palette)
+- [Typography](#typography)
+- [Spacing](#spacing)
+- [Base components](#base-components)
+- [Responsiveness](#responsiveness)
+- [Accessibility](#accessibility)
+- [Animations](#animations)
+- [Naming conventions](#naming-conventions)
+- [CRUD page pattern](#crud-page-pattern)
 
 ---
 
-## Paleta de Cores
+## Principles
 
-### Cores Primárias (Orange/Red Gradient)
-
-```css
-primary: {
-  50:  '#fff7ed',  /* Lightest */
-  100: '#ffedd5',
-  200: '#fed7aa',
-  300: '#fdba74',
-  400: '#fb923c',
-  500: '#f97316',  /* Base */
-  600: '#ea580c',  /* Primary action */
-  700: '#c2410c',
-  800: '#9a3412',
-  900: '#7c2d12',
-  950: '#431407',  /* Darkest */
-}
-```
-
-**Uso:**
-
-- `primary-600`: Botões primários, links, elementos interativos
-- `primary-500`: Bordas de foco, ícones ativos
-- `primary-100/900`: Backgrounds sutis em light/dark mode
-
-### Cores Neutras (Dark Scale)
-
-```css
-dark: {
-  50:  '#fafafa',  /* Lightest */
-  100: '#f4f4f5',
-  200: '#e4e4e7',
-  300: '#d4d4d8',
-  400: '#a1a1aa',  /* Texto secundário */
-  500: '#71717a',
-  600: '#52525b',
-  700: '#3f3f46',
-  800: '#27272a',  /* Borders dark mode */
-  900: '#18181b',  /* Backgrounds dark mode */
-  950: '#09090b',  /* Base dark mode */
-}
-```
-
-**Uso:**
-
-- `dark-950`: Background principal (dark mode)
-- `dark-900`: Cards e superfícies elevadas (dark mode)
-- `dark-800`: Bordas e divisores (dark mode)
-- `dark-50`: Texto principal (light mode)
-- `white`: Background principal (light mode)
-
-### Gradientes
-
-```css
-/* Gradiente quente com grain */
-bg-gradient-warm-grain:
-  radial-gradient(circle at 20% 50%, rgba(249, 115, 22, 0.3) 0%, transparent 50%),
-  radial-gradient(circle at 80% 80%, rgba(194, 65, 12, 0.4) 0%, transparent 50%),
-  linear-gradient(135deg, #09090b 0%, #431407 25%, #c2410c 50%, #f97316 75%, #09090b 100%);
-```
-
-**Uso:**
-
-- Headers de destaque
-- Backgrounds de seções hero
-- Elementos promocionais
+1. **Mobile-first** — default layouts for small screens; enhance at `md`/`lg`.
+2. **Dark mode default** — `dark` class on root; full light theme via `light`.
+3. **Consistency** — shared spacing, color, and type scale.
+4. **Accessibility** — WCAG 2.1 AA contrast, keyboard, screen readers.
+5. **Performance** — animate `transform` and `opacity` only when possible.
 
 ---
 
-## Tipografia
+## Color palette
 
-### Família de Fonte
+### Primary (orange)
 
-```css
-font-family: 'Inter', system-ui, sans-serif;
-```
+Tailwind `primary-50` … `primary-950`. Actions: `primary-600`; focus rings: `primary-500`.
 
-**Inter** é uma fonte otimizada para interfaces digitais, com excelente legibilidade em todos os tamanhos.
+### Neutrals (`dark` scale)
 
-### Escala Tipográfica
+- `dark-950` — app background (dark)
+- `dark-900` — elevated surfaces
+- `dark-800` — borders
+- `dark-400` — secondary text (dark mode)
+- Light mode: `white` backgrounds, `dark-50` primary text
 
-| Classe Tailwind | Tamanho         | Uso                          |
-| --------------- | --------------- | ---------------------------- |
-| `text-xs`       | 0.75rem (12px)  | Labels pequenos, metadados   |
-| `text-sm`       | 0.875rem (14px) | Texto secundário, descrições |
-| `text-base`     | 1rem (16px)     | Texto principal              |
-| `text-lg`       | 1.125rem (18px) | Subtítulos                   |
-| `text-xl`       | 1.25rem (20px)  | Títulos de seção             |
-| `text-2xl`      | 1.5rem (24px)   | Títulos de página            |
-| `text-3xl`      | 1.875rem (30px) | Títulos principais           |
-| `text-4xl`      | 2.25rem (36px)  | Hero titles                  |
+### Warm grain gradient
 
-### Pesos de Fonte
-
-- **Regular (400)**: Texto principal
-- **Medium (500)**: Ênfase sutil, labels
-- **Semibold (600)**: Botões, títulos de cards
-- **Bold (700)**: Títulos de seção, headings
-
-### Line Height
-
-- Texto corrido: `leading-relaxed` (1.625)
-- Títulos: `leading-tight` (1.25)
-- Labels: `leading-normal` (1.5)
+Used for hero sections and emphasis headers — see `bg-gradient-warm-grain` in `tailwind.config.ts` (radial + linear stack with grain overlay).
 
 ---
 
-## Espaçamentos
+## Typography
 
-### Escala de Espaçamento (Tailwind)
+**Font:** `'Inter', system-ui, sans-serif`
 
-| Classe | Valor          | Uso                  |
-| ------ | -------------- | -------------------- |
-| `p-1`  | 0.25rem (4px)  | Padding mínimo       |
-| `p-2`  | 0.5rem (8px)   | Padding pequeno      |
-| `p-3`  | 0.75rem (12px) | Padding médio        |
-| `p-4`  | 1rem (16px)    | Padding padrão       |
-| `p-6`  | 1.5rem (24px)  | Padding grande       |
-| `p-8`  | 2rem (32px)    | Padding extra grande |
+| Token | Size | Use |
+| ----- | ---- | --- |
+| `text-xs` | 12px | Meta, badges |
+| `text-sm` | 14px | Secondary copy |
+| `text-base` | 16px | Body |
+| `text-lg`–`text-4xl` | 18–36px | Headings, hero |
 
-### Gaps e Margens
+Weights: 400 body, 500 labels, 600 buttons/cards, 700 section titles.
 
-- **Gap entre elementos**: `gap-2` (8px) a `gap-4` (16px)
-- **Margem entre seções**: `mb-6` (24px) a `mb-8` (32px)
-- **Padding de containers**: `p-4` (16px) mobile, `p-6` (24px) desktop
+Line height: `leading-relaxed` for body, `leading-tight` for headings.
 
-### Safe Area Insets
+---
 
-Para dispositivos móveis com notch:
+## Spacing
+
+Standard Tailwind spacing (`p-4` containers mobile, `p-6` desktop). Section gaps: `gap-2`–`gap-4`, vertical rhythm `mb-6`–`mb-8`.
+
+**Safe areas (mobile notches):**
 
 ```css
 .safe-area-top {
@@ -187,296 +86,80 @@ Para dispositivos móveis com notch:
 
 ---
 
-## Componentes Base
+## Base components
 
 ### Button
 
-**Variantes:**
-
-```tsx
-// Primary
-<Button variant="primary">Criar</Button>
-// Classes: bg-primary-600 text-white hover:bg-primary-700
-
-// Secondary
-<Button variant="secondary">Cancelar</Button>
-// Classes: bg-dark-800 text-white hover:bg-dark-700
-
-// Outline
-<Button variant="outline">Editar</Button>
-// Classes: border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white
-
-// Ghost
-<Button variant="ghost">Voltar</Button>
-// Classes: text-dark-700 hover:bg-dark-100
-
-// Danger
-<Button variant="danger">Excluir</Button>
-// Classes: bg-red-600 text-white hover:bg-red-700
-```
-
-**Tamanhos:**
-
-- `sm`: `px-3 py-1.5 text-sm`
-- `md`: `px-4 py-2 text-base` (padrão)
-- `lg`: `px-6 py-3 text-lg`
-
-**Estados:**
-
-- Hover: `hover:scale-105`
-- Active: `active:scale-95`
-- Disabled: `disabled:opacity-50 disabled:pointer-events-none`
-- Focus: `focus-visible:ring-2 focus-visible:ring-primary-500`
+Variants: `primary`, `secondary`, `outline`, `ghost`, `danger`. Sizes: `sm`, `md`, `lg`. States: hover scale, active press, disabled opacity, `focus-visible` ring.
 
 ### Input
 
-```tsx
-<Input label="Nome" placeholder="Digite seu nome" error="Campo obrigatório" />
-```
-
-**Características:**
-
-- Border radius: `rounded-lg`
-- Padding: `px-3 py-2`
-- Border: `border border-dark-300 dark:border-dark-700`
-- Focus: `focus:ring-2 focus:ring-primary-500`
-- Hover: `hover:border-primary-400`
+Rounded `lg`, border + focus ring; optional `label` and `error` props.
 
 ### ComboBox
 
-Dropdown com busca integrada:
-
-```tsx
-<ComboBox
-  label="Selecione"
-  options={options}
-  value={value}
-  onValueChange={setValue}
-  searchable
-  searchPlaceholder="Buscar..."
-/>
-```
+Searchable dropdown; `searchPlaceholder`, `options`, `value`, `onValueChange`.
 
 ### Card
 
-```tsx
-<Card hover>
-  <CardContent>{/* Conteúdo */}</CardContent>
-</Card>
-```
-
-**Características:**
-
-- Background: `bg-white dark:bg-dark-900`
-- Border: `border border-dark-200 dark:border-dark-800`
-- Shadow: `shadow-sm`
-- Hover: `hover:shadow-lg hover:shadow-primary-500/10`
+`bg-white dark:bg-dark-900`, border, `shadow-sm`, optional hover elevation.
 
 ### Modal
 
-```tsx
-<Modal isOpen={isOpen} onClose={onClose} title="Título" size="md">
-  {/* Conteúdo */}
-</Modal>
-```
-
-**Tamanhos:**
-
-- `sm`: `max-w-md`
-- `md`: `max-w-lg` (padrão)
-- `lg`: `max-w-2xl`
-- `xl`: `max-w-4xl`
+Sizes `sm` | `md` | `lg` | `xl`; `isOpen`, `onClose`, `title`.
 
 ---
 
-## Responsividade
+## Responsiveness
 
-### Breakpoints
+Breakpoints: `sm` 640, `md` 768, `lg` 1024, `xl` 1280, `2xl` 1536.
 
-```css
-sm:  640px   /* Tablets pequenos */
-md:  768px   /* Tablets */
-lg:  1024px  /* Desktops pequenos */
-xl:  1280px  /* Desktops */
-2xl: 1536px  /* Telas grandes */
-```
+Pattern: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4`.
 
-### Padrões Mobile-First
-
-```tsx
-// Mobile: stack vertical
-// Desktop: grid horizontal
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-```
-
-### Layout Responsivo
-
-- **Mobile**: Single column, full width
-- **Tablet**: 2 columns grid
-- **Desktop**: 3-4 columns grid, sidebar visível
+Mobile: single column + bottom nav; desktop: sidebar + multi-column grids.
 
 ---
 
-## Acessibilidade
+## Accessibility
 
-### Contraste de Cores
-
-Todos os pares de cores atendem WCAG 2.1 AA:
-
-- Texto normal: mínimo 4.5:1
-- Texto grande: mínimo 3:1
-- Elementos interativos: mínimo 3:1
-
-### Navegação por Teclado
-
-- **Tab**: Navegar entre elementos
-- **Enter/Space**: Ativar botões
-- **Esc**: Fechar modais
-- **Arrow keys**: Navegar em listas
-
-### Focus Visible
-
-```css
-focus-visible:outline-none
-focus-visible:ring-2
-focus-visible:ring-primary-500
-focus-visible:ring-offset-2
-```
-
-### ARIA Labels
-
-```tsx
-<button aria-label="Fechar modal">
-  <XIcon />
-</button>
-```
-
-### Leitores de Tela
-
-- Usar elementos semânticos (`<nav>`, `<main>`, `<article>`)
-- Labels descritivos em formulários
-- Estados dinâmicos com `aria-live`
+- Minimum contrast 4.5:1 (normal text), 3:1 (large text / UI)
+- Keyboard: Tab order, Enter/Space activation, Esc closes modals
+- `focus-visible` rings on interactive elements
+- Semantic landmarks (`nav`, `main`) and descriptive `aria-label` on icon buttons
+- Dynamic updates: `aria-live` where appropriate
 
 ---
 
-## Animações
+## Animations
 
-### Transições Padrão
+Default transition: `transition-all duration-200 ease-out`.
 
-```css
-transition-all duration-200 ease-out
-```
+Utilities: `animate-fade-in`, `animate-fade-in-up`, `animate-slide-in-right`, `animate-scale-in`, `animate-spin`.
 
-### Animações Disponíveis
-
-| Animação                 | Uso                                    |
-| ------------------------ | -------------------------------------- |
-| `animate-fade-in`        | Fade in simples (0.3s)                 |
-| `animate-fade-in-up`     | Fade in com movimento para cima (0.4s) |
-| `animate-slide-in-right` | Slide da esquerda (0.3s)               |
-| `animate-scale-in`       | Scale in (0.2s)                        |
-| `animate-spin`           | Loading spinners                       |
-| `animate-pulse-slow`     | Pulsação lenta (3s)                    |
-
-### Micro-interações
-
-```tsx
-// Hover scale
-hover:scale-105
-
-// Active scale
-active:scale-95
-
-// Smooth transitions
-transition-all duration-200 ease-out
-```
-
-### Performance
-
-- Usar `transform` e `opacity` para animações
-- Evitar animar `width`, `height`, `top`, `left`
-- Preferir `will-change` para animações complexas
+Prefer GPU-friendly properties; avoid animating layout-heavy properties.
 
 ---
 
-## Convenções de Nomenclatura
+## Naming conventions
 
-### Componentes
-
-- **PascalCase**: `Button`, `Modal`, `ComboBox`
-- Sufixo descritivo: `UserCard`, `TeamItemCard`
-
-### Props
-
-- **camelCase**: `isOpen`, `onClose`, `searchPlaceholder`
-- Booleans: prefixo `is`, `has`, `should`
-- Handlers: prefixo `on` + verbo
-
-### Classes CSS
-
-- **kebab-case**: `bg-grain`, `safe-area-top`
-- Utilitários Tailwind: composição de classes
-
-### Arquivos
-
-- Componentes: `ComponentName.tsx`
-- Hooks: `useHookName.ts`
-- Utils: `utilityName.ts`
-- Types: `types.ts` ou `ComponentName.types.ts`
+- Components: PascalCase (`UserCard`)
+- Props: camelCase; booleans `is*` / `has*`; handlers `on*`
+- Files: `ComponentName.tsx`, `useHookName.ts`
+- CSS utilities: kebab-case Tailwind composition
 
 ---
 
-## Exemplos de Uso
+## CRUD page pattern
 
-### Formulário Completo
+Use **ChurchesPage** as the reference implementation.
 
-```tsx
-<form onSubmit={handleSubmit} className="space-y-4">
-  <Input label="Nome *" value={name} onChange={e => setName(e.target.value)} required />
+### Page controller
 
-  <ComboBox
-    label="Equipe"
-    options={teamOptions}
-    value={selectedTeam}
-    onValueChange={setSelectedTeam}
-    searchable
-  />
-
-  <div className="flex justify-end gap-3 pt-4">
-    <Button variant="outline" onClick={onCancel}>
-      Cancelar
-    </Button>
-    <Button variant="primary" type="submit">
-      Salvar
-    </Button>
-  </div>
-</form>
-```
-
-### Card com Hover
-
-```tsx
-<Card hover className="p-6">
-  <h3 className="text-lg font-semibold mb-2">Título do Card</h3>
-  <p className="text-sm text-dark-500 dark:text-dark-400">Descrição do conteúdo</p>
-</Card>
-```
-
----
-
-## Padrão de Páginas CRUD
-
-Para garantir consistência e manutenibilidade, todas as novas páginas de listagem e cadastro (CRUD) devem seguir o padrão estabelecido na `ChurchesPage`.
-
-### Arquitetura da Página
-
-A página principal deve atuar como um _Controller_, gerenciando o estado (dados, loading, filtros) e decidindo qual view renderizar com base no dispositivo.
+The page component owns data hooks, filters, and chooses mobile vs desktop view:
 
 ```tsx
 export function EntityPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)')
-  // ... hooks de dados e handlers
-
   return (
     <>
       {!isDesktop && <EntityMobileView {...props} />}
@@ -487,53 +170,41 @@ export function EntityPage() {
 }
 ```
 
-### Mobile View Pattern
+### Mobile list
 
-Para dispositivos móveis, utilizamos um layout de lista otimizado:
-
-1.  **Header com Ação**: Título à esquerda, Botão "Novo" à direita (ícone `PlusIcon`).
-2.  **Barra de Busca**: Componente dedicado, full-width.
-3.  **Lista Compacta**: Uso obrigatório do componente `CompactListItem`.
-
-#### CompactListItem
-
-O `CompactListItem` é o componente padrão para itens de lista no mobile.
+1. Header with title + “New” (`PlusIcon`)
+2. Full-width search
+3. `CompactListItem` for rows
 
 ```tsx
 <CompactListItem
   icon={<MyIcon />}
-  title="Título Principal"
-  subtitle="Informação Secundária"
-  metadata="Metadados (ex: data, status)"
-  badge={{ text: 'Ativo', variant: 'success' }}
+  title="Primary title"
+  subtitle="Secondary line"
+  metadata="Status or date"
+  badge={{ text: 'Active', variant: 'success' }}
   onClick={handleClick}
-  onEdit={handleEdit} // Habilita automaticamente o Menu Dropdown
-  onDelete={handleDelete} // Habilita automaticamente o Menu Dropdown
+  onEdit={handleEdit}
+  onDelete={handleDelete}
 />
 ```
 
-### ItemMenuDropdown
+`ItemMenuDropdown` (portal-based) powers edit/delete overflow on mobile lists.
 
-Para ações secundárias (Editar, Excluir) em listas mobile, utilizamos o `ItemMenuDropdown`.
-Este componente utiliza **React Portals** para garantir que o menu flutue sobre outros elementos e não seja cortado por containers com scroll.
-Ele é invocado automaticamente pelo `CompactListItem` quando `onEdit` ou `onDelete` são fornecidos.
+### Reference files
 
-### Referência de Implementação
-
-Utilize os seguintes arquivos como base para novos desenvolvimentos:
-
-- **Page Controller**: `src/pages/ChurchesPage.tsx`
-- **Mobile View**: `src/pages/churches/components/ChurchesMobileView.tsx`
-- **List Item**: `src/pages/churches/components/ChurchListItem.tsx`
+- `src/pages/ChurchesPage.tsx`
+- `src/pages/churches/components/ChurchesMobileView.tsx`
+- `src/pages/churches/components/ChurchListItem.tsx`
 
 ---
 
-## Related Documentation
+## Related documentation
 
 - [Backend Standards](../backend/BACKEND_STANDARDS.md)
-- [Component Library](../../apps/web/src/components/ui/)
-- [Tailwind Config](../../apps/web/tailwind.config.ts)
+- [UI components](../../apps/web/src/components/ui/)
+- [Tailwind config](../../apps/web/tailwind.config.ts)
 
 ## Changelog
 
-- 2026-01-10: Versão inicial do Design System
+- **2026-01-10:** Initial design system document

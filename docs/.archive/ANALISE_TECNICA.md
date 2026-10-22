@@ -1,334 +1,109 @@
-# Análise Técnica - MINC Hub
+# MINC Hub — Technical Analysis
 
-**Data da Análise:** Janeiro 2025  
-**Versão do Projeto:** 1.0.0  
-**Tecnologia Principal:** React 18 + TypeScript + Vite
+**Date:** Archived snapshot  
+**Scope:** Web frontend MVP (monorepo)
 
----
+## Overview
 
-## 📊 Resumo Executivo
+MINC Hub is a management system for the Welcome ministry at Minha Igreja na Cidade, built as a pnpm + Turborepo monorepo. At the time of this review the project was in MVP phase with focus on the web frontend, using modern React and TypeScript.
 
-O MINC Hub é um sistema de gestão para o Time Boas-Vindas da Minha Igreja na Cidade, desenvolvido como monorepo usando pnpm e Turborepo. O projeto está em fase de MVP com foco no frontend web, utilizando React moderno com TypeScript.
+## Strengths
 
-**Estatísticas do Projeto:**
+### Architecture and structure
 
-- **Total de arquivos TypeScript/TSX:** 57
-- **Total de linhas de código:** ~6.226 linhas
-- **Estrutura:** Monorepo (Turborepo + pnpm)
-- **Stack:** React 18, TypeScript, Vite, Tailwind CSS, React Router, Axios
+- Clear monorepo layout (`apps/web`, shared packages)
+- React 18 + TypeScript + Vite
+- Context API for global state (Auth, Theme)
+- React Router for navigation
+- Tailwind CSS for styling
 
----
+### UI/UX
 
-## ✅ Pontos Positivos
+- Consistent visual language aligned with the ministry brand
+- Animations and transitions implemented thoughtfully
+- Reusable UI components
 
-### 1. **Arquitetura e Estrutura**
+### Security (frontend)
 
-- ✅ Monorepo bem estruturado com Turborepo
-- ✅ Separação clara de responsabilidades (components, pages, contexts, services, lib)
-- ✅ Uso adequado de TypeScript com tipagem forte
-- ✅ Configuração moderna do build (Vite)
-- ✅ Path aliases configurados (`@/*`)
+- JWT tokens stored in localStorage (with known trade-offs)
+- Protected routes by role
+- Basic XSS awareness in forms
 
-### 2. **Padrões de Código**
+### Tooling
 
-- ✅ TypeScript strict mode habilitado
-- ✅ ESLint configurado com regras adequadas
-- ✅ Componentes funcionais com hooks modernos
-- ✅ Estrutura de pastas organizada e lógica
-- ✅ Uso de Context API para estado global (Auth, Theme)
+- ESLint + Prettier configured
+- date-fns for date handling
+- React Hook Form + Zod installed (underused in forms at review time)
 
-### 3. **Design e UX**
+## Critical issues
 
-- ✅ Design system consistente (Tailwind CSS)
-- ✅ Suporte a dark mode
-- ✅ Mobile-first approach
-- ✅ Animações e transições bem implementadas
-- ✅ Componentes de UI reutilizáveis
+### 1. Rule violations (defaults)
 
-### 4. **Segurança e Autenticação**
+**Location:** `apps/web/src/pages/SchedulesPage.tsx` (example)
 
-- ✅ Controle de acesso baseado em roles
-- ✅ Protected routes implementadas
-- ✅ Interceptors Axios para tratamento de erros 401
-- ✅ Tokens JWT armazenados no localStorage (com considerações)
+- Use of `any` where `ServiceType` enum should apply
+- Multiple uses of `||` for assignments where project rules require `??`
 
-### 5. **Tecnologias Modernas**
+**Fix:** Use the `ServiceType` enum consistently; replace inappropriate `||` with `??`.
 
-- ✅ React 18 com hooks modernos
-- ✅ React Router v6
-- ✅ Axios para requisições HTTP
-- ✅ date-fns para manipulação de datas
-- ✅ React Hook Form + Zod instalados (embora pouco utilizados)
+### 2. Code duplication
 
----
+- `MOCK_MODE` duplicated across many files — centralize in `lib/constants.ts` or env
+- Route wrappers repeated in `App.tsx` — use shared `ProtectedRoute` / layout components
+- Large page files (e.g. 295+ lines) — split into focused components
 
-## ⚠️ Problemas Identificados
+### 3. Configuration drift
 
-### 1. **CRÍTICO: Violação de Regras de Padrão**
+- Two ESLint config files (`.eslintrc.json` and `.eslintrc.cjs`) — keep only `.eslintrc.cjs`
 
-#### 1.1 Uso de `any` (PROIBIDO pelas regras do projeto)
+### 4. Testing gap
 
-**Localização:** `apps/web/src/pages/SchedulesPage.tsx:19`
+- No unit or integration tests at review time — add coverage for auth and critical flows
 
-```typescript
-type: 'sunday_morning' as any,
-```
+### 5. Forms
 
-**Impacto:** Quebra a segurança de tipos do TypeScript  
-**Solução:** Usar o enum `ServiceType` adequadamente
+- React Hook Form + Zod present but most forms used manual `useState` — migrate for validation consistency
 
-#### 1.2 Uso de `||` para atribuições (PROIBIDO pelas regras)
+### 6. Dead code
 
-**Locais encontrados (13 ocorrências):**
+- `hasRole` exported from `AuthContext` but unused — remove or document future use
 
-- `apps/web/src/pages/SchedulesPage.tsx:215` - `getTeamNames(schedule.teamIds) || '-'`
-- Várias outras ocorrências em condições e atribuições
+### 7. Duplicate constants
 
-**Impacto:** Comportamento diferente do operador `??` (nullish coalescing)  
-**Solução:** Substituir por `??` quando apropriado
+- `MOCK_MODE` defined twice in the same file in at least one module — define once at file top
 
-### 2. **Duplicação de Código**
+### 8. Error handling
 
-#### 2.1 MOCK_MODE duplicado em múltiplos arquivos
+- Some catch blocks swallow errors — add logging and user-visible feedback where appropriate
 
-**Arquivos afetados:**
+## Priority recommendations
 
-- `apps/web/src/App.tsx` (linhas 29 e 70 - duplicado no mesmo arquivo!)
-- `apps/web/src/contexts/AuthContext.tsx:5`
-- `apps/web/src/pages/DashboardPage.tsx:4`
-- `apps/web/src/pages/LoginPage.tsx:10`
-- `apps/web/src/components/layout/HeaderProfile.tsx:8`
-- `apps/web/src/components/layout/Sidebar.tsx:207`
+### Urgent (1–2 days)
 
-**Impacto:** Dificulta manutenção, aumenta risco de inconsistências  
-**Solução:** Criar constante centralizada em `lib/constants.ts` ou usar variável de ambiente diretamente
+1. Fix `any` and `||` violations in hot paths
+2. Centralize `MOCK_MODE`
+3. Remove duplicate ESLint config
 
-#### 2.2 Estrutura repetitiva de rotas no App.tsx
+### Important (3–5 days)
 
-**Problema:** Cada rota duplica a lógica MOCK_MODE vs ProtectedRoute  
-**Impacto:** Arquivo muito grande (295 linhas), difícil manutenção  
-**Solução:** Criar componente wrapper ou função helper
+4. Refactor routing wrappers in `App.tsx`
+5. Split oversized pages
+6. Start unit tests for auth and CRUD hooks
 
-### 3. **Arquivos Grandes (Potencial Refatoração)**
+### Medium term
 
-**Arquivos acima de 300 linhas:**
+7. Adopt React Hook Form + Zod on all forms
+8. Document environment variables
+9. Plan backend integration (mock mode off)
 
-- `apps/web/src/pages/MonthlySchedulePage.tsx` - **505 linhas** ⚠️
-- `apps/web/src/pages/PeoplePage.tsx` - **374 linhas**
-- `apps/web/src/pages/SchedulesPage.tsx` - **365 linhas**
-- `apps/web/src/pages/CommunicationPage.tsx` - **289 linhas**
-- `apps/web/src/App.tsx` - **295 linhas**
-- `apps/web/src/components/ui/MonthNavigator.tsx` - **297 linhas**
+## Quality snapshot
 
-**Recomendação:** Considerar refatoração de arquivos acima de 400 linhas
-
-### 4. **Configuração de ESLint Inconsistente**
-
-**Problema:** Dois arquivos de configuração do ESLint:
-
-- `.eslintrc.cjs` (configuração correta)
-- `.eslintrc.json` (configuração incorreta - estende "next/core-web-vitals" que não existe no projeto)
-
-**Solução:** Remover `.eslintrc.json` e usar apenas `.eslintrc.cjs`
-
-### 5. **Falta de Testes**
-
-**Problema:** Nenhum arquivo de teste encontrado no projeto  
-**Impacto:** Sem garantia de qualidade, difícil refatoração segura  
-**Recomendação:** Implementar testes unitários e de integração
-
-### 6. **Uso Limitado de React Hook Form + Zod**
-
-**Problema:** Bibliotecas instaladas mas não utilizadas na maioria dos formulários  
-**Observação:** Formulários estão usando state management manual (`useState`)  
-**Recomendação:** Migrar formulários para React Hook Form + Zod para validação
-
-### 7. **Função `hasRole` Não Utilizada**
-
-**Problema:** Função `hasRole` é exportada do `AuthContext` mas nunca usada  
-**Localização:** `apps/web/src/contexts/AuthContext.tsx:88-90`  
-**Impacto:** Código morto, aumenta complexidade desnecessariamente  
-**Solução:** Remover ou documentar uso futuro
-
-### 8. **MOCK_MODE no Mesmo Arquivo (App.tsx)**
-
-**Problema:** Constante `MOCK_MODE` definida duas vezes no mesmo arquivo:
-
-- Linha 29 (dentro de `ProtectedRoute`)
-- Linha 70 (no nível do componente `App`)
-
-**Solução:** Definir uma única vez no topo do arquivo
-
-### 9. **Falta de Tratamento de Erros em Alguns Locais**
-
-**Problema:** Alguns catch blocks não tratam erros adequadamente  
-**Exemplo:** `apps/web/src/contexts/AuthContext.tsx:55` - catch vazio  
-**Recomendação:** Adicionar logging ou tratamento de erro apropriado
-
-### 10. **Tipos Opcionais Não Utilizados Adequadamente**
-
-**Problema:** Alguns campos opcionais poderiam usar tipos mais específicos  
-**Observação:** Uso de `string | undefined` poderia ser simplificado com `?.` e `??`
-
----
-
-## 🔧 Recomendações Prioritárias
-
-### Prioridade ALTA 🔴
-
-1. **Corrigir uso de `any` em SchedulesPage.tsx**
-
-   - Substituir `as any` por enum `ServiceType`
-
-2. **Centralizar MOCK_MODE**
-
-   - Criar constante em `lib/constants.ts`
-   - Remover duplicações
-
-3. **Refatorar App.tsx**
-
-   - Extrair lógica de rotas para componente helper
-   - Reduzir duplicação
-   - Remover MOCK_MODE duplicado
-
-4. **Remover .eslintrc.json incorreto**
-   - Manter apenas `.eslintrc.cjs`
-
-### Prioridade MÉDIA 🟡
-
-5. **Implementar testes**
-
-   - Configurar Vitest ou Jest
-   - Adicionar testes para componentes críticos
-   - Testes para hooks customizados
-
-6. **Migrar formulários para React Hook Form + Zod**
-
-   - Aproveitar bibliotecas já instaladas
-   - Melhorar validação
-   - Reduzir código boilerplate
-
-7. **Refatorar arquivos grandes**
-
-   - Quebrar MonthlySchedulePage em componentes menores
-   - Extrair lógica de negócio para hooks customizados
-
-8. **Substituir `||` por `??` onde apropriado**
-   - Revisar todas as ocorrências
-   - Garantir comportamento correto para null/undefined
-
-### Prioridade BAIXA 🟢
-
-9. **Remover função `hasRole` não utilizada**
-
-   - Ou documentar uso futuro
-
-10. **Melhorar tratamento de erros**
-
-    - Adicionar logging estruturado
-    - Centralizar tratamento de erros
-
-11. **Documentação de componentes**
-    - Adicionar JSDoc em componentes complexos
-    - Documentar props e comportamento
-
----
-
-## 📈 Métricas de Qualidade
-
-### Cobertura de Código
-
-- ❌ **Testes:** 0% (nenhum teste encontrado)
-
-### Complexidade
-
-- ⚠️ **Arquivos grandes:** 6 arquivos acima de 280 linhas
-- ✅ **Separação de responsabilidades:** Boa
-
-### Manutenibilidade
-
-- ⚠️ **Duplicação:** MOCK_MODE duplicado em 6+ locais
-- ✅ **Estrutura de pastas:** Excelente
-- ✅ **Nomenclatura:** Consistente e clara
-
-### TypeScript
-
-- ✅ **Strict mode:** Habilitado
-- ⚠️ **Uso de `any`:** 1 ocorrência (violação de regra)
-- ✅ **Tipagem:** Boa cobertura geral
-
-### Performance
-
-- ✅ **Code splitting:** Vite faz isso automaticamente
-- ✅ **Lazy loading:** Não implementado (poderia melhorar)
-
----
-
-## 🎯 Plano de Ação Sugerido
-
-### Fase 1: Correções Críticas (1-2 dias)
-
-1. Corrigir uso de `any`
-2. Centralizar MOCK_MODE
-3. Remover .eslintrc.json
-4. Remover MOCK_MODE duplicado em App.tsx
-
-### Fase 2: Refatorações Importantes (3-5 dias)
-
-1. Refatorar App.tsx (rotas)
-2. Substituir `||` por `??` onde apropriado
-3. Configurar testes (Vitest)
-
-### Fase 3: Melhorias de Qualidade (5-10 dias)
-
-1. Implementar testes para componentes críticos
-2. Migrar formulários para React Hook Form + Zod
-3. Refatorar arquivos grandes
-
-### Fase 4: Otimizações (opcional)
-
-1. Implementar lazy loading de rotas
-2. Otimizações de performance
-3. Melhorias de acessibilidade
-
----
-
-## 📝 Observações Adicionais
-
-### Boas Práticas Identificadas
-
-- ✅ Uso de `readonly` em interfaces
-- ✅ Separação de concerns (UI, lógica, serviços)
-- ✅ Hooks customizados reutilizáveis
-- ✅ Componentes de UI bem abstraídos
-- ✅ Design system consistente
-
-### Pontos de Atenção
-
-- ⚠️ Backend ainda não implementado (muito código mock)
-- ⚠️ Falta de documentação de API esperada
-- ⚠️ Sem CI/CD configurado (mencionado no README mas não implementado)
-- ⚠️ Variáveis de ambiente não documentadas
-
----
-
-## 🎓 Conclusão
-
-O projeto MINC Hub demonstra uma base sólida com arquitetura moderna e boas práticas de desenvolvimento React/TypeScript. O código está bem organizado e estruturado, mas possui algumas violações das regras estabelecidas e áreas que podem ser melhoradas.
-
-**Principais focos de melhoria:**
-
-1. Remover violações de regras (any, ||)
-2. Eliminar duplicação de código (MOCK_MODE)
-3. Implementar testes
-4. Refatorar arquivos grandes
-5. Aproveitar melhor as bibliotecas instaladas (React Hook Form + Zod)
-
-**Avaliação Geral:** ⭐⭐⭐⭐ (4/5)
-
-O projeto está em bom estado, mas com espaço significativo para melhorias de qualidade, manutenibilidade e cobertura de testes.
-
----
-
-**Análise realizada por:** Auto (Cursor AI Assistant)  
-**Data:** Janeiro 2025
+| Area | Rating |
+|------|--------|
+| Structure | Good |
+| TypeScript usage | Good with exceptions |
+| Duplication | Needs work (MOCK_MODE, routes) |
+| Tests | Missing |
+| Rule adherence | Partial (`??`, enums) |
+
+**Overall:** 4/5 — solid React/TypeScript base with clear wins from deduplication, tests, and stricter adherence to project defaults.

@@ -1,79 +1,68 @@
-# Variáveis de Ambiente - MINC Teams
+# Environment Variables - Backend API
 
-Este documento descreve todas as variáveis de ambiente necessárias para o deploy e desenvolvimento da aplicação.
+This document describes all environment variables required for the backend.
 
-## Variáveis Obrigatórias para Produção
+## Required Variables
 
-### `VITE_API_URL`
-- **Descrição**: URL base da API backend
-- **Tipo**: String (URL)
-- **Exemplo**: `https://api.minc-teams.com`
-- **Obrigatória**: Sim (para produção)
-- **Padrão**: `http://localhost:3001` (apenas em desenvolvimento)
-- **Uso**: Configura a URL base para todas as requisições HTTP da aplicação
+### Database
 
-## Variáveis Opcionais
-
-### `VITE_MOCK_MODE`
-- **Descrição**: Habilita o modo de desenvolvimento com dados mockados
-- **Tipo**: String ("true" ou "false")
-- **Exemplo**: `true`
-- **Obrigatória**: Não
-- **Padrão**: `false`
-- **Uso**: Quando `true` ou quando `VITE_API_URL` não está definida, a aplicação roda sem backend, usando dados mockados
-
-## Configuração por Ambiente
-
-### Desenvolvimento Local
 ```env
-VITE_API_URL=http://localhost:3001
-VITE_MOCK_MODE=true
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=minc_teams
+DATABASE_PASSWORD=password
+DATABASE_NAME=minc_teams
 ```
 
-### Staging
+### JWT
+
 ```env
-VITE_API_URL=https://api-staging.minc-teams.com
-VITE_MOCK_MODE=false
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRES_IN=24h
+REFRESH_TOKEN_EXPIRATION_DAYS=7
 ```
 
-### Produção
+## Optional Variables
+
+### Application
+
 ```env
-VITE_API_URL=https://api.minc-teams.com
-VITE_MOCK_MODE=false
+PORT=3001
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
+CORS_ORIGIN=http://localhost:5173
+RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES=60
 ```
 
-## Como Configurar
+## How to Configure
 
-### 1. Criar arquivo `.env`
-Copie o arquivo `.env.example` para `.env` na raiz do projeto `apps/web/`:
-```bash
-cp apps/web/.env.example apps/web/.env
-```
+1. Create a `.env` file at the root of `apps/api/`
+2. Copy the variables above and adjust values as needed
+3. **IMPORTANT**: Never commit the `.env` file to repository
 
-### 2. Editar variáveis
-Edite o arquivo `.env` com os valores apropriados para seu ambiente.
+## Complete Example
 
-### 3. Build
-As variáveis são injetadas durante o build do Vite:
-```bash
-pnpm build
-```
+```env
+# Database Configuration
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=minc_teams
+DATABASE_PASSWORD=password
+DATABASE_NAME=minc_teams
 
-## Importante
+# JWT Configuration
+JWT_SECRET=your-secret-key-change-in-production
+JWT_EXPIRES_IN=24h
+REFRESH_TOKEN_EXPIRATION_DAYS=7
 
-⚠️ **Nunca commite o arquivo `.env` no repositório!**
+# Application Configuration
+PORT=3001
+NODE_ENV=development
+FRONTEND_URL=http://localhost:5173
 
-- O arquivo `.env` contém informações sensíveis
-- Use `.env.example` como template
-- Adicione `.env` ao `.gitignore`
+# CORS Configuration
+CORS_ORIGIN=http://localhost:5173
 
-## Variáveis no Vite
-
-Todas as variáveis de ambiente no Vite devem começar com `VITE_` para serem expostas ao código do cliente.
-
-## Verificação
-
-Para verificar se as variáveis estão sendo carregadas corretamente, você pode verificar no console do navegador:
-```javascript
-console.log(import.meta.env.VITE_API_URL)
+# Password Reset
+RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES=60
 ```

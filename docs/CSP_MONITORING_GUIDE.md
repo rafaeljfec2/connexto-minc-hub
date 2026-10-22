@@ -1,86 +1,86 @@
-# Guia de Monitoramento CSP
+# CSP Monitoring Guide
 
-Este guia explica como monitorar e analisar violações CSP (Content-Security-Policy) na aplicação.
+This guide explains how to monitor and analyze Content-Security-Policy (CSP) violations in the application.
 
-## Visão Geral
+## Overview
 
-O sistema de proteção XSS implementado inclui:
-- **CSP Report-Only**: Monitora violações sem bloquear funcionalidades
-- **Endpoint de Relatório**: `/minc-teams/v1/security/csp-report`
-- **Logging Estruturado**: Todas as violações são logadas no backend
+The implemented XSS protection system includes:
+- **CSP Report-Only**: Monitors violations without blocking functionality
+- **Report endpoint**: `/minc-teams/v1/security/csp-report`
+- **Structured logging**: All violations are logged on the backend
 
-## Como Funciona
+## How It Works
 
-1. **Frontend**: Quando uma violação CSP ocorre, o navegador envia automaticamente um relatório para o endpoint
-2. **Backend**: O endpoint recebe, valida e processa o relatório
-3. **Logging**: Violações são logadas com nível WARN, violações críticas com nível ERROR
+1. **Frontend**: When a CSP violation occurs, the browser automatically sends a report to endpoint
+2. **Backend**: The endpoint receives, validates, and processes the report
+3. **Logging**: Violations are logged at WARN level; critical violations at ERROR level
 
-## Monitoramento em Desenvolvimento
+## Monitoring in Development
 
-### 1. Verificar Logs da API
+### 1. Check API Logs
 
 ```bash
-# Inicie a API e monitore os logs
+# Start the API and monitor logs
 cd apps/api
 pnpm start:dev
 
-# Os logs mostrarão violações CSP assim:
+# Logs will show CSP violations like:
 # [SecurityService] WARN CSP Violation { ... }
 ```
 
-### 2. Testar Violações CSP Manualmente
+### 2. Test CSP Violations Manually
 
-#### No Console do Navegador
+#### In the Browser Console
 
 ```javascript
-// Importar utilitário de teste (se disponível)
+// Import test utility (if available)
 import { triggerCspViolation } from '@/utils/test-csp-violation'
 
-// Testar violação de script inline
+// Test inline script violation
 triggerCspViolation('script-src', 'inline')
 
-// Testar uso de eval
+// Test eval usage
 triggerCspViolation('script-src', 'eval')
 
-// Testar estilo inline
+// Test inline style
 triggerCspViolation('style-src', 'inline')
 ```
 
-#### Usando o Script de Teste do Backend
+#### Using the Backend Test Script
 
 ```bash
-# Execute o script de teste
+# Run the test script
 cd apps/api
 pnpm ts-node src/security/scripts/test-csp-report.ts
 ```
 
-### 3. Verificar Relatórios no Browser
+### 3. Check Reports in the Browser
 
-1. Abra o DevTools (F12)
-2. Vá para a aba **Console**
-3. Procure por mensagens relacionadas a CSP
-4. Vá para a aba **Network**
-5. Filtre por `csp-report`
-6. Verifique se as requisições estão sendo enviadas
+1. Open DevTools (F12)
+2. Go to **Console** tab
+3. Look for CSP-related messages
+4. Go to **Network** tab
+5. Filter by `csp-report`
+6. Verify requests are being sent
 
-## Tipos de Violações
+## Violation Types
 
-### Violações Comuns (WARN)
+### Common Violations (WARN)
 
-- **Fontes externas**: Carregamento de recursos de domínios não permitidos
-- **Estilos inline**: Uso de atributos `style` em elementos HTML
-- **Scripts externos**: Carregamento de scripts de CDNs não configurados
+- **External sources**: Loading resources from disallowed domains
+- **Inline styles**: Use of `style` attributes on HTML elements
+- **External scripts**: Loading scripts from unconfigured CDNs
 
-### Violações Críticas (ERROR)
+### Critical Violations (ERROR)
 
-- **Script injection**: Tentativas de injeção de scripts maliciosos
-- **Inline scripts**: Uso de `<script>` tags inline
-- **eval()**: Uso da função `eval()` ou similares
-- **javascript: protocol**: URLs com protocolo `javascript:`
+- **Script injection**: Attempts to inject malicious scripts
+- **Inline scripts**: Use of inline `<script>` tags
+- **eval()**: Use of `eval()` or similar functions
+- **javascript: protocol**: URLs with the `javascript:` protocol
 
-## Análise de Relatórios
+## Report Analysis
 
-### Estrutura de um Relatório CSP
+### CSP Report Structure
 
 ```json
 {
@@ -96,25 +96,25 @@ pnpm ts-node src/security/scripts/test-csp-report.ts
 }
 ```
 
-### Campos Importantes
+### Important Fields
 
-- **violated-directive**: Diretiva CSP que foi violada
-- **blocked-uri**: URI que foi bloqueada
-- **source-file**: Arquivo onde a violação ocorreu
-- **line-number**: Linha do código onde ocorreu
-- **original-policy**: Política CSP completa
+- **violated-directive**: CSP directive that was violated
+- **blocked-uri**: URI that was blocked
+- **source-file**: File where the violation occurred
+- **line-number**: Line number where it occurred
+- **original-policy**: Full CSP policy
 
-## Ajustando a Política CSP
+## Adjusting the CSP Policy
 
-### Passo 1: Analisar Violações
+### Step 1: Analyze Violations
 
-1. Colete relatórios por alguns dias
-2. Identifique padrões comuns
-3. Separe violações legítimas de problemas reais
+1. Collect reports for a few days
+2. Identify common patterns
+3. Separate legitimate violations from real issues
 
-### Passo 2: Ajustar Diretivas
+### Step 2: Adjust Directives
 
-Edite `apps/web/index.html`:
+Edit `apps/web/index.html`:
 
 ```html
 <meta
@@ -128,54 +128,54 @@ Edite `apps/web/index.html`:
 />
 ```
 
-### Passo 3: Validar Ajustes
+### Step 3: Validate Changes
 
-1. Teste a aplicação após cada ajuste
-2. Monitore novos relatórios
-3. Repita até que não haja violações legítimas
+1. Test the application after each change
+2. Monitor new reports
+3. Repeat until there are no legitimate violations
 
-## Ativando CSP Enforcement
+## Enabling CSP Enforcement
 
-### Quando Ativar
+### When to Enable
 
-- ✅ Todas as violações legítimas foram resolvidas
-- ✅ Aplicação funciona corretamente em Report-Only
-- ✅ Equipe está confiante na política CSP
+- ✅ All legitimate violations have been resolved
+- ✅ Application works correctly in Report-Only mode
+- ✅ Team is confident in the CSP policy
 
-### Como Ativar
+### How to Enable
 
-1. Mude de `Content-Security-Policy-Report-Only` para `Content-Security-Policy`:
+1. Change from `Content-Security-Policy-Report-Only` to `Content-Security-Policy`:
 
 ```html
-<!-- ANTES (Report-Only) -->
+<!-- BEFORE (Report-Only) -->
 <meta
   http-equiv="Content-Security-Policy-Report-Only"
   content="..."
 />
 
-<!-- DEPOIS (Enforcement) -->
+<!-- AFTER (Enforcement) -->
 <meta
   http-equiv="Content-Security-Policy"
   content="..."
 />
 ```
 
-2. Atualize também no `vite.config.ts` se necessário
+2. Update `vite.config.ts` as well if needed
 
-3. Faça deploy e monitore de perto
+3. Deploy and monitor closely
 
-### Monitoramento Pós-Ativação
+### Post-Activation Monitoring
 
-- Monitore logs de erro do frontend
-- Verifique relatórios CSP (agora bloqueando de fato)
-- Esteja pronto para reverter se necessário
+- Monitor frontend error logs
+- Check CSP reports (now actually blocking)
+- Be ready to roll back if needed
 
-## Integração com Serviços de Monitoramento
+## Monitoring Service Integration
 
 ### Sentry
 
 ```typescript
-// Em security.service.ts
+// In security.service.ts
 import * as Sentry from '@sentry/node';
 
 if (this.isCriticalViolation(cspReport)) {
@@ -189,7 +189,7 @@ if (this.isCriticalViolation(cspReport)) {
 ### DataDog
 
 ```typescript
-// Em security.service.ts
+// In security.service.ts
 import { StatsD } from 'node-statsd';
 
 const statsd = new StatsD();
@@ -200,41 +200,41 @@ statsd.increment('csp.violations', 1, {
 });
 ```
 
-## Dashboard de Violações (Futuro)
+## Violations Dashboard (Future)
 
-Para criar um dashboard, considere:
+To build a dashboard, consider:
 
-1. **Armazenar relatórios em banco de dados**
-2. **Criar endpoint de consulta** (`GET /security/csp-reports`)
-3. **Frontend dashboard** para visualizar:
-   - Gráficos de violações por tipo
-   - Tendências ao longo do tempo
-   - Violações críticas destacadas
+1. **Store reports in a database**
+2. **Create a query endpoint** (`GET /security/csp-reports`)
+3. **Frontend dashboard** to view:
+   - Violation charts by type
+   - Trends over time
+   - Highlighted critical violations
 
 ## Troubleshooting
 
-### Relatórios não estão sendo enviados
+### Reports are not being sent
 
-1. Verifique se o CSP está configurado corretamente
-2. Verifique o console do navegador para erros
-3. Verifique a aba Network para requisições bloqueadas
-4. Verifique CORS se necessário
+1. Verify CSP is configured correctly
+2. Check the browser console for errors
+3. Check the Network tab for blocked requests
+4. Check CORS if needed
 
-### Muitas violações falsas
+### Too many false positives
 
-1. Ajuste a política CSP para ser mais permissiva inicialmente
-2. Identifique padrões e ajuste gradualmente
-3. Use `'unsafe-inline'` temporariamente se necessário (não recomendado)
+1. Adjust the CSP policy to be more permissive initially
+2. Identify patterns and adjust gradually
+3. Use `'unsafe-inline'` temporarily if needed (not recommended)
 
-### Violações críticas aparecendo
+### Critical violations appearing
 
-1. **URGENTE**: Investigar imediatamente
-2. Verificar código fonte na linha indicada
-3. Corrigir vulnerabilidade
-4. Revisar política CSP
+1. **URGENT**: Investigate immediately
+2. Check source code at the indicated line
+3. Fix the vulnerability
+4. Review CSP policy
 
-## Recursos Adicionais
+## Additional Resources
 
 - [MDN: Content-Security-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
 - [CSP Evaluator](https://csp-evaluator.withgoogle.com/)
-- [Report URI](https://report-uri.com/) - Serviço de monitoramento CSP
+- [Report URI](https://report-uri.com/) - CSP monitoring service

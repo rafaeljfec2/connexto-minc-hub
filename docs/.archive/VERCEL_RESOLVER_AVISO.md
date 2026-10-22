@@ -1,97 +1,97 @@
-# Resolver Aviso: "Configuration Settings differ from Project Settings"
+# Fix Warning: "Configuration Settings differ from Project Settings"
 
-## ⚠️ Problema Identificado
+## ⚠️ Problem Identified
 
-Você está vendo o aviso:
+You see the warning:
 > "Configuration Settings in the current Production deployment differ from your current Project Settings."
 
-Isso significa que há **configurações diferentes** entre:
-- **Production Overrides** (configurações do último deploy de produção)
-- **Project Settings** (configurações atuais do projeto)
+This means **settings differ** between:
+- **Production Overrides** (last production deploy settings)
+- **Project Settings** (current project settings)
 
-## 🔧 Solução Passo a Passo
+## 🔧 Step-by-Step Solution
 
-### 1. Expandir "Production Overrides"
+### 1. Expand "Production Overrides"
 
-1. Clique na seta ao lado de **"Production Overrides"**
-2. Anote todas as configurações mostradas:
+1. Click the arrow next to **"Production Overrides"**
+2. Note all shown settings:
    - Build Command
    - Output Directory
    - Install Command
    - Ignored Build Step
    - Root Directory
 
-### 2. Expandir "Project Settings"
+### 2. Expand "Project Settings"
 
-1. Clique na seta ao lado de **"Project Settings"**
-2. Compare com as configurações de "Production Overrides"
+1. Click the arrow next to **"Project Settings"**
+2. Compare with **"Production Overrides"**
 
-### 3. Sincronizar Configurações
+### 3. Sync Settings
 
-**Opção A: Usar as configurações do Projeto (Recomendado)**
+**Option A: Use Project Settings (Recommended)**
 
-1. Em **"Project Settings"**, configure:
+1. Under **"Project Settings"**, configure:
 
    **Ignored Build Step:**
    ```bash
    git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json
    ```
    
-   **OU selecione:** "Only build if there are changes in a folder"
+   **OR select:** "Only build if there are changes in a folder"
    - **Folder:** `apps/web`
 
-2. Clique em **"Save"**
+2. Click **"Save"**
 
-3. Isso vai sincronizar as configurações do projeto com os próximos deploys
+3. This syncs project settings for future deploys
 
-**Opção B: Usar as configurações de Produção**
+**Option B: Use Production Settings**
 
-1. Copie as configurações de **"Production Overrides"**
-2. Cole em **"Project Settings"**
-3. Clique em **"Save"**
+1. Copy settings from **"Production Overrides"**
+2. Paste into **"Project Settings"**
+3. Click **"Save"**
 
-## ✅ Configuração Recomendada para Ignored Build Step
+## ✅ Recommended Ignored Build Step Configuration
 
-### Se Root Directory = `apps/web`:
+### If Root Directory = `apps/web`:
 
-**Configure como:**
+**Configure as:**
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/
 ```
 
-**OU use a opção visual:**
-- Selecione: **"Only build if there are changes in a folder"**
+**OR use the visual option:**
+- Select: **"Only build if there are changes in a folder"**
 - **Folder:** `apps/web`
 
-### Se Root Directory = vazio (raiz):
+### If Root Directory = empty (root):
 
-**Configure como:**
+**Configure as:**
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json
 ```
 
-## 🎯 Passos Imediatos
+## 🎯 Immediate Steps
 
-1. ✅ Expanda **"Production Overrides"** e anote as configurações
-2. ✅ Expanda **"Project Settings"** e compare
-3. ✅ Configure o **"Ignored Build Step"** conforme acima
-4. ✅ Clique em **"Save"**
-5. ✅ Faça um novo push para testar:
+1. ✅ Expand **"Production Overrides"** and naoe settings
+2. ✅ Expand **"Project Settings"** and compare
+3. ✅ Configure **"Ignored Build Step"** as above
+4. ✅ Click **"Save"**
+5. ✅ Push to test:
    ```bash
-   git commit --allow-empty -m "test: verificar deploy automático"
+   git commit --allow-empty -m "test: verify automatic deploy"
    git push
    ```
 
-## 🔍 Verificar se Funcionou
+## 🔍 Verify It Worked
 
-1. Vá em **Deployments** na Vercel
-2. Verifique se um novo deploy foi criado após o push
-3. Se não aparecer, verifique os logs em **Settings > Git > Webhooks**
+1. Go to **Deployments** on Vercel
+2. Check that a new deploy was created after the push
+3. If not, check logs under **Settings > Git > Webhooks**
 
-## ⚠️ Importante
+## ⚠️ Important
 
-Após salvar as configurações, o aviso amarelo deve desaparecer. Se persistir:
+After saving, the yellow warning should disappear. If it persists:
 
-1. Faça um **redeploy manual** do último deployment de produção
-2. Isso vai sincronizar as configurações
-3. Ou aguarde o próximo deploy automático
+1. **Redeploy manually** the latest production deployment
+2. This syncs settings
+3. Or wait for the next automatic deploy

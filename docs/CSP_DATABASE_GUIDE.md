@@ -1,17 +1,17 @@
-# Guia: Armazenamento de Relatórios CSP no Banco de Dados
+# Guide: Storing CSP Reports in the Database
 
-Este guia explica como usar o sistema de armazenamento de relatórios CSP no banco de dados.
+This guide explains how to use CSP report storage in the database.
 
-## Visão Geral
+## Overview
 
-Todos os relatórios de violação CSP são automaticamente salvos no banco de dados PostgreSQL na tabela `csp_reports`. Isso permite:
+All CSP violation reports are automatically saved in PostgreSQL in the `csp_reports` table. This enables:
 
-- Análise histórica de violações
-- Identificação de padrões
-- Monitoramento de tendências
-- Consultas complexas com filtros
+- Historical analysis of violations
+- Pattern identification
+- Trend monitoring
+- Complex filtered queries
 
-## Estrutura da Tabela
+## Table Structure
 
 ```sql
 CREATE TABLE csp_reports (
@@ -33,51 +33,51 @@ CREATE TABLE csp_reports (
 );
 ```
 
-## Consultando Relatórios
+## Querying Reports
 
 ### Via API
 
 **Endpoint**: `GET /minc-teams/v1/security/csp-reports`
 
-**Exemplos:**
+**Examples:**
 
 ```bash
-# Listar todos os relatórios (primeira página)
+# List all reports (first page)
 curl "http://localhost:3000/minc-teams/v1/security/csp-reports"
 
-# Filtrar apenas violações críticas
+# Filter critical violations only
 curl "http://localhost:3000/minc-teams/v1/security/csp-reports?isCritical=true"
 
-# Filtrar por diretiva violada
+# Filter by violated directive
 curl "http://localhost:3000/minc-teams/v1/security/csp-reports?violatedDirective=script-src"
 
-# Filtrar por período
+# Filter by date range
 curl "http://localhost:3000/minc-teams/v1/security/csp-reports?startDate=2024-01-01T00:00:00Z&endDate=2024-01-31T23:59:59Z"
 
-# Paginação
+# Pagination
 curl "http://localhost:3000/minc-teams/v1/security/csp-reports?page=2&limit=50"
 
-# Múltiplos filtros
+# Multiple filters
 curl "http://localhost:3000/minc-teams/v1/security/csp-reports?isCritical=true&violatedDirective=script-src&page=1&limit=20"
 ```
 
-### Via SQL Direto
+### Via Direct SQL
 
 ```sql
--- Total de violações por diretiva
+-- Total violations by directive
 SELECT violated_directive, COUNT(*) as count
 FROM csp_reports
 GROUP BY violated_directive
 ORDER BY count DESC;
 
--- Violações críticas nas últimas 24 horas
+-- Critical violations in the last 24 hours
 SELECT *
 FROM csp_reports
 WHERE is_critical = true
   AND created_at >= NOW() - INTERVAL '24 hours'
 ORDER BY created_at DESC;
 
--- Top 10 URIs bloqueadas
+-- Top 10 blocked URIs
 SELECT blocked_uri, COUNT(*) as count
 FROM csp_reports
 WHERE blocked_uri IS NOT NULL
@@ -85,7 +85,7 @@ GROUP BY blocked_uri
 ORDER BY count DESC
 LIMIT 10;
 
--- Violações por dia (últimos 7 dias)
+-- Violations per day (last 7 days)
 SELECT 
   DATE(created_at) as date,
   COUNT(*) as total,
@@ -96,11 +96,11 @@ GROUP BY DATE(created_at)
 ORDER BY date DESC;
 ```
 
-## Análise de Dados
+## Data Analysis
 
-### Queries Úteis
+### Useful Queries
 
-#### 1. Violações Mais Comuns
+#### 1. Most Common Violations
 
 ```sql
 SELECT 
@@ -114,7 +114,7 @@ ORDER BY occurrences DESC
 LIMIT 20;
 ```
 
-#### 2. Tendência Temporal
+#### 2. Time Trend
 
 ```sql
 SELECT 
@@ -127,7 +127,7 @@ GROUP BY hour
 ORDER BY hour;
 ```
 
-#### 3. Arquivos com Mais Violações
+#### 3. Files with Most Violations
 
 ```sql
 SELECT 
@@ -141,7 +141,7 @@ ORDER BY violations DESC
 LIMIT 20;
 ```
 
-#### 4. Análise de Violações Críticas
+#### 4. Critical Violation Analysis
 
 ```sql
 SELECT 
@@ -157,30 +157,30 @@ ORDER BY created_at DESC
 LIMIT 50;
 ```
 
-## Manutenção
+## Maintenance
 
-### Limpeza de Dados Antigos
+### Cleaning Old Data
 
-Para evitar crescimento excessivo da tabela, considere implementar limpeza periódica:
+To avoid unbounded table growth, consider periodic cleanup:
 
 ```sql
--- Deletar relatórios com mais de 90 dias
+-- Delete reports older than 90 days
 DELETE FROM csp_reports
 WHERE created_at < NOW() - INTERVAL '90 days';
 
--- Ou manter apenas violações críticas antigas
+-- Or keep only old critical violations
 DELETE FROM csp_reports
 WHERE created_at < NOW() - INTERVAL '90 days'
   AND is_critical = false;
 ```
 
-### Job de Limpeza Automática
+### Automatic Cleanup Job
 
-Crie um job agendado (cron) ou use um scheduler:
+Create a scheduled job (cron) or use a scheduler:
 
 ```typescript
-// Exemplo de job NestJS
-@Cron('0 2 * * *') // Todo dia às 2h
+// Example NestJS job
+@Cron('0 2 * * *') // Every day at 2am
 async cleanupOldReports() {
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - 90);
@@ -192,12 +192,12 @@ async cleanupOldReports() {
 }
 ```
 
-## Integração com Dashboard
+## Dashboard Integration
 
-Para criar um dashboard frontend, use o endpoint de consulta:
+To build a frontend dashboard, use the query endpoint:
 
 ```typescript
-// Exemplo de hook React
+// Example React hook
 export function useCspReports(filters: GetCspReportsDto) {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -213,20 +213,20 @@ export function useCspReports(filters: GetCspReportsDto) {
 }
 ```
 
-## Métricas Recomendadas
+## Recommended Metrics
 
-Monitore estas métricas regularmente:
+Monitor these metrics regularly:
 
-1. **Taxa de Violações**: Total de violações por dia/semana
-2. **Taxa de Violações Críticas**: Porcentagem de violações críticas
-3. **Diretivas Mais Violadas**: Identificar políticas CSP problemáticas
-4. **URIs Bloqueadas**: Recursos externos causando problemas
-5. **Tendências Temporais**: Aumento/diminuição de violações ao longo do tempo
+1. **Violation Rate**: Total violations per day/week
+2. **Critical Violation Rate**: Percentage of critical violations
+3. **Most Violated Directives**: Identify problematic CSP policies
+4. **Blocked URIs**: External resources causing issues
+5. **Time Trends**: Increase/decrease in violations over time
 
-## Exemplo de Dashboard SQL
+## Example SQL Dashboard
 
 ```sql
--- Dashboard completo
+-- Full dashboard
 SELECT 
   COUNT(*) as total_violations,
   COUNT(*) FILTER (WHERE is_critical = true) as critical_violations,

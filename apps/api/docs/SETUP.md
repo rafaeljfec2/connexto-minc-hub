@@ -1,58 +1,59 @@
-# Setup do Backend - MINC Teams API
+# Backend Setup - MINC Teams API
 
-Este guia irá ajudá-lo a configurar o backend do zero.
+This guide will help you set up the backend from scratch.
 
-## Pré-requisitos
+## Prerequisites
 
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
-- Docker e Docker Compose
+- Docker and Docker Compose
 
-## Passo a Passo
+## Step by Step
 
-### 1. Instalar Dependências
+### 1. Install Dependencies
 
-Na raiz do projeto (connexto-minc-hub):
+At the project root (connexto-minc-hub):
 
 ```bash
 pnpm install
 ```
 
-### 2. Subir o PostgreSQL
+### 2. Start PostgreSQL
 
-Na raiz do projeto, execute:
+At the project root, run:
 
 ```bash
 docker-compose up -d
 ```
 
-Isso irá:
-- Criar um container PostgreSQL
-- Criar o banco de dados `minc_teams`
-- Configurar usuário e senha padrão
+This will:
 
-Para verificar se está rodando:
+- Create a PostgreSQL container
+- Create the `minc_teams` database
+- Configure default user and password
+
+To verify it is running:
 
 ```bash
 docker-compose ps
 ```
 
-Para ver os logs:
+To view logs:
 
 ```bash
 docker-compose logs -f postgres
 ```
 
-### 3. Configurar Variáveis de Ambiente
+### 3. Configure Environment Variables
 
-Crie um arquivo `.env` em `apps/api/`:
+Create a `.env` file in `apps/api/`:
 
 ```bash
 cd apps/api
 cp .env.example .env
 ```
 
-Edite o arquivo `.env` e ajuste as variáveis conforme necessário:
+Edit the `.env` file and adjust variables as needed:
 
 ```env
 # Database Configuration
@@ -79,37 +80,39 @@ CORS_ORIGIN=http://localhost:5173
 RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES=60
 ```
 
-**IMPORTANTE**: 
-- Altere o `JWT_SECRET` para um valor seguro em produção
-- Nunca commite o arquivo `.env` no repositório
+**IMPORTANT**:
 
-### 4. Testar a Conexão
+- Change `JWT_SECRET` to a secure value in production
+- Never commit the `.env` file à repository
 
-Execute o servidor em modo desenvolvimento:
+### 4. Test the Connection
+
+Run the server in development mode:
 
 ```bash
-# Na raiz do projeto
+# At the project root
 pnpm dev
 
-# Ou diretamente em apps/api
+# Or directly in apps/api
 cd apps/api
 pnpm dev
 ```
 
-A API estará disponível em:
+The API will be available at:
+
 - **API**: http://localhost:3001
 - **Swagger**: http://localhost:3001/api/docs
 - **Health Check**: http://localhost:3001/health
 
-### 5. Verificar se Está Funcionando
+### 5. Verify It Works
 
-Acesse http://localhost:3001/health no navegador ou use curl:
+Open http://localhost:3001/health in the browser or use curl:
 
 ```bash
 curl http://localhost:3001/health
 ```
 
-Você deve receber:
+You should receive:
 
 ```json
 {
@@ -118,127 +121,130 @@ Você deve receber:
 }
 ```
 
-## Comandos Úteis
+## Useful Commands
 
 ### Docker Compose
 
 ```bash
-# Subir o banco
+# Start the database
 docker-compose up -d
 
-# Parar o banco
+# Stop the database
 docker-compose down
 
-# Parar e remover volumes (limpar dados)
+# Stop and remove volumes (clear data)
 docker-compose down -v
 
-# Ver logs
+# View logs
 docker-compose logs -f postgres
 
-# Ver status
+# View status
 docker-compose ps
 ```
 
-### Desenvolvimento
+### Development
 
 ```bash
-# Rodar em modo desenvolvimento (watch mode)
+# Run in development mode (watch mode)
 pnpm dev
 
-# Build para produção
+# Production build
 pnpm build
 
-# Rodar em produção
+# Run in production
 pnpm start:prod
 
 # Lint
 pnpm lint
 
-# Lint e corrigir
+# Lint and fix
 pnpm lint:fix
 ```
 
-### Migrations (quando implementadas)
+### Migrations (when implemented)
 
 ```bash
-# Criar nova migration
+# Create a new migration
 pnpm migration:create src/migrations/NomeDaMigration
 
-# Gerar migration a partir das entidades
+# Generate migration from entities
 pnpm migration:generate src/migrations/NomeDaMigration
 
-# Executar migrations
+# Run migrations
 pnpm migration:run
 
-# Reverter última migration
+# Revert last migration
 pnpm migration:revert
 
-# Ver status das migrations
+# Show migration status
 pnpm migration:show
 ```
 
 ## Troubleshooting
 
-### Erro de Conexão com o Banco
+### Database Connection Error
 
-1. Verifique se o PostgreSQL está rodando:
+1. Verify PostgreSQL is running:
+
    ```bash
    docker-compose ps
    ```
 
-2. Verifique as variáveis de ambiente no `.env`
+2. Check environment variables in `.env`
 
-3. Teste a conexão manualmente:
+3. Test the connection manually:
    ```bash
    docker-compose exec postgres psql -U minc_teams -d minc_teams
    ```
 
-### Porta já em uso
+### Port Already in Use
 
-Se a porta 3001 estiver em uso, altere no `.env`:
+If port 3001 is in use, change it in `.env`:
+
 ```env
 PORT=3002
 ```
 
-### Erro de CORS
+### CORS Error
 
-Certifique-se de que `FRONTEND_URL` e `CORS_ORIGIN` no `.env` correspondem à URL do frontend.
+Make sure `FRONTEND_URL` and `CORS_ORIGIN` in `.env` match the frontend URL.
 
-## Próximos Passos
+## Next Steps
 
-Após o setup básico:
+After basic setup:
 
-1. ✅ Criar migrations do banco de dados
-2. ✅ Implementar endpoints CRUD para cada módulo
-3. ✅ Adicionar testes
-4. ✅ Configurar CI/CD
+1. ✅ Create database migrations
+2. ✅ Implement CRUD endpoints for each module
+3. ✅ Add tests
+4. ✅ Configure CI/CD
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 apps/api/
 ├── src/
 │   ├── main.ts                 # Entry point
-│   ├── app.module.ts           # Módulo principal
-│   ├── auth/                   # Autenticação
-│   ├── users/                  # Usuários
-│   ├── churches/               # Igrejas
-│   ├── ministries/            # Ministérios
-│   ├── teams/                  # Equipes
-│   ├── persons/                # Pessoas/Servos
-│   ├── services/               # Cultos/Serviços
-│   ├── schedules/              # Escalas
+│   ├── app.module.ts           # Main module
+│   ├── auth/                   # Authentication
+│   ├── useres/                  # Users
+│   ├── churches/               # Churches
+│   ├── ministries/            # Ministries
+│   ├── teams/                  # Teams
+│   ├── persons/                # Persons/Volunteers
+│   ├── services/               # Worship services
+│   ├── schedules/              # Schedules
 │   ├── attendances/            # Check-ins
-│   └── config/                 # Configurações
-├── .env                        # Variáveis de ambiente (não commitado)
-├── .env.example                # Exemplo de variáveis
+│   └── config/                 # Configuration
+├── .env                        # Environment variables (not committed)
+├── .env.example                # Example variables
 └── package.json
 ```
 
-## Suporte
+## Support
 
-Em caso de problemas, verifique:
-- Logs do Docker: `docker-compose logs postgres`
-- Logs da aplicação: console onde o `pnpm dev` está rodando
-- Documentação do NestJS: https://docs.nestjs.com
-- Documentação do TypeORM: https://typeorm.io
+If you run into issues, check:
+
+- Docker logs: `docker-compose logs postgres`
+- Application logs: console where `pnpm dev` is running
+- NestJS documentation: https://docs.nestjs.com
+- TypeORM documentation: https://typeorm.io

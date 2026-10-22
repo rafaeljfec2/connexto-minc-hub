@@ -1,6 +1,6 @@
-# Endpoints da API - MINC Teams
+# API Endpoints - MINC Teams
 
-Documentação completa de todos os endpoints disponíveis na API.
+Complete documentation of all API endpoints.
 
 ## Base URL
 
@@ -8,11 +8,11 @@ Documentação completa de todos os endpoints disponíveis na API.
 http://localhost:3001
 ```
 
-## Autenticação
+## Authentication
 
-Todos os endpoints (exceto `/auth/login` e `/auth/refresh-token`) requerem autenticação via JWT.
+All endpoints (except `/auth/login` and `/auth/refresh-token`) require JWT authentication.
 
-Os tokens são enviados automaticamente via cookies HttpOnly. Alternativamente, pode-se usar o header:
+Tokens are sent automatically via HttpOnly cookies. Alternatively, you can use the header:
 
 ```
 Authorization: Bearer <token>
@@ -20,11 +20,11 @@ Authorization: Bearer <token>
 
 ---
 
-## Autenticação
+## Authentication
 
 ### POST /auth/login
 
-Realiza login e retorna cookies HttpOnly com tokens.
+Logs in and returns HttpOnly cookies with tokens.
 
 **Body:**
 ```json
@@ -39,7 +39,7 @@ Realiza login e retorna cookies HttpOnly com tokens.
 {
   "user": {
     "id": "uuid",
-    "name": "Nome do Usuário",
+    "name": "User Name",
     "email": "user@example.com",
     "role": "admin",
     "isActive": true,
@@ -56,16 +56,16 @@ Realiza login e retorna cookies HttpOnly com tokens.
 
 ### POST /auth/refresh-token
 
-Renova os tokens de autenticação.
+Refreshes authentication tokens.
 
-**Body (opcional):**
+**Body (optional):**
 ```json
 {
   "refreshToken": "refresh-token-here"
 }
 ```
 
-Ou usar o cookie `refresh_token`.
+Or use the `refresh_token` cookie.
 
 **Response:** `200 OK`
 ```json
@@ -78,14 +78,14 @@ Ou usar o cookie `refresh_token`.
 
 ### POST /auth/logout
 
-Realiza logout e limpa os cookies.
+Logs out and clears cookies.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Response:** `200 OK`
 ```json
 {
-  "message": "Logout realizado com sucesso"
+  "message": "Logout successful"
 }
 ```
 
@@ -93,7 +93,7 @@ Realiza logout e limpa os cookies.
 
 ### POST /auth/forgot-password
 
-Solicita recuperação de senha.
+Requests password recovery.
 
 **Body:**
 ```json
@@ -105,7 +105,7 @@ Solicita recuperação de senha.
 **Response:** `200 OK`
 ```json
 {
-  "message": "E-mail de recuperação enviado com sucesso"
+  "message": "Password recovery email sent successfully"
 }
 ```
 
@@ -113,7 +113,7 @@ Solicita recuperação de senha.
 
 ### POST /auth/reset-password
 
-Reseta a senha usando o token recebido por email.
+Resets the password using the token received by email.
 
 **Body:**
 ```json
@@ -127,7 +127,7 @@ Reseta a senha usando o token recebido por email.
 **Response:** `200 OK`
 ```json
 {
-  "message": "Senha alterada com sucesso"
+  "message": "Password changed successfully"
 }
 ```
 
@@ -135,7 +135,7 @@ Reseta a senha usando o token recebido por email.
 
 ### GET /auth/me
 
-Retorna informações do usuário autenticado.
+Returns information about the authenticated user.
 
 **Headers:** `Authorization: Bearer <token>`
 
@@ -143,7 +143,7 @@ Retorna informações do usuário autenticado.
 ```json
 {
   "id": "uuid",
-  "name": "Nome do Usuário",
+  "name": "User Name",
   "email": "user@example.com",
   "role": "admin",
   "isActive": true,
@@ -155,21 +155,21 @@ Retorna informações do usuário autenticado.
 
 ---
 
-## Churches (Igrejas)
+## Churches
 
 ### GET /churches
 
-Lista todas as igrejas.
+Lists all churches.
 
 **Response:** `200 OK`
 ```json
 [
   {
     "id": "uuid",
-    "name": "Minha Igreja na Cidade",
-    "address": "Rua Exemplo, 123",
+    "name": "My City Church",
+    "address": "123 Example St",
     "phone": "(11) 99999-9999",
-    "email": "contato@igreja.com",
+    "email": "contato@church.com",
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z",
     "deletedAt": null
@@ -181,16 +181,16 @@ Lista todas as igrejas.
 
 ### GET /churches/:id
 
-Obtém uma igreja por ID.
+Gets a church by ID.
 
 **Response:** `200 OK`
 ```json
 {
   "id": "uuid",
-  "name": "Minha Igreja na Cidade",
-  "address": "Rua Exemplo, 123",
+  "name": "My City Church",
+  "address": "123 Example St",
   "phone": "(11) 99999-9999",
-  "email": "contato@igreja.com",
+  "email": "contato@church.com",
   "ministries": [],
   "services": [],
   "createdAt": "2024-01-01T00:00:00.000Z",
@@ -202,15 +202,15 @@ Obtém uma igreja por ID.
 
 ### POST /churches
 
-Cria uma nova igreja.
+Creates a new church.
 
 **Body:**
 ```json
 {
-  "name": "Minha Igreja na Cidade",
-  "address": "Rua Exemplo, 123",
+  "name": "My City Church",
+  "address": "123 Example St",
   "phone": "(11) 99999-9999",
-  "email": "contato@igreja.com"
+  "email": "contato@church.com"
 }
 ```
 
@@ -220,12 +220,12 @@ Cria uma nova igreja.
 
 ### PATCH /churches/:id
 
-Atualiza uma igreja.
+Updates a church.
 
 **Body:**
 ```json
 {
-  "name": "Novo Nome",
+  "name": "New Name",
   "phone": "(11) 88888-8888"
 }
 ```
@@ -236,20 +236,20 @@ Atualiza uma igreja.
 
 ### DELETE /churches/:id
 
-Remove uma igreja (soft delete).
+Deletes a church (soft delete).
 
 **Response:** `200 OK`
 
 ---
 
-## Ministries (Ministérios)
+## Ministries
 
 ### GET /ministries
 
-Lista todos os ministérios.
+Lists all ministries.
 
 **Query Params:**
-- `churchId` (opcional) - Filtrar por igreja
+- `churchId` (optional) - Filter by church
 
 **Response:** `200 OK`
 
@@ -257,7 +257,7 @@ Lista todos os ministérios.
 
 ### GET /ministries/:id
 
-Obtém um ministério por ID.
+Gets a ministry by ID.
 
 **Response:** `200 OK`
 
@@ -265,14 +265,14 @@ Obtém um ministério por ID.
 
 ### POST /ministries
 
-Cria um novo ministério.
+Creates a new ministry.
 
 **Body:**
 ```json
 {
-  "name": "Boas-Vindas",
-  "churchId": "uuid-da-igreja",
-  "description": "Ministério responsável por receber visitantes",
+  "name": "Welcome",
+  "churchId": "church-uuid",
+  "description": "Ministry responsible for welcoming visitors",
   "isActive": true
 }
 ```
@@ -283,7 +283,7 @@ Cria um novo ministério.
 
 ### PATCH /ministries/:id
 
-Atualiza um ministério.
+Updates a ministry.
 
 **Response:** `200 OK`
 
@@ -291,21 +291,21 @@ Atualiza um ministério.
 
 ### DELETE /ministries/:id
 
-Remove um ministério (soft delete).
+Deletes a ministry (soft delete).
 
 **Response:** `200 OK`
 
 ---
 
-## Persons (Pessoas/Servos)
+## Persons (Volunteers)
 
 ### GET /persons
 
-Lista todas as pessoas.
+Lists all persons.
 
 **Query Params:**
-- `ministryId` (opcional) - Filtrar por ministério
-- `teamId` (opcional) - Filtrar por equipe
+- `ministryId` (optional) - Filter by ministry
+- `teamId` (optional) - Filter by team
 
 **Response:** `200 OK`
 
@@ -313,7 +313,7 @@ Lista todas as pessoas.
 
 ### GET /persons/:id
 
-Obtém uma pessoa por ID.
+Gets a person by ID.
 
 **Response:** `200 OK`
 
@@ -321,19 +321,19 @@ Obtém uma pessoa por ID.
 
 ### POST /persons
 
-Cria uma nova pessoa.
+Creates a new person.
 
 **Body:**
 ```json
 {
-  "name": "João Silva",
-  "ministryId": "uuid-do-ministerio",
-  "teamId": "uuid-da-equipe",
+  "name": "John Silva",
+  "ministryId": "ministry-uuid",
+  "teamId": "team-uuid",
   "email": "joao@example.com",
   "phone": "(11) 99999-9999",
   "birthDate": "1990-01-01",
-  "address": "Rua Exemplo, 123",
-  "notes": "Observações"
+  "address": "123 Example St",
+  "notes": "Notes"
 }
 ```
 
@@ -343,7 +343,7 @@ Cria uma nova pessoa.
 
 ### PATCH /persons/:id
 
-Atualiza uma pessoa.
+Updates a person.
 
 **Response:** `200 OK`
 
@@ -351,20 +351,20 @@ Atualiza uma pessoa.
 
 ### DELETE /persons/:id
 
-Remove uma pessoa (soft delete).
+Deletes a person (soft delete).
 
 **Response:** `200 OK`
 
 ---
 
-## Services (Cultos/Serviços)
+## Services (Worship Services)
 
 ### GET /services
 
-Lista todos os cultos.
+Lists all worship services.
 
 **Query Params:**
-- `churchId` (opcional) - Filtrar por igreja
+- `churchId` (optional) - Filter by church
 
 **Response:** `200 OK`
 
@@ -372,7 +372,7 @@ Lista todos os cultos.
 
 ### GET /services/:id
 
-Obtém um culto por ID.
+Gets a worship service by ID.
 
 **Response:** `200 OK`
 
@@ -380,21 +380,21 @@ Obtém um culto por ID.
 
 ### POST /services
 
-Cria um novo culto.
+Creates a new worship service.
 
 **Body:**
 ```json
 {
-  "churchId": "uuid-da-igreja",
+  "churchId": "church-uuid",
   "type": "sunday_morning",
   "dayOfWeek": 0,
   "time": "09:00:00",
-  "name": "Culto da Manhã",
+  "name": "Morning Service",
   "isActive": true
 }
 ```
 
-**Tipos:** `sunday_morning`, `sunday_evening`, `wednesday`, `friday`, `special`
+**Types:** `sunday_morning`, `sunday_evening`, `wednesday`, `friday`, `special`
 
 **Response:** `201 Created`
 
@@ -402,7 +402,7 @@ Cria um novo culto.
 
 ### PATCH /services/:id
 
-Atualiza um culto.
+Updates a worship service.
 
 **Response:** `200 OK`
 
@@ -410,20 +410,20 @@ Atualiza um culto.
 
 ### DELETE /services/:id
 
-Remove um culto (soft delete).
+Deletes a worship service (soft delete).
 
 **Response:** `200 OK`
 
 ---
 
-## Teams (Equipes)
+## Teams
 
 ### GET /teams
 
-Lista todas as equipes.
+Lists all teams.
 
 **Query Params:**
-- `ministryId` (opcional) - Filtrar por ministério
+- `ministryId` (optional) - Filter by ministry
 
 **Response:** `200 OK`
 
@@ -431,7 +431,7 @@ Lista todas as equipes.
 
 ### GET /teams/:id
 
-Obtém uma equipe por ID.
+Gets a team by ID.
 
 **Response:** `200 OK`
 
@@ -439,15 +439,15 @@ Obtém uma equipe por ID.
 
 ### POST /teams
 
-Cria uma nova equipe.
+Creates a new team.
 
 **Body:**
 ```json
 {
-  "name": "Equipe A",
-  "ministryId": "uuid-do-ministerio",
-  "leaderId": "uuid-do-lider",
-  "description": "Equipe responsável pelo recebimento",
+  "name": "Team A",
+  "ministryId": "ministry-uuid",
+  "leaderId": "leader-uuid",
+  "description": "Team responsible for greeting",
   "isActive": true
 }
 ```
@@ -458,7 +458,7 @@ Cria uma nova equipe.
 
 ### PATCH /teams/:id
 
-Atualiza uma equipe.
+Updates a team.
 
 **Response:** `200 OK`
 
@@ -466,7 +466,7 @@ Atualiza uma equipe.
 
 ### DELETE /teams/:id
 
-Remove uma equipe (soft delete).
+Deletes a team (soft delete).
 
 **Response:** `200 OK`
 
@@ -474,12 +474,12 @@ Remove uma equipe (soft delete).
 
 ### POST /teams/:id/members
 
-Adiciona um membro à equipe.
+Adds a member to team.
 
 **Body:**
 ```json
 {
-  "personId": "uuid-da-pessoa"
+  "personId": "person-uuid"
 }
 ```
 
@@ -489,7 +489,7 @@ Adiciona um membro à equipe.
 
 ### GET /teams/:id/members
 
-Lista membros da equipe.
+Lists team members.
 
 **Response:** `200 OK`
 
@@ -497,22 +497,22 @@ Lista membros da equipe.
 
 ### DELETE /teams/:id/members/:personId
 
-Remove um membro da equipe.
+Removes a member from the team.
 
 **Response:** `200 OK`
 
 ---
 
-## Schedules (Escalas)
+## Schedules
 
 ### GET /schedules
 
-Lista todas as escalas.
+Lists all schedules.
 
 **Query Params:**
-- `serviceId` (opcional) - Filtrar por culto
-- `startDate` (opcional) - Data inicial (YYYY-MM-DD)
-- `endDate` (opcional) - Data final (YYYY-MM-DD)
+- `serviceId` (optional) - Filter by worship service
+- `startDate` (optional) - Start date (YYYY-MM-DD)
+- `endDate` (optional) - End date (YYYY-MM-DD)
 
 **Response:** `200 OK`
 
@@ -520,7 +520,7 @@ Lista todas as escalas.
 
 ### GET /schedules/:id
 
-Obtém uma escala por ID.
+Gets a schedule by ID.
 
 **Response:** `200 OK`
 
@@ -528,14 +528,14 @@ Obtém uma escala por ID.
 
 ### POST /schedules
 
-Cria uma nova escala.
+Creates a new schedule.
 
 **Body:**
 ```json
 {
-  "serviceId": "uuid-do-culto",
+  "serviceId": "service-uuid",
   "date": "2024-01-15",
-  "teamIds": ["uuid-equipe-1", "uuid-equipe-2"]
+  "teamIds": ["team-uuid-1", "team-uuid-2"]
 }
 ```
 
@@ -545,7 +545,7 @@ Cria uma nova escala.
 
 ### PATCH /schedules/:id
 
-Atualiza uma escala.
+Updates a schedule.
 
 **Response:** `200 OK`
 
@@ -553,7 +553,7 @@ Atualiza uma escala.
 
 ### DELETE /schedules/:id
 
-Remove uma escala (soft delete).
+Deletes a schedule (soft delete).
 
 **Response:** `200 OK`
 
@@ -561,12 +561,12 @@ Remove uma escala (soft delete).
 
 ### POST /schedules/:id/teams
 
-Adiciona uma equipe à escala.
+Adds a team to schedule.
 
 **Body:**
 ```json
 {
-  "teamId": "uuid-da-equipe"
+  "teamId": "team-uuid"
 }
 ```
 
@@ -576,7 +576,7 @@ Adiciona uma equipe à escala.
 
 ### GET /schedules/:id/teams
 
-Lista equipes da escala.
+Lists teams on the schedule.
 
 **Response:** `200 OK`
 
@@ -584,7 +584,7 @@ Lista equipes da escala.
 
 ### DELETE /schedules/:id/teams/:teamId
 
-Remove uma equipe da escala.
+Removes a team from the schedule.
 
 **Response:** `200 OK`
 
@@ -594,11 +594,11 @@ Remove uma equipe da escala.
 
 ### GET /attendances
 
-Lista todos os check-ins.
+Lists all check-ins.
 
 **Query Params:**
-- `scheduleId` (opcional) - Filtrar por escala
-- `personId` (opcional) - Filtrar por pessoa
+- `scheduleId` (optional) - Filter by schedule
+- `personId` (optional) - Filter by person
 
 **Response:** `200 OK`
 
@@ -606,7 +606,7 @@ Lista todos os check-ins.
 
 ### GET /attendances/schedule/:scheduleId/stats
 
-Obtém estatísticas de presença de uma escala.
+Gets attendance statistics for a schedule.
 
 **Response:** `200 OK`
 ```json
@@ -622,7 +622,7 @@ Obtém estatísticas de presença de uma escala.
 
 ### GET /attendances/:id
 
-Obtém um check-in por ID.
+Gets a check-in by ID.
 
 **Response:** `200 OK`
 
@@ -630,13 +630,13 @@ Obtém um check-in por ID.
 
 ### POST /attendances
 
-Registra um check-in.
+Records a check-in.
 
 **Body:**
 ```json
 {
-  "scheduleId": "uuid-da-escala",
-  "personId": "uuid-da-pessoa",
+  "scheduleId": "schedule-uuid",
+  "personId": "person-uuid",
   "method": "qr_code",
   "qrCodeData": {
     "qrCode": "abc123",
@@ -646,7 +646,7 @@ Registra um check-in.
 }
 ```
 
-**Métodos:** `qr_code`, `manual`
+**Methods:** `qr_code`, `manual`
 
 **Response:** `201 Created`
 
@@ -654,7 +654,7 @@ Registra um check-in.
 
 ### PATCH /attendances/:id
 
-Atualiza um check-in.
+Updates a check-in.
 
 **Response:** `200 OK`
 
@@ -662,27 +662,27 @@ Atualiza um check-in.
 
 ### DELETE /attendances/:id
 
-Remove um check-in.
+Deletes a check-in.
 
 **Response:** `200 OK`
 
 ---
 
-## Chat (Comunicação)
+## Chat
 
-> **Nota:** Para especificações completas do Chat API, consulte [CHAT_API.md](./CHAT_API.md)
+> **Note:** For full Chat API specifications, see [CHAT_API.md](./CHAT_API.md)
 
-O sistema de chat permite comunicação entre usuários do sistema. Os principais endpoints são:
+The chat system enables communication between system users. Main endpoints:
 
-- `GET /api/chat/conversations` - Listar conversas do usuário
-- `GET /api/chat/conversations/:id/messages` - Obter mensagens de uma conversa
-- `POST /api/chat/conversations/:id/messages` - Enviar mensagem
-- `POST /api/chat/conversations` - Criar ou obter conversa
-- `PUT /api/chat/conversations/:id/messages/read` - Marcar mensagens como lidas
-- `GET /api/chat/users/:id/status` - Obter status online de usuário
-- `GET /api/chat/conversations/unread-count` - Contagem de mensagens não lidas
+- `GET /api/chat/conversations` - List user conversations
+- `GET /api/chat/conversations/:id/messages` - Get messages for a conversation
+- `POST /api/chat/conversations/:id/messages` - Send message
+- `POST /api/chat/conversations` - Create or get conversation
+- `PUT /api/chat/conversations/:id/messages/read` - Mark messages as read
+- `GET /api/chat/users/:id/status` - Get user online status
+- `GET /api/chat/conversations/unread-count` - Unread message count
 
-Para detalhes completos, exemplos de requisições/respostas, estrutura de banco de dados e especificação de WebSocket, consulte [CHAT_API.md](./CHAT_API.md).
+For full details, request/response examples, database schema, and WebSocket specification, see [CHAT_API.md](./CHAT_API.md).
 
 ---
 
@@ -690,7 +690,7 @@ Para detalhes completos, exemplos de requisições/respostas, estrutura de banco
 
 ### GET /health
 
-Verifica o status da API.
+Checks API status.
 
 **Response:** `200 OK`
 ```json
@@ -702,23 +702,23 @@ Verifica o status da API.
 
 ---
 
-## Códigos de Status HTTP
+## HTTP Status Codes
 
-- `200 OK` - Requisição bem-sucedida
-- `201 Created` - Recurso criado com sucesso
-- `400 Bad Request` - Dados inválidos
-- `401 Unauthorized` - Não autenticado
-- `403 Forbidden` - Não autorizado
-- `404 Not Found` - Recurso não encontrado
-- `409 Conflict` - Conflito (ex: duplicação)
-- `422 Unprocessable Entity` - Erro de validação
-- `500 Internal Server Error` - Erro interno do servidor
+- `200 OK` - Successful request
+- `201 Created` - Resource created successfully
+- `400 Bad Request` - Invalid data
+- `401 Unauthorized` - Not authenticated
+- `403 Forbidden` - Not authorized
+- `404 Not Found` - Resource not found
+- `409 Conflict` - Conflict (e.g., duplicate)
+- `422 Unprocessable Entity` - Validation error
+- `500 Internal Server Error` - Internal server error
 
 ---
 
-## Documentação Swagger
+## Swagger documentation
 
-Acesse a documentação interativa em:
+Access interactive documentation at:
 
 ```
 http://localhost:3001/api/docs
@@ -726,46 +726,46 @@ http://localhost:3001/api/docs
 
 ---
 
-## Exemplos de Uso
+## Usage Examples
 
-### Criar uma igreja e seus ministérios
+### Create a church and its ministries
 
 ```bash
-# 1. Criar igreja
+# 1. Create church
 POST /churches
 {
-  "name": "Minha Igreja na Cidade"
+  "name": "My City Church"
 }
 
-# 2. Criar ministério
+# 2. Create ministry
 POST /ministries
 {
-  "name": "Boas-Vindas",
+  "name": "Welcome",
   "churchId": "<church-id>"
 }
 
-# 3. Criar equipe
+# 3. Create team
 POST /teams
 {
-  "name": "Equipe A",
+  "name": "Team A",
   "ministryId": "<ministry-id>"
 }
 ```
 
-### Criar uma escala e registrar check-ins
+### Create a schedule and record check-ins
 
 ```bash
-# 1. Criar culto
+# 1. Create worship service
 POST /services
 {
   "churchId": "<church-id>",
   "type": "sunday_morning",
   "dayOfWeek": 0,
   "time": "09:00:00",
-  "name": "Culto da Manhã"
+  "name": "Morning Service"
 }
 
-# 2. Criar escala
+# 2. Create schedule
 POST /schedules
 {
   "serviceId": "<service-id>",
@@ -773,7 +773,7 @@ POST /schedules
   "teamIds": ["<team-id>"]
 }
 
-# 3. Registrar check-in
+# 3. Record check-in
 POST /attendances
 {
   "scheduleId": "<schedule-id>",
@@ -784,4 +784,4 @@ POST /attendances
 
 ---
 
-**Última atualização:** 2024-01-XX
+**Last updated:** 2024-01-XX

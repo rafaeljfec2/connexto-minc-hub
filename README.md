@@ -1,125 +1,125 @@
-# MINC Teams - Sistema de Gestão do Time Boas-Vindas
+# MINC Teams - Welcome Team Management System
 
-Sistema de gestão de pessoas e equipes para o Time Boas-Vindas da Minha Igreja na Cidade.
+People and team management system for the Welcome Team at Minha Church na Cidade.
 
-## Arquitetura
+## Architecture
 
-Este projeto utiliza um monorepo gerenciado pelo **pnpm** e **Turborepo**:
+This project uses a monorepo managed by **pnpm** and **Turborepo**:
 
-- **Frontend Web**: React + TypeScript + Vite
-- **Frontend Mobile**: React Native (a ser implementado)
-- **Backend**: Node.js + NestJS (a ser implementado)
+- **Web Frontend**: React + TypeScript + Vite
+- **Mobile Frontend**: React Native (to be implemented)
+- **Backend**: Node.js + NestJS (to be implemented)
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 connexto-minc-hub/
 ├── apps/
-│   └── web/          # Frontend web (React + Vite)
-├── packages/          # Pacotes compartilhados (futuro)
-└── turbo.json        # Configuração do Turborepo
+│   └── web/          # Web frontend (React + Vite)
+├── packages/          # Shared packages (future)
+└── turbo.json        # Turborepo configuration
 ```
 
-## Tecnologias
+## Technologies
 
-### Frontend Web
-- **React 18** com TypeScript
-- **Vite** para build e desenvolvimento
-- **React Router** para roteamento
-- **Tailwind CSS** para estilização (mobile-first)
-- **Axios** para requisições HTTP
-- **React Hook Form** + **Zod** para formulários e validação
+### Web Frontend
+- **React 18** with TypeScript
+- **Vite** for build and development
+- **React Router** for routing
+- **Tailwind CSS** for styling (mobile-first)
+- **Axios** for HTTP requests
+- **React Hook Form** + **Zod** for forms and validation
 
-## Desenvolvimento
+## Development
 
-### Pré-requisitos
+### Prerequisites
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
 
-### Instalação
+### Installation
 
 ```bash
-# Instalar dependências
+# Install dependencies
 pnpm install
 
-# Iniciar desenvolvimento (frontend web)
+# Start development (web frontend)
 pnpm dev
 
-# Build de produção
+# Production build
 pnpm build
 
 # Lint
 pnpm lint
 ```
 
-### Estrutura do Frontend Web
+### Web Frontend Structure
 
 ```
 apps/web/
 ├── src/
-│   ├── components/     # Componentes reutilizáveis
-│   │   ├── ui/        # Componentes de UI base
-│   │   └── layout/    # Componentes de layout
-│   ├── contexts/      # Contextos React (Auth, etc.)
-│   ├── pages/         # Páginas da aplicação
-│   ├── lib/           # Utilitários e configurações
-│   ├── types/         # Tipos TypeScript
-│   ├── App.tsx        # Componente principal
+│   ├── components/     # Reusable components
+│   │   ├── ui/        # Base UI components
+│   │   └── layout/    # Layout components
+│   ├── contexts/      # React contexts (Auth, etc.)
+│   ├── pages/         # Application pages
+│   ├── lib/           # Utilities and configuration
+│   ├── types/         # TypeScript types
+│   ├── App.tsx        # Main component
 │   └── main.tsx       # Entry point
 ├── index.html
 └── vite.config.ts
 ```
 
-## Funcionalidades do MVP
+## MVP Features
 
-- [x] Estrutura base do projeto
-- [x] Autenticação e controle de acesso
-- [x] Dashboard com indicadores
-- [ ] Gestão de Pessoas
-- [ ] Gestão de Equipes
-- [ ] Configuração de Agenda de Cultos
-- [ ] Sorteio automático de equipes
-- [ ] Remanejamento manual
-- [ ] Controle de frequência
-- [ ] Comunicação segmentada
+- [x] Base project structure
+- [x] Authentication and access control
+- [x] Dashboard with indicators
+- [ ] People management
+- [ ] Team management
+- [ ] Worship service schedule configuration
+- [ ] Automatic team assignment
+- [ ] Manual reassignment
+- [ ] Attendance tracking
+- [ ] Segmented communication
 
 ## Design System
 
-O design é baseado no tema do site [minhaigrejanacidade.com](https://minhaigrejanacidade.com/), utilizando:
-- Gradiente quente (laranja/vermelho) com textura grain
-- Tipografia Inter
-- Paleta de cores dark com acentos primários
+The design is based on the theme of [minhachurchnacidade.com](https://minhachurchnacidade.com/), using:
+- Warm gradient (orange/red) with grain texture
+- Inter typography
+- Dark color palette with primary accents
 - Mobile-first approach
 
-## Segurança
+## Security
 
-- Autenticação via JWT
-- Controle de acesso baseado em papéis (Admin, Coordenador, Líder, Membro)
-- Validação de dados no frontend e backend
+- JWT authentication
+- Role-based access control (Admin, Coordinator, Leader, Member)
+- Data validation on frontend and backend
 
 ## Deploy
 
-O projeto está configurado para deploy na **Vercel**.
+The project is configured for deployment on **Vercel**.
 
-### Variáveis de Ambiente
+### Environment Variables
 
-Configure as seguintes variáveis no painel da Vercel:
+Configure the following variables in the Vercel dashboard:
 
-- `VITE_API_URL`: URL base da API backend (ex: `https://api.minc-teams.com`)
-- `VITE_MOCK_MODE`: `false` para produção
+- `VITE_API_URL`: Backend API base URL (e.g. `https://api.minc-teams.com`)
+- `VITE_MOCK_MODE`: `false` for production
 
-Para mais detalhes, consulte [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md) e [apps/web/ENV_VARIABLES.md](./apps/web/ENV_VARIABLES.md).
+For more details, see [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md) and [apps/web/ENV_VARIABLES.md](./apps/web/ENV_VARIABLES.md).
 
-### Build Otimizado
+### Optimized Build
 
-O projeto inclui otimizações para produção:
-- Code splitting automático
-- Minificação com esbuild
-- Cache de assets estáticos
-- Chunks separados para vendors
+The project includes production optimizations:
+- Automatic code splitting
+- Minification with esbuild
+- Static asset caching
+- Separate vendor chunks
 
 ## Roadmap
 
-1. **Fase 1**: MVP funcional
-2. **Fase 2**: QR Code, relatórios e automações
-3. **Fase 3**: Expansão para outros ministérios
+1. **Phase 1**: Functional MVP
+2. **Phase 2**: QR Code, reports, and automations
+3. **Phase 3**: Expansion to other ministries

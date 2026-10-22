@@ -1,14 +1,14 @@
-# Como Sincronizar Configurações da Vercel
+# How to Sync Vercel Settings
 
-## ⚠️ Entendendo o Problema
+## ⚠️ Understanding the Problem
 
-O campo **"Production Overrides"** é **somente leitura** - ele apenas mostra as configurações que foram usadas no último deploy de produção. Você **não pode editar** esse campo diretamente.
+The **"Production Overrides"** field is **read-only**—it only shows settings used in the last production deploy. You **cannot edit** that field directly.
 
-## ✅ Solução: Configurar "Project Settings" e Fazer Novo Deploy
+## ✅ Solution: Configure "Project Settings" and Deploy Again
 
-### Passo 1: Configurar "Project Settings"
+### Step 1: Configure "Project Settings"
 
-1. Na seção **"Project Settings"**, configure:
+1. Under **"Project Settings"**, configure:
 
    **Behavior:** "Only build if there are changes in a folder"
    
@@ -17,46 +17,46 @@ O campo **"Production Overrides"** é **somente leitura** - ele apenas mostra as
    git diff HEAD^ HEAD --quiet apps/web/
    ```
 
-2. Clique em **"Save"**
+2. Click **"Save"**
 
-### Passo 2: Fazer um Novo Deploy
+### Step 2: Create a New Deploy
 
-Você tem duas opções:
+You have two options:
 
-#### Opção A: Redeploy do Último Deployment (Rápido)
+#### Option A: Redeploy Latest Deployment (Fast)
 
-1. Vá em **Deployments** na Vercel
-2. Encontre o último deployment de produção
-3. Clique nos **três pontos** (⋯) ao lado do deployment
-4. Selecione **"Redeploy"**
-5. Isso vai usar as novas configurações de "Project Settings"
+1. Go to **Deployments** on Vercel
+2. Find the latest production deployment
+3. Click the **three dots** (⋯) next to deployment
+4. Select **"Redeploy"**
+5. This uses the new **"Project Settings"** configuration
 
-#### Opção B: Fazer um Novo Push (Recomendado)
+#### Option B: Push Again (Recommended)
 
-1. Faça um commit vazio:
+1. Make an empty commit:
    ```bash
-   git commit --allow-empty -m "chore: sincronizar configurações Vercel"
+   git commit --allow-empty -m "chore: sync Vercel settings"
    git push
    ```
-2. Isso vai criar um novo deploy com as configurações atualizadas
+2. This creates a new deploy with updated settings
 
-### Passo 3: Verificar
+### Step 3: Verify
 
-Após o deploy:
-1. O aviso amarelo deve desaparecer
-2. As configurações de "Production Overrides" vão ser atualizadas automaticamente
-3. Os próximos deploys automáticos vão funcionar corretamente
+After deploy:
+1. The yellow warning should disappear
+2. **"Production Overrides"** updates automatically
+3. Future automatic deploys should work correctly
 
-## 🎯 Resumo
+## 🎯 Summary
 
-- ✅ **"Project Settings"** = Configurações editáveis (o que você quer)
-- 📖 **"Production Overrides"** = Configurações do último deploy (somente leitura)
-- 🔄 **Solução** = Configurar "Project Settings" + Fazer novo deploy
+- ✅ **"Project Settings"** = Editable settings (what you want)
+- 📖 **"Production Overrides"** = Last deploy settings (read-only)
+- 🔄 **Solution** = Configure "Project Settings" + New deploy
 
-## ⚠️ Importante
+## ⚠️ Important
 
-O aviso amarelo vai desaparecer automaticamente após você:
-1. Salvar as configurações em "Project Settings"
-2. Fazer um novo deploy (redeploy ou novo push)
+The yellow warning disappears automatically after you:
+1. Save settings in "Project Settings"
+2. Create a new deploy (redeploy or new push)
 
-Não precisa editar "Production Overrides" - ele é atualizado automaticamente!
+You of the not need to edit "Production Overrides"—it updates automatically!

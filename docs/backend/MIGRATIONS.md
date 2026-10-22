@@ -1,73 +1,73 @@
 # Migrations - MINC Teams API
 
-Este documento explica como trabalhar com migrations do TypeORM no projeto.
+This document explains how to work with TypeORM migrations in the project.
 
-## O que são Migrations?
+## What Are Migrations?
 
-Migrations são arquivos que descrevem mudanças no schema do banco de dados de forma versionada e controlada. Elas permitem:
+Migrations are files that describe database schema changes in a versioned, controlled way. They allow you to:
 
-- Versionar mudanças no banco de dados
-- Aplicar mudanças de forma consistente em diferentes ambientes
-- Reverter mudanças quando necessário
-- Colaborar em equipe com histórico de mudanças
+- Version database changes
+- Apply changes consistently across environments
+- Revert changes when needed
+- Collaborate as a team with a history of changes
 
-## Comandos Disponíveis
+## Available Commands
 
-### Criar uma Nova Migration
+### Create a New Migration
 
-Para criar uma migration vazia (você escreve o SQL manualmente):
+To create an empty migration (you write the SQL manually):
 
 ```bash
 pnpm migration:create src/migrations/NomeDaMigration
 ```
 
-**Exemplo:**
+**Example:**
 ```bash
 pnpm migration:create src/migrations/AddEmailToPersons
 ```
 
-### Gerar Migration Automaticamente
+### Generate Migration Automatically
 
-Para gerar uma migration baseada nas mudanças nas entidades:
+To generate a migration based on entity changes:
 
 ```bash
 pnpm migration:generate src/migrations/NomeDaMigration
 ```
 
-**Exemplo:**
+**Example:**
 ```bash
 pnpm migration:generate src/migrations/AddEmailToPersons
 ```
 
-⚠️ **Atenção**: Este comando compara as entidades com o banco atual. Certifique-se de que o banco está atualizado antes de usar.
+⚠️ **Note**: This command compstates entities with the current database. Make sure the database is up to date before using it.
 
-### Executar Migrations
+### Run Migrations
 
-Para aplicar todas as migrations pendentes:
+To apply all pending migrations:
 
 ```bash
 pnpm migration:run
 ```
 
-### Reverter Última Migration
+### Revert Last Migration
 
-Para reverter a última migration executada:
+To revert the last executed migration:
 
 ```bash
 pnpm migration:revert
 ```
 
-### Ver Status das Migrations
+### View Migration Status
 
-Para ver quais migrations foram executadas e quais estão pendentes:
+To see which migrations have been run and which are pending:
 
 ```bash
 pnpm migration:show
 ```
 
-## Estrutura de uma Migration
+## Migration Structure
 
-Uma migration típica tem esta estrutura:
+A typical migration has this structure:
 
 ```typescript
 import { MigrationInterface, QueryRunner } from 'typeorm';
@@ -76,68 +76,68 @@ export class NomeDaMigration1234567890123 implements MigrationInterface {
   name = 'NomeDaMigration1234567890123';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Código para aplicar a migration
+    // Code to apply the migration
     await queryRunner.query(`CREATE TABLE ...`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    // Código para reverter a migration
+    // Code to revert the migration
     await queryRunner.query(`DROP TABLE ...`);
   }
 }
 ```
 
-### Métodos
+### Methods
 
-- **`up()`**: Executado quando a migration é aplicada. Contém as mudanças a serem feitas.
-- **`down()`**: Executado quando a migration é revertida. Deve desfazer o que `up()` fez.
+- **`up()`**: Run when the migration is applied. Contains the changes to make.
+- **`down()`**: Run when the migration is reverted. Must undo what `up()` did.
 
-## Migration Inicial
+## Initial Migration
 
-A migration inicial (`1700000000000-InitialSchema.ts`) cria todas as tabelas base do sistema:
+The initial migration (`1700000000000-InitialSchema.ts`) creates all base system tables:
 
-1. **churches** - Igrejas
-2. **ministries** - Ministérios/Times
-3. **persons** - Pessoas/Servos
-4. **users** - Usuários do sistema
-5. **teams** - Equipes
-6. **team_members** - Relacionamento N:N entre equipes e pessoas
-7. **services** - Cultos/Serviços
-8. **schedules** - Escalas
-9. **schedule_teams** - Relacionamento N:N entre escalas e equipes
-10. **attendances** - Check-ins/Presenças
-11. **refresh_tokens** - Tokens de refresh
-12. **password_reset_tokens** - Tokens de reset de senha
+1. **churches** - Churches
+2. **ministries** - Ministries/Teams
+3. **persons** - Persons/Volunteers
+4. **users** - System users
+5. **teams** - Teams
+6. **team_members** - N:N relationship between teams and persons
+7. **services** - Worship services
+8. **schedules** - Schedules
+9. **schedule_teams** - N:N relationship between schedules and teams
+10. **attendances** - Check-ins/Attendance
+11. **refresh_tokens** - Refresh tokens
+12. **password_reset_tokens** - Password reset tokens
 
-Também cria:
+It also creates:
 - ENUMs: `service_type`, `attendance_method`
-- Índices para performance
-- Triggers para `updated_at` automático
-- Constraints de integridade referencial
+- Índicees for performance
+- Triggers for automatic `updated_at`
+- Referential integrity constraints
 
-## Ordem de Criação
+## Creation Order
 
-A migration inicial segue a ordem correta respeitando as dependências de foreign keys:
+The initial migration follows the correct order respecting foreign key dependencies:
 
-1. Primeiro cria tabelas sem dependências (churches)
-2. Depois cria tabelas que dependem das anteriores
-3. Por fim, cria relacionamentos N:N e tabelas auxiliares
+1. First creates tables without dependencies (churches)
+2. Then creates tables that depend on previous ones
+3. Finally creates N:N relationships and auxiliary tables
 
-## Boas Práticas
+## Best Practices
 
-### 1. Nomenclatura
+### 1. Naming
 
-Use nomes descritivos que expliquem o que a migration faz:
+Use descriptive names that explain what the migration does:
 
 - ✅ `AddEmailToPersons`
 - ✅ `CreateAuditLogsTable`
-- ✅ `AddIndexToUsersEmail`
+- ✅ `AddÍndiceToUsersEmail`
 - ❌ `Migration1`
 - ❌ `Update`
 
-### 2. Sempre Implemente `down()`
+### 2. Always Implement `down()`
 
-Toda migration deve ter um método `down()` que reverte as mudanças:
+Every migration must have a `down()` method that reverts the changes:
 
 ```typescript
 public async down(queryRunner: QueryRunner): Promise<void> {
@@ -145,92 +145,92 @@ public async down(queryRunner: QueryRunner): Promise<void> {
 }
 ```
 
-### 3. Use Transações
+### 3. Use Transactions
 
-O TypeORM executa migrations em transações automaticamente, mas você pode criar transações customizadas se necessário.
+TypeORM runs migrations in transactions automatically, but you can create custom transactions if needed.
 
-### 4. Teste em Desenvolvimento Primeiro
+### 4. Test in Development First
 
-Sempre teste migrations em desenvolvimento antes de aplicar em produção:
+Always test migrations in development before applying in production:
 
 ```bash
-# 1. Teste localmente
+# 1. Test locally
 pnpm migration:run
 
-# 2. Verifique se funcionou
+# 2. Verify it worked
 pnpm migration:show
 
-# 3. Se necessário, reverta
+# 3. If needed, revert
 pnpm migration:revert
 ```
 
-### 5. Não Modifique Migrations Já Executadas
+### 5. Do Not Modify Already Executed Migrations
 
-Se uma migration já foi executada em produção, **não a modifique**. Crie uma nova migration para fazer ajustes.
+If a migration has already been run in production, **do not modify it**. Create a new migration for adjustments.
 
-### 6. Backup Antes de Migrations Importantes
+### 6. Backup Before Important Migrations
 
-Sempre faça backup do banco antes de executar migrations em produção:
+Always back up the database before running migrations in production:
 
 ```bash
-# Exemplo de backup PostgreSQL
+# PostgreSQL backup example
 pg_dump -U minc_teams -d minc_teams > backup_$(date +%Y%m%d_%H%M%S).sql
 ```
 
 ## Troubleshooting
 
-### Erro: "Migration already executed"
+### Error: "Migration already executed"
 
-Se você tentar executar uma migration que já foi executada, o TypeORM irá ignorá-la. Isso é normal.
+If you try to run a migration that has already been executed, TypeORM will skip it. This is normal.
 
-### Erro: "Migration failed"
+### Error: "Migration failed"
 
-Se uma migration falhar:
+If a migration fails:
 
-1. Verifique os logs de erro
-2. Corrija o problema na migration
-3. Se necessário, reverta: `pnpm migration:revert`
-4. Corrija e execute novamente: `pnpm migration:run`
+1. Check the error logs
+2. Fix the issue in the migration
+3. If needed, revert: `pnpm migration:revert`
+4. Fix and run again: `pnpm migration:run`
 
-### Erro: "Cannot find migration"
+### Error: "Cannot find migration"
 
-Certifique-se de que:
-- O arquivo está na pasta `src/migrations/`
-- O nome da classe corresponde ao nome do arquivo
-- O timestamp no nome está correto
+Make sure:
+- The file is in the `src/migrations/` folder
+- The class name matches the file name
+- The timestamp in the name is correct
 
-### Limpar Todas as Migrations (Desenvolvimento Apenas)
+### Clear All Migrations (Development Only)
 
-⚠️ **CUIDADO**: Use apenas em desenvolvimento!
+⚠️ **WARNING**: Use only in development!
 
 ```bash
-# Conectar ao banco
+# Connect to database
 docker-compose exec postgres psql -U minc_teams -d minc_teams
 
-# Deletar tabela de migrations
+# Delete migrations table
 DROP TABLE IF EXISTS migrations;
 
-# Sair
+# Exit
 \q
 ```
 
-Depois execute as migrations novamente:
+Then run migrations again:
 ```bash
 pnpm migration:run
 ```
 
-## Próximas Migrations
+## Upcoming Migrations
 
-Migrations futuras podem incluir:
+Future migrations may include:
 
-- [ ] Tabela `schedule_reassignments` (remanejamentos)
-- [ ] Tabela `messages` e `message_recipients` (comunicação)
-- [ ] Tabela `notifications` e `notification_preferences` (notificações)
-- [ ] Tabela `qr_code_logs` (logs de QR Code)
-- [ ] Tabela `audit_logs` (auditoria)
-- [ ] Tabela `draw_history` (histórico de sorteios)
+- [ ] `schedule_reassignments` table (reassignments)
+- [ ] `messages` and `message_recipients` tables (communication)
+- [ ] `notifications` and `notification_preferences` tables (notifications)
+- [ ] `qr_code_logs` table (QR Code logs)
+- [ ] `audit_logs` table (audit)
+- [ ] `draw_history` table (assignment draw history)
 
-## Referências
+## References
 
 - [TypeORM Migrations](https://typeorm.io/migrations)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [PostgreSQL documentation](https://www.postgresql.org/docs/)

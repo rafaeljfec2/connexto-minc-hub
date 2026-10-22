@@ -1,128 +1,128 @@
-# Checklist para Ativar CSP Enforcement
+# Checklist to Enable CSP Enforcement
 
-Use este checklist antes de mudar de `Report-Only` para `Enforcement`.
+Use this checklist before switching from `Report-Only` to `Enforcement`.
 
-## Pré-requisitos
+## Prerequisites
 
-- [ ] CSP está em modo Report-Only há pelo menos 1 semana
-- [ ] Todos os relatórios CSP foram analisados
-- [ ] Violações legítimas foram identificadas e resolvidas
-- [ ] Aplicação funciona corretamente sem erros no console
-- [ ] Equipe foi notificada sobre a mudança
+- [ ] CSP has been in Report-Only mode for at least 1 week
+- [ ] All CSP reports have been analyzed
+- [ ] Legitimate violations have been identified and resolved
+- [ ] Application works correctly with no console errors
+- [ ] Team has been notified about the change
 
-## Verificações Técnicas
+## Technical Checks
 
 ### Frontend
 
-- [ ] CSP está configurado corretamente no `index.html`
-- [ ] Trusted Types está inicializado antes do React
-- [ ] DOMPurify está sendo usado para sanitização
-- [ ] URLs de recursos externos estão na whitelist CSP
-- [ ] Não há uso de `eval()` ou `Function()` no código
-- [ ] Não há scripts inline no HTML
-- [ ] Não há estilos inline críticos
+- [ ] CSP is configured correctly in `index.html`
+- [ ] Trusted Types is initialized before React
+- [ ] DOMPurify is used for sanitization
+- [ ] External resource URLs are on the CSP whitelist
+- [ ] No use of `eval()` or `Function()` in code
+- [ ] No inline scripts in HTML
+- [ ] No critical inline styles
 
 ### Backend
 
-- [ ] Endpoint `/minc-teams/v1/security/csp-report` está funcionando
-- [ ] Logs estão sendo gerados corretamente
-- [ ] Violações críticas estão sendo detectadas
-- [ ] Sistema de alertas está configurado (se aplicável)
+- [ ] Endpoint `/minc-teams/v1/security/csp-report` is working
+- [ ] Logs are generated correctly
+- [ ] Critical violations are detected
+- [ ] Alert system is configured (if applicable)
 
-## Testes
+## Tests
 
-- [ ] Testes E2E passam com CSP Report-Only
-- [ ] Testes manuais em todos os navegadores principais
-- [ ] Testes em dispositivos móveis
-- [ ] Testes de funcionalidades críticas:
-  - [ ] Login/Autenticação
-  - [ ] Upload de arquivos
-  - [ ] Chat/Mensagens
-  - [ ] Formulários
-  - [ ] Navegação entre páginas
+- [ ] E2E tests pass with CSP Report-Only
+- [ ] Manual tests on all major browsers
+- [ ] Tests on mobile devices
+- [ ] Critical feature tests:
+  - [ ] Login/Authentication
+  - [ ] File upload
+  - [ ] Chat/Messages
+  - [ ] Forms
+  - [ ] Page navigation
 
-## Monitoramento
+## Monitoring
 
-- [ ] Sistema de monitoramento configurado
-- [ ] Alertas configurados para violações críticas
-- [ ] Dashboard de violações CSP (se disponível)
-- [ ] Processo de rollback definido
+- [ ] Monitoring system configured
+- [ ] Alerts configured for critical violations
+- [ ] CSP violations dashboard (if available)
+- [ ] Rollback process defined
 
-## Plano de Ativação
+## Activation Plan
 
-### Fase 1: Preparação (1-2 dias antes)
+### Phase 1: Preparation (1-2 days before)
 
-- [ ] Comunicar equipe sobre a mudança
-- [ ] Revisar política CSP final
-- [ ] Preparar rollback se necessário
+- [ ] Notify team about the change
+- [ ] Review final CSP policy
+- [ ] Prepare rollback if needed
 
-### Fase 2: Ativação Gradual
+### Phase 2: Gradual Activation
 
-**Opção A: Por Ambiente**
+**Option A: By Environment**
 
-- [ ] Ativar em desenvolvimento primeiro
-- [ ] Monitorar por 24h
-- [ ] Ativar em staging
-- [ ] Monitorar por 48h
-- [ ] Ativar em produção
+- [ ] Enable in development first
+- [ ] Monitor for 24h
+- [ ] Enable in staging
+- [ ] Monitor for 48h
+- [ ] Enable in production
 
-**Opção B: Por Percentual de Usuários**
+**Option B: By User Percentage**
 
-- [ ] Ativar para 10% dos usuários
-- [ ] Monitorar por 24h
-- [ ] Aumentar para 50%
-- [ ] Monitorar por 24h
-- [ ] Ativar para 100%
+- [ ] Enable for 10% of users
+- [ ] Monitor for 24h
+- [ ] Increase to 50%
+- [ ] Monitor for 24h
+- [ ] Enable for 100%
 
-### Fase 3: Pós-Ativação
+### Phase 3: Post-Activation
 
-- [ ] Monitorar logs intensivamente nas primeiras 24h
-- [ ] Verificar métricas de erro
-- [ ] Coletar feedback dos usuários
-- [ ] Ajustar política se necessário
+- [ ] Monitor logs intensively for the first 24h
+- [ ] Check error metrics
+- [ ] Collect user feedback
+- [ ] Adjust policy if needed
 
 ## Rollback
 
-Se problemas ocorrerem:
+If problems occur:
 
-1. **Imediato**: Reverter para Report-Only
-2. **Investigar**: Analisar logs e relatórios CSP
-3. **Corrigir**: Ajustar política ou código
-4. **Retestar**: Validar antes de tentar novamente
+1. **Immediate**: Revert to Report-Only
+2. **Investigate**: Analyze logs and CSP reports
+3. **Fix**: Adjust policy or code
+4. **Retest**: Validate before trying again
 
-## Comandos Úteis
+## Useful Commands
 
-### Verificar CSP Atual
+### Check Current CSP
 
 ```bash
-# No navegador console
+# In browser console
 document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.content
 ```
 
-### Testar Violação
+### Test Violation
 
 ```javascript
-// No console do navegador
+// In browser console
 import { triggerCspViolation } from '@/utils/test-csp-violation'
 triggerCspViolation('script-src', 'inline')
 ```
 
-### Verificar Relatórios
+### View Reports
 
 ```bash
-# Ver logs da API
+# View API logs
 cd apps/api
 pnpm start:dev | grep "CSP Violation"
 ```
 
-## Contatos de Emergência
+## Emergency Contacts
 
-- **Equipe de Desenvolvimento**: [contatos]
-- **Equipe de Segurança**: [contatos]
-- **DevOps**: [contatos]
+- **Development Team**: [contacts]
+- **Security Team**: [contacts]
+- **DevOps**: [contacts]
 
-## Notas
+## Notes
 
-- Mantenha este checklist atualizado
-- Documente qualquer problema encontrado
-- Revise periodicamente a política CSP
+- Keep this checklist up to date
+- Document any issues found
+- Review the CSP policy periodically

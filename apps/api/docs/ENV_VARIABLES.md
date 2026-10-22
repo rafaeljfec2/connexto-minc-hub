@@ -1,8 +1,8 @@
-# Variáveis de Ambiente - Backend API
+# Environment Variables - Backend API
 
-Este documento descreve todas as variáveis de ambiente necessárias para o backend.
+This document describes all environment variables required for the backend.
 
-## Variáveis Obrigatórias
+## Required Variables
 
 ### Database
 
@@ -22,7 +22,7 @@ JWT_EXPIRES_IN=24h
 REFRESH_TOKEN_EXPIRATION_DAYS=7
 ```
 
-## Variáveis Opcionais
+## Optional Variables
 
 ### Application
 
@@ -34,13 +34,13 @@ CORS_ORIGIN=http://localhost:5173
 RESET_PASSWORD_TOKEN_EXPIRATION_MINUTES=60
 ```
 
-## Como Configurar
+## How to Configure
 
-1. Crie um arquivo `.env` na raiz do projeto `apps/api/`
-2. Copie as variáveis acima e ajuste os valores conforme necessário
-3. **IMPORTANTE**: Nunca commite o arquivo `.env` no repositório
+1. Create a `.env` file at the root of `apps/api/`
+2. Copy the variables above and adjust values as needed
+3. **IMPORTANT**: Never commit the `.env` file à repository
 
-## Exemplo Completo
+## Complete Example
 
 ```env
 # Database Configuration

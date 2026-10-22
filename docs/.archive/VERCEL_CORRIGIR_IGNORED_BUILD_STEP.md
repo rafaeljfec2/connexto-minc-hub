@@ -1,79 +1,79 @@
-# Corrigir Ignored Build Step no Dashboard da Vercel
+# Fix Ignored Build Step in the Vercel Dashboard
 
-## ⚠️ Erro Atual
+## ⚠️ Current Error
 
-O erro mostra que o comando antigo ainda está configurado no Dashboard:
+The error shows the old command is still configured in the Dashboard:
 ```
 git diff HEAD^ HEAD --quiet apps/web/ ../package.json ../pnpm-lock.yaml ../turbo.json
 ```
 
-## ✅ Solução: Atualizar no Dashboard
+## ✅ Solution: Update in the Dashboard
 
-### Passo 1: Acessar Configurações
+### Step 1: Open Settings
 
-1. Vá para o **Dashboard da Vercel**
-2. Selecione seu projeto
-3. Vá em **Settings > Git**
-4. Encontre a seção **"Ignored Build Step"**
+1. Go to **Vercel Dashboard**
+2. Select your project
+3. Go to **Settings > Git**
+4. Find the **"Ignored Build Step"** section
 
-### Passo 2: Atualizar o Comando
+### Step 2: Update the Command
 
-**Opção A: Comando Simplificado (Recomendado)**
+**Option A: Simplified Command (Recommended)**
 
-Na seção **"Project Settings"**, configure:
+Under **"Project Settings"**, configure:
 
 **Behavior:** "Only build if there are changes in a folder"
 
 **Folder:** `apps/web`
 
-**OU configure manualmente:**
+**OR configure manually:**
 
 **Command:**
 ```bash
 git diff HEAD^ HEAD --quiet -- apps/web/
 ```
 
-**Opção B: Remover Completamente (Sempre Fazer Deploy)**
+**Option B: Remove Completely (Always Deploy)**
 
-Se você quiser que **sempre** faça deploy (ignorando o Ignored Build Step):
+If you want to **always** deploy (ignoring Ignored Build Step):
 
-1. Na seção **"Project Settings"**
-2. Selecione **"Automatic"** no dropdown
-3. Clique em **"Save"**
+1. Under **"Project Settings"**
+2. Select **"Automatic"** in the dropdown
+3. Click **"Save"**
 
-### Passo 3: Sincronizar Production Overrides
+### Step 3: Sync Production Overrides
 
-1. Expanda **"Production Overrides"**
-2. Se houver um comando lá, ele será atualizado automaticamente após o próximo deploy
-3. Ou faça um **Redeploy** do último deployment de produção
+1. Expand **"Production Overrides"**
+2. If a command exists there, it will update automatically after the next production deploy
+3. Or **Redeploy** the latest production deployment
 
-### Passo 4: Salvar e Testar
+### Step 4: Save and Test
 
-1. Clique em **"Save"**
-2. Faça um commit vazio para testar:
+1. Click **"Save"**
+2. Make an empty commit to test:
    ```bash
-   git commit --allow-empty -m "test: verificar deploy após corrigir ignoreCommand"
+   git commit --allow-empty -m "test: verify deploy after fixing ignoreCommand"
    git push
    ```
 
-## 🔍 Verificar se Funcionou
+## 🔍 Verify It Worked
 
-1. Vá em **Deployments** na Vercel
-2. Verifique se um novo deploy foi criado
-3. Se não aparecer erro de `exit code 129`, está funcionando! ✅
+1. Go to **Deployments** on Vercel
+2. Check that a new deploy was created
+3. If there is no `exit code 129` error, it is working ✅
 
-## ⚠️ Importante
+## ⚠️ Important
 
-- O `vercel.json` **não tem mais** o `ignoreCommand` (removido para evitar conflitos)
-- A configuração do **Dashboard tem prioridade**
-- Certifique-se de que o comando no Dashboard está correto
+- `vercel.json` **no longer** has `ignoreCommand` (removed to avoid conflicts)
+- **Dashboard configuration takes priority**
+- Make sure the Dashboard command is correct
 
-## Comando Correto para Dashboard
+## Correct Command for Dashboard
 
-Se você escolher configurar manualmente, use:
+If you configure manually, use:
 
 ```bash
 git diff HEAD^ HEAD --quiet -- apps/web/
 ```
 
-**Nota:** O `--` separa os argumentos do git e os caminhos, evitando problemas com caminhos que começam com `-`.
+**Note:** `--` separates git arguments from paths, avoiding issues with paths starting with `-`.

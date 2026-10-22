@@ -1,38 +1,38 @@
 # MINC Teams API
 
-Backend API para o sistema MINC Teams - Minha Igreja na Cidade.
+Backend API for the MINC Teams system - Minha Church na Cidade.
 
-## Tecnologias
+## Technologies
 
-- **NestJS** - Framework Node.js
-- **TypeORM** - ORM para PostgreSQL
-- **PostgreSQL** - Banco de dados
-- **JWT** - Autenticação
-- **Passport** - Estratégias de autenticação
-- **Swagger** - Documentação da API
+- **NestJS** - Node.js framework
+- **TypeORM** - ORM for PostgreSQL
+- **PostgreSQL** - Database
+- **JWT** - Authentication
+- **Passport** - Authentication strategies
+- **Swagger** - API documentation
 
-## Pré-requisitos
+## Prerequisites
 
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
-- Docker e Docker Compose (para PostgreSQL)
+- Docker and Docker Compose (for PostgreSQL)
 
-## Configuração Rápida
+## Quick Setup
 
-Para uma configuração rápida, use o script de setup:
+For a quick setup, use the setup script:
 
 ```bash
 cd apps/api
 ./scripts/setup.sh
 ```
 
-Ou siga os passos manuais abaixo.
+Or follow the manual steps below.
 
-## Configuração Manual
+## Manual Setup
 
-### 1. Variáveis de Ambiente
+### 1. Environment Variables
 
-Crie um arquivo `.env` na raiz do projeto `apps/api/` com as seguintes variáveis:
+Create a `.env` file at the root of `apps/api/` with the following variables:
 
 ```env
 # Database
@@ -56,47 +56,50 @@ FRONTEND_URL=http://localhost:5173
 CORS_ORIGIN=http://localhost:5173
 ```
 
-### 2. Subir o PostgreSQL
+### 2. Start PostgreSQL
 
-Na raiz do projeto (connexto-minc-hub), execute:
+At the project root (connexto-minc-hub), run:
 
 ```bash
 docker-compose up -d
 ```
 
-Isso irá subir o PostgreSQL em um container Docker.
+This starts PostgreSQL in a Docker container.
 
-Para verificar se está rodando:
+To verify it is running:
+
 ```bash
 docker-compose ps
 ```
 
-### 3. Instalar Dependências
+### 3. Install Dependencies
 
-Na raiz do projeto (connexto-minc-hub):
+At the project root (connexto-minc-hub):
 
 ```bash
 pnpm install
 ```
 
-Isso instalará as dependências de todos os apps, incluindo o backend.
+This installs dependencies for all apps, including the backend.
 
-## Executando
+## Running
 
-### Desenvolvimento
+### Development
 
-Na raiz do projeto:
+At the project root:
+
 ```bash
 pnpm dev
 ```
 
-Ou diretamente em `apps/api/`:
+Or directly in `apps/api/`:
+
 ```bash
 cd apps/api
 pnpm dev
 ```
 
-A API estará disponível em `http://localhost:3001/minc-teams/v1`
+The API will be available at `http://localhost:3001/minc-teams/v1`
 
 ### Build
 
@@ -104,202 +107,202 @@ A API estará disponível em `http://localhost:3001/minc-teams/v1`
 pnpm build
 ```
 
-### Produção
+### Production
 
 ```bash
 pnpm start:prod
 ```
 
-## Documentação
+## Documentation
 
-A documentação Swagger está disponível em:
+Swagger documentation is available at:
 
 ```
 http://localhost:3001/minc-teams/v1/docs
 ```
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 apps/api/
 ├── src/
 │   ├── main.ts                 # Entry point
-│   ├── app.module.ts           # Módulo principal
-│   ├── app.controller.ts       # Controller principal
-│   ├── app.service.ts          # Service principal
-│   ├── auth/                   # Módulo de autenticação
-│   ├── users/                  # Módulo de usuários
-│   ├── common/                 # Utilitários compartilhados
-│   └── config/                 # Configurações
-├── test/                       # Testes E2E
+│   ├── app.module.ts           # Main module
+│   ├── app.controller.ts       # Main controller
+│   ├── app.service.ts          # Main service
+│   ├── auth/                   # Authentication module
+│   ├── useres/                  # Users module
+│   ├── common/                 # Shared utilities
+│   └── config/                 # Configuration
+├── test/                       # E2E tests
 └── package.json
 ```
 
-## Endpoints Principais
+## Main Endpoints
 
-### Autenticação
+### Authentication
 
 - `POST /minc-teams/v1/auth/login` - Login
 - `POST /minc-teams/v1/auth/refresh-token` - Refresh token
 - `POST /minc-teams/v1/auth/logout` - Logout
-- `POST /minc-teams/v1/auth/forgot-password` - Solicitar recuperação de senha
-- `POST /minc-teams/v1/auth/reset-password` - Resetar senha
-- `GET /minc-teams/v1/auth/me` - Obter usuário atual
+- `POST /minc-teams/v1/auth/forgot-password` - Request password recovery
+- `POST /minc-teams/v1/auth/reset-password` - Reset password
+- `GET /minc-teams/v1/auth/me` - Get current user
 
-### Churches (Igrejas)
+### Churches
 
-- `GET /minc-teams/v1/churches` - Listar todas as igrejas
-- `GET /minc-teams/v1/churches/:id` - Obter igreja por ID
-- `POST /minc-teams/v1/churches` - Criar nova igreja
-- `PATCH /minc-teams/v1/churches/:id` - Atualizar igreja
-- `DELETE /minc-teams/v1/churches/:id` - Remover igreja (soft delete)
+- `GET /minc-teams/v1/churches` - List all churches
+- `GET /minc-teams/v1/churches/:id` - Get church by ID
+- `POST /minc-teams/v1/churches` - Create new church
+- `PATCH /minc-teams/v1/churches/:id` - Update church
+- `DELETE /minc-teams/v1/churches/:id` - Remove church (soft delete)
 
-### Ministries (Ministérios)
+### Ministries
 
-- `GET /minc-teams/v1/ministries` - Listar todos os ministérios
-- `GET /minc-teams/v1/ministries?churchId=uuid` - Filtrar por igreja
-- `GET /minc-teams/v1/ministries/:id` - Obter ministério por ID
-- `POST /minc-teams/v1/ministries` - Criar novo ministério
-- `PATCH /minc-teams/v1/ministries/:id` - Atualizar ministério
-- `DELETE /minc-teams/v1/ministries/:id` - Remover ministério (soft delete)
+- `GET /minc-teams/v1/ministries` - List all ministries
+- `GET /minc-teams/v1/ministries?churchId=uuid` - Filter by church
+- `GET /minc-teams/v1/ministries/:id` - Get ministry by ID
+- `POST /minc-teams/v1/ministries` - Create new ministry
+- `PATCH /minc-teams/v1/ministries/:id` - Update ministry
+- `DELETE /minc-teams/v1/ministries/:id` - Remove ministry (soft delete)
 
-### Persons (Pessoas/Servos)
+### Persons
 
-- `GET /minc-teams/v1/persons` - Listar todas as pessoas
-- `GET /minc-teams/v1/persons?ministryId=uuid` - Filtrar por ministério
-- `GET /minc-teams/v1/persons?teamId=uuid` - Filtrar por equipe
-- `GET /minc-teams/v1/persons/:id` - Obter pessoa por ID
-- `POST /minc-teams/v1/persons` - Criar nova pessoa
-- `PATCH /minc-teams/v1/persons/:id` - Atualizar pessoa
-- `DELETE /minc-teams/v1/persons/:id` - Remover pessoa (soft delete)
+- `GET /minc-teams/v1/persons` - List all persons
+- `GET /minc-teams/v1/persons?ministryId=uuid` - Filter by ministry
+- `GET /minc-teams/v1/persons?teamId=uuid` - Filter by team
+- `GET /minc-teams/v1/persons/:id` - Get person by ID
+- `POST /minc-teams/v1/persons` - Create new person
+- `PATCH /minc-teams/v1/persons/:id` - Update person
+- `DELETE /minc-teams/v1/persons/:id` - Remove person (soft delete)
 
-### Services (Cultos/Serviços)
+### Services
 
-- `GET /minc-teams/v1/services` - Listar todos os cultos
-- `GET /minc-teams/v1/services?churchId=uuid` - Filtrar por igreja
-- `GET /minc-teams/v1/services/:id` - Obter culto por ID
-- `POST /minc-teams/v1/services` - Criar novo culto
-- `PATCH /minc-teams/v1/services/:id` - Atualizar culto
-- `DELETE /minc-teams/v1/services/:id` - Remover culto (soft delete)
+- `GET /minc-teams/v1/services` - List all worship services
+- `GET /minc-teams/v1/services?churchId=uuid` - Filter by church
+- `GET /minc-teams/v1/services/:id` - Get service by ID
+- `POST /minc-teams/v1/services` - Create new service
+- `PATCH /minc-teams/v1/services/:id` - Update service
+- `DELETE /minc-teams/v1/services/:id` - Remove service (soft delete)
 
-### Teams (Equipes)
+### Teams
 
-- `GET /minc-teams/v1/teams` - Listar todas as equipes
-- `GET /minc-teams/v1/teams?ministryId=uuid` - Filtrar por ministério
-- `GET /minc-teams/v1/teams/:id` - Obter equipe por ID
-- `POST /minc-teams/v1/teams` - Criar nova equipe
-- `PATCH /minc-teams/v1/teams/:id` - Atualizar equipe
-- `DELETE /minc-teams/v1/teams/:id` - Remover equipe (soft delete)
-- `POST /minc-teams/v1/teams/:id/members` - Adicionar membro à equipe
-- `GET /minc-teams/v1/teams/:id/members` - Listar membros da equipe
-- `DELETE /minc-teams/v1/teams/:id/members/:personId` - Remover membro da equipe
+- `GET /minc-teams/v1/teams` - List all teams
+- `GET /minc-teams/v1/teams?ministryId=uuid` - Filter by ministry
+- `GET /minc-teams/v1/teams/:id` - Get team by ID
+- `POST /minc-teams/v1/teams` - Create new team
+- `PATCH /minc-teams/v1/teams/:id` - Update team
+- `DELETE /minc-teams/v1/teams/:id` - Remove team (soft delete)
+- `POST /minc-teams/v1/teams/:id/members` - Add member to team
+- `GET /minc-teams/v1/teams/:id/members` - List team members
+- `DELETE /minc-teams/v1/teams/:id/members/:personId` - Remove member from team
 
-### Schedules (Escalas)
+### Schedules
 
-- `GET /minc-teams/v1/schedules` - Listar todas as escalas
-- `GET /minc-teams/v1/schedules?serviceId=uuid` - Filtrar por culto
-- `GET /minc-teams/v1/schedules?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` - Filtrar por período
-- `GET /minc-teams/v1/schedules/:id` - Obter escala por ID
-- `POST /minc-teams/v1/schedules` - Criar nova escala
-- `PATCH /minc-teams/v1/schedules/:id` - Atualizar escala
-- `DELETE /minc-teams/v1/schedules/:id` - Remover escala (soft delete)
-- `POST /minc-teams/v1/schedules/:id/teams` - Adicionar equipe à escala
-- `GET /minc-teams/v1/schedules/:id/teams` - Listar equipes da escala
-- `DELETE /minc-teams/v1/schedules/:id/teams/:teamId` - Remover equipe da escala
+- `GET /minc-teams/v1/schedules` - List all schedules
+- `GET /minc-teams/v1/schedules?serviceId=uuid` - Filter by service
+- `GET /minc-teams/v1/schedules?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` - Filter by date range
+- `GET /minc-teams/v1/schedules/:id` - Get schedule by ID
+- `POST /minc-teams/v1/schedules` - Create new schedule
+- `PATCH /minc-teams/v1/schedules/:id` - Update schedule
+- `DELETE /minc-teams/v1/schedules/:id` - Remove schedule (soft delete)
+- `POST /minc-teams/v1/schedules/:id/teams` - Add team to schedule
+- `GET /minc-teams/v1/schedules/:id/teams` - List schedule teams
+- `DELETE /minc-teams/v1/schedules/:id/teams/:teamId` - Remove team from schedule
 
 ### Attendances (Check-ins)
 
-- `GET /minc-teams/v1/attendances` - Listar todos os check-ins
-- `GET /minc-teams/v1/attendances?scheduleId=uuid` - Filtrar por escala
-- `GET /minc-teams/v1/attendances?personId=uuid` - Filtrar por pessoa
-- `GET /minc-teams/v1/attendances/schedule/:scheduleId/stats` - Estatísticas de presença
-- `GET /minc-teams/v1/attendances/:id` - Obter check-in por ID
-- `POST /minc-teams/v1/attendances` - Registrar check-in
-- `PATCH /minc-teams/v1/attendances/:id` - Atualizar check-in
-- `DELETE /minc-teams/v1/attendances/:id` - Remover check-in
+- `GET /minc-teams/v1/attendances` - List all check-ins
+- `GET /minc-teams/v1/attendances?scheduleId=uuid` - Filter by schedule
+- `GET /minc-teams/v1/attendances?personId=uuid` - Filter by person
+- `GET /minc-teams/v1/attendances/schedule/:scheduleId/stats` - Attendance statistics
+- `GET /minc-teams/v1/attendances/:id` - Get check-in by ID
+- `POST /minc-teams/v1/attendances` - Record check-in
+- `PATCH /minc-teams/v1/attendances/:id` - Update check-in
+- `DELETE /minc-teams/v1/attendances/:id` - Remove check-in
 
-## Comandos Úteis
+## Useful Commands
 
 ```bash
-# Subir PostgreSQL
+# Start PostgreSQL
 docker-compose up -d
 
-# Parar PostgreSQL
+# Stop PostgreSQL
 docker-compose down
 
-# Ver logs do PostgreSQL
+# View PostgreSQL logs
 docker-compose logs -f postgres
 
-# Limpar dados do PostgreSQL
+# Clear PostgreSQL data
 docker-compose down -v
 
-# Executar migrations (quando implementadas)
+# Run migrations (when implemented)
 pnpm migration:run
 
-# Reverter última migration
+# Revert last migration
 pnpm migration:revert
 ```
 
-## Status da Implementação
+## Implementation Status
 
-### ✅ Concluído
+### ✅ Completed
 
-- [x] Docker Compose para PostgreSQL
-- [x] Estrutura base do NestJS
-- [x] Configuração TypeORM
-- [x] Sistema de autenticação completo (JWT com cookies HttpOnly)
-- [x] Entidades principais criadas:
+- [x] Docker Compose for PostgreSQL
+- [x] Base NestJS structure
+- [x] TypeORM configuration
+- [x] Complete authentication system (JWT with HttpOnly cookies)
+- [x] Main entities created:
   - User, RefreshToken, PasswordResetToken
   - Person, Church, Ministry, Team, TeamMember
   - Service, Schedule, ScheduleTeam
   - Attendance
-- [x] Módulos básicos criados para todas as entidades
-- [x] Migration inicial criada (cria todas as tabelas base)
+- [x] Basic modules created for all entities
+- [x] Initial migration created (creates all base tables)
 
-### ✅ Concluído - Módulos de Negócio
+### ✅ Completed - Business Modules
 
-- [x] Churches (Igrejas) - CRUD completo
-- [x] Ministries (Ministérios) - CRUD completo com filtros
-- [x] Persons (Pessoas/Servos) - CRUD completo com filtros
-- [x] Services (Cultos/Serviços) - CRUD completo
-- [x] Teams (Equipes) - CRUD completo + gestão de membros
-- [x] Schedules (Escalas) - CRUD completo + gestão de equipes
-- [x] Attendances (Check-ins) - CRUD completo + estatísticas
+- [x] Churches - full CRUD
+- [x] Ministries - full CRUD with filters
+- [x] Persons - full CRUD with filters
+- [x] Services - full CRUD
+- [x] Teams - full CRUD + member management
+- [x] Schedules - full CRUD + team management
+- [x] Attendances - full CRUD + statistics
 
-### 🚧 Próximos Passos
+### 🚧 Next Steps
 
-- [ ] Validações e regras de negócio avançadas
-- [ ] Sorteio automático de equipes
-- [ ] Remanejamento manual
-- [ ] Relatórios e dashboards
-- [ ] Sistema de QR Code
+- [ ] Advanced validations and business rules
+- [ ] Automatic team assignment
+- [ ] Manual reassignment
+- [ ] Reports and dashboards
+- [ ] QR Code system
 
-### 📋 Próximos Passos
+### 📋 Next Steps
 
-- [ ] Implementar migrations do TypeORM
-- [ ] Criar services e controllers para cada módulo
-- [ ] Implementar endpoints CRUD
-- [ ] Adicionar testes
-- [ ] Configurar CI/CD
+- [ ] Implement TypeORM migrations
+- [ ] Create services and controllers for each module
+- [ ] Implement CRUD endpoints
+- [ ] Add tests
+- [ ] Configure CI/CD
 
 ## Migrations
 
-Após configurar o banco de dados, execute a migration inicial:
+After configuring the database, run the initial migration:
 
 ```bash
 cd apps/api
 pnpm migration:run
 ```
 
-Isso criará todas as tabelas no banco de dados.
+This creates all tables in the database.
 
-Para mais informações sobre migrations, consulte [MIGRATIONS.md](./MIGRATIONS.md).
+For more information about migrations, see [MIGRATIONS.md](./MIGRATIONS.md).
 
-## Documentação Adicional
+## Additional documentation
 
-- [SETUP.md](./SETUP.md) - Guia completo de setup passo a passo com troubleshooting
-- [ENV_VARIABLES.md](./ENV_VARIABLES.md) - Documentação detalhada das variáveis de ambiente
-- [MIGRATIONS.md](./MIGRATIONS.md) - Guia completo sobre migrations
-- [API_ENDPOINTS.md](./API_ENDPOINTS.md) - Documentação completa de todos os endpoints
-- [CHAT_API.md](./CHAT_API.md) - Especificação completa da API de Chat (baseada na implementação mobile)
-- [scripts/setup.sh](./scripts/setup.sh) - Script automatizado de setup
+- [SETUP.md](./SETUP.md) - Complete step-by-step setup guide with troubleshooting
+- [ENV_VARIABLES.md](./ENV_VARIABLES.md) - Detailed environment variable documentation
+- [MIGRATIONS.md](./MIGRATIONS.md) - Complete migrations guide
+- [API_ENDPOINTS.md](./API_ENDPOINTS.md) - Complete documentation of all endpoints
+- [CHAT_API.md](./CHAT_API.md) - Complete Chat API specification (based on mobile implementation)
+- [scripts/setup.sh](./scripts/setup.sh) - Automated setup script

@@ -1,14 +1,14 @@
-# Guia de Ordenação para Grid Customizado
+# Sorting Guide for Custom Grid
 
-Este documento explica como implementar ordenação de colunas no grid customizado usando `useSort` e `SortableColumn`.
+This document explains how to implement column sorting in the custom grid using `useSort` and `SortableColumn`.
 
-## Componentes Necessários
+## Required Components
 
-1. **`useSort`** - Hook para gerenciar estado de ordenação
-2. **`SortableColumn`** - Componente para renderizar cabeçalhos clicáveis
-3. **`sortData`** - Função para ordenar os dados
+1. **`useSort`** - Hook to manage sort state
+2. **`SortableColumn`** - Component for clickable headers
+3. **`sortData`** - Function to sort data
 
-## Exemplo Completo
+## Full Example
 
 ```typescript
 import { useSort, SortConfig } from '@/hooks/useSort'
@@ -16,7 +16,7 @@ import { SortableColumn } from '@/components/ui/SortableColumn'
 import { CrudView } from '@/components/crud/CrudView'
 import { TableRow, TableCell, TableHead } from '@/components/ui/Table'
 
-// 1. Definir o tipo dos dados
+// 1. Define the data type
 interface MeuItem {
   id: string
   nome: string
@@ -28,13 +28,13 @@ interface MeuItem {
 export function MinhaPagina() {
   const [items, setItems] = useState<MeuItem[]>([])
   
-  // 2. Inicializar o hook de ordenação
+  // 2. Initialize sort hook
   const { sortConfig, handleSort, sortData } = useSort<MeuItem>({
     defaultKey: 'nome',
     defaultDirection: 'asc',
   })
 
-  // 3. Criar função de extração de valores para ordenação
+  // 3. Value extractors for sorting
   const sortExtractors = {
     nome: (item: MeuItem) => item.nome.toLowerCase(),
     email: (item: MeuItem) => item.email?.toLowerCase() ?? '',
@@ -42,13 +42,13 @@ export function MinhaPagina() {
     status: (item: MeuItem) => item.status,
   }
 
-  // 4. Aplicar ordenação aos dados filtrados
+  // 4. Apply sort to filtered data
   const filteredAndSortedItems = useMemo(() => {
-    const filtered = items.filter(/* sua lógica de filtro */)
+    const filtered = items.filter(/* your filter logic */)
     return sortData(filtered, sortExtractors)
   }, [items, sortConfig, sortData])
 
-  // 5. Criar função helper para renderizar cabeçalhos ordenáveis
+  // 5. Helper to render sortable headers
   const renderHeader = (key: keyof MeuItem, label: string) => (
     <SortableColumn
       sortKey={key}
@@ -59,7 +59,7 @@ export function MinhaPagina() {
     </SortableColumn>
   )
 
-  // 6. Grid View (cards) - não precisa de ordenação visual, mas os dados já estão ordenados
+  // 6. Grid view (cards) - data is already sorted
   const gridView = (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {filteredAndSortedItems.map(item => (
@@ -68,7 +68,7 @@ export function MinhaPagina() {
     </div>
   )
 
-  // 7. List View (tabela) - usar SortableColumn nos cabeçalhos
+  // 7. List view (table) - use SortableColumn on headers
   const listViewRows = filteredAndSortedItems.map(item => (
     <TableRow key={item.id}>
       <TableCell>{item.nome}</TableCell>
@@ -86,11 +86,11 @@ export function MinhaPagina() {
       gridView={gridView}
       listView={{
         headers: [
-          renderHeader('nome', 'Nome'),
+          renderHeader('nome', 'Name'),
           renderHeader('email', 'Email'),
-          renderHeader('dataCriacao', 'Data de Criação'),
+          renderHeader('dataCriacao', 'Created At'),
           renderHeader('status', 'Status'),
-          'Ações', // Coluna sem ordenação
+          'Actions', // Non-sortable column
         ],
         rows: listViewRows,
       }}
@@ -99,56 +99,56 @@ export function MinhaPagina() {
 }
 ```
 
-## Passo a Passo
+## Step by Step
 
-### 1. Importar dependências
+### 1. Import dependencies
 
 ```typescript
 import { useSort, SortConfig } from '@/hooks/useSort'
 import { SortableColumn } from '@/components/ui/SortableColumn'
 ```
 
-### 2. Inicializar o hook
+### 2. Initialize the hook
 
 ```typescript
 const { sortConfig, handleSort, sortData } = useSort<MeuTipo>({
-  defaultKey: 'campoPadrao', // Campo inicial para ordenação
-  defaultDirection: 'asc', // Direção inicial
+  defaultKey: 'fieldPadrao', // Initial sort field
+  defaultDirection: 'asc', // Initial direction
 })
 ```
 
-### 3. Criar extractors de ordenação
+### 3. Create sort extractors
 
-Os extractors definem como extrair valores de cada campo para comparação:
+Extractors define how to read each field for comparison:
 
 ```typescript
 const sortExtractors = {
-  // String: converter para lowercase para comparação case-insensitive
+  // String: lowercase for case-insensitive compare
   nome: (item: MeuTipo) => item.nome.toLowerCase(),
   
-  // String opcional: tratar valores nulos
+  // Optional string: handle nulls
   email: (item: MeuTipo) => item.email?.toLowerCase() ?? '',
   
-  // Data: converter para timestamp numérico
+  // Data: numeric timestamp
   dataCriacao: (item: MeuTipo) => new Date(item.dataCriacao).getTime(),
   
-  // Enum/Status: usar valor direto
+  // Enum/status: direct value
   status: (item: MeuTipo) => item.status,
   
-  // Número: usar valor direto
+  // Number: direct value
   quantidade: (item: MeuTipo) => item.quantidade ?? 0,
 }
 ```
 
-### 4. Aplicar ordenação
+### 4. Apply sorting
 
 ```typescript
-const dadosOrdenados = useMemo(() => {
+const dadosOrdenado = useMemo(() => {
   return sortData(dadosFiltrados, sortExtractors)
 }, [dadosFiltrados, sortConfig, sortData])
 ```
 
-### 5. Renderizar cabeçalhos ordenáveis
+### 5. Render sortable headers
 
 ```typescript
 const renderHeader = (key: keyof MeuTipo, label: string) => (
@@ -162,46 +162,46 @@ const renderHeader = (key: keyof MeuTipo, label: string) => (
 )
 ```
 
-### 6. Usar no CrudView
+### 6. Use in CrudView
 
 ```typescript
 <CrudView
   listView={{
     headers: [
-      renderHeader('nome', 'Nome'),
+      renderHeader('nome', 'Name'),
       renderHeader('email', 'Email'),
-      'Ações', // Colunas sem ordenação não usam SortableColumn
+      'Actions', // Non-sortable columns omit SortableColumn
     ],
     rows: listViewRows,
   }}
 />
 ```
 
-## Tipos de Dados Suportados
+## Supported Data Types
 
-- **Strings**: Converter para lowercase
-- **Números**: Usar valor direto
-- **Datas**: Converter para timestamp (`getTime()`)
-- **Booleanos**: Converter para número (true = 1, false = 0)
-- **Valores nulos**: Tratar com `??` ou `||`
+- **Strings**: Lowercase for comparison
+- **Numbers**: Direct value
+- **Dates**: Timestamp (`getTime()`)
+- **Booleans**: As number (true = 1, false = 0)
+- **Nulls**: Handle with `??` or `||`
 
-## Dicas
+## Tips
 
-1. **Performance**: Use `useMemo` para evitar reordenações desnecessárias
-2. **Valores nulos**: Sempre trate valores nulos/undefined nos extractors
-3. **Case-insensitive**: Para strings, sempre use `.toLowerCase()`
-4. **Datas**: Converta para timestamp numérico para comparação correta
-5. **Colunas sem ordenação**: Não use `SortableColumn`, apenas passe a string diretamente
+1. **Performance**: Use `useMemo` to avoid unnecessary re-sorts
+2. **Nulls**: Always handle null/undefined in extractors
+3. **Case-insensitive**: For strings, use `.toLowerCase()`
+4. **Dates**: Convert to numeric timestamp for correct ordering
+5. **Non-sortable columns**: Pass a plain string, not `SortableColumn`
 
-## Exemplo com Valores Complexos
+## Example with Complex Values
 
 ```typescript
-// Ordenar por propriedade aninhada
+// Sort by nested property
 const sortExtractors = {
   nomeMinisterio: (item: MeuTipo) => 
     item.ministerio?.nome?.toLowerCase() ?? '',
   
-  // Ordenar por múltiplos campos (concatenação)
+  // Sort by multiple fields (concatenation)
   nomeCompleto: (item: MeuTipo) => 
     `${item.nome} ${item.sobrenome}`.toLowerCase(),
 }

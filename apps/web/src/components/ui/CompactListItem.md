@@ -1,69 +1,69 @@
 # CompactListItem Component
 
-Componente padrão reutilizável para criar listas compactas e consistentes em todo o aplicativo.
+Standard reusable component for compact, consistent lists across the application.
 
-## Características
+## Features
 
-- ✅ Layout compacto e eficiente
-- ✅ Suporte a ícones personalizados
-- ✅ Badges com variantes de cores
-- ✅ Metadata secundária
-- ✅ Menu de três pontos opcional
-- ✅ Totalmente acessível
-- ✅ Suporte a dark mode
+- ✅ Compact, efficient layout
+- ✅ Custom icon support
+- ✅ Badges with color variants
+- ✅ Secondary metadata
+- ✅ Optional three-dot menu
+- ✅ Fully accessible
+- ✅ Dark mode support
 
 ## Props
 
-| Prop          | Tipo        | Descrição                              |
+| Prop          | Type        | Description                            |
 | ------------- | ----------- | -------------------------------------- |
-| `icon`        | `ReactNode` | Ícone a ser exibido (opcional)         |
-| `iconColor`   | `string`    | Classes CSS para cor de fundo do ícone |
-| `title`       | `string`    | Título principal (obrigatório)         |
-| `subtitle`    | `string`    | Subtítulo/descrição (opcional)         |
-| `badge`       | `object`    | Badge com texto e variante (opcional)  |
-| `metadata`    | `string`    | Informação adicional (opcional)        |
-| `onClick`     | `function`  | Callback ao clicar no item             |
-| `onMenuClick` | `function`  | Callback ao clicar no menu             |
-| `className`   | `string`    | Classes CSS adicionais                 |
+| `icon`        | `ReactNode` | Icon to display (optional)             |
+| `iconColor`   | `string`    | CSS classes for icon background color  |
+| `title`       | `string`    | Main title (required)                  |
+| `subtitle`    | `string`    | Subtitle/description (optional)        |
+| `badge`       | `object`    | Badge with text and variant (optional) |
+| `metadata`    | `string`    | Additional information (optional)      |
+| `onClick`     | `function`  | Callback when the item is clicked      |
+| `onMenuClick` | `function`  | Callback when the menu is clicked      |
+| `className`   | `string`    | Additional CSS classes                 |
 
 ## Badge Variants
 
-- `success` - Verde (ex: status ativo)
-- `warning` - Amarelo (ex: pendente)
-- `error` - Vermelho (ex: erro)
-- `info` - Azul (ex: informação)
-- `default` - Cinza (padrão)
+- `success` - Green (e.g. active status)
+- `warning` - Yellow (e.g. pending)
+- `error` - Red (e.g. error)
+- `info` - Blue (e.g. information)
+- `default` - Gray (default)
 
-## Exemplos de Uso
+## Usage Examples
 
-### Exemplo Básico
+### Basic Example
 
 \`\`\`tsx
 import { CompactListItem } from '@/components/ui/CompactListItem'
 
 <CompactListItem
 icon={<UserIcon />}
-title="João Silva"
-subtitle="Desenvolvedor"
+title="John Silva"
+subtitle="Developer"
 onClick={() => console.log('Clicked')}
 />
 \`\`\`
 
-### Com Badge e Metadata
+### With Badge and Metadata
 
 \`\`\`tsx
 <CompactListItem
 icon={<TeamIcon />}
-title="Equipe de Louvor"
-subtitle="BOAS VINDAS"
-metadata="15 membros"
-badge={{ text: 'Ativa', variant: 'success' }}
+title="Worship Team"
+subtitle="WELCOME"
+metadata="15 members"
+badge={{ text: 'Active', variant: 'success' }}
 onClick={() => navigate('/team/123')}
 onMenuClick={() => openMenu()}
 />
 \`\`\`
 
-### Com Ícone Customizado
+### With Custom Icon
 
 \`\`\`tsx
 <CompactListItem
@@ -73,13 +73,13 @@ icon={
 </svg>
 }
 iconColor="bg-blue-100 dark:bg-blue-900/20"
-title="Ministério de Música"
-subtitle="Igreja Central"
+title="Music Ministry"
+subtitle="Central Church"
 onClick={() => {}}
 />
 \`\`\`
 
-### Lista Completa
+### Full List
 
 \`\`\`tsx
 
@@ -91,7 +91,7 @@ onClick={() => {}}
       title={item.name}
       subtitle={item.description}
       metadata={item.count}
-      badge={item.isActive ? { text: 'Ativa', variant: 'success' } : undefined}
+      badge={item.isActive ? { text: 'Active', variant: 'success' } : undefined}
       onClick={() => handleClick(item)}
       onMenuClick={() => handleMenu(item)}
     />
@@ -99,27 +99,27 @@ onClick={() => {}}
 </div>
 \`\`\`
 
-## Casos de Uso
+## Use Cases
 
-Este componente é ideal para:
+This component is ideal for:
 
-- ✅ Listas de equipes
-- ✅ Listas de usuários
-- ✅ Listas de ministérios
-- ✅ Listas de eventos
-- ✅ Listas de mensagens
-- ✅ Qualquer lista que precise ser compacta e escalável
+- ✅ Team lists
+- ✅ User lists
+- ✅ Ministry lists
+- ✅ Event lists
+- ✅ Message lists
+- ✅ Any list that needs to be compact and scalable
 
-## Acessibilidade
+## Accessibility
 
-- Usa elemento `<button>` nativo para navegação por teclado
-- Suporte completo a leitores de tela
-- Estados de hover e focus visíveis
-- Aria-labels apropriados
+- Uses native `<button>` element for keyboard navigation
+- Full screen reader support
+- Visible hover and focus states
+- Appropriate aria-labels
 
 ## Performance
 
-- Renderização otimizada
-- Sem carregamento desnecessário de dados
-- Ideal para listas longas (100+ itens)
-- Layout eficiente que economiza espaço
+- Optimized rendering
+- No unnecessary data loading
+- Ideal for long lists (100+ items)
+- Efficient layout that saves space

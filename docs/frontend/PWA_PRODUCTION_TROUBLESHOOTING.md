@@ -1,113 +1,113 @@
-# Troubleshooting PWA em Produção
+# PWA Troubleshooting in Production
 
-## Problema: Modal de Instalação Não Aparece
+## Problem: Install prompt modal does not appear
 
-### Verificações Rápidas
+### Quick checks
 
-1. **Verificar Service Worker**
+1. **Verify Service Worker**
 
    ```javascript
-   // No console do navegador
+   // In the browser console
    navigator.serviceWorker.getRegistration().then(reg => {
-     console.log('SW:', reg ? '✅ Ativo' : '❌ Não registrado')
+     console.log('SW:', reg ? '✅ Active' : '❌ Not registered')
    })
    ```
 
-2. **Verificar Manifest**
+2. **Verify Manifest**
 
    ```javascript
-   // No console
+   // In the console
    fetch('/manifest.webmanifest')
      .then(r => r.json())
      .then(m => console.log('Manifest:', m))
-     .catch(e => console.error('Erro:', e))
+     .catch(e => console.error('Error:', e))
    ```
 
-3. **Verificar Evento beforeinstallprompt**
+3. **Verify `beforeinstallprompt` event**
 
    ```javascript
-   // No console
+   // In the console
    window.addEventListener('beforeinstallprompt', e => {
-     console.log('✅ beforeinstallprompt disparado!', e)
+     console.log('✅ beforeinstallprompt fired!', e)
    })
    ```
 
-4. **Verificar localStorage**
+4. **Verify localStorage**
    ```javascript
-   // No console
+   // In the console
    console.log('Dismissed:', localStorage.getItem('pwa-install-dismissed'))
    ```
 
-### Soluções
+### Solutions
 
-#### 1. Limpar Cache do localStorage
+#### 1. Clear localStorage cache
 
-Se o usuário já rejeitou antes, o modal não aparece novamente. Para resetar:
+If the user previously dismissed the prompt, the modal will not appear again. To reset:
 
 ```javascript
-// No console do navegador
+// In the browser console
 localStorage.removeItem('pwa-install-dismissed')
 location.reload()
 ```
 
-#### 2. Verificar se App Já Está Instalado
+#### 2. Check if the app is already installed
 
 ```javascript
-// No console
+// In the console
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-console.log('Já instalado:', isStandalone)
+console.log('Already installed:', isStandalone)
 ```
 
-#### 3. Forçar Mostrar Modal (Debug)
+#### 3. Force show modal (debug)
 
-Adicione temporariamente no console:
+Add temporarily in the console:
 
 ```javascript
-// Forçar mostrar modal
+// Force show modal (may not work on all browsers)
 window.dispatchEvent(new Event('beforeinstallprompt'))
 ```
 
-#### 4. Verificar Requisitos PWA
+#### 4. Verify PWA requirements
 
-O navegador só mostra o prompt de instalação se:
+The browser shows the install prompt only when:
 
-- ✅ HTTPS ativo (ou localhost)
-- ✅ Manifest válido e acessível
-- ✅ Service Worker registrado e ativo
-- ✅ Ícones válidos (pelo menos 192x192 e 512x512)
-- ✅ App não está já instalado
-- ✅ Usuário visitou o site pelo menos 2 vezes (alguns navegadores)
+- ✅ HTTPS is active (or localhost)
+- ✅ Manifest is valid and reachable
+- ✅ Service Worker is registered and active
+- ✅ Icons are valid (at least 192×192 and 512×512)
+- ✅ App is not already installed
+- ✅ User has visited the site at least twice (some browsers)
 
-### Usar Painel de Debug
+### Debug panel
 
-O painel de debug está disponível em desenvolvimento. Para usar em produção temporariamente:
+The debug panel is available in development. To use it temporarily in production:
 
-1. Adicione `?debug=pwa` na URL
-2. Ou modifique temporariamente `AppLayout.tsx`:
+1. Add `?debug=pwa` to the URL
+2. Or temporarily change `AppLayout.tsx`:
 
 ```tsx
 {
-  /* PWA Debug Panel - Temporário para produção */
+  /* PWA Debug Panel — temporary for production */
 }
 {
   import.meta.env.DEV || window.location.search.includes('debug=pwa') ? <PWADebugPanel /> : null
 }
 ```
 
-### Checklist de Produção
+### Production checklist
 
-- [ ] Service Worker está registrado (`/service-worker.js` acessível)
-- [ ] Manifest está acessível (`/manifest.webmanifest` retorna JSON válido)
-- [ ] Ícones estão acessíveis (`/icons/icon-192x192.png` e `/icons/icon-512x512.png`)
-- [ ] HTTPS está ativo (não HTTP)
-- [ ] App não está já instalado
-- [ ] localStorage não tem `pwa-install-dismissed: true`
-- [ ] Evento `beforeinstallprompt` está sendo capturado
+- [ ] Service Worker is registered (`/service-worker.js` reachable)
+- [ ] Manifest is reachable (`/manifest.webmanifest` returns valid JSON)
+- [ ] Icons are reachable (`/icons/icon-192x192.png` and `/icons/icon-512x512.png`)
+- [ ] HTTPS is active (not HTTP)
+- [ ] App is not already installed
+- [ ] localStorage does not have `pwa-install-dismissed: true`
+- [ ] `beforeinstallprompt` event is being captured
 
-### Comandos Úteis para Debug
+### Useful debug snippet
 
 ```javascript
-// Verificar tudo de uma vez
+// Check everything at once
 ;(async () => {
   const sw = await navigator.serviceWorker.getRegistration()
   const manifest = await fetch('/manifest.webmanifest').then(r => r.json())
@@ -117,33 +117,33 @@ O painel de debug está disponível em desenvolvimento. Para usar em produção 
   console.table({
     'Service Worker': sw ? '✅' : '❌',
     Manifest: manifest.name || '❌',
-    Dismissed: dismissed || 'Não',
-    Standalone: standalone ? 'Sim' : 'Não',
+    Dismissed: dismissed || 'No',
+    Standalone: standalone ? 'Yes' : 'No',
   })
 })()
 ```
 
-### Problemas Comuns
+### Common issues
 
-1. **"beforeinstallprompt nunca dispara"**
-   - Verifique se o manifest tem todos os campos obrigatórios
-   - Verifique se os ícones estão acessíveis
-   - Alguns navegadores exigem que o usuário visite o site múltiplas vezes
+1. **`beforeinstallprompt` never fires**
+   - Verify the manifest has all required fields
+   - Verify icons are reachable
+   - Some browsers require multiple visits before showing the prompt
 
-2. **"Modal aparece mas instalação falha"**
-   - Verifique se o Service Worker está ativo
-   - Verifique se há erros no console
+2. **Modal appears but installation fails**
+   - Verify the Service Worker is active
+   - Check for errors in the console
 
-3. **"Funciona em dev mas não em produção"**
-   - Verifique se os arquivos estáticos estão sendo servidos corretamente
-   - Verifique se o caminho do service-worker.js está correto
-   - Verifique CORS e headers HTTP
+3. **Works in dev but not in production**
+   - Verify static files are served correctly
+   - Verify the service worker path is correct
+   - Check CORS and HTTP headers
 
-### Próximos Passos
+### Next steps
 
-1. Verifique os logs do sistema (devtools console)
-2. Use o painel de debug para identificar o problema
-3. Verifique a documentação do navegador específico:
+1. Check system logs (devtools console)
+2. Use the debug panel to identify the issue
+3. Review browser-specific documentation:
    - [Chrome PWA](https://developer.chrome.com/docs/workbox/)
    - [Edge PWA](https://docs.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/)
    - [Safari PWA](https://developer.apple.com/documentation/safari_web_content/promoting_apps_with_smart_app_banners)

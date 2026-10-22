@@ -1,147 +1,147 @@
-# Configuração Completa Vercel - Deploy Automático
+# Complete Vercel Setup - Automatic Deploy
 
-## ⚠️ Problema: Deploys não são criados automaticamente
+## ⚠️ Problem: Deploys are not created automatically
 
-Este guia resolve o problema de deploys automáticos não funcionarem na Vercel.
+This guide fixes automatic deploys not working on Vercel.
 
-## Passo 1: Verificar Configuração no Dashboard da Vercel
+## Step 1: Verify Dashboard Configuration
 
 ### A. Settings > General > Build & Development Settings
 
-**IMPORTANTE:** Deixe estes campos **COMPLETAMENTE VAZIOS** para usar o `vercel.json`:
+**IMPORTANT:** Leave these fields **COMPLETELY EMPTY** to use `vercel.json`:
 
-- ✅ **Root Directory:** (vazio)
-- ✅ **Build Command:** (vazio)
-- ✅ **Output Directory:** (vazio)
-- ✅ **Install Command:** (vazio)
-- ✅ **Development Command:** (vazio)
+- ✅ **Root Directory:** (empty)
+- ✅ **Build Command:** (empty)
+- ✅ **Output Directory:** (empty)
+- ✅ **Install Command:** (empty)
+- ✅ **Development Command:** (empty)
 
-**OU configure manualmente (se preferir):**
+**OR configure manually (if you prefer):**
 
 - **Root Directory:** `.`
 - **Build Command:** `pnpm build --filter=@minc-hub/web`
 - **Output Directory:** `apps/web/dist`
 - **Install Command:** `pnpm install --frozen-lockfile`
-- **Node.js Version:** 18.x ou superior
+- **Node.js Version:** 18.x or higher
 
 ### B. Settings > Git > Ignored Build Step
 
-**CRÍTICO:** Este é o campo mais importante! Configure como:
+**CRITICAL:** This is the most important field! Configure as:
 
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json
 ```
 
-**OU deixe VAZIO** para sempre fazer deploy.
+**OR leave EMPTY** to always deploy.
 
-**O que este comando faz:**
-- Verifica se houve mudanças em arquivos relevantes
-- Se NÃO houver mudanças, ignora o build (exit code 0)
-- Se HOUVER mudanças, faz o build (exit code 1)
+**What this command does:**
+- Checks for changes in relevant files
+- If there are NO changes, skips the build (exit code 0)
+- If there ARE changes, runs the build (exit code 1)
 
 ### C. Settings > Git
 
-1. Verifique se o repositório está conectado
-2. Verifique a **Production Branch** (geralmente `main` ou `master`)
-3. Se necessário, clique em **"Disconnect"** e reconecte
+1. Verify the repository is connected
+2. Verify **Production Branch** (usually `main` or `master`)
+3. If needed, click **"Disconnect"** and reconnect
 
-## Passo 2: Verificar Webhooks do GitHub
+## Step 2: Verify GitHub Webhooks
 
-1. No GitHub, vá em **Settings > Webhooks** do seu repositório
-2. Verifique se há um webhook da Vercel ativo
-3. Se não houver, a Vercel deve criar automaticamente ao conectar
-4. Se o webhook estiver inativo, reconecte o repositório na Vercel
+1. On GitHub, go to **Settings > Webhooks** for your repository
+2. Verify an active Vercel webhook exists
+3. If not, Vercel should create one when connecting
+4. If the webhook is inactive, reconnect the repository on Vercel
 
-## Passo 3: Verificar Arquivos no Repositório
+## Step 3: Verify Repository Files
 
-Certifique-se de que estes arquivos estão commitados:
+Ensure these files are committed:
 
 ```bash
 git status
 git add vercel.json turbo.json package.json pnpm-lock.yaml
-git commit -m "fix: configurar deploy automático Vercel"
+git commit -m "fix: configure Vercel automatic deploy"
 git push
 ```
 
-## Passo 4: Testar Deploy Manual
+## Step 4: Test Manual Deploy
 
-1. Na Vercel Dashboard, vá em **Deployments**
-2. Clique em **"Create Deployment"** ou **"Redeploy"**
-3. Se funcionar, o problema é apenas com detecção automática
-4. Se não funcionar, verifique os logs de erro
+1. In Vercel Dashboard, go to **Deployments**
+2. Click **"Create Deployment"** or **"Redeploy"**
+3. If it works, the issue is only automatic detection
+4. If not, check error logs
 
-## Passo 5: Forçar Deploy com Commit Vazio
+## Step 5: Force Deploy with Empty Commit
 
-Se nada funcionar, force um deploy:
+If nothing works, force a deploy:
 
 ```bash
 git commit --allow-empty -m "chore: trigger Vercel deploy"
 git push
 ```
 
-## Passo 6: Verificar Logs
+## Step 6: Check Logs
 
-1. Vá em **Deployments** na Vercel
-2. Clique no deploy mais recente
-3. Verifique os logs para erros
-4. Procure por mensagens como:
+1. Go to **Deployments** on Vercel
+2. Open the most recent deploy
+3. Check logs for errors
+4. Look for messages such as:
    - "Ignored via ignoreCommand"
    - "No changes detected"
    - "Build skipped"
 
-## Configuração Alternativa: Usar Root Directory
+## Alternative: Use Root Directory
 
-Se o problema persistir, tente configurar o **Root Directory** como `apps/web`:
+If the problem persists, try **Root Directory** as `apps/web`:
 
-### No Dashboard da Vercel:
+### In Vercel Dashboard:
 
 - **Root Directory:** `apps/web`
-- **Build Command:** `pnpm build` (sem filter)
+- **Build Command:** `pnpm build` (no filter)
 - **Output Directory:** `dist`
 - **Install Command:** `cd ../.. && pnpm install`
 
-**MAS** isso requer ajustar o `vercel.json` ou removê-lo.
+**BUT** this requires adjusting or removing `vercel.json`.
 
-## Solução Recomendada: Ignored Build Step Correto
+## Recommended Solution: Correct Ignored Build Step
 
-A configuração mais confiável é:
+The most reliable configuration is:
 
-### No Dashboard da Vercel > Settings > Git > Ignored Build Step:
+### Vercel Dashboard > Settings > Git > Ignored Build Step:
 
 ```bash
 git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json .vercelignore
 ```
 
-Isso garante que:
-- ✅ Deploy só é ignorado se NENHUMA mudança relevante foi feita
-- ✅ Qualquer mudança em `apps/web/` ou arquivos de configuração gera deploy
-- ✅ Funciona corretamente com monorepo
+This ensures:
+- ✅ Deploy is skipped only if NO relevant change was made
+- ✅ Any change in `apps/web/` or config files triggers deploy
+- ✅ Works correctly with monorepos
 
-## Checklist Final
+## Final Checklist
 
-- [ ] `vercel.json` está na raiz e commitado
-- [ ] `turbo.json` tem `"cache": false` no build
-- [ ] Campos de build no Dashboard estão vazios OU configurados corretamente
-- [ ] **Ignored Build Step** está configurado corretamente
-- [ ] Webhook do GitHub está ativo
-- [ ] Branch principal está configurada
-- [ ] Testou deploy manual (funcionou?)
-- [ ] Fez push de mudanças e verificou se gerou deploy
+- [ ] `vercel.json` is at root and committed
+- [ ] `turbo.json` has `"cache": false` on build
+- [ ] Build fields in Dashboard are empty OR configured correctly
+- [ ] **Ignored Build Step** is configured correctly
+- [ ] GitHub webhook is active
+- [ ] Main branch is configured
+- [ ] Tested manual deploy (worked?)
+- [ ] Pushed changes and verified deploy was created
 
-## Comando para Testar Ignored Build Step
+## Command to Test Ignored Build Step
 
-Teste localmente se o comando funciona:
+Test locally whether the command works:
 
 ```bash
-# Deve retornar exit code 1 (fazer deploy) se houver mudanças
+# Should return exit code 1 (deploy) if there are changes
 git diff HEAD^ HEAD --quiet apps/web/ package.json pnpm-lock.yaml turbo.json vercel.json
-echo $?  # Deve ser 1 se houver mudanças, 0 se não houver
+echo $?  # Should be 1 if changes, 0 if none
 ```
 
-## Se Nada Funcionar
+## If Nothing Works
 
-1. **Desconecte e reconecte o repositório** na Vercel
-2. **Remova o Ignored Build Step** temporariamente
-3. **Faça um commit vazio** para forçar deploy
-4. **Verifique os logs** do último deploy
-5. **Entre em contato com suporte da Vercel** se persistir
+1. **Disconnect and reconnect the repository** on Vercel
+2. **Remove Ignored Build Step** temporarily
+3. **Make an empty commit** to force deploy
+4. **Check logs** from the last deploy
+5. **Contact Vercel support** if it persists
